@@ -1,0 +1,28 @@
+{
+  "artboardSize": { "w": 1080.0, "h": 1080.0 },
+  "bgGradient": { "color1": 0, "color2": 0, "angle": 0.0, "width": 0.0 },
+  "bgOpacity": 0.0,
+  "children": [
+    {
+      "runtimeType": "text",
+      "id": "text-gradient-1",
+      "data": {
+        "text": "Hello",
+        "fontFamily": "Inter",
+        "fontWeight": 700,
+        "fontSize": 64.0,
+        "letterSpacing": 0,
+        "fill": {
+          "type": "gradient",
+          "grad": {
+            "color1": 4279308561,
+            "color2": 4281558681,
+            "angle": 45.0,
+            "width": 20.0
+          }
+        },
+        "shadowOffset": 0.0
+      }
+    }
+  ]
+}
