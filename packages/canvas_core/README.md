@@ -95,7 +95,7 @@ Renderers consume `PaintOp` values. They do not need to interpret the scene grap
 
 ## Architecture
 
-See [docs/architecture.md](docs/architecture.md) for package entrypoints, data flow, and layering guidance.
+See [doc/architecture.md](doc/architecture.md) for package entrypoints, data flow, and layering guidance.
 
 ## Package boundaries
 

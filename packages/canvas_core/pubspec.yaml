@@ -13,7 +13,6 @@ topics:
 environment:
   sdk: ">=3.8.0 <4.0.0"
 
-resolution: workspace
 
 dependencies:
   freezed_annotation: ^3.0.0
