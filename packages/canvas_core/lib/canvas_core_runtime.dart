@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/canvas_core_runtime.dart
+// Path: lib/canvas_core_runtime.dart
 //
 // canvas_core_runtime – Public RUNTIME API (generic core / source of truth)
 //
@@ -59,7 +59,9 @@ export 'src/runtime/model/node_model.dart'
 // 3) Compute / geometry helpers
 // ============================================================================
 export 'src/algorithms/layout/computed_scene.dart'
-    show ComputedScene, DrawItem, ImagePlacement, IconTextPayload, computeScene;
+    show ComputedScene, DrawItem, computeScene;
+export 'src/algorithms/layout/layout_payloads.dart'
+    show ImagePlacement, IconTextPayload;
 export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 
 // ============================================================================

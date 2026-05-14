@@ -1,6 +1,10 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/layout/node_geometry.dart
+// Path: lib/src/algorithms/layout/node_geometry.dart
 
-import 'package:canvas_core/canvas_core_runtime.dart';
+import 'package:canvas_core/src/algorithms/layout/layout_payloads.dart';
+import 'package:canvas_core/src/foundation/geometry/geometry.dart';
+import 'package:canvas_core/src/path/path_ir.dart';
+import 'package:canvas_core/src/runtime/model/node_model.dart';
+import 'package:canvas_core/src/services/icon_resolver.dart';
 import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:canvas_core/src/services/services_context.dart';
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'

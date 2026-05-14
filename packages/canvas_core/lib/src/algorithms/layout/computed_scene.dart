@@ -1,6 +1,7 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/layout/computed_scene.dart
+// Path: lib/src/algorithms/layout/computed_scene.dart
 
 import 'package:canvas_core/src/algorithms/layout/node_geometry.dart';
+import 'package:canvas_core/src/algorithms/layout/layout_payloads.dart';
 import 'package:canvas_core/src/runtime/traversal/stack_order.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
@@ -22,23 +23,6 @@ final class DrawItem {
   final NodeId leafId;
   final List<NodeId> groupStack; // root..parent group ids
   const DrawItem({required this.leafId, required this.groupStack});
-}
-
-final class ImagePlacement {
-  final Rect2D src;
-  final Rect2D dst;
-  const ImagePlacement({required this.src, required this.dst});
-}
-
-final class IconTextPayload {
-  final String glyph;
-  final String family;
-  final int weight;
-  const IconTextPayload({
-    required this.glyph,
-    required this.family,
-    required this.weight,
-  });
 }
 
 final class ComputedScene {
