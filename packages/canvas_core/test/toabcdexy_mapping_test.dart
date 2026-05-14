@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/toabcdexy_mapping_test.dart
+// Path: test/toabcdexy_mapping_test.dart
 import 'package:test/test.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/canvas_core_editor.dart
+// Path: lib/canvas_core_editor.dart
 //
 // canvas_core_editor – Public EDITOR utilities (interaction mechanics)
 //

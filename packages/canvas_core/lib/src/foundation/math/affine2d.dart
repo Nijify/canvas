@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/math/affine2d.dart
+// Path: lib/src/foundation/math/affine2d.dart
 
 import 'package:vector_math/vector_math_64.dart' as vm;
 import 'package:canvas_core/src/foundation/core_types.dart';

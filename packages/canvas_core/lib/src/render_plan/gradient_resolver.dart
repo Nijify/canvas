@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/render_plan/gradient_resolver.dart
+// Path: lib/src/render_plan/gradient_resolver.dart
 
 // Pure Dart (no Flutter): gradient math shared by all renderers.
 // Converts LinearGradientSpec + canvas Size2D into concrete endpoints,

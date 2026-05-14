@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/viewport/canvas_viewport_policy.dart
+// Path: lib/src/runtime/viewport/canvas_viewport_policy.dart
 
 import 'package:canvas_core/src/algorithms/viewport/viewport_math.dart'
     show CanvasFit;

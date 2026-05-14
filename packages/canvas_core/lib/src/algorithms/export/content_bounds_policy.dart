@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/export/content_bounds_policy.dart
+// Path: lib/src/algorithms/export/content_bounds_policy.dart
 
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/runtime/model/scene_document.dart'

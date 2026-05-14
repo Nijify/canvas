@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/snapping/keylines.dart
+// Path: lib/src/algorithms/snapping/keylines.dart
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/algorithms/snapping/snap_types.dart';

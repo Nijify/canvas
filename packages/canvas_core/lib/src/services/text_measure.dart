@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/services/text_measure.dart
+// Path: lib/src/services/text_measure.dart
 //
 // Text measurement helpers (runtime-safe).
 //

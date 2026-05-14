@@ -1,3 +1,3 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/ids.dart
+// Path: lib/src/foundation/ids.dart
 
 typedef ElementId = String;

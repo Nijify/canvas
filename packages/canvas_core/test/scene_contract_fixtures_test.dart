@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/scene_contract_fixtures_test.dart
+// Path: test/scene_contract_fixtures_test.dart
 
 import 'dart:convert';
 import 'dart:io';

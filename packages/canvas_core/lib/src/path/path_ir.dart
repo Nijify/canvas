@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/path/path_ir.dart
+// Path: lib/src/path/path_ir.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;

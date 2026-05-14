@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/render/canvas_render_pipeline.dart
+// Path: lib/src/runtime/render/canvas_render_pipeline.dart
 
 import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
     show computeScene, ComputedScene;

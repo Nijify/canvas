@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/snap_scene_test.dart
+// Path: test/snap_scene_test.dart
 
 import 'package:test/test.dart';
 

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/geometry/geometry_ext.dart
+// Path: lib/src/foundation/geometry/geometry_ext.dart
 
 import 'dart:math' as math;
 import 'package:canvas_core/src/foundation/core_types.dart';

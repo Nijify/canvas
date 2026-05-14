@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/export/content_bounds.dart
+// Path: lib/src/algorithms/export/content_bounds.dart
 
 import 'package:canvas_core/src/algorithms/export/content_bounds_policy.dart'
     show ContentBoundsPolicy;

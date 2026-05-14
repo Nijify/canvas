@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/node_name_json_test.dart
+// Path: test/node_name_json_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';

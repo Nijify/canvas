@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/serialization/json_vec2.dart
+// Path: lib/src/serialization/json_vec2.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart';
 

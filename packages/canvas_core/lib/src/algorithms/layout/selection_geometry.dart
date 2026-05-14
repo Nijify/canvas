@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/layout/selection_geometry.dart
+// Path: lib/src/algorithms/layout/selection_geometry.dart
 //
 // Helpers for aggregating multi-selection geometry in world space.
 

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/geometry/geometry.dart
+// Path: lib/src/foundation/geometry/geometry.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart';
 

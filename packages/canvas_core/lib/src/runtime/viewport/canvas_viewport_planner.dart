@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/viewport/canvas_viewport_planner.dart
+// Path: lib/src/runtime/viewport/canvas_viewport_planner.dart
 
 import 'dart:math' as math;
 import 'package:canvas_core/src/foundation/core_types.dart';

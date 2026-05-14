@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/serialization/path_converters.dart
+// Path: lib/src/serialization/path_converters.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:canvas_core/src/path/path_source.dart';
 

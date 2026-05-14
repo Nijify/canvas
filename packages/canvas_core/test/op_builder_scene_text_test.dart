@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/op_builder_scene_text_test.dart
+// Path: test/op_builder_scene_text_test.dart
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/render_plan/paint_ops.dart';

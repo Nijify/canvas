@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/traversal/stack_order.dart
+// Path: lib/src/runtime/traversal/stack_order.dart
 
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 

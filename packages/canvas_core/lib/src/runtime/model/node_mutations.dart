@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/model/node_mutations.dart
+// Path: lib/src/runtime/model/node_mutations.dart
 /// TODO(api): This is temporarily exported until a stable NodeEditingX API is
 /// available. Before public stabilization, split into:
 /// - public NodeEditingX: safe immutable edits like withXf/withHidden/withName

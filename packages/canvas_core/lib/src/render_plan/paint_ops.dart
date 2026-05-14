@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/render_plan/paint_ops.dart
+// Path: lib/src/render_plan/paint_ops.dart
 
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/foundation/core_types.dart' show Color32, Vec2;

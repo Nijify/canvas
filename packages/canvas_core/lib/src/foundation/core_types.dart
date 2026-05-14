@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/core_types.dart
+// Path: lib/src/foundation/core_types.dart
 
 /// Platform-neutral primitives for geometry, color, font weight, and gradients.
 /// Pure Dart (no Flutter), small and serializable.

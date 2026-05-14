@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/snapping/snap_scene.dart
+// Path: lib/src/algorithms/snapping/snap_scene.dart
 
 import 'dart:math' as math;
 

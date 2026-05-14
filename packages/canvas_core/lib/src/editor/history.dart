@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/editor/history.dart
+// Path: lib/src/editor/history.dart
 //
 // History<S> – a tiny, immutable undo/redo reducer.
 // - Pure/headless: no timers, no UI.

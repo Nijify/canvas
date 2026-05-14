@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/services/services.dart
+// Path: lib/src/services/services.dart
 
 import 'package:canvas_core/src/foundation/ids.dart';
 import 'package:canvas_core/src/foundation/core_types.dart';

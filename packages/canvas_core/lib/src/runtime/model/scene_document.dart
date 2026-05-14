@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/model/scene_document.dart
+// Path: lib/src/runtime/model/scene_document.dart
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/scene_tree_ops_stack_order_test.dart
+// Path: test/scene_tree_ops_stack_order_test.dart
 
 import 'package:test/test.dart';
 import 'package:canvas_core/canvas_core_runtime.dart';

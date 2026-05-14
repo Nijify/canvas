@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/layout/text_measure_cache_test.dart
+// Path: test/layout/text_measure_cache_test.dart
 
 import 'package:test/test.dart';
 import 'package:canvas_core/src/foundation/core_types.dart';

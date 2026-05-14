@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/scene_smoke_test.dart
+// Path: test/scene_smoke_test.dart
 
 import 'dart:async';
 

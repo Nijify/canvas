@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/traversal/traversal.dart
+// Path: lib/src/runtime/traversal/traversal.dart
 
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';

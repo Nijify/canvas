@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/geometry/scene_math.dart
+// Path: lib/src/runtime/geometry/scene_math.dart
 
 import 'dart:math' as math;
 import 'package:vector_math/vector_math_64.dart' as vm;

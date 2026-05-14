@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/snapping/snap_index_scene.dart
+// Path: lib/src/algorithms/snapping/snap_index_scene.dart
 
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'

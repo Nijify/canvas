@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/algorithms/viewport/viewport_math.dart
+// Path: lib/src/algorithms/viewport/viewport_math.dart
 
 import 'dart:math' as math;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;

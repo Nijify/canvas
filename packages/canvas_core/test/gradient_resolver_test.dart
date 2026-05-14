@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/test/gradient_resolver_test.dart
+// Path: test/gradient_resolver_test.dart
 
 import 'package:test/test.dart';
 import 'package:canvas_core/canvas_core_runtime.dart';

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/adapters/path_compile_scene.dart
+// Path: lib/src/adapters/path_compile_scene.dart
 //
 // Scene-level adapter: PathData (scene model) -> PathIR (path subsystem)
 //

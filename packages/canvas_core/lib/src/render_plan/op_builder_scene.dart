@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/render_plan/op_builder_scene.dart
+// Path: lib/src/render_plan/op_builder_scene.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;

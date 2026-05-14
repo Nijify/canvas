@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/path/path_hit_test.dart
+// Path: lib/src/path/path_hit_test.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/foundation/style/style_types.dart'

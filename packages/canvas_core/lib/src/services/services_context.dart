@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/services/services_context.dart
+// Path: lib/src/services/services_context.dart
 
 import 'package:canvas_core/src/services/services.dart';
 import 'package:canvas_core/src/services/text_measure.dart';

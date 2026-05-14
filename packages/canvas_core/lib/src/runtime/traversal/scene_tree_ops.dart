@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/runtime/traversal/scene_tree_ops.dart
+// Path: lib/src/runtime/traversal/scene_tree_ops.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/runtime/model/node_model.dart';

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/assets/canvas_asset_ref.dart
+// Path: lib/src/foundation/assets/canvas_asset_ref.dart
 //
 // Canonical, renderer-agnostic parsing for image/asset source references stored
 // in canvas documents.

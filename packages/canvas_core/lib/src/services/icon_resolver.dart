@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/services/icon_resolver.dart
+// Path: lib/src/services/icon_resolver.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show FontWeightNum;
 import 'package:canvas_core/src/runtime/model/node_model.dart' show PathData;

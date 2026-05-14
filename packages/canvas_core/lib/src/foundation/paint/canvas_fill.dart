@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_core/lib/src/foundation/paint/canvas_fill.dart
+// Path: lib/src/foundation/paint/canvas_fill.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart'
     show LinearGradientSpec;
