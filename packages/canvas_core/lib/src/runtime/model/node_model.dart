@@ -138,6 +138,9 @@ sealed class Node with _$Node {
   const factory Node.text({
     required NodeId id,
     String? name,
+    // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
+    // Candidate for removal from the persisted scene model after layer
+    // visibility UX is intentionally redesigned or removed.
     @Default(false) bool hidden,
     @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
