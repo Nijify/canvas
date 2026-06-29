@@ -32,6 +32,12 @@ Color32 _shadowColorFromFill(CanvasFill fill) => switch (fill) {
   CanvasFillNone() => 0x00000000, // should not happen for text/icon
 };
 
+Color32 _applyOpacityToArgb(Color32 argb, double opacity) {
+  final alpha = (argb >> 24) & 0xFF;
+  final mergedAlpha = (alpha * opacity).clamp(0, 255).round();
+  return (mergedAlpha << 24) | (argb & 0x00FFFFFF);
+}
+
 List<PaintOp> buildPaintOpsFromScene(
   CanvasSceneDocument doc,
   ComputedScene computed,
@@ -39,18 +45,40 @@ List<PaintOp> buildPaintOpsFromScene(
   final ops = <PaintOp>[];
 
   // Background
-  if (doc.bgOpacity > 0) {
-    final grad = resolveLinearGradient(
-      doc.bgGradient,
-      doc.artboardSize,
-      opacity: doc.bgOpacity,
-    );
-    ops.add(
-      FillRectGradientOp(
-        Rect2D.fromLTWH(0, 0, doc.artboardSize.w, doc.artboardSize.h),
-        grad,
-      ),
-    );
+  final backgroundRect = Rect2D.fromLTWH(
+    0,
+    0,
+    doc.artboardSize.w,
+    doc.artboardSize.h,
+  );
+
+  if (doc.backgroundOpacity > 0) {
+    switch (doc.backgroundFill) {
+      case CanvasFillNone():
+        break;
+
+      case CanvasFillSolid(:final color):
+        ops.add(
+          FillRectOp(
+            backgroundRect,
+            _applyOpacityToArgb(color, doc.backgroundOpacity),
+          ),
+        );
+        break;
+
+      case CanvasFillGradient(:final grad):
+        ops.add(
+          FillRectGradientOp(
+            backgroundRect,
+            resolveLinearGradient(
+              grad,
+              doc.artboardSize,
+              opacity: doc.backgroundOpacity,
+            ),
+          ),
+        );
+        break;
+    }
   }
 
   for (final item in computed.drawList) {

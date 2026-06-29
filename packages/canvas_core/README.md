@@ -51,7 +51,9 @@ Create a document, compute it with host services, and build paint operations for
 import 'package:canvas_core/canvas_core_runtime.dart';
 
 final document = CanvasSceneDocument(
-  artboardSize: const Size2D(1080, 1080),
+  artboardSize: const Size2D(1080, 1080), 
+  backgroundFill: const CanvasFill.none(),
+  backgroundOpacity: 1.0,
   children: <Node>[
     Node.text(
       id: 'headline',

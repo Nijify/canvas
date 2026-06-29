@@ -46,6 +46,8 @@ void main() {
     const solidColor = 0xFF445566;
 
     final doc = CanvasSceneDocument(
+      backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 1.0,
       children: [
         Node.text(
           id: 't1',
@@ -79,6 +81,8 @@ void main() {
     const c2 = 0xFF445566;
 
     final doc = CanvasSceneDocument(
+      backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 1.0,
       children: [
         Node.text(
           id: 't1',

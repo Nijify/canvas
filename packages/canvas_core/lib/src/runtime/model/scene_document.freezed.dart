@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CanvasSceneDocument {
 
-@Size2DConverter() Size2D get artboardSize;@LinearGradientSpecConverter() LinearGradientSpec get bgGradient; double get bgOpacity; List<Node> get children;
+@Size2DConverter() Size2D get artboardSize;@CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) CanvasFill get backgroundFill;@JsonKey(required: true, disallowNullValue: true) double get backgroundOpacity; List<Node> get children;
 /// Create a copy of CanvasSceneDocument
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CanvasSceneDocumentCopyWith<CanvasSceneDocument> get copyWith => _$CanvasSceneD
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.bgGradient, bgGradient) || other.bgGradient == bgGradient)&&(identical(other.bgOpacity, bgOpacity) || other.bgOpacity == bgOpacity)&&const DeepCollectionEquality().equals(other.children, children));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.backgroundFill, backgroundFill) || other.backgroundFill == backgroundFill)&&(identical(other.backgroundOpacity, backgroundOpacity) || other.backgroundOpacity == backgroundOpacity)&&const DeepCollectionEquality().equals(other.children, children));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,artboardSize,bgGradient,bgOpacity,const DeepCollectionEquality().hash(children));
+int get hashCode => Object.hash(runtimeType,artboardSize,backgroundFill,backgroundOpacity,const DeepCollectionEquality().hash(children));
 
 @override
 String toString() {
-  return 'CanvasSceneDocument(artboardSize: $artboardSize, bgGradient: $bgGradient, bgOpacity: $bgOpacity, children: $children)';
+  return 'CanvasSceneDocument(artboardSize: $artboardSize, backgroundFill: $backgroundFill, backgroundOpacity: $backgroundOpacity, children: $children)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CanvasSceneDocumentCopyWith<$Res>  {
   factory $CanvasSceneDocumentCopyWith(CanvasSceneDocument value, $Res Function(CanvasSceneDocument) _then) = _$CanvasSceneDocumentCopyWithImpl;
 @useResult
 $Res call({
-@Size2DConverter() Size2D artboardSize,@LinearGradientSpecConverter() LinearGradientSpec bgGradient, double bgOpacity, List<Node> children
+@Size2DConverter() Size2D artboardSize,@CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) CanvasFill backgroundFill,@JsonKey(required: true, disallowNullValue: true) double backgroundOpacity, List<Node> children
 });
 
 
@@ -65,11 +65,11 @@ class _$CanvasSceneDocumentCopyWithImpl<$Res>
 
 /// Create a copy of CanvasSceneDocument
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? artboardSize = null,Object? bgGradient = null,Object? bgOpacity = null,Object? children = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? artboardSize = null,Object? backgroundFill = null,Object? backgroundOpacity = null,Object? children = null,}) {
   return _then(_self.copyWith(
 artboardSize: null == artboardSize ? _self.artboardSize : artboardSize // ignore: cast_nullable_to_non_nullable
-as Size2D,bgGradient: null == bgGradient ? _self.bgGradient : bgGradient // ignore: cast_nullable_to_non_nullable
-as LinearGradientSpec,bgOpacity: null == bgOpacity ? _self.bgOpacity : bgOpacity // ignore: cast_nullable_to_non_nullable
+as Size2D,backgroundFill: null == backgroundFill ? _self.backgroundFill : backgroundFill // ignore: cast_nullable_to_non_nullable
+as CanvasFill,backgroundOpacity: null == backgroundOpacity ? _self.backgroundOpacity : backgroundOpacity // ignore: cast_nullable_to_non_nullable
 as double,children: null == children ? _self.children : children // ignore: cast_nullable_to_non_nullable
 as List<Node>,
   ));
@@ -156,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@Size2DConverter()  Size2D artboardSize, @LinearGradientSpecConverter()  LinearGradientSpec bgGradient,  double bgOpacity,  List<Node> children)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@Size2DConverter()  Size2D artboardSize, @CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true)  CanvasFill backgroundFill, @JsonKey(required: true, disallowNullValue: true)  double backgroundOpacity,  List<Node> children)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CanvasSceneDocument() when $default != null:
-return $default(_that.artboardSize,_that.bgGradient,_that.bgOpacity,_that.children);case _:
+return $default(_that.artboardSize,_that.backgroundFill,_that.backgroundOpacity,_that.children);case _:
   return orElse();
 
 }
@@ -177,10 +177,10 @@ return $default(_that.artboardSize,_that.bgGradient,_that.bgOpacity,_that.childr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@Size2DConverter()  Size2D artboardSize, @LinearGradientSpecConverter()  LinearGradientSpec bgGradient,  double bgOpacity,  List<Node> children)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@Size2DConverter()  Size2D artboardSize, @CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true)  CanvasFill backgroundFill, @JsonKey(required: true, disallowNullValue: true)  double backgroundOpacity,  List<Node> children)  $default,) {final _that = this;
 switch (_that) {
 case _CanvasSceneDocument():
-return $default(_that.artboardSize,_that.bgGradient,_that.bgOpacity,_that.children);case _:
+return $default(_that.artboardSize,_that.backgroundFill,_that.backgroundOpacity,_that.children);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +197,10 @@ return $default(_that.artboardSize,_that.bgGradient,_that.bgOpacity,_that.childr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@Size2DConverter()  Size2D artboardSize, @LinearGradientSpecConverter()  LinearGradientSpec bgGradient,  double bgOpacity,  List<Node> children)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@Size2DConverter()  Size2D artboardSize, @CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true)  CanvasFill backgroundFill, @JsonKey(required: true, disallowNullValue: true)  double backgroundOpacity,  List<Node> children)?  $default,) {final _that = this;
 switch (_that) {
 case _CanvasSceneDocument() when $default != null:
-return $default(_that.artboardSize,_that.bgGradient,_that.bgOpacity,_that.children);case _:
+return $default(_that.artboardSize,_that.backgroundFill,_that.backgroundOpacity,_that.children);case _:
   return null;
 
 }
@@ -212,12 +212,12 @@ return $default(_that.artboardSize,_that.bgGradient,_that.bgOpacity,_that.childr
 @JsonSerializable()
 
 class _CanvasSceneDocument extends CanvasSceneDocument {
-  const _CanvasSceneDocument({@Size2DConverter() this.artboardSize = const Size2D(740, 360), @LinearGradientSpecConverter() this.bgGradient = LinearGradientSpec.transparent, this.bgOpacity = 0.0, final  List<Node> children = const <Node>[]}): _children = children,super._();
+  const _CanvasSceneDocument({@Size2DConverter() this.artboardSize = const Size2D(740, 360), @CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) required this.backgroundFill, @JsonKey(required: true, disallowNullValue: true) required this.backgroundOpacity, final  List<Node> children = const <Node>[]}): _children = children,super._();
   factory _CanvasSceneDocument.fromJson(Map<String, dynamic> json) => _$CanvasSceneDocumentFromJson(json);
 
 @override@JsonKey()@Size2DConverter() final  Size2D artboardSize;
-@override@JsonKey()@LinearGradientSpecConverter() final  LinearGradientSpec bgGradient;
-@override@JsonKey() final  double bgOpacity;
+@override@CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) final  CanvasFill backgroundFill;
+@override@JsonKey(required: true, disallowNullValue: true) final  double backgroundOpacity;
  final  List<Node> _children;
 @override@JsonKey() List<Node> get children {
   if (_children is EqualUnmodifiableListView) return _children;
@@ -239,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.bgGradient, bgGradient) || other.bgGradient == bgGradient)&&(identical(other.bgOpacity, bgOpacity) || other.bgOpacity == bgOpacity)&&const DeepCollectionEquality().equals(other._children, _children));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.backgroundFill, backgroundFill) || other.backgroundFill == backgroundFill)&&(identical(other.backgroundOpacity, backgroundOpacity) || other.backgroundOpacity == backgroundOpacity)&&const DeepCollectionEquality().equals(other._children, _children));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,artboardSize,bgGradient,bgOpacity,const DeepCollectionEquality().hash(_children));
+int get hashCode => Object.hash(runtimeType,artboardSize,backgroundFill,backgroundOpacity,const DeepCollectionEquality().hash(_children));
 
 @override
 String toString() {
-  return 'CanvasSceneDocument(artboardSize: $artboardSize, bgGradient: $bgGradient, bgOpacity: $bgOpacity, children: $children)';
+  return 'CanvasSceneDocument(artboardSize: $artboardSize, backgroundFill: $backgroundFill, backgroundOpacity: $backgroundOpacity, children: $children)';
 }
 
 
@@ -259,7 +259,7 @@ abstract mixin class _$CanvasSceneDocumentCopyWith<$Res> implements $CanvasScene
   factory _$CanvasSceneDocumentCopyWith(_CanvasSceneDocument value, $Res Function(_CanvasSceneDocument) _then) = __$CanvasSceneDocumentCopyWithImpl;
 @override @useResult
 $Res call({
-@Size2DConverter() Size2D artboardSize,@LinearGradientSpecConverter() LinearGradientSpec bgGradient, double bgOpacity, List<Node> children
+@Size2DConverter() Size2D artboardSize,@CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) CanvasFill backgroundFill,@JsonKey(required: true, disallowNullValue: true) double backgroundOpacity, List<Node> children
 });
 
 
@@ -276,11 +276,11 @@ class __$CanvasSceneDocumentCopyWithImpl<$Res>
 
 /// Create a copy of CanvasSceneDocument
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? artboardSize = null,Object? bgGradient = null,Object? bgOpacity = null,Object? children = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? artboardSize = null,Object? backgroundFill = null,Object? backgroundOpacity = null,Object? children = null,}) {
   return _then(_CanvasSceneDocument(
 artboardSize: null == artboardSize ? _self.artboardSize : artboardSize // ignore: cast_nullable_to_non_nullable
-as Size2D,bgGradient: null == bgGradient ? _self.bgGradient : bgGradient // ignore: cast_nullable_to_non_nullable
-as LinearGradientSpec,bgOpacity: null == bgOpacity ? _self.bgOpacity : bgOpacity // ignore: cast_nullable_to_non_nullable
+as Size2D,backgroundFill: null == backgroundFill ? _self.backgroundFill : backgroundFill // ignore: cast_nullable_to_non_nullable
+as CanvasFill,backgroundOpacity: null == backgroundOpacity ? _self.backgroundOpacity : backgroundOpacity // ignore: cast_nullable_to_non_nullable
 as double,children: null == children ? _self._children : children // ignore: cast_nullable_to_non_nullable
 as List<Node>,
   ));

@@ -20,7 +20,10 @@ class _FakeTextMeasurer implements TextMeasurer {
 
 void main() {
   test('snapScene applies symmetric grid snapping on both axes', () {
-    final doc = const CanvasSceneDocument();
+    final doc = const CanvasSceneDocument(
+      backgroundFill: CanvasFill.none(),
+      backgroundOpacity: 1.0,
+    );
     final services = CoreServices(tm: _FakeTextMeasurer());
     final computed = computeScene(doc, services);
     const options = SnapOptions(

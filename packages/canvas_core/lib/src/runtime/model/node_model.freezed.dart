@@ -1727,7 +1727,10 @@ Node _$NodeFromJson(
 /// @nodoc
 mixin _$Node {
 
- NodeId get id; String? get name; bool get hidden; bool get locked; Transform2D get xf;
+ NodeId get id; String? get name;// TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
+// Candidate for removal from the persisted scene model after layer
+// visibility UX is intentionally redesigned or removed.
+ bool get hidden; bool get locked; Transform2D get xf;
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1957,6 +1960,9 @@ class TextNode extends Node {
 
 @override final  NodeId id;
 @override final  String? name;
+// TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
+// Candidate for removal from the persisted scene model after layer
+// visibility UX is intentionally redesigned or removed.
 @override@JsonKey() final  bool hidden;
 @override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;

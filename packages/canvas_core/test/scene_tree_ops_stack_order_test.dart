@@ -13,6 +13,14 @@ Node _text(String id) => Node.text(
   ),
 );
 
+CanvasSceneDocument _scene({required List<Node> children}) {
+  return CanvasSceneDocument(
+    backgroundFill: const CanvasFill.none(),
+    backgroundOpacity: 1.0,
+    children: children,
+  );
+}
+
 List<String> _rootIds(CanvasSceneDocument doc) {
   return [for (final n in doc.children) n.id];
 }
@@ -25,9 +33,7 @@ List<String> _groupChildIds(CanvasSceneDocument doc, String groupId) {
 void main() {
   group('SceneTreeOps stack-order helpers', () {
     test('bringToFront/sendToBack move root elements to stack extremes', () {
-      final doc = CanvasSceneDocument(
-        children: [_text('a'), _text('b'), _text('c')],
-      );
+      final doc = _scene(children: [_text('a'), _text('b'), _text('c')]);
 
       final front = SceneTreeOps.bringToFront(doc, 'a');
       expect(_rootIds(front), ['b', 'c', 'a']);
@@ -39,9 +45,7 @@ void main() {
     test(
       'bringForward/sendBackward move root elements by one sibling step',
       () {
-        final doc = CanvasSceneDocument(
-          children: [_text('a'), _text('b'), _text('c')],
-        );
+        final doc = _scene(children: [_text('a'), _text('b'), _text('c')]);
 
         final forward = SceneTreeOps.bringForward(doc, 'a');
         expect(_rootIds(forward), ['b', 'a', 'c']);
@@ -57,7 +61,7 @@ void main() {
         children: [_text('a'), _text('b'), _text('c')],
       );
 
-      final doc = CanvasSceneDocument(
+      final doc = _scene(
         children: [_text('root-before'), group, _text('root-after')],
       );
 
@@ -68,9 +72,7 @@ void main() {
     });
 
     test('duplicate inserts immediately above original', () {
-      final doc = CanvasSceneDocument(
-        children: [_text('a'), _text('b'), _text('c')],
-      );
+      final doc = _scene(children: [_text('a'), _text('b'), _text('c')]);
 
       final res = SceneTreeOps.duplicateSubtree(
         doc,
@@ -83,7 +85,7 @@ void main() {
     });
 
     test('addNode defaults to frontmost position', () {
-      final doc = CanvasSceneDocument(children: [_text('a'), _text('b')]);
+      final doc = _scene(children: [_text('a'), _text('b')]);
 
       final updated = SceneTreeOps.addNode(doc, _text('c'));
 
@@ -91,7 +93,7 @@ void main() {
     });
 
     test('addNode can insert at explicit root index', () {
-      final doc = CanvasSceneDocument(children: [_text('a'), _text('c')]);
+      final doc = _scene(children: [_text('a'), _text('c')]);
 
       final updated = SceneTreeOps.addNode(doc, _text('b'), index: 1);
 
@@ -99,7 +101,7 @@ void main() {
     });
 
     test('moveSubtree within same parent uses final target index', () {
-      final doc = CanvasSceneDocument(
+      final doc = _scene(
         children: [_text('a'), _text('b'), _text('c'), _text('d')],
       );
 
@@ -111,7 +113,7 @@ void main() {
     test('moveSubtree can move root into group at explicit index', () {
       final group = Node.group(id: 'g', children: [_text('x'), _text('z')]);
 
-      final doc = CanvasSceneDocument(children: [_text('a'), group]);
+      final doc = _scene(children: [_text('a'), group]);
 
       final updated = SceneTreeOps.moveSubtree(
         doc,

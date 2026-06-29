@@ -74,7 +74,11 @@ void main() {
 
     final rootSibling = Node.text(id: 'rootText1', data: _td('ROOT'));
 
-    final doc = CanvasSceneDocument(children: [group, rootSibling]);
+    final doc = CanvasSceneDocument(
+      backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 1.0,
+      children: [group, rootSibling],
+    );
 
     final foundMain = findById(doc, 'main1');
     expect(foundMain, isA<TextNode>());

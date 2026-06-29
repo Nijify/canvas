@@ -7,7 +7,13 @@ import 'dart:isolate';
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
-const _forbiddenLegacyKeys = {'solidColor', 'textGradient', 'fillGradient'};
+const _forbiddenLegacyKeys = {
+  'solidColor',
+  'textGradient',
+  'fillGradient',
+  'bgGradient',
+  'bgOpacity',
+};
 
 const _fixtureNames = <String>[
   'text_solid.json',
@@ -79,6 +85,10 @@ void main() {
         _assertNoForbiddenKeys(raw);
 
         final scene = CanvasSceneDocument.fromJson(raw);
+
+        expect(scene.backgroundFill, const CanvasFillNone());
+        expect(scene.backgroundOpacity, 1.0);
+
         final nodes = _walkNodes(scene.children).toList();
 
         expect(nodes, isNotEmpty);
