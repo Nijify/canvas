@@ -9,8 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
   return CanvasSceneDocument(
     artboardSize: const Size2D(300, 200),
-    bgGradient: LinearGradientSpec.transparent,
-    bgOpacity: 0,
+    backgroundFill: const CanvasFill.none(),
+    backgroundOpacity: 1.0,
     children: [
       for (var i = 0; i < sourceRefs.length; i++)
         Node.image(

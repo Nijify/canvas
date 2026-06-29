@@ -13,8 +13,8 @@ void main() {
   CanvasSceneDocument sceneWithBg({required Size2D size, required int color}) {
     return CanvasSceneDocument(
       artboardSize: size,
-      bgOpacity: 1,
-      bgGradient: LinearGradientSpec(color1: color, color2: color),
+      backgroundFill: CanvasFill.solid(color),
+      backgroundOpacity: 1.0,
     );
   }
 
