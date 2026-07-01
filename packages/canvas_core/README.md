@@ -105,3 +105,9 @@ See [doc/architecture.md](doc/architecture.md) for package entrypoints, data flo
 - Text measurement, image intrinsic sizes, and icon lookup are host services.
 - Paint, hit testing, snapping, selection, and export should reuse `ComputedScene` so they agree on transforms and bounds.
 - Public consumers should import only `canvas_core_runtime.dart` and, when needed, `canvas_core_editor.dart`.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
+
+Copyright 2026 Nijify.
