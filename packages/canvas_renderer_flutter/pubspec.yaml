@@ -16,7 +16,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # temporary Git dependency
   canvas_core: ^0.2.0
 
 dev_dependencies:
