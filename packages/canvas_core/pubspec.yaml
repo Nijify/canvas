@@ -3,7 +3,6 @@ description: Pure-Dart canvas scene model, layout, geometry, serialization, and 
 version: 0.2.0
 repository: https://github.com/Nijify/canvas_core
 issue_tracker: https://github.com/Nijify/canvas_core/issues
-homepage: https://nijify.com
 topics:
   - canvas
   - graphics
