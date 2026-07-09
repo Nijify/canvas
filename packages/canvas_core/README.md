@@ -99,6 +99,12 @@ Renderers consume `PaintOp` values. They do not need to interpret the scene grap
 
 See [doc/architecture.md](doc/architecture.md) for package entrypoints, data flow, and layering guidance.
 
+## Versioning
+
+`canvas_core` follows semantic versioning. While the package is below `1.0.0`, breaking changes are released as `0.(x+1).0`.
+
+See [VERSIONING.md](VERSIONING.md) for the full policy.
+
 ## Package boundaries
 
 - `canvas_core` is Dart-only and must stay independent of Flutter and `dart:ui`.
