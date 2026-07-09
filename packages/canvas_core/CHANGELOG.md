@@ -1,8 +1,12 @@
+## 0.2.1
+
+- Add `CanvasFieldKey`, `CanvasFields`, and `CanvasFieldKeyConverter` as a shared runtime field identity API.
+
 ## 0.2.0
 
-* **Breaking:** replace the scene background color model with `CanvasFill` via `backgroundFill`.
-* Support no-fill, solid, and gradient canvas backgrounds.
-* Add package licensing details for the public release.
+- **Breaking:** replace the scene background color model with `CanvasFill` via `backgroundFill`.
+- Support no-fill, solid, and gradient canvas backgrounds.
+- Add package licensing details for the public release.
 
 ## 0.1.1
 

@@ -109,6 +109,8 @@ export 'src/foundation/assets/canvas_asset_ref.dart'
         CanvasFileAssetRef,
         CanvasRawAssetRef,
         parseCanvasAssetRef;
+export 'src/foundation/fields/canvas_field_key.dart'
+    show CanvasFieldKey, CanvasFields, CanvasFieldKeyConverter;
 export 'src/foundation/geometry/geometry.dart' show Rect2D;
 export 'src/foundation/geometry/geometry_ext.dart';
 export 'src/foundation/ids.dart' show ElementId;

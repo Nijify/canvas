@@ -1,6 +1,6 @@
 name: canvas_core
 description: Pure-Dart canvas scene model, layout, geometry, serialization, and renderer-agnostic paint operations.
-version: 0.2.0
+version: 0.2.1
 repository: https://github.com/Nijify/canvas_core
 issue_tracker: https://github.com/Nijify/canvas_core/issues
 topics:
