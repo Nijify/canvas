@@ -17,8 +17,9 @@ void main() {
       );
     });
 
-    test('toString returns the stable string value', () {
+    test('built-in fields expose stable string values', () {
       expect(CanvasFields.textContent.toString(), 'text.content');
+      expect(CanvasFields.iconRef.toString(), 'icon.ref');
     });
   });
 
