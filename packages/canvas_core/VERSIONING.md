@@ -17,3 +17,12 @@ After `1.0.0`, standard semantic versioning applies:
 Public API includes exported Dart APIs, serialized model shapes, and behavior that package users can reasonably depend on.
 
 When in doubt, `canvas_core` treats a change as breaking.
+
+## Publishing releases
+
+For each version published to pub.dev:
+
+1. Update `pubspec.yaml` and `CHANGELOG.md`.
+2. Run `dart analyze`, `dart test`, and `dart pub publish --dry-run`.
+3. Publish with `dart pub publish`.
+4. Tag the exact published commit as `v<version>` and push the tag.
