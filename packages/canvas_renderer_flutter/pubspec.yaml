@@ -1,6 +1,6 @@
 name: canvas_renderer_flutter
 description: Flutter renderer for canvas_core paint operations and scene exports.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/Nijify/canvas_renderer_flutter
 issue_tracker: https://github.com/Nijify/canvas_renderer_flutter/issues
 topics:
@@ -16,7 +16,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  canvas_core: ^0.2.0
+  canvas_core: ">=0.2.0 <0.4.0"
 
 dev_dependencies:
   flutter_test:
