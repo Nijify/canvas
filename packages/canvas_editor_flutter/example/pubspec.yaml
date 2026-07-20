@@ -1,0 +1,25 @@
+name: canvas_editor_flutter_example
+description: Runnable public integration example for the canvas_editor_flutter package
+publish_to: "none"
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  canvas_editor_flutter:
+    path: ../
+  canvas_renderer_flutter: ^0.1.1
+  canvas_core: ^0.3.0
+  image_picker: ^1.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/demo_assets/
