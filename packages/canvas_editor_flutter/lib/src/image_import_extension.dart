@@ -7,6 +7,7 @@ import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.da
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector.dart'
     show ImageInspectorPanel;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
+import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 import 'package:flutter/material.dart';
 
 const _initialImageTopLeft = Vec2(80, 80);
@@ -233,22 +234,29 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 10),
-        Row(
+        InspectorActionGroup(
           children: <Widget>[
-            ElevatedButton.icon(
-              onPressed: enabled
-                  ? () => _import(ImageImportSource.gallery)
-                  : null,
-              icon: const Icon(Icons.photo_library),
-              label: const Text('Pick from gallery'),
+            Tooltip(
+              message: 'Pick from gallery',
+              child: ElevatedButton.icon(
+                key: const ValueKey('image-import-replace-gallery'),
+                onPressed: enabled
+                    ? () => _import(ImageImportSource.gallery)
+                    : null,
+                icon: const Icon(Icons.photo_library),
+                label: const Text('Gallery'),
+              ),
             ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: enabled
-                  ? () => _import(ImageImportSource.camera)
-                  : null,
-              icon: const Icon(Icons.photo_camera),
-              label: const Text('Capture from camera'),
+            Tooltip(
+              message: 'Capture from camera',
+              child: ElevatedButton.icon(
+                key: const ValueKey('image-import-replace-camera'),
+                onPressed: enabled
+                    ? () => _import(ImageImportSource.camera)
+                    : null,
+                icon: const Icon(Icons.photo_camera),
+                label: const Text('Camera'),
+              ),
             ),
           ],
         ),

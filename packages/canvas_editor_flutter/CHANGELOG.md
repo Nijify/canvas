@@ -1,3 +1,8 @@
+# 0.1.1
+
+- Made image replacement actions responsive in narrow inspector layouts.
+- Added compact Gallery and Camera actions with enlarged-text coverage.
+
 # 0.1.0
 
 - Initial public release.

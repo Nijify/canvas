@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 import 'editor_runtime_fakes.dart';
 
 const _existingImageId = 'existing-image';
+const _replaceGalleryKey = ValueKey('image-import-replace-gallery');
+const _replaceCameraKey = ValueKey('image-import-replace-camera');
 
 CanvasSceneDocument _sceneWithImage() {
   return const CanvasSceneDocument(
@@ -147,12 +149,12 @@ void main() {
       editor.selection.selectItems(const <String>[_existingImageId]);
       await tester.pumpAndSettle();
 
-      expect(find.text('Pick from gallery'), findsOneWidget);
-      expect(find.text('Capture from camera'), findsOneWidget);
+      expect(find.byKey(_replaceGalleryKey), findsOneWidget);
+      expect(find.byKey(_replaceCameraKey), findsOneWidget);
       expect(find.text('Width: 200'), findsOneWidget);
       expect(find.text('Height: 160'), findsOneWidget);
 
-      await tester.tap(find.text('Pick from gallery'));
+      await tester.tap(find.byKey(_replaceGalleryKey));
       await tester.pumpAndSettle();
 
       expect(imageImport.requestedSources, <ImageImportSource>[
@@ -181,7 +183,7 @@ void main() {
     editor.selection.selectItems(const <String>[_existingImageId]);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Pick from gallery'));
+    await tester.tap(find.byKey(_replaceGalleryKey));
     await tester.pumpAndSettle();
 
     expect(imageImport.requestedSources, <ImageImportSource>[
@@ -210,7 +212,7 @@ void main() {
       editor.selection.selectItems(const <String>[_existingImageId]);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Pick from gallery'));
+      await tester.tap(find.byKey(_replaceGalleryKey));
       await tester.pump();
 
       expect(
@@ -337,8 +339,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Later image panel'), findsOneWidget);
-    expect(find.text('Pick from gallery'), findsNothing);
-    expect(find.text('Capture from camera'), findsNothing);
+    expect(find.byKey(_replaceGalleryKey), findsNothing);
+    expect(find.byKey(_replaceCameraKey), findsNothing);
     expect(find.text('Width: 200'), findsNothing);
   });
 }

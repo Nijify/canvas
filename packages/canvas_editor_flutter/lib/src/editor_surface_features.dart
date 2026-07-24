@@ -43,10 +43,8 @@ class EditorViewportFraming {
 
   const EditorViewportFraming.contentBounds({
     this.paddingPx = 0.0,
-    ContentBoundsSpec contentBoundsSpec = const ContentBoundsSpec(
-      paddingPx: 24.0,
-    ),
-  }) : contentBoundsSpec = contentBoundsSpec;
+    this.contentBoundsSpec = const ContentBoundsSpec(paddingPx: 24.0),
+  });
 
   /// Padding applied by the viewport planner while fitting the framing target.
   final double paddingPx;
