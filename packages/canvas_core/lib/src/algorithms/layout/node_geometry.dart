@@ -26,7 +26,7 @@ final class NodeGeometry {
 
     switch (n) {
       case TextNode(:final data):
-        final m = s.measureSpacedText(
+        final m = s.measureText(
           text: data.text,
           fontFamily: data.fontFamily,
           fontWeight: data.fontWeight,

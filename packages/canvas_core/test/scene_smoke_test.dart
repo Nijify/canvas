@@ -13,7 +13,7 @@ class _FakeTextMeasurer implements TextMeasurer {
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
     final w = text.length.toDouble() * (fontSize * 0.6);
     final h = fontSize * 1.2;

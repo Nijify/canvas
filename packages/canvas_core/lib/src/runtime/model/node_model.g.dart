@@ -44,7 +44,7 @@ _TextData _$TextDataFromJson(Map<String, dynamic> json) => _TextData(
   fontFamily: json['fontFamily'] as String,
   fontWeight: (json['fontWeight'] as num).toInt(),
   fontSize: (json['fontSize'] as num).toDouble(),
-  letterSpacing: (json['letterSpacing'] as num?)?.toInt() ?? 0,
+  letterSpacing: (json['letterSpacing'] as num?)?.toDouble() ?? 0.0,
   fill: json['fill'] == null
       ? const CanvasFill.solid(0xFF111111)
       : const CanvasFillConverter().fromJson(

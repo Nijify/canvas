@@ -119,8 +119,8 @@ export 'src/foundation/ids.dart' show ElementId;
 export 'src/algorithms/layout/selection_geometry.dart'
     show selectionGeometry, selectionUnionBounds;
 
-// Text measure helpers/caches (service-facing)
-export 'src/services/text_measure.dart' show spacedText, TextMeasureCache;
+// Text measurement cache (service-facing)
+export 'src/services/text_measure.dart' show TextMeasureCache;
 
 // ============================================================================
 // 7) Serde (JSON I/O boundary) + host service contracts

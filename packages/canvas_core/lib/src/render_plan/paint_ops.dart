@@ -50,14 +50,20 @@ class DrawTextOp extends PaintOp {
     required this.weight,
     required this.size,
     required this.originBaselineCenter,
+    this.letterSpacing = 0.0,
     this.gradient,
     this.solid,
     this.shadowOffset = 0,
   });
+
   final String text;
   final String family;
   final int weight;
   final double size;
+
+  /// Additional spacing between characters in logical canvas units.
+  final double letterSpacing;
+
   final Vec2 originBaselineCenter; // already decided by core
   final ResolvedLinearGradient? gradient;
   final Color32? solid; // used for shadow or solid text

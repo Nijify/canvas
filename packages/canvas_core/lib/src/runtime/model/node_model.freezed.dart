@@ -290,7 +290,11 @@ as Vec2?,
 /// @nodoc
 mixin _$TextData {
 
- String get text; String get fontFamily; FontWeightNum get fontWeight; double get fontSize; int get letterSpacing;@CanvasFillConverter() CanvasFill get fill; double get shadowOffset;
+ String get text; String get fontFamily; FontWeightNum get fontWeight; double get fontSize;/// Additional spacing between characters in logical canvas units.
+///
+/// The original text must remain unchanged. Platform text implementations
+/// must apply this value through their native text-layout API.
+ double get letterSpacing;@CanvasFillConverter() CanvasFill get fill; double get shadowOffset;
 /// Create a copy of TextData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -323,7 +327,7 @@ abstract mixin class $TextDataCopyWith<$Res>  {
   factory $TextDataCopyWith(TextData value, $Res Function(TextData) _then) = _$TextDataCopyWithImpl;
 @useResult
 $Res call({
- String text, String fontFamily, FontWeightNum fontWeight, double fontSize, int letterSpacing,@CanvasFillConverter() CanvasFill fill, double shadowOffset
+ String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing,@CanvasFillConverter() CanvasFill fill, double shadowOffset
 });
 
 
@@ -347,7 +351,7 @@ as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // igno
 as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // ignore: cast_nullable_to_non_nullable
 as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
 as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
-as int,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
+as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
 as CanvasFill,shadowOffset: null == shadowOffset ? _self.shadowOffset : shadowOffset // ignore: cast_nullable_to_non_nullable
 as double,
   ));
@@ -434,7 +438,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  int letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TextData() when $default != null:
 return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadowOffset);case _:
@@ -455,7 +459,7 @@ return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  int letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)  $default,) {final _that = this;
 switch (_that) {
 case _TextData():
 return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadowOffset);case _:
@@ -475,7 +479,7 @@ return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  int letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,) {final _that = this;
 switch (_that) {
 case _TextData() when $default != null:
 return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadowOffset);case _:
@@ -490,14 +494,18 @@ return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_tha
 @JsonSerializable()
 
 class _TextData extends TextData {
-  const _TextData({required this.text, required this.fontFamily, required this.fontWeight, required this.fontSize, this.letterSpacing = 0, @CanvasFillConverter() this.fill = const CanvasFill.solid(0xFF111111), this.shadowOffset = 0}): assert(fill is! CanvasFillNone, 'Text fill cannot be none'),super._();
+  const _TextData({required this.text, required this.fontFamily, required this.fontWeight, required this.fontSize, this.letterSpacing = 0.0, @CanvasFillConverter() this.fill = const CanvasFill.solid(0xFF111111), this.shadowOffset = 0}): assert(fill is! CanvasFillNone, 'Text fill cannot be none'),super._();
   factory _TextData.fromJson(Map<String, dynamic> json) => _$TextDataFromJson(json);
 
 @override final  String text;
 @override final  String fontFamily;
 @override final  FontWeightNum fontWeight;
 @override final  double fontSize;
-@override@JsonKey() final  int letterSpacing;
+/// Additional spacing between characters in logical canvas units.
+///
+/// The original text must remain unchanged. Platform text implementations
+/// must apply this value through their native text-layout API.
+@override@JsonKey() final  double letterSpacing;
 @override@JsonKey()@CanvasFillConverter() final  CanvasFill fill;
 @override@JsonKey() final  double shadowOffset;
 
@@ -534,7 +542,7 @@ abstract mixin class _$TextDataCopyWith<$Res> implements $TextDataCopyWith<$Res>
   factory _$TextDataCopyWith(_TextData value, $Res Function(_TextData) _then) = __$TextDataCopyWithImpl;
 @override @useResult
 $Res call({
- String text, String fontFamily, FontWeightNum fontWeight, double fontSize, int letterSpacing,@CanvasFillConverter() CanvasFill fill, double shadowOffset
+ String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing,@CanvasFillConverter() CanvasFill fill, double shadowOffset
 });
 
 
@@ -558,7 +566,7 @@ as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // igno
 as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // ignore: cast_nullable_to_non_nullable
 as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
 as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
-as int,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
+as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
 as CanvasFill,shadowOffset: null == shadowOffset ? _self.shadowOffset : shadowOffset // ignore: cast_nullable_to_non_nullable
 as double,
   ));

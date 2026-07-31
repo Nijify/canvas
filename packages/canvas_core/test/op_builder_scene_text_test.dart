@@ -19,7 +19,7 @@ class _FakeTextMeasurer implements TextMeasurer {
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
     final w = text.length.toDouble() * (fontSize * 0.5);
     final h = fontSize;
@@ -52,10 +52,11 @@ void main() {
         Node.text(
           id: 't1',
           data: const TextData(
-            text: 'Hello',
+            text: 'Hello🙂',
             fontFamily: 'Inter',
             fontWeight: 400,
             fontSize: 20,
+            letterSpacing: 1.25,
             fill: CanvasFill.solid(solidColor),
           ),
         ),
@@ -66,8 +67,10 @@ void main() {
     final ops = buildPaintOpsFromScene(doc, computed);
     final textOp = ops.whereType<DrawTextOp>().single;
 
+    expect(textOp.text, 'Hello🙂');
+    expect(textOp.letterSpacing, 1.25);
     expect(textOp.solid, solidColor);
-    expect(textOp.gradient, isNull); // ✅ solid fill => no gradient shader
+    expect(textOp.gradient, isNull); // solid fill => no gradient shader
   });
 
   test('builds DrawTextOp with gradient shader when text fill is gradient', () {

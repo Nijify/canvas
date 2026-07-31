@@ -41,7 +41,12 @@ abstract class TextData with _$TextData {
     required String fontFamily,
     required FontWeightNum fontWeight,
     required double fontSize,
-    @Default(0) int letterSpacing,
+
+    /// Additional spacing between characters in logical canvas units.
+    ///
+    /// The original text must remain unchanged. Platform text implementations
+    /// must apply this value through their native text-layout API.
+    @Default(0.0) double letterSpacing,
     @CanvasFillConverter()
     @Default(CanvasFill.solid(0xFF111111))
     CanvasFill fill,

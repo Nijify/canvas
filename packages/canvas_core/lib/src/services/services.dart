@@ -9,7 +9,9 @@ abstract class TextMeasurer {
     required String fontFamily,
     required int fontWeight, // 100..900
     required double fontSize,
-    required int letterSpacing,
+
+    /// Additional spacing between characters in logical canvas units.
+    required double letterSpacing,
   });
 }
 

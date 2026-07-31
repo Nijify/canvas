@@ -3,8 +3,6 @@
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/foundation/math/affine2d.dart' show toABCDExy;
-
-import 'package:canvas_core/src/services/text_measure.dart' show spacedText;
 import 'package:canvas_core/src/render_plan/gradient_resolver.dart'
     show resolveLinearGradient;
 import 'package:canvas_core/src/render_plan/paint_ops.dart';
@@ -98,16 +96,15 @@ List<PaintOp> buildPaintOpsFromScene(
 
     switch (leaf) {
       case TextNode(data: final d):
-        final txt = spacedText(d.text, d.letterSpacing);
-
         switch (d.fill) {
           case CanvasFillSolid(:final color):
             ops.add(
               DrawTextOp(
-                text: txt,
+                text: d.text,
                 family: d.fontFamily,
                 weight: d.fontWeight,
                 size: d.fontSize,
+                letterSpacing: d.letterSpacing,
                 originBaselineCenter: const Vec2(0, 0),
                 gradient: null,
                 solid: color,
@@ -118,12 +115,14 @@ List<PaintOp> buildPaintOpsFromScene(
 
           case CanvasFillGradient(:final grad):
             final resolved = resolveLinearGradient(grad, doc.artboardSize);
+
             ops.add(
               DrawTextOp(
-                text: txt,
+                text: d.text,
                 family: d.fontFamily,
                 weight: d.fontWeight,
                 size: d.fontSize,
+                letterSpacing: d.letterSpacing,
                 originBaselineCenter: const Vec2(0, 0),
                 gradient: resolved,
                 // Provide a deterministic solid fallback for shadow rendering.

@@ -20,18 +20,20 @@ class CoreServices {
 }
 
 extension CoreServicesTextMeasureX on CoreServices {
-  /// Measures text after applying your "hair-space" letterSpacing expansion.
-  /// Uses [textMeasureCache] when available (per-pass), otherwise calls measurer directly.
-  Size2D measureSpacedText({
+  /// Measures the original text using native logical-unit letter spacing.
+  ///
+  /// Uses [textMeasureCache] when available for the current pass.
+  Size2D measureText({
     required String text,
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
     final cache = textMeasureCache;
+
     if (cache != null) {
-      return cache.measureSpaced(
+      return cache.measure(
         measurer: tm,
         text: text,
         fontFamily: fontFamily,
@@ -41,8 +43,7 @@ extension CoreServicesTextMeasureX on CoreServices {
       );
     }
 
-    // Uses TextMeasurerX.measureSpaced from text_measure.dart (already imported here)
-    return tm.measureSpaced(
+    return tm.measure(
       text: text,
       fontFamily: fontFamily,
       fontWeight: fontWeight,

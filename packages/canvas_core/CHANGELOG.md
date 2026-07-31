@@ -1,3 +1,13 @@
+## 0.4.0
+
+- **Breaking:** change `TextData.letterSpacing` and
+  `TextMeasurer.measure` from `int` to `double`.
+- Replace synthetic hair-space expansion with native logical-unit letter
+  spacing while preserving the original text.
+- Add `letterSpacing` to `DrawTextOp`.
+- Remove `spacedText`, `measureSpaced`, and `measureSpacedText`.
+- Existing non-zero spacing values now use the new native semantics.
+
 ## 0.3.0
 
 - **Breaking:** remove the unused `label` named parameter from

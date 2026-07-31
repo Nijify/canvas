@@ -12,7 +12,7 @@ class _FakeTextMeasurer implements TextMeasurer {
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
     return const Size2D(0, 0);
   }
