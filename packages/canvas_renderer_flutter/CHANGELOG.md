@@ -1,3 +1,9 @@
+## 0.2.0
+
+- **Breaking:** require `canvas_core 0.4.x`.
+- Replace pre-expanded text with native `double` letter spacing.
+- Forward letter spacing through measurement, caching, and painting.
+
 ## 0.1.1
 
 - Expand the supported `canvas_core` range to include `0.3.x`.

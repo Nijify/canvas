@@ -5,6 +5,7 @@ import 'package:canvas_renderer_flutter/src/flutter_text_pipeline.dart';
 
 class FlutterTextMeasurer implements TextMeasurer {
   final FlutterTextPipeline pipeline;
+
   FlutterTextMeasurer([FlutterTextPipeline? pipeline])
     : pipeline = pipeline ?? FlutterTextPipeline();
 
@@ -14,12 +15,18 @@ class FlutterTextMeasurer implements TextMeasurer {
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
-    assert(letterSpacing == 0, 'letterSpacing must be pre-applied by core');
-    final m = pipeline.measure(
-      TextSpec(text, fontFamily, fontWeight, fontSize, letterSpacingApplied: 0),
+    final metrics = pipeline.measure(
+      TextSpec(
+        text,
+        fontFamily,
+        fontWeight,
+        fontSize,
+        letterSpacing: letterSpacing,
+      ),
     );
-    return Size2D(m.width, m.height);
+
+    return Size2D(metrics.width, metrics.height);
   }
 }

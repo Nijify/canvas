@@ -7,6 +7,7 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _CapturingTextPipeline extends FlutterTextPipeline {
+  TextSpec? lastSpec;
   ui.Color? lastSolid;
   ui.Shader? lastShader;
 
@@ -20,6 +21,7 @@ class _CapturingTextPipeline extends FlutterTextPipeline {
     double shadowOffset = 0,
     TextOriginKind originKind = TextOriginKind.baseline,
   }) {
+    lastSpec = s;
     lastSolid = solid;
     lastShader = shader;
   }
@@ -46,6 +48,7 @@ void main() {
       family: 'Inter',
       weight: 400,
       size: 20,
+      letterSpacing: 0.75,
       originBaselineCenter: const Vec2(10, 10),
       gradient: gradient,
       solid: solid,
@@ -60,8 +63,39 @@ void main() {
     final picture = recorder.endRecording();
     picture.dispose();
 
+    expect(pipeline.lastSpec?.text, 'Hi');
+    expect(pipeline.lastSpec?.letterSpacing, 0.75);
     expect(pipeline.lastSolid, const ui.Color(solid));
     expect(pipeline.lastShader, isNotNull);
+  });
+
+  test('forwards raw Unicode text and letter spacing to pipeline', () {
+    final pipeline = _CapturingTextPipeline();
+    final renderer = CanvasRenderer(text: pipeline);
+
+    const original = 'A🙂e\u0301👨‍👩‍👧‍👦';
+
+    final op = DrawTextOp(
+      text: original,
+      family: 'Roboto',
+      weight: 400,
+      size: 20.0,
+      letterSpacing: 1.25,
+      originBaselineCenter: const Vec2(10, 10),
+      solid: 0xFF111111,
+    );
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+
+    renderer.replay(canvas, [op]);
+
+    final picture = recorder.endRecording();
+    picture.dispose();
+
+    expect(pipeline.lastSpec, isNotNull);
+    expect(pipeline.lastSpec!.text, original);
+    expect(pipeline.lastSpec!.letterSpacing, 1.25);
   });
 
   test(

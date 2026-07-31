@@ -10,14 +10,16 @@ class TextSpec {
   final String family;
   final int weight; // 100..900
   final double size;
-  // letterSpacing must be pre-applied in core; keep for sanity checks.
-  final int letterSpacingApplied; // expect 0
+
+  /// Additional spacing between characters in logical Flutter pixels.
+  final double letterSpacing;
+
   const TextSpec(
     this.text,
     this.family,
     this.weight,
     this.size, {
-    this.letterSpacingApplied = 0,
+    this.letterSpacing = 0.0,
   });
 }
 
@@ -120,12 +122,7 @@ class FlutterTextPipeline {
   }
 
   _CacheEntry _getOrCreateLayoutEntry(TextSpec s) {
-    assert(
-      s.letterSpacingApplied == 0,
-      'letterSpacing must be pre-applied by canvas_core.spacedText()',
-    );
-
-    final key = _Key(s.text, s.family, s.weight, s.size);
+    final key = _Key(s.text, s.family, s.weight, s.size, s.letterSpacing);
 
     // Touch for LRU: remove+reinsert.
     final existing = _cache.remove(key);
@@ -163,11 +160,6 @@ class FlutterTextPipeline {
     ui.Paint? foreground,
     ui.Color? color,
   }) {
-    assert(
-      s.letterSpacingApplied == 0,
-      'letterSpacing must be pre-applied by canvas_core.spacedText()',
-    );
-
     final fw = FontWeight.values.firstWhere(
       (w) => w.value == s.weight,
       orElse: () => FontWeight.w400,
@@ -178,6 +170,7 @@ class FlutterTextPipeline {
       fontFamilyFallback: _fallbackFor(s.family),
       fontWeight: fw,
       fontSize: s.size,
+      letterSpacing: s.letterSpacing,
       // If a shader is provided, it must go into foreground.
       foreground: foreground,
       color: foreground == null ? (color ?? const ui.Color(0xFF000000)) : null,
@@ -199,15 +192,29 @@ class _CacheEntry {
 }
 
 class _Key {
-  final String t, f;
-  final int w;
-  final double s;
-  const _Key(this.t, this.f, this.w, this.s);
+  final String text;
+  final String family;
+  final int weight;
+  final double size;
+  final double letterSpacing;
+
+  const _Key(
+    this.text,
+    this.family,
+    this.weight,
+    this.size,
+    this.letterSpacing,
+  );
 
   @override
-  int get hashCode => Object.hash(t, f, w, s);
+  int get hashCode => Object.hash(text, family, weight, size, letterSpacing);
 
   @override
-  bool operator ==(Object o) =>
-      o is _Key && t == o.t && f == o.f && w == o.w && s == o.s;
+  bool operator ==(Object other) =>
+      other is _Key &&
+      text == other.text &&
+      family == other.family &&
+      weight == other.weight &&
+      size == other.size &&
+      letterSpacing == other.letterSpacing;
 }

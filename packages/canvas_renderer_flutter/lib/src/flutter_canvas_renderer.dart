@@ -247,7 +247,7 @@ class CanvasRenderer {
       t.family,
       t.weight,
       t.size,
-      letterSpacingApplied: 0,
+      letterSpacing: t.letterSpacing,
     );
 
     ui.Shader? shader;
@@ -265,7 +265,7 @@ class CanvasRenderer {
       spec,
       solid: solidColor,
       shader: shader,
-      shadowOffset: t.shadowOffset.toDouble(),
+      shadowOffset: t.shadowOffset,
       originKind: TextOriginKind.center,
     );
   }
