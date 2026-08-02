@@ -13,7 +13,7 @@ final class _FakeTextMeasurer implements rt.TextMeasurer {
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
     return rt.Size2D(text.length * fontSize * 0.6, fontSize);
   }
@@ -24,7 +24,7 @@ const _baseTextData = rt.TextData(
   fontFamily: 'Inter',
   fontWeight: 400,
   fontSize: 24,
-  letterSpacing: 0,
+  letterSpacing: 0.0,
   fill: rt.CanvasFill.solid(0xFF111111),
   shadowOffset: 0,
 );
@@ -42,6 +42,11 @@ rt.CanvasSceneDocument _sceneWithText(String text) {
       ),
     ],
   );
+}
+
+double _letterSpacingOf(rt.CanvasSceneDocument scene) {
+  final node = rt.findById(scene, 't1');
+  return (node as rt.TextNode).data.letterSpacing;
 }
 
 String _textOf(rt.CanvasSceneDocument scene) {
@@ -501,6 +506,95 @@ void main() {
 
     expect(_textOf(runtime.sourceDocument), 'Original title');
     expect(runtime.canRedo.value, isTrue);
+  });
+
+  test('letter spacing edit session creates one undo entry', () {
+    final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
+    addTearDown(runtime.dispose);
+
+    final endSession = runtime.beginEditSession();
+
+    runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 0.25);
+
+    runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 0.75);
+
+    runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 1.25);
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
+
+    expect(
+      runtime.canUndo.value,
+      isFalse,
+      reason: 'The active slider transaction should not publish history yet.',
+    );
+
+    endSession();
+
+    expect(runtime.canUndo.value, isTrue);
+    expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
+
+    runtime.undo();
+
+    expect(
+      _letterSpacingOf(runtime.sourceDocument),
+      0.0,
+      reason: 'One undo should revert the complete slider transaction.',
+    );
+    expect(runtime.canUndo.value, isFalse);
+    expect(runtime.canRedo.value, isTrue);
+
+    runtime.redo();
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
+  });
+
+  test('fractional letter spacing survives commit undo and redo', () {
+    final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
+    addTearDown(runtime.dispose);
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 0.0);
+
+    runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 1.25);
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
+    expect(runtime.canUndo.value, isTrue);
+
+    runtime.undo();
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 0.0);
+    expect(runtime.canRedo.value, isTrue);
+
+    runtime.redo();
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
+  });
+
+  test('unchanged fractional letter spacing commit is a no-op', () {
+    final initial = _sceneWithText('Original title');
+    final textNode = rt.findById(initial, 't1') as rt.TextNode;
+
+    final scene = rt.replaceById(
+      initial,
+      't1',
+      textNode.copyWith(data: textNode.data.copyWith(letterSpacing: 1.25)),
+    );
+
+    final runtime = _buildSceneRuntime(scene);
+    addTearDown(runtime.dispose);
+
+    final initialRender = runtime.render.value;
+    var renderNotifications = 0;
+
+    runtime.render.addListener(() {
+      renderNotifications += 1;
+    });
+
+    runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 1.25);
+
+    expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
+    expect(runtime.render.value, same(initialRender));
+    expect(renderNotifications, 0);
+    expect(runtime.canUndo.value, isFalse);
   });
 
   test('edit-session close callback is idempotent', () {

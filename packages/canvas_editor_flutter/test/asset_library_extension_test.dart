@@ -26,7 +26,7 @@ final class _FakeTextMeasurer implements TextMeasurer {
     required String fontFamily,
     required int fontWeight,
     required double fontSize,
-    required int letterSpacing,
+    required double letterSpacing,
   }) {
     return Size2D(text.length * fontSize * 0.6, fontSize);
   }

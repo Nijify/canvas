@@ -182,9 +182,9 @@ class FieldCatalog {
 
     rt.CanvasFields.textLetterSpacing: FieldCodec(
       fallback: 0.0,
-      readNode: (node) => (node as rt.TextNode).data.letterSpacing.toDouble(),
+      readNode: (node) => (node as rt.TextNode).data.letterSpacing,
       commit: (controller, nodeId, value) {
-        final letterSpacing = (value as double).round();
+        final letterSpacing = value as double;
 
         _commitNodeUpdate(controller, nodeId, (node) {
           if (node is! rt.TextNode) return node;

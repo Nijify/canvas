@@ -1,3 +1,10 @@
+# 0.2.0
+
+- **Breaking:** require `canvas_core 0.4.x` and
+  `canvas_renderer_flutter 0.2.x`.
+- Preserve fractional letter spacing through editing and history.
+- Use quarter-pixel letter-spacing controls in the inspector.
+
 # 0.1.1
 
 - Made image replacement actions responsive in narrow inspector layouts.

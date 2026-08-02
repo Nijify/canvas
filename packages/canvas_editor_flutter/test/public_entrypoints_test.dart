@@ -29,9 +29,7 @@ void main() {
     });
 
     test('turnkey entrypoint exports only turnkey modules', () {
-      final source = File(
-        'lib/canvas_editor_flutter.dart',
-      ).readAsStringSync();
+      final source = File('lib/canvas_editor_flutter.dart').readAsStringSync();
       final exportPaths = RegExp(r"export '([^']+)'")
           .allMatches(source)
           .map((match) => match.group(1))
@@ -80,10 +78,7 @@ void main() {
         assets.canvasAssetLibraryExtension<CanvasSceneDocument>,
         isNotNull,
       );
-      expect(
-        image_import.imageImportExtension<CanvasSceneDocument>,
-        isNotNull,
-      );
+      expect(image_import.imageImportExtension<CanvasSceneDocument>, isNotNull);
     });
   });
 }

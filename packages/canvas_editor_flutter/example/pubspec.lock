@@ -21,10 +21,10 @@ packages:
     dependency: "direct main"
     description:
       name: canvas_core
-      sha256: "27d38d1f7e4be730ea41d20eeac2bc57087fcfe32c9143a6165cf7bd79662357"
+      sha256: "299f6fca4c7133eb28cb5cfcffc377f0671765f039e3e9293560ec5b57e1627b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.4.0"
   canvas_editor_flutter:
     dependency: "direct main"
     description:
@@ -36,10 +36,10 @@ packages:
     dependency: "direct main"
     description:
       name: canvas_renderer_flutter
-      sha256: "16787fdef05eeb0688c3fad67bb0db467558395a5d2f189a75bcbeb6ed6a30a6"
+      sha256: "2db29f4799f438a7576014a8bddf12b628a6b9560e0ab5c0d8236c6dd68cf142"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.2.0"
   characters:
     dependency: transitive
     description:

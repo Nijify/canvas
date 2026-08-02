@@ -333,10 +333,11 @@ InspectorFieldSpec<double> textLetterSpacingSpec() {
   return doubleSliderSpec(
     fieldKey: CanvasFields.textLetterSpacing,
     title: 'Letter Spacing',
-    uiLabel: 'Letter Spacing',
+    uiLabel: 'Letter Spacing (px)',
     min: 0,
     max: 5,
-    divisions: 5,
+    divisions: 20,
+    fraction: true,
   );
 }
 
