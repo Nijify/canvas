@@ -5,12 +5,11 @@
 
 import 'dart:typed_data';
 
+import 'package:canvas_core/canvas_core_runtime.dart' show CanvasFit;
+
 typedef JsonMap = Map<String, Object?>;
 
-/// Export fit behavior for editor ports (renderer-agnostic).
-enum EditorExportFit { contain, cover, stretch }
-
-/// Export configuration for editor ports (renderer-agnostic DTO).
+/// Export configuration for editor host ports.
 class EditorExportSpec {
   const EditorExportSpec({
     required this.widthPx,
@@ -18,7 +17,7 @@ class EditorExportSpec {
     this.bleedPx = 0,
     this.pixelRatio = 2.0,
     this.transparent = true,
-    this.fit = EditorExportFit.contain,
+    this.fit = CanvasFit.contain,
 
     // Optional export mode that trims empty artboard area around rendered content.
     this.cropToContent = false,
@@ -31,7 +30,7 @@ class EditorExportSpec {
   final int bleedPx;
   final double pixelRatio;
   final bool transparent;
-  final EditorExportFit fit;
+  final CanvasFit fit;
 
   final bool cropToContent;
   final double contentPaddingPx;

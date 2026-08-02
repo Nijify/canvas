@@ -95,6 +95,7 @@ class _RecordingJsonOutputPort extends JsonOutputPort {
 
 class _RecordingEditorExports implements EditorExports {
   String? documentJson;
+  EditorExportSpec? spec;
 
   @override
   Future<Uint8List> renderPng({
@@ -102,6 +103,7 @@ class _RecordingEditorExports implements EditorExports {
     required EditorExportSpec spec,
   }) async {
     this.documentJson = documentJson;
+    this.spec = spec;
     return Uint8List.fromList(const [1, 2, 3]);
   }
 }
@@ -300,6 +302,7 @@ void main() {
     final decoded = jsonDecode(renderer.documentJson!) as Map<String, dynamic>;
 
     expect(decoded['backgroundOpacity'], 0.9);
+    expect(renderer.spec?.fit, CanvasFit.contain);
     expect(output.sharedBytes, isNotNull);
   });
 }

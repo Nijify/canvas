@@ -1,3 +1,10 @@
+# 0.3.0
+
+- **Breaking:** remove `EditorExportFit` and use the shared `CanvasFit` type from
+  `canvas_core`.
+- Keep the default export fit as `CanvasFit.contain`.
+- Keep PNG export fitting behavior unchanged.
+
 # 0.2.0
 
 - **Breaking:** require `canvas_core 0.4.x` and

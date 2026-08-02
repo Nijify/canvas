@@ -2,7 +2,8 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:canvas_core/canvas_core_runtime.dart' show CanvasFillNone;
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show CanvasFillNone, CanvasFit;
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:flutter/material.dart';
@@ -226,7 +227,7 @@ Future<Uint8List> _renderCurrentPng(
       transparent:
           scene.backgroundFill is CanvasFillNone ||
           !(scene.backgroundOpacity > 0),
-      fit: EditorExportFit.contain,
+      fit: CanvasFit.contain,
       pixelRatio: 2.0,
     ),
   );
