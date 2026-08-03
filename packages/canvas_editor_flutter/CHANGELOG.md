@@ -1,3 +1,9 @@
+# 0.3.1
+
+- Use `FlutterImagePool` as the editor's single image and intrinsic-state owner.
+- Remove duplicate image-intrinsics lifecycle management.
+- Require `canvas_renderer_flutter 0.3.x`.
+
 # 0.3.0
 
 - **Breaking:** remove `EditorExportFit` and use the shared `CanvasFit` type from

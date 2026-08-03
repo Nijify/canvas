@@ -6,7 +6,7 @@
 
 - `CanvasRenderer` for drawing `PaintOp` lists on a `dart:ui` canvas.
 - `FlutterTextMeasurer` and `FlutterTextPipeline` for `canvas_core` text measurement and text paint support.
-- `FlutterImagePool` and `FlutterImageIntrinsics` helpers for decoded images and stable image metadata.
+- `FlutterImagePool` for decoded raster ownership, stable intrinsic metadata, repaint notifications, asynchronous request ordering, and image disposal.
 - `CanvasDocumentExporter` for PNG export from a `CanvasSceneDocument` or scene JSON.
 - Core-to-Flutter value mappers for colors, rects, sizes, offsets, and gradients.
 - Optional ImageProvider helpers for apps that want to convert common image refs into Flutter `ImageProvider`s.
@@ -73,6 +73,53 @@ final computed = computeScene(document, services);
 final ops = buildPaintOpsFromScene(document, computed);
 ```
 
+## Manage image state with FlutterImagePool
+
+`FlutterImagePool` is the single owner of decoded raster images and stable intrinsic image metadata for a rendering surface.
+
+```dart
+final imagePool = FlutterImagePool(
+  assetUrlResolver: resolveImageUrl,
+  assetMetaResolver: resolveIntrinsicSize,
+);
+
+await imagePool.resolveSceneIntrinsics(document);
+
+await imagePool.preloadScene(
+  document,
+  targetW: 2048,
+  targetH: 2048,
+);
+
+final pipeline = CanvasRenderPipeline(
+  textMeasurer: textMeasurer,
+  images: imagePool,
+);
+
+final renderer = CanvasRenderer(
+  images: imagePool.images,
+  text: textPipeline,
+  intrinsics: imagePool,
+);
+```
+
+The two notification channels have different meanings:
+
+- `imagePool.onIntrinsicUpdated` reports layout-affecting metadata changes.
+- `imagePool.revision` reports paint-only decoded raster changes.
+
+`images` is a live, read-only map. A renderer that retains the map continues to observe later pool updates, but external consumers cannot mutate it.
+
+Dispose the pool when its rendering surface is torn down:
+
+```dart
+imagePool.dispose();
+```
+
+Disposal releases every decoded `ui.Image` handle retained by the pool. Replaced, removed, stale, and late-arriving images are also disposed automatically.
+
+Use one pool per editor, thumbnail, or other document rendering surface. Image state is keyed by document-local element IDs and should not be shared between unrelated documents.
+
 ## Export a scene to PNG
 
 ```dart
@@ -98,11 +145,23 @@ The core renderer works with decoded `ui.Image` objects and host-provided resolv
 ```dart
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter_image_providers.dart';
 
-Future<void> loadingExample() async {
-  final provider = sourceToProvider('https://example.com/image.png');
+Future<int?> loadingExample() async {
+  final provider = sourceToProvider(
+    'https://example.com/image.png',
+  );
+
   final image = await toUiImage(provider);
+  if (image == null) return null;
+
+  try {
+    return image.width;
+  } finally {
+    image.dispose();
+  }
 }
 ```
+
+`toUiImage()` returns an independently owned image handle. The caller must dispose that handle when it is no longer needed. Images returned to `FlutterImagePool` through its decoder are owned and disposed by the pool instead.
 
 These helpers support common refs such as:
 
@@ -151,9 +210,10 @@ Canvas document image ref
 * This package may use Flutter painting APIs and `dart:ui`.
 * It depends on `canvas_core` contracts and does not depend on editor UI.
 * The renderer core does not know app storage, repositories, auth, media IDs, product concepts, or persistence flows.
-* Hosts provide images, fonts, and metadata through adapters or decoded inputs.
+* Hosts provide image URLs and stable intrinsic metadata through `FlutterImagePool` resolver callbacks, or provide decoded images directly to lower-level render and export APIs.
 * Optional ImageProvider helpers are available from `canvas_renderer_flutter_image_providers.dart` for apps that want to convert common string refs into Flutter image providers.
-* It is stateless and deterministic: paint operations plus viewport/image/text inputs produce canvas calls.
+* `CanvasRenderer` is stateless and deterministic: paint operations plus viewport, image, and text inputs produce canvas calls.
+* `FlutterImagePool` is deliberately stateful and must be scoped to one rendering surface.
 * Gestures, selection, undo, editor state, and application workflows belong in an editor or app layer.
 
 ## License
