@@ -102,6 +102,12 @@ class CanvasDocumentExporter {
   /// - Layout MUST use stable intrinsic metadata (resolveIntrinsicSize).
   /// - Decoded ui.Image sizes MUST NOT influence layout.
   ///
+  /// Image ownership:
+  /// - Non-null images returned by `resolveImage` are borrowed.
+  /// - The caller retains ownership of those image handles.
+  /// - Images must remain valid until this future completes.
+  /// - This exporter never disposes resolved input images.
+  ///
   /// Render customization:
   /// - By default this uses [defaultSceneRenderBuilder].
   /// - Callers that need extra scene preparation can provide another
@@ -222,11 +228,17 @@ class CanvasDocumentExporter {
       picture.dispose();
     }
 
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
 
-    if (data == null) throw StateError('PNG encoding failed');
-    return data.buffer.asUint8List();
+      if (data == null) {
+        throw StateError('PNG encoding failed');
+      }
+
+      return data.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
   }
 }
 
