@@ -138,6 +138,8 @@ Future<void> exportExample(CanvasSceneDocument document) async {
 
 The exporter accepts decoded images separately from intrinsic image sizes. Use stable metadata for layout, and use decoded `ui.Image` objects only for painting.
 
+Images returned by `resolveImage` are borrowed. The caller retains ownership, must keep them valid until `exportPng()` completes, and remains responsible for disposing them. When using an operation-scoped `FlutterImagePool`, await `exportPng()` before disposing the pool.
+
 ## Optional ImageProvider helpers
 
 The core renderer works with decoded `ui.Image` objects and host-provided resolvers. Apps that want a simple loading path can import the optional image-provider helpers:
