@@ -1,56 +1,64 @@
-// Path: lib/src/images/flutter_image_pool.dart
+// Path: packages/canvas_renderer_flutter/lib/src/images/flutter_image_pool.dart
 
+import 'dart:async';
+import 'dart:collection';
 import 'dart:ui' as ui;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
-import 'package:flutter/foundation.dart'
-    show ValueNotifier, debugPrint, kDebugMode;
-import 'package:flutter/widgets.dart' show ResizeImage;
-
 import 'package:canvas_renderer_flutter/src/images/flutter_image_adapters.dart';
-import 'package:canvas_renderer_flutter/src/images/flutter_image_intrinsics.dart';
+import 'package:flutter/foundation.dart'
+    show ValueListenable, ValueNotifier, debugPrint, kDebugMode;
+import 'package:flutter/widgets.dart' show ImageProvider, ResizeImage;
 
 typedef AssetUrlResolver = Future<String?> Function(String sourceRef);
+
 typedef AssetUrlsResolver =
     Future<Map<String, String>> Function(List<String> sourceRefs);
 
-/// Stable intrinsic metadata resolution (NO raster decode).
+/// Resolves stable, layout-affecting intrinsic metadata without decoding.
 typedef AssetMetaResolver = Future<Size2D?> Function(String sourceRef);
+
 typedef AssetMetasResolver =
     Future<Map<String, Size2D>> Function(List<String> sourceRefs);
 
-void _dlog(String tag, Object msg) {
+/// Decodes an [ImageProvider] into an independently owned image handle.
+///
+/// A non-null image returned by this function transfers ownership of that
+/// handle to [FlutterImagePool]. The pool will dispose it when it becomes
+/// stale, is replaced, is removed from the scene, or the pool is disposed.
+typedef FlutterImageDecoder =
+    Future<ui.Image?> Function(ImageProvider<Object> provider);
+
+void _dlog(String tag, Object message) {
   if (!kDebugMode) return;
-  debugPrint('[${DateTime.now().toIso8601String()}][$tag] $msg');
+
+  debugPrint('[${DateTime.now().toIso8601String()}][$tag] $message');
 }
 
 class _DecodeDims {
   const _DecodeDims(this.w, this.h);
+
   final int? w;
   final int? h;
 }
 
-/// Image pool that handles two independent responsibilities:
+/// Owns all Flutter image state associated with one editor/rendering surface.
 ///
-/// 1) Stable intrinsic metadata (layout-affecting in core; also used for crop math)
-///    - resolveSceneIntrinsics() -> intrinsics.setIntrinsicSize()
+/// The pool owns two deliberately separate kinds of state:
 ///
-/// 2) Raster decoding (paint-only)
-///    - preloadScene() -> intrinsics.setImage() + revision bump
+/// - Stable intrinsic metadata, which may trigger layout invalidation.
+/// - Decoded raster handles, which only trigger repaint notifications.
 ///
-/// Important boundary:
-/// - This renderer treats canvas image source refs as opaque strings.
-/// - App-specific meanings such as `media:<id>` or `asset:<path>` belong to
-///   the host-provided resolver callbacks.
-class FlutterImagePool {
+/// One pool must not be shared between unrelated documents because its state is
+/// keyed by document-local [ElementId] values.
+class FlutterImagePool implements ImageIntrinsics {
   FlutterImagePool({
     this.assetUrlResolver,
     this.assetUrlsResolver,
     this.assetMetaResolver,
     this.assetMetasResolver,
-  });
-
-  final Map<ElementId, ui.Image?> images = <ElementId, ui.Image?>{};
+    FlutterImageDecoder decoder = toUiImage,
+  }) : _decoder = decoder;
 
   final AssetUrlResolver? assetUrlResolver;
   final AssetUrlsResolver? assetUrlsResolver;
@@ -58,81 +66,163 @@ class FlutterImagePool {
   final AssetMetaResolver? assetMetaResolver;
   final AssetMetasResolver? assetMetasResolver;
 
-  // Cache: opaque canvas source ref -> resolved renderable source.
+  final FlutterImageDecoder _decoder;
+
+  final Map<ElementId, ui.Image?> _images = <ElementId, ui.Image?>{};
+
+  /// Live, read-only view of the currently decoded images.
+  ///
+  /// Consumers that retain this map continue to observe later pool updates.
+  late final Map<ElementId, ui.Image?> images =
+      UnmodifiableMapView<ElementId, ui.Image?>(_images);
+
+  final Map<ElementId, Size2D> _intrinsicById = <ElementId, Size2D>{};
+
+  /// Tracks which source currently owns each intrinsic entry.
+  final Map<ElementId, String> _intrinsicSourceById = <ElementId, String>{};
+
+  /// Tracks which source currently owns each raster entry.
+  final Map<ElementId, String> _rasterSourceById = <ElementId, String>{};
+
+  final StreamController<ElementId> _intrinsicUpdatedController =
+      StreamController<ElementId>.broadcast();
+
+  final ValueNotifier<int> _revision = ValueNotifier<int>(0);
+
+  /// Repaint-only notification.
+  ///
+  /// Intrinsic metadata changes use [onIntrinsicUpdated] instead.
+  ValueListenable<int> get revision => _revision;
+
+  // Cache: opaque source ref -> resolved renderable source.
   final Map<String, String> _urlCache = <String, String>{};
 
-  // Cache: opaque canvas source ref -> resolved intrinsic size.
+  // Cache: opaque source ref -> stable intrinsic size.
   final Map<String, Size2D> _metaCache = <String, Size2D>{};
 
-  // Cache: elementId -> load key (so we don't reload same thing unnecessarily).
+  // Element ID -> successfully installed raster key.
   final Map<ElementId, String> _loadedKey = <ElementId, String>{};
 
-  // In-flight key: elementId -> key of the most recent request.
-  // Used to drop stale async completions (race-safe).
-  final Map<ElementId, String> _inflightKey = <ElementId, String>{};
-
-  /// Emits a new value whenever any image in [images] changes.
-  /// Painters can listen to this to repaint without setState hacks.
-  final ValueNotifier<int> revision = ValueNotifier<int>(0);
+  // The two public stages are independent and may overlap.
+  int _intrinsicsGeneration = 0;
+  int _preloadGeneration = 0;
 
   bool _disposed = false;
 
   bool get _hasUrlResolver =>
       assetUrlResolver != null || assetUrlsResolver != null;
 
-  void _bump() {
-    if (_disposed) return;
-    revision.value++;
+  bool _isCurrentIntrinsicsRequest(int generation) {
+    return !_disposed && generation == _intrinsicsGeneration;
   }
 
-  /// Stable renderer-local key for cache maps.
-  ///
-  /// This deliberately does not parse schemes. `media:abc`, `asset:foo.png`,
-  /// URLs, file refs, and future custom schemes are all opaque host refs here.
+  bool _isCurrentPreloadRequest(int generation) {
+    return !_disposed && generation == _preloadGeneration;
+  }
+
+  @override
+  Size2D? intrinsicSize(ElementId id) => _intrinsicById[id];
+
+  @override
+  Stream<ElementId> get onIntrinsicUpdated =>
+      _intrinsicUpdatedController.stream;
+
+  void _bumpRevision() {
+    if (_disposed) return;
+    _revision.value++;
+  }
+
+  void _setIntrinsicSize(ElementId id, Size2D? size) {
+    if (_disposed) return;
+
+    final previous = _intrinsicById[id];
+    if (previous == size) return;
+
+    if (size == null) {
+      _intrinsicById.remove(id);
+    } else {
+      _intrinsicById[id] = size;
+    }
+
+    _intrinsicUpdatedController.add(id);
+  }
+
+  void _clearDecodedImage(ElementId id) {
+    _loadedKey.remove(id);
+
+    final previous = _images.remove(id);
+    if (previous == null) return;
+
+    previous.dispose();
+    _bumpRevision();
+  }
+
+  void _installDecodedImage(ElementId id, ui.Image image, String loadedKey) {
+    if (_disposed) {
+      image.dispose();
+      return;
+    }
+
+    final previous = _images[id];
+
+    _images[id] = image;
+    _loadedKey[id] = loadedKey;
+
+    if (identical(previous, image)) return;
+
+    previous?.dispose();
+    _bumpRevision();
+  }
+
   String? _sourceKeyFromRaw(String? raw) {
     final value = raw?.trim();
-    if (value == null || value.isEmpty) return null;
+
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+
     return value;
   }
 
-  /// Preferred decode constraint is a single "max side" (keeps aspect consistent).
-  /// When stable metadata is available, we decode with both width+height derived
-  /// from that metadata to avoid platform-specific aspect drift.
-  int? _decodeSide(int? w, int? h) {
-    if (w == null && h == null) return null;
-    if (w == null) return h;
-    if (h == null) return w;
-    return (w > h) ? w : h;
+  int? _decodeSide(int? width, int? height) {
+    if (width == null && height == null) return null;
+    if (width == null) return height;
+    if (height == null) return width;
+
+    return width > height ? width : height;
   }
 
   _DecodeDims _decodeDimsFromMeta(int? side, Size2D? meta) {
-    if (side == null) return const _DecodeDims(null, null);
+    if (side == null) {
+      return const _DecodeDims(null, null);
+    }
+
     if (meta == null || meta.w <= 0 || meta.h <= 0) {
-      // Fallback: single-side decode.
       return _DecodeDims(side, null);
     }
 
-    final maxSide = (meta.w > meta.h) ? meta.w : meta.h;
+    final maxSide = meta.w > meta.h ? meta.w : meta.h;
     final scale = side / maxSide;
 
-    var w = (meta.w * scale).round();
-    var h = (meta.h * scale).round();
+    var width = (meta.w * scale).round();
+    var height = (meta.h * scale).round();
 
-    if (w < 1) w = 1;
-    if (h < 1) h = 1;
+    if (width < 1) width = 1;
+    if (height < 1) height = 1;
 
-    return _DecodeDims(w, h);
+    return _DecodeDims(width, height);
   }
 
   Future<void> _primeUrlCache(Set<String> sourceRefs) async {
-    if (_disposed) return;
-    if (sourceRefs.isEmpty) return;
-    if (!_hasUrlResolver) return;
+    if (_disposed || sourceRefs.isEmpty || !_hasUrlResolver) {
+      return;
+    }
 
     final missing = <String>[
       for (final ref in sourceRefs)
         if (!_urlCache.containsKey(ref)) ref,
     ];
+
     if (missing.isEmpty) return;
 
     if (assetUrlsResolver != null) {
@@ -141,45 +231,51 @@ class FlutterImagePool {
 
       for (final ref in missing) {
         final resolved = resolvedByRef[ref]?.trim();
+
         if (resolved != null && resolved.isNotEmpty) {
           _urlCache[ref] = resolved;
         } else {
           _urlCache.remove(ref);
         }
       }
+
       return;
     }
 
-    if (assetUrlResolver != null) {
-      await Future.wait(
-        missing.map((ref) async {
-          try {
-            final resolved = (await assetUrlResolver!(ref))?.trim();
-            if (_disposed) return;
+    final resolver = assetUrlResolver;
+    if (resolver == null) return;
 
-            if (resolved != null && resolved.isNotEmpty) {
-              _urlCache[ref] = resolved;
-            } else {
-              _urlCache.remove(ref);
-            }
-          } catch (_) {
-            if (_disposed) return;
+    await Future.wait(
+      missing.map((ref) async {
+        try {
+          final resolved = (await resolver(ref))?.trim();
+          if (_disposed) return;
+
+          if (resolved != null && resolved.isNotEmpty) {
+            _urlCache[ref] = resolved;
+          } else {
             _urlCache.remove(ref);
           }
-        }),
-      );
-    }
+        } catch (_) {
+          if (_disposed) return;
+          _urlCache.remove(ref);
+        }
+      }),
+    );
   }
 
   Future<void> _primeMetaCache(Set<String> sourceRefs) async {
-    if (_disposed) return;
-    if (sourceRefs.isEmpty) return;
-    if (assetMetaResolver == null && assetMetasResolver == null) return;
+    if (_disposed ||
+        sourceRefs.isEmpty ||
+        (assetMetaResolver == null && assetMetasResolver == null)) {
+      return;
+    }
 
     final missing = <String>[
       for (final ref in sourceRefs)
         if (!_metaCache.containsKey(ref)) ref,
     ];
+
     if (missing.isEmpty) return;
 
     if (assetMetasResolver != null) {
@@ -188,225 +284,309 @@ class FlutterImagePool {
 
       for (final ref in missing) {
         final size = resolvedByRef[ref];
-        if (size != null) {
-          _metaCache[ref] = size;
-        } else {
+
+        if (size == null) {
           _metaCache.remove(ref);
+        } else {
+          _metaCache[ref] = size;
         }
       }
+
       return;
     }
 
-    if (assetMetaResolver != null) {
-      await Future.wait(
-        missing.map((ref) async {
-          try {
-            final size = await assetMetaResolver!(ref);
-            if (_disposed) return;
+    final resolver = assetMetaResolver;
+    if (resolver == null) return;
 
-            if (size != null) {
-              _metaCache[ref] = size;
-            } else {
-              _metaCache.remove(ref);
-            }
-          } catch (_) {
-            if (_disposed) return;
+    await Future.wait(
+      missing.map((ref) async {
+        try {
+          final size = await resolver(ref);
+          if (_disposed) return;
+
+          if (size == null) {
             _metaCache.remove(ref);
+          } else {
+            _metaCache[ref] = size;
           }
-        }),
-      );
-    }
+        } catch (_) {
+          if (_disposed) return;
+          _metaCache.remove(ref);
+        }
+      }),
+    );
   }
 
   String? _normalizedSourceSync(String raw) {
-    final key = _sourceKeyFromRaw(raw);
-    if (key == null) return null;
+    final sourceRef = _sourceKeyFromRaw(raw);
+    if (sourceRef == null) return null;
 
-    final resolved = _urlCache[key];
-    if (resolved != null && resolved.trim().isNotEmpty) {
-      return resolved.trim();
+    final resolved = _urlCache[sourceRef]?.trim();
+
+    if (resolved != null && resolved.isNotEmpty) {
+      return resolved;
     }
 
-    // If a host resolver was provided, unresolved refs should not be guessed by
-    // the renderer. This prevents opaque refs such as `media:abc` from falling
-    // through to FileImage/CachedNetworkImage behavior.
+    // When a host resolver exists, unresolved opaque refs must not be guessed.
     if (_hasUrlResolver) return null;
 
-    // Backward-compatible fallback for renderer-only use with direct renderable
-    // refs such as URLs, data URIs, file refs, or Flutter asset paths.
-    return key;
+    // Direct renderable-ref fallback for standalone renderer usage.
+    return sourceRef;
   }
 
-  /// Resolve stable intrinsic sizes (metadata) and publish to [intrinsics].
+  void _reconcileIntrinsicSources(Map<ElementId, String?> sourceByElement) {
+    final activeIds = sourceByElement.keys.toSet();
+
+    for (final id in _intrinsicById.keys.toList(growable: false)) {
+      if (!activeIds.contains(id)) {
+        _setIntrinsicSize(id, null);
+      }
+    }
+
+    for (final id in _intrinsicSourceById.keys.toList(growable: false)) {
+      if (!activeIds.contains(id)) {
+        _intrinsicSourceById.remove(id);
+      }
+    }
+
+    for (final entry in sourceByElement.entries) {
+      final id = entry.key;
+      final sourceRef = entry.value;
+      final previousSource = _intrinsicSourceById[id];
+
+      if (sourceRef == null || previousSource != sourceRef) {
+        _setIntrinsicSize(id, null);
+      }
+
+      if (sourceRef == null) {
+        _intrinsicSourceById.remove(id);
+      } else {
+        _intrinsicSourceById[id] = sourceRef;
+      }
+    }
+  }
+
+  void _reconcileRasterSources(Map<ElementId, String?> sourceByElement) {
+    final activeIds = sourceByElement.keys.toSet();
+
+    for (final id in _images.keys.toList(growable: false)) {
+      if (!activeIds.contains(id)) {
+        _clearDecodedImage(id);
+      }
+    }
+
+    for (final id in _rasterSourceById.keys.toList(growable: false)) {
+      if (!activeIds.contains(id)) {
+        _rasterSourceById.remove(id);
+        _loadedKey.remove(id);
+      }
+    }
+
+    for (final entry in sourceByElement.entries) {
+      final id = entry.key;
+      final sourceRef = entry.value;
+      final previousSource = _rasterSourceById[id];
+
+      // Clear immediately when the element changes source so the old raster
+      // cannot temporarily paint as the new asset.
+      if (sourceRef == null || previousSource != sourceRef) {
+        _clearDecodedImage(id);
+      }
+
+      if (sourceRef == null) {
+        _rasterSourceById.remove(id);
+      } else {
+        _rasterSourceById[id] = sourceRef;
+      }
+    }
+  }
+
+  /// Resolves and publishes stable intrinsic image metadata.
   ///
-  /// Intrinsic size must represent the asset’s natural size, even when
-  /// ImageData.size is explicitly set.
+  /// This method never decodes raster images and never changes [revision].
   Future<void> resolveSceneIntrinsics(
     CanvasSceneDocument scene, {
-    required FlutterImageIntrinsics intrinsics,
     bool includeHidden = true,
   }) async {
     if (_disposed) return;
 
-    final imagesInScene = _collectImageNodes(
-      scene,
-      includeHidden: includeHidden,
-    );
+    final generation = ++_intrinsicsGeneration;
 
-    final sourceRefs = <String>{};
-    final sourceRefByElement = <ElementId, String?>{};
+    final imageNodes = _collectImageNodes(scene, includeHidden: includeHidden);
 
-    for (final img in imagesInScene) {
-      final sourceRef = _sourceKeyFromRaw(img.data.sourcePath);
-      sourceRefByElement[img.id] = sourceRef;
+    final sourceByElement = <ElementId, String?>{
+      for (final image in imageNodes)
+        image.id: _sourceKeyFromRaw(image.data.sourcePath),
+    };
 
-      if (sourceRef != null) {
-        sourceRefs.add(sourceRef);
-      }
-    }
+    _reconcileIntrinsicSources(sourceByElement);
+
+    final sourceRefs = sourceByElement.values.whereType<String>().toSet();
 
     await _primeMetaCache(sourceRefs);
-    if (_disposed) return;
 
-    for (final entry in sourceRefByElement.entries) {
-      if (_disposed) return;
+    if (!_isCurrentIntrinsicsRequest(generation)) {
+      return;
+    }
 
+    for (final entry in sourceByElement.entries) {
       final sourceRef = entry.value;
-      final meta = sourceRef == null ? null : _metaCache[sourceRef];
-      intrinsics.setIntrinsicSize(entry.key, meta);
+      final size = sourceRef == null ? null : _metaCache[sourceRef];
+
+      _setIntrinsicSize(entry.key, size);
     }
   }
 
-  /// Decode raster images for paint.
+  /// Decodes raster images for painting.
   ///
-  /// - MUST NOT update intrinsic sizes.
-  /// - MUST only cause repaint via [revision].
+  /// This method never updates intrinsic metadata and therefore never emits
+  /// [onIntrinsicUpdated].
   Future<void> preloadScene(
     CanvasSceneDocument scene, {
     int? targetW,
     int? targetH,
-    FlutterImageIntrinsics? intrinsics,
     bool includeHidden = true,
   }) async {
     if (_disposed) return;
 
-    final imagesInScene = _collectImageNodes(
-      scene,
-      includeHidden: includeHidden,
-    );
+    final generation = ++_preloadGeneration;
 
-    final sourceRefs = <String>{};
+    final imageNodes = _collectImageNodes(scene, includeHidden: includeHidden);
 
-    for (final img in imagesInScene) {
-      final sourceRef = _sourceKeyFromRaw(img.data.sourcePath);
-      if (sourceRef != null) {
-        sourceRefs.add(sourceRef);
-      }
-    }
+    final sourceByElement = <ElementId, String?>{
+      for (final image in imageNodes)
+        image.id: _sourceKeyFromRaw(image.data.sourcePath),
+    };
+
+    _reconcileRasterSources(sourceByElement);
+
+    final sourceRefs = sourceByElement.values.whereType<String>().toSet();
 
     await _primeUrlCache(sourceRefs);
-    if (_disposed) return;
+
+    if (!_isCurrentPreloadRequest(generation)) {
+      return;
+    }
 
     await _primeMetaCache(sourceRefs);
-    if (_disposed) return;
+
+    if (!_isCurrentPreloadRequest(generation)) {
+      return;
+    }
 
     final side = _decodeSide(targetW, targetH);
 
-    final tasks = <Future<void>>[];
-    for (final img in imagesInScene) {
-      tasks.add(() async {
-        if (_disposed) return;
+    await Future.wait([
+      for (final image in imageNodes)
+        _preloadImageNode(
+          image,
+          generation: generation,
+          side: side,
+          sourceRef: sourceByElement[image.id],
+        ),
+    ]);
+  }
 
-        final raw = img.data.sourcePath;
-        final sourceRef = _sourceKeyFromRaw(raw);
-        final src = (raw == null) ? null : _normalizedSourceSync(raw);
-
-        _dlog(
-          'POOL_PRELOAD',
-          'el=${img.id} raw="$raw" sourceRef=$sourceRef normalized="$src"',
-        );
-
-        void setImage(ui.Image? next) {
-          if (_disposed) return;
-
-          images[img.id] = next;
-          intrinsics?.setImage(img.id, next);
-          _bump();
-        }
-
-        if (_disposed) return;
-
-        if (src == null || src.isEmpty) {
-          _inflightKey.remove(img.id);
-          _loadedKey.remove(img.id);
-          setImage(null);
-          return;
-        }
-
-        final meta = sourceRef == null ? null : _metaCache[sourceRef];
-        final dims = _decodeDimsFromMeta(side, meta);
-
-        final key = '$src@${dims.w ?? 0}x${dims.h ?? 0}';
-
-        if (_loadedKey[img.id] == key && images[img.id] != null) {
-          return;
-        }
-
-        if (_disposed) return;
-        _inflightKey[img.id] = key;
-
-        try {
-          if (_disposed) return;
-
-          final base = sourceToProvider(src);
-
-          final prov = (dims.w != null && dims.h != null)
-              ? ResizeImage(base, width: dims.w!, height: dims.h!)
-              : withSize(base, width: side, height: null);
-
-          final uiImg = await toUiImage(prov);
-          if (_disposed) return;
-
-          _dlog('POOL_DECODE', 'el=${img.id} ok=${uiImg != null} key="$key"');
-
-          if (_inflightKey[img.id] != key) return;
-
-          if (uiImg == null) {
-            _inflightKey.remove(img.id);
-            _loadedKey.remove(img.id);
-            setImage(null);
-            return;
-          }
-
-          _inflightKey.remove(img.id);
-          _loadedKey[img.id] = key;
-          setImage(uiImg);
-        } catch (e) {
-          if (_disposed) return;
-
-          _dlog('POOL_DECODE', 'el=${img.id} exception=$e key="$key"');
-          if (_inflightKey[img.id] == key) {
-            _inflightKey.remove(img.id);
-            _loadedKey.remove(img.id);
-            setImage(null);
-          }
-        }
-      }());
+  Future<void> _preloadImageNode(
+    ImageNode image, {
+    required int generation,
+    required int? side,
+    required String? sourceRef,
+  }) async {
+    if (!_isCurrentPreloadRequest(generation)) {
+      return;
     }
 
-    if (tasks.isNotEmpty) await Future.wait(tasks);
+    final raw = image.data.sourcePath;
+    final source = raw == null ? null : _normalizedSourceSync(raw);
+
+    _dlog(
+      'POOL_PRELOAD',
+      'el=${image.id} raw="$raw" sourceRef=$sourceRef '
+          'normalized="$source"',
+    );
+
+    if (source == null || source.isEmpty) {
+      _clearDecodedImage(image.id);
+      return;
+    }
+
+    final meta = sourceRef == null ? null : _metaCache[sourceRef];
+    final dimensions = _decodeDimsFromMeta(side, meta);
+    final loadedKey = '$source@${dimensions.w ?? 0}x${dimensions.h ?? 0}';
+
+    if (_loadedKey[image.id] == loadedKey && _images[image.id] != null) {
+      return;
+    }
+
+    try {
+      final baseProvider = sourceToProvider(source);
+
+      final provider = dimensions.w != null && dimensions.h != null
+          ? ResizeImage(
+              baseProvider,
+              width: dimensions.w!,
+              height: dimensions.h!,
+            )
+          : withSize(baseProvider, width: side, height: null);
+
+      final decoded = await _decoder(provider);
+
+      if (!_isCurrentPreloadRequest(generation)) {
+        decoded?.dispose();
+        return;
+      }
+
+      _dlog(
+        'POOL_DECODE',
+        'el=${image.id} ok=${decoded != null} key="$loadedKey"',
+      );
+
+      if (decoded == null) {
+        _clearDecodedImage(image.id);
+        return;
+      }
+
+      _installDecodedImage(image.id, decoded, loadedKey);
+    } catch (error, stackTrace) {
+      if (!_isCurrentPreloadRequest(generation)) {
+        return;
+      }
+
+      _dlog(
+        'POOL_DECODE',
+        'el=${image.id} exception=$error key="$loadedKey"\n'
+            '$stackTrace',
+      );
+
+      _clearDecodedImage(image.id);
+    }
   }
 
   void dispose() {
     if (_disposed) return;
-    _disposed = true;
 
-    revision.dispose();
-    images.clear();
+    _disposed = true;
+    _intrinsicsGeneration++;
+    _preloadGeneration++;
+
+    final retainedImages = HashSet<ui.Image>.identity()
+      ..addAll(_images.values.whereType<ui.Image>());
+
+    for (final image in retainedImages) {
+      image.dispose();
+    }
+
+    _images.clear();
+    _intrinsicById.clear();
+    _intrinsicSourceById.clear();
+    _rasterSourceById.clear();
     _loadedKey.clear();
-    _inflightKey.clear();
     _urlCache.clear();
     _metaCache.clear();
+
+    _intrinsicUpdatedController.close();
+    _revision.dispose();
   }
 }
 
@@ -414,15 +594,17 @@ List<ImageNode> _collectImageNodes(
   CanvasSceneDocument scene, {
   required bool includeHidden,
 }) {
-  final out = <ImageNode>[];
+  final result = <ImageNode>[];
 
   visitSceneNodes(
     scene,
     includeHidden: includeHidden,
     visit: (node) {
-      if (node is ImageNode) out.add(node);
+      if (node is ImageNode) {
+        result.add(node);
+      }
     },
   );
 
-  return out;
+  return result;
 }
