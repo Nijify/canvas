@@ -152,28 +152,24 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   );
 
   late final _textMeasurer = FlutterTextMeasurer(_textPipeline);
-  late final FlutterImageIntrinsics _intrinsics = FlutterImageIntrinsics(
-    _pool.images,
-  );
 
   late final EditorAssetCoordinator _assetCoordinator = EditorAssetCoordinator(
     assets: _assets,
     pool: _pool,
-    intrinsics: _intrinsics,
     targetW: 2048,
     targetH: 2048,
   );
 
   late final CanvasRenderPipeline renderPipeline = CanvasRenderPipeline(
     textMeasurer: _textMeasurer,
-    images: _intrinsics,
+    images: _pool,
     icons: _assets.icons,
   );
 
   late final CanvasRenderer renderer = CanvasRenderer(
     images: _pool.images,
     text: _textPipeline,
-    intrinsics: _intrinsics,
+    intrinsics: _pool,
     options: const CanvasRendererOptions(
       missingImageBehavior: MissingImageBehavior.placeholder,
     ),
@@ -276,7 +272,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       initial: widget.initialDocument,
       adapter: widget.adapter,
       renderPipeline: renderPipeline,
-      imageIntrinsics: _intrinsics,
+      imageIntrinsics: _pool,
       initialContext: widget.initialResolveContext,
       renderBuilder: renderBuilder,
       maxHistory: 100,
@@ -375,7 +371,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
     _selectionController.dispose();
 
     _assetCoordinator.dispose();
-    _intrinsics.dispose();
     _pool.dispose();
     _textPipeline.clearCache();
 

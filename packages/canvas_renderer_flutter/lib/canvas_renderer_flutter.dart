@@ -7,7 +7,7 @@
 // Manager-level map (+ mental models, with ROLES):
 // • Draw paint ops on Flutter     → CanvasRenderer            // Replays core paint ops on a Canvas
 // • Text measurement/painting     → FlutterText*              // Host text pipeline (measure + paint)
-// • Images (decode/cache)         → FlutterImagePool          // ui.Image cache keyed by ElementId
+// • Images                        → FlutterImagePool          // Raster + intrinsic owner
 // • Gradient adapter              → buildLinearShaderFlutter  // Core gradient → ui.Shader
 // • Type mappers                  → *ToUi / *ToCore           // Core ↔ Flutter value adapters
 //
@@ -44,11 +44,18 @@ export 'src/flutter_text_pipeline.dart'
     show FlutterTextPipeline, TextSpec, TextMetrics, TextOriginKind;
 
 // ============================================================================
-// 3) Images (decode, cache, and intrinsic sizes)
-//    Mental model: decode ImageProvider → ui.Image; cache by ElementId; answer intrinsic sizes.
+// 3) Images
+//    Mental model: one pool owns decoded rasters, intrinsic metadata,
+//    repaint notifications, and resource disposal.
 // ============================================================================
-export 'src/images/flutter_image_pool.dart' show FlutterImagePool;
-export 'src/images/flutter_image_intrinsics.dart' show FlutterImageIntrinsics;
+export 'src/images/flutter_image_pool.dart'
+    show
+        AssetMetaResolver,
+        AssetMetasResolver,
+        AssetUrlResolver,
+        AssetUrlsResolver,
+        FlutterImageDecoder,
+        FlutterImagePool;
 
 // ============================================================================
 // 4) Gradients (adapter)

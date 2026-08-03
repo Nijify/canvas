@@ -85,21 +85,57 @@ ImageProvider<Object> withSize(
   return ResizeImage(base, width: width, height: height);
 }
 
+/// Resolves [provider] into an independently owned [ui.Image] handle.
+///
+/// The returned handle must be disposed by its eventual owner.
 Future<ui.Image?> toUiImage(ImageProvider<Object> provider) {
-  final c = Completer<ui.Image?>();
+  final completer = Completer<ui.Image?>();
   final stream = provider.resolve(const ImageConfiguration());
-  late final ImageStreamListener l;
-  l = ImageStreamListener(
+
+  var completed = false;
+  late final ImageStreamListener listener;
+
+  void complete(ui.Image? image) {
+    if (completed) {
+      image?.dispose();
+      return;
+    }
+
+    completed = true;
+    stream.removeListener(listener);
+    completer.complete(image);
+  }
+
+  listener = ImageStreamListener(
     (ImageInfo info, _) {
-      c.complete(info.image);
-      stream.removeListener(l);
+      if (completed) {
+        info.dispose();
+        return;
+      }
+
+      ui.Image? retained;
+
+      try {
+        retained = info.image.clone();
+      } catch (error, stackTrace) {
+        debugPrint('toUiImage clone error: $error\n$stackTrace');
+      } finally {
+        // The callback-delivered ImageInfo is no longer retained.
+        info.dispose();
+      }
+
+      complete(retained);
     },
-    onError: (error, stack) {
-      debugPrint('toUiImage error: $error\n$stack');
-      c.complete(null);
-      stream.removeListener(l);
+    onError: (error, stackTrace) {
+      debugPrint(
+        'toUiImage error: $error'
+        '${stackTrace == null ? '' : '\n$stackTrace'}',
+      );
+
+      complete(null);
     },
   );
-  stream.addListener(l);
-  return c.future;
+
+  stream.addListener(listener);
+  return completer.future;
 }

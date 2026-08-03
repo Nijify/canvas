@@ -1,3 +1,14 @@
+## 0.3.0
+
+- **Breaking:** make `FlutterImagePool` the sole owner of decoded images and
+  stable intrinsic image metadata.
+- Remove `FlutterImageIntrinsics` and the separate `intrinsics` method
+  parameters.
+- Expose decoded images through a live, read-only map.
+- Add injectable image decoding with explicit ownership transfer.
+- Dispose replaced, removed, stale, late, and retained image handles.
+- Prevent older intrinsic and raster requests from overwriting newer state.
+
 ## 0.2.0
 
 - **Breaking:** require `canvas_core 0.4.x`.
