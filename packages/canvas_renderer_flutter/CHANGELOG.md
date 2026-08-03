@@ -1,3 +1,8 @@
+## 0.3.1
+
+- Make PNG output image cleanup exception-safe.
+- Document that export input images remain caller-owned.
+
 ## 0.3.0
 
 - **Breaking:** make `FlutterImagePool` the sole owner of decoded images and
