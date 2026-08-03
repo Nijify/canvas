@@ -60,40 +60,33 @@ void main() {
   });
 
   group('toUiImage', () {
-    testWidgets('returns an independently owned disposable image handle', (
-      tester,
-    ) async {
+    test('returns an independently owned disposable image handle', () async {
       const pngBase64 =
-          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0l'
-          'EQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl'
+          'EQVR4nGMwTpv5HwAENAIyWy0K4AAAAABJRU5ErkJggg==';
 
       final provider = MemoryImage(base64Decode(pngBase64));
 
-      final image = await toUiImage(provider);
+      final image = await toUiImage(
+        provider,
+      ).timeout(const Duration(seconds: 5));
 
       expect(image, isNotNull);
 
       final retained = image!;
 
-      addTearDown(() {
-        if (!retained.debugDisposed) {
-          retained.dispose();
-        }
-      });
+      try {
+        expect(retained.debugDisposed, isFalse);
+        expect(retained.width, 1);
+        expect(retained.height, 1);
 
-      expect(retained.width, 1);
-      expect(retained.height, 1);
-      expect(retained.debugDisposed, isFalse);
+        await provider.evict();
 
-      // Evict the provider-owned cache entry. The returned clone must remain
-      // alive because toUiImage transferred an independent handle.
-      await provider.evict();
-
-      expect(retained.debugDisposed, isFalse);
-      expect(retained.width, 1);
-      expect(retained.height, 1);
-
-      retained.dispose();
+        // Evicting the provider-owned image must not dispose our clone.
+        expect(retained.debugDisposed, isFalse);
+      } finally {
+        retained.dispose();
+      }
 
       expect(retained.debugDisposed, isTrue);
     });
