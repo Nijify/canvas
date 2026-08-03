@@ -37,6 +37,24 @@ void main() {
     return completer.future;
   }
 
+  Future<ui.Image> createSolidImage() async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+
+    canvas.drawRect(
+      const ui.Rect.fromLTWH(0, 0, 4, 4),
+      ui.Paint()..color = const ui.Color(0xFF336699),
+    );
+
+    final picture = recorder.endRecording();
+
+    try {
+      return await picture.toImage(4, 4);
+    } finally {
+      picture.dispose();
+    }
+  }
+
   test('applies pixel ratio, bleed, and background fill', () async {
     final scene = sceneWithBg(size: const Size2D(40, 20), color: 0xFF00FF00);
     final exporter = CanvasDocumentExporter();
@@ -95,5 +113,52 @@ void main() {
     expect(bottomMarginPixel, 0xFFFFFFFF);
 
     image.dispose();
+  });
+
+  test('borrows resolved input images without disposing them', () async {
+    final inputImage = await createSolidImage();
+
+    try {
+      final scene = CanvasSceneDocument(
+        artboardSize: const Size2D(16, 16),
+        backgroundFill: const CanvasFill.none(),
+        backgroundOpacity: 1.0,
+        children: [
+          Node.image(
+            id: 'image-1',
+            data: const ImageData(
+              sourcePath: 'test:image',
+              size: Size2D(16, 16),
+            ),
+          ),
+        ],
+      );
+
+      final exporter = CanvasDocumentExporter();
+
+      final bytes = await exporter.exportPng(
+        document: scene,
+        resolveImage: (id) async {
+          expect(id, 'image-1');
+          return inputImage;
+        },
+        resolveIntrinsicSize: (id) async {
+          expect(id, 'image-1');
+          return const Size2D(4, 4);
+        },
+        spec: const CanvasExportSpec(
+          widthPx: 16,
+          heightPx: 16,
+          pixelRatio: 1.0,
+        ),
+      );
+
+      expect(bytes, isNotEmpty);
+      expect(inputImage.debugDisposed, isFalse);
+    } finally {
+      inputImage.dispose();
+    }
+
+    expect(inputImage.debugDisposed, isTrue);
   });
 }
