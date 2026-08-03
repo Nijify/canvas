@@ -1,0 +1,11 @@
+name: canvas_workspace
+publish_to: none
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+workspace:
+  - packages/canvas_core
+  - packages/canvas_renderer_flutter
+  - packages/canvas_editor_flutter
+  - packages/canvas_editor_flutter/example
