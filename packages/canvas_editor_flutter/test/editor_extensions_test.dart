@@ -10,13 +10,11 @@ RenderSnapshot _firstRenderBuilder(
   CanvasRenderPipeline pipeline,
   CanvasSceneDocument scene, {
   ContentBoundsSpec? contentBounds,
-  TextMeasureCache? textMeasureCache,
 }) {
   return defaultSceneRenderBuilder(
     pipeline,
     scene,
     contentBounds: contentBounds,
-    textMeasureCache: textMeasureCache,
   );
 }
 
@@ -24,13 +22,11 @@ RenderSnapshot _secondRenderBuilder(
   CanvasRenderPipeline pipeline,
   CanvasSceneDocument scene, {
   ContentBoundsSpec? contentBounds,
-  TextMeasureCache? textMeasureCache,
 }) {
   return defaultSceneRenderBuilder(
     pipeline,
     scene,
     contentBounds: contentBounds,
-    textMeasureCache: textMeasureCache,
   );
 }
 

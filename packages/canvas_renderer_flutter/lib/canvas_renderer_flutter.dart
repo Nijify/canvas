@@ -35,13 +35,10 @@ export 'src/canvas_document_exporter.dart'
 
 // ============================================================================
 // 2) Text pipeline (measurement + painting)
-//    Mental model: host-provided text services for the core engine.
-//    - Measurer implements canvas_core.TextMeasurer
-//    - Pipeline provides measuring + painting utilities used by renderer
+//    Mental model: one host-provided text engine for core and Flutter rendering.
 // ============================================================================
-export 'src/flutter_text_measurer.dart' show FlutterTextMeasurer;
 export 'src/flutter_text_pipeline.dart'
-    show FlutterTextPipeline, TextSpec, TextMetrics, TextOriginKind;
+    show FlutterTextPipeline, TextSpec, TextOriginKind;
 
 // ============================================================================
 // 3) Images

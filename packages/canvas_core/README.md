@@ -73,7 +73,9 @@ final computed = computeScene(document, services);
 final paintOps = buildPaintOpsFromScene(document, computed);
 ```
 
-`myTextMeasurer` is supplied by your runtime. A Flutter app can use `FlutterTextMeasurer` from `canvas_renderer_flutter`; a server or CLI can implement `TextMeasurer` directly.
+`myTextMeasurer` is supplied by your runtime. A Flutter app can use
+`FlutterTextPipeline` from `canvas_renderer_flutter`; a server or CLI can
+implement `TextMeasurer` directly.
 
 ## JSON round-trip
 

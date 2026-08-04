@@ -1,3 +1,25 @@
+## 0.4.0
+
+- **Breaking:** make `FlutterTextPipeline` implement the core `TextMeasurer`
+  contract directly.
+- **Breaking:** remove `FlutterTextMeasurer`, `TextMetrics`, and the previous
+  `FlutterTextPipeline.measure(TextSpec)` API.
+- **Breaking:** require a caller-owned `FlutterTextPipeline` when constructing
+  `CanvasRenderer` and `CanvasDocumentExporter`.
+- **Breaking:** remove `fallbackFontFamilies` from
+  `CanvasDocumentExporter`; fallback fonts are configured on the supplied text
+  pipeline instead.
+- Dispose cached `TextPainter` instances during LRU eviction, cache clearing,
+  and pipeline disposal.
+- Dispose operation-scoped shadow, solid-color, and gradient text painters
+  after painting.
+- Add reusable `clearCache()` and idempotent terminal `dispose()` lifecycle
+  behavior.
+- Throw `StateError` when measurement or painting is attempted after pipeline
+  disposal.
+- Reject non-positive text-layout cache limits with `ArgumentError` in all
+    build modes.
+
 ## 0.3.1
 
 - Make PNG output image cleanup exception-safe.

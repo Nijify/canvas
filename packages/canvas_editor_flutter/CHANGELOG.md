@@ -1,3 +1,15 @@
+# 0.4.0
+
+- **Breaking:** require `canvas_core 0.5.x` and
+  `canvas_renderer_flutter 0.4.x`.
+- Use one `FlutterTextPipeline` for both core text measurement and Flutter text
+  painting.
+- Remove the editor's separate `FlutterTextMeasurer` and session-long core text
+  measurement cache.
+- Clear cached text layouts after new fonts load and before scheduling layout
+  invalidation.
+- Dispose the editor-owned text pipeline when the editor session is destroyed.
+
 # 0.3.1
 
 - Use `FlutterImagePool` as the editor's single image and intrinsic-state owner.

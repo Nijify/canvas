@@ -10,6 +10,18 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  late FlutterTextPipeline textPipeline;
+  late CanvasDocumentExporter exporter;
+
+  setUp(() {
+    textPipeline = FlutterTextPipeline();
+    exporter = CanvasDocumentExporter(textPipeline: textPipeline);
+  });
+
+  tearDown(() {
+    textPipeline.dispose();
+  });
+
   CanvasSceneDocument sceneWithBg({required Size2D size, required int color}) {
     return CanvasSceneDocument(
       artboardSize: size,
@@ -57,7 +69,6 @@ void main() {
 
   test('applies pixel ratio, bleed, and background fill', () async {
     final scene = sceneWithBg(size: const Size2D(40, 20), color: 0xFF00FF00);
-    final exporter = CanvasDocumentExporter();
 
     final bytes = await exporter.exportPng(
       document: scene,
@@ -85,7 +96,6 @@ void main() {
 
   test('contain fit centers artboard within target bounds', () async {
     final scene = sceneWithBg(size: const Size2D(100, 50), color: 0xFFFF0000);
-    final exporter = CanvasDocumentExporter();
 
     final bytes = await exporter.exportPng(
       document: scene,
@@ -133,8 +143,6 @@ void main() {
           ),
         ],
       );
-
-      final exporter = CanvasDocumentExporter();
 
       final bytes = await exporter.exportPng(
         document: scene,

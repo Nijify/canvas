@@ -19,11 +19,9 @@
 // Generic runtime pipeline:
 //   computeScene(scene, services) → buildPaintOpsFromScene(scene, computed)
 //
-// Canonical pipeline guidance:
-//   • Core-safe canonical helper:
-//       CanvasRenderPipeline.buildCanonical(...)
-//     This renders an already-prepared runtime scene and does NOT hardcode
-//     application-provided behavior.
+// Runtime render pipeline guidance:
+//   • CanvasRenderPipeline renders an already-prepared runtime scene.
+//   • It does not hardcode application-provided behavior.
 //
 // Prefer consuming ComputedScene (drawList/world matrices/bounds) in higher-level
 // subsystems instead of recomputing transforms/bounds independently.
@@ -119,9 +117,6 @@ export 'src/foundation/ids.dart' show ElementId;
 export 'src/algorithms/layout/selection_geometry.dart'
     show selectionGeometry, selectionUnionBounds;
 
-// Text measurement cache (service-facing)
-export 'src/services/text_measure.dart' show TextMeasureCache;
-
 // ============================================================================
 // 7) Serde (JSON I/O boundary) + host service contracts
 // ============================================================================
@@ -187,19 +182,14 @@ export 'src/foundation/paint/canvas_fill.dart';
 // 11) Runtime render pipeline
 // ============================================================================
 //
-// NOTE:
-// The generic runtime surface lives here.
-//
-// Exported here:
+// The generic runtime surface includes:
 //   • CanvasRenderPipeline
 //   • RenderSnapshot
-//   • ContentBoundsSpec
-//   • core-safe buildCanonical(...)
-////
-//// NOT exported here:
-////   • domain-specific policy bundles
-////   • application-provided render helpers
-//// Domain-specific helpers should live outside this runtime barrel.
+//   • SceneRenderBuilder
+//   • defaultSceneRenderBuilder
+//
+// Domain-specific preparation and rendering policies belong in extension
+// packages outside canvas_core.
 export 'src/runtime/render/canvas_render_pipeline.dart';
 
 export 'src/runtime/viewport/canvas_viewport_planner.dart';

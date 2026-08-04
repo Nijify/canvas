@@ -1,73 +1,122 @@
-// Path: test/flutter_text_pipeline_test.dart
+// Path: packages/canvas_renderer_flutter/test/flutter_text_pipeline_test.dart
 
+import 'dart:ui' as ui;
+
+import 'package:canvas_core/canvas_core_runtime.dart' show Size2D, TextMeasurer;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  late FlutterTextPipeline pipeline;
+
+  setUp(() {
+    pipeline = FlutterTextPipeline();
+  });
+
+  tearDown(() {
+    pipeline.dispose();
+  });
+
+  Size2D measure({String text = 'Hello', double letterSpacing = 0}) {
+    return pipeline.measure(
+      text: text,
+      fontFamily: 'Roboto',
+      fontWeight: 400,
+      fontSize: 20,
+      letterSpacing: letterSpacing,
+    );
+  }
+
   group('FlutterTextPipeline', () {
-    test('reuses cached layout for identical specs', () {
-      final pipeline = FlutterTextPipeline();
+    test('implements TextMeasurer directly', () {
+      expect(pipeline, isA<TextMeasurer>());
+    });
 
-      const spec = TextSpec('Hello', 'Roboto', 400, 20.0, letterSpacing: 1.25);
+    test('rejects non-positive cache limits', () {
+      expect(() => FlutterTextPipeline(maxEntries: 0), throwsArgumentError);
 
-      pipeline.measure(spec);
+      expect(() => FlutterTextPipeline(maxEntries: -1), throwsArgumentError);
+    });
+
+    test('reuses cached layout for identical measurements', () {
+      measure(letterSpacing: 1.25);
       expect(pipeline.cacheSize, 1);
 
-      pipeline.measure(spec);
+      measure(letterSpacing: 1.25);
       expect(pipeline.cacheSize, 1);
     });
 
     test('includes fractional letter spacing in cache key', () {
-      final pipeline = FlutterTextPipeline();
-
-      pipeline.measure(
-        const TextSpec('Hello', 'Roboto', 400, 20.0, letterSpacing: 1.25),
-      );
-
-      pipeline.measure(
-        const TextSpec('Hello', 'Roboto', 400, 20.0, letterSpacing: 1.5),
-      );
+      measure(letterSpacing: 1.25);
+      measure(letterSpacing: 1.5);
 
       expect(pipeline.cacheSize, 2);
     });
 
     test('positive letter spacing increases measured width', () {
-      final pipeline = FlutterTextPipeline();
+      final unspaced = measure(text: 'AAAA');
+      final spaced = measure(text: 'AAAA', letterSpacing: 2);
 
-      final unspaced = pipeline.measure(
-        const TextSpec('AAAA', 'Roboto', 400, 20.0),
-      );
-
-      final spaced = pipeline.measure(
-        const TextSpec('AAAA', 'Roboto', 400, 20.0, letterSpacing: 2.0),
-      );
-
-      expect(spaced.width, greaterThan(unspaced.width));
+      expect(spaced.w, greaterThan(unspaced.w));
     });
 
-    test('accepts negative letter spacing', () {
-      final pipeline = FlutterTextPipeline();
+    test('accepts raw Unicode and negative letter spacing', () {
+      final size = measure(text: 'A🙂e\u0301👨‍👩‍👧‍👦', letterSpacing: -0.75);
 
-      final metrics = pipeline.measure(
-        const TextSpec('Tracking', 'Roboto', 400, 20.0, letterSpacing: -0.75),
-      );
-
-      expect(metrics.width, isNonNegative);
-      expect(metrics.height, greaterThan(0));
+      expect(size.w, isNonNegative);
+      expect(size.h, greaterThan(0));
     });
 
-    test('different zero and negative spacing values use separate entries', () {
-      final pipeline = FlutterTextPipeline();
+    test('evicts layouts at the configured limit', () {
+      pipeline.dispose();
+      pipeline = FlutterTextPipeline(maxEntries: 2);
 
-      pipeline.measure(const TextSpec('Tracking', 'Roboto', 400, 20.0));
-
-      pipeline.measure(
-        const TextSpec('Tracking', 'Roboto', 400, 20.0, letterSpacing: -0.75),
-      );
+      measure(text: 'one');
+      measure(text: 'two');
+      measure(text: 'three');
 
       expect(pipeline.cacheSize, 2);
+    });
+
+    test('clearCache empties the cache and permits reuse', () {
+      measure();
+      expect(pipeline.cacheSize, 1);
+
+      pipeline.clearCache();
+      expect(pipeline.cacheSize, 0);
+
+      measure();
+      expect(pipeline.cacheSize, 1);
+    });
+
+    test('dispose is idempotent and measurement becomes unavailable', () {
+      measure();
+
+      pipeline.dispose();
+      pipeline.dispose();
+
+      expect(pipeline.cacheSize, 0);
+      expect(measure, throwsStateError);
+    });
+
+    test('painting after disposal throws StateError', () {
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+
+      pipeline.dispose();
+
+      expect(
+        () => pipeline.paint(
+          canvas,
+          ui.Offset.zero,
+          const TextSpec('Hello', 'Roboto', 400, 20),
+        ),
+        throwsStateError,
+      );
+
+      recorder.endRecording().dispose();
     });
   });
 }

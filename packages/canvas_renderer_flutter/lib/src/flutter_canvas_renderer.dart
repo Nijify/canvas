@@ -22,21 +22,21 @@ class CanvasRendererOptions {
 
 class CanvasRenderer {
   final Map<ElementId, ui.Image?> images;
+
+  /// Borrowed from the caller and never disposed by this renderer.
   final FlutterTextPipeline text;
 
-  /// Stable intrinsic metadata provider (width/height in intrinsic pixel space).
-  /// Used to map DrawImageOp.src from intrinsic-space -> decoded image pixel-space.
+  /// Stable intrinsic metadata provider.
   final ImageIntrinsics? intrinsics;
 
   final CanvasRendererOptions options;
 
   CanvasRenderer({
     Map<ElementId, ui.Image?>? images,
-    FlutterTextPipeline? text,
+    required this.text,
     this.intrinsics,
     this.options = const CanvasRendererOptions(),
-  }) : images = images ?? <ElementId, ui.Image?>{},
-       text = text ?? FlutterTextPipeline();
+  }) : images = images ?? <ElementId, ui.Image?>{};
 
   ui.Rect _mapSrcToDecoded({
     required ElementId id,
