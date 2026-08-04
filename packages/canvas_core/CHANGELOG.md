@@ -1,3 +1,9 @@
+## Unreleased
+
+- **Breaking:** remove the unused `CanvasViewportPolicy` and
+  `CanvasViewportSource` APIs. Use `CanvasViewportPlanner` and select the
+  bounds to fit explicitly.
+
 ## 0.5.0
 
 - **Breaking:** remove `TextMeasureCache` and the `textMeasureCache`

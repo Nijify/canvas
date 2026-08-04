@@ -170,9 +170,6 @@ export 'src/algorithms/export/content_bounds_policy.dart'
 export 'src/algorithms/export/content_bounds.dart'
     show computePaddedContentBounds;
 
-export 'src/runtime/viewport/canvas_viewport_policy.dart'
-    show CanvasViewportPolicy, CanvasViewportSource;
-
 // ============================================================================
 // 10) Misc paint helpers
 // ============================================================================
