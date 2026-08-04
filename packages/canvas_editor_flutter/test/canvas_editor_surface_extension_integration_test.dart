@@ -36,30 +36,61 @@ rt.CanvasSceneDocument _fixtureScene() {
   );
 }
 
+final class _FakeTextMeasurer implements rt.TextMeasurer {
+  @override
+  rt.Size2D measure({
+    required String text,
+    required String fontFamily,
+    required int fontWeight,
+    required double fontSize,
+    required double letterSpacing,
+  }) {
+    return rt.Size2D(text.length * fontSize * 0.6, fontSize);
+  }
+}
+
+final class _ResolvingAdapter
+    extends EditorDocumentAdapter<rt.CanvasSceneDocument> {
+  const _ResolvingAdapter();
+
+  @override
+  rt.CanvasSceneDocument getBase(rt.CanvasSceneDocument doc) => doc;
+
+  @override
+  rt.CanvasSceneDocument replaceBase(
+    rt.CanvasSceneDocument doc,
+    rt.CanvasSceneDocument base,
+  ) {
+    return base;
+  }
+
+  @override
+  rt.CanvasSceneDocument resolve(
+    rt.CanvasSceneDocument doc,
+    Object? context,
+  ) {
+    return doc.copyWith(backgroundOpacity: 0.4);
+  }
+}
+
 final class _SurfaceSeamExtension
     extends EditorExtension<rt.CanvasSceneDocument> {
   EditorRuntime<rt.CanvasSceneDocument>? runtime;
 
-  int renderBuilderCalls = 0;
+  int scenePreparerCalls = 0;
   int codecReadCalls = 0;
-  rt.ContentBoundsSpec? lastContentBounds;
+  rt.CoreServices? lastServices;
 
   @override
-  rt.SceneRenderBuilder get renderBuilder => _renderBuilder;
+  rt.ScenePreparer get scenePreparer => _prepareScene;
 
-  rt.RenderSnapshot _renderBuilder(
-    rt.CanvasRenderPipeline pipeline,
-    rt.CanvasSceneDocument scene, {
-    rt.ContentBoundsSpec? contentBounds,
-  }) {
-    renderBuilderCalls += 1;
-    lastContentBounds = contentBounds;
-
-    return rt.defaultSceneRenderBuilder(
-      pipeline,
-      scene,
-      contentBounds: contentBounds,
-    );
+  rt.CanvasSceneDocument _prepareScene(
+    rt.CanvasSceneDocument scene,
+    rt.CoreServices services,
+  ) {
+    scenePreparerCalls += 1;
+    lastServices = services;
+    return scene;
   }
 
   @override
@@ -96,6 +127,44 @@ final class _SurfaceSeamExtension
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test(
+    'resolves before preparation and preserves the canonical scene boundary',
+    () {
+      final canonicalScene = _fixtureScene();
+      final pipeline = rt.CanvasRenderPipeline(
+        textMeasurer: _FakeTextMeasurer(),
+      );
+
+      var preparerCalls = 0;
+      rt.CanvasSceneDocument? receivedScene;
+      rt.CoreServices? receivedServices;
+
+      final runtime = EditorRuntime<rt.CanvasSceneDocument>(
+        initial: canonicalScene,
+        adapter: const _ResolvingAdapter(),
+        renderPipeline: pipeline,
+        imageIntrinsics: null,
+        scenePreparer: (scene, services) {
+          preparerCalls += 1;
+          receivedScene = scene;
+          receivedServices = services;
+
+          return scene.copyWith(backgroundOpacity: 0.8);
+        },
+      );
+
+      addTearDown(runtime.dispose);
+
+      expect(preparerCalls, 1);
+      expect(receivedScene?.backgroundOpacity, 0.4);
+      expect(identical(receivedServices, pipeline.services), isTrue);
+
+      expect(identical(runtime.document.value, canonicalScene), isTrue);
+      expect(runtime.document.value.backgroundOpacity, 1.0);
+      expect(runtime.render.value.scene.backgroundOpacity, 0.8);
+    },
+  );
+
   testWidgets(
     'forwards direct extension seams into mounted editor runtime construction',
     (tester) async {
@@ -115,10 +184,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(extension.runtime, isNotNull);
-
-      expect(extension.renderBuilderCalls, greaterThanOrEqualTo(1));
-      expect(extension.lastContentBounds, isNotNull);
-      expect(extension.lastContentBounds!.paddingPx, _contentBoundsPaddingPx);
+      expect(extension.scenePreparerCalls, greaterThanOrEqualTo(1));
+      expect(
+        identical(
+          extension.lastServices,
+          extension.runtime!.renderPipeline.services,
+        ),
+        isTrue,
+      );
+      expect(extension.runtime!.render.value.contentBounds, isNotNull);
 
       final field = extension.runtime!.getField<String>(
         _nodeId,
@@ -160,7 +234,7 @@ void main() {
 
     final camera = viewportSurface.camera;
     final panBefore = camera.value.pan;
-    final renderBuilderCallsBefore = extension.renderBuilderCalls;
+    final scenePreparerCallsBefore = extension.scenePreparerCalls;
 
     final endSession = runtime.beginEditSession();
 
@@ -172,7 +246,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(extension.renderBuilderCalls, greaterThan(renderBuilderCallsBefore));
+    expect(
+      extension.scenePreparerCalls,
+      greaterThan(scenePreparerCallsBefore),
+    );
 
     expect(camera.value.pan, isNot(panBefore));
   });

@@ -94,15 +94,15 @@ class _RecordingJsonOutputPort extends JsonOutputPort {
 }
 
 class _RecordingEditorExports implements EditorExports {
-  String? documentJson;
+  CanvasSceneDocument? preparedScene;
   EditorExportSpec? spec;
 
   @override
   Future<Uint8List> renderPng({
-    required String documentJson,
+    required CanvasSceneDocument preparedScene,
     required EditorExportSpec spec,
   }) async {
-    this.documentJson = documentJson;
+    this.preparedScene = preparedScene;
     this.spec = spec;
     return Uint8List.fromList(const [1, 2, 3]);
   }
@@ -173,7 +173,7 @@ class _FakeIconCatalogPort implements IconCatalogPort {
 
 RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
   final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
-  return defaultSceneRenderBuilder(pipeline, scene);
+  return pipeline.build(scene);
 }
 
 CanvasSceneDocument _scene(double backgroundOpacity) {
@@ -299,9 +299,8 @@ void main() {
 
     await shareAction.invoke(ctx);
 
-    final decoded = jsonDecode(renderer.documentJson!) as Map<String, dynamic>;
-
-    expect(decoded['backgroundOpacity'], 0.9);
+    expect(identical(renderer.preparedScene, renderScene), isTrue);
+    expect(renderer.preparedScene?.backgroundOpacity, 0.9);
     expect(renderer.spec?.fit, CanvasFit.contain);
     expect(output.sharedBytes, isNotNull);
   });

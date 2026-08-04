@@ -1,6 +1,5 @@
 // Path: lib/src/canvas_document_exporter.dart
 
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
