@@ -16,9 +16,7 @@ final class _FakeTextMeasurer implements TextMeasurer {
 
 void main() {
   test('retains one service bundle for the pipeline lifetime', () {
-    final pipeline = CanvasRenderPipeline(
-      textMeasurer: _FakeTextMeasurer(),
-    );
+    final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
 
     final services = pipeline.services;
 
@@ -26,9 +24,7 @@ void main() {
   });
 
   test('build snapshots the exact supplied prepared scene', () {
-    final pipeline = CanvasRenderPipeline(
-      textMeasurer: _FakeTextMeasurer(),
-    );
+    final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
 
     const preparedScene = CanvasSceneDocument(
       artboardSize: Size2D(300, 200),

@@ -65,10 +65,7 @@ final class _ResolvingAdapter
   }
 
   @override
-  rt.CanvasSceneDocument resolve(
-    rt.CanvasSceneDocument doc,
-    Object? context,
-  ) {
+  rt.CanvasSceneDocument resolve(rt.CanvasSceneDocument doc, Object? context) {
     return doc.copyWith(backgroundOpacity: 0.4);
   }
 }
@@ -246,10 +243,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(
-      extension.scenePreparerCalls,
-      greaterThan(scenePreparerCallsBefore),
-    );
+    expect(extension.scenePreparerCalls, greaterThan(scenePreparerCallsBefore));
 
     expect(camera.value.pan, isNot(panBefore));
   });

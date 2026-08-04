@@ -1,18 +1,11 @@
 // Path: oss_packages/canvas_editor_flutter/test/static_editor_extension_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show
-        CanvasFieldKey,
-        CanvasSceneDocument,
-        CoreServices,
-        ScenePreparer;
+    show CanvasFieldKey, CanvasSceneDocument, CoreServices, ScenePreparer;
 import 'package:canvas_editor_flutter/extensions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-CanvasSceneDocument _prepareScene(
-  CanvasSceneDocument scene,
-  CoreServices _,
-) {
+CanvasSceneDocument _prepareScene(CanvasSceneDocument scene, CoreServices _) {
   return scene;
 }
 

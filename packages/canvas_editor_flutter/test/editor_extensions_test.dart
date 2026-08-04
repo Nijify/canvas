@@ -100,9 +100,7 @@ void main() {
 
     test('exposes one scene preparer by identity', () {
       final extension = CompositeEditorExtension<Object>([
-        StaticEditorExtension<Object>(
-          scenePreparer: _firstScenePreparer,
-        ),
+        StaticEditorExtension<Object>(scenePreparer: _firstScenePreparer),
       ]);
 
       expect(extension.scenePreparer, same(_firstScenePreparer));
@@ -110,12 +108,8 @@ void main() {
 
     test('rejects multiple scene preparers', () {
       final extension = CompositeEditorExtension<Object>([
-        StaticEditorExtension<Object>(
-          scenePreparer: _firstScenePreparer,
-        ),
-        StaticEditorExtension<Object>(
-          scenePreparer: _secondScenePreparer,
-        ),
+        StaticEditorExtension<Object>(scenePreparer: _firstScenePreparer),
+        StaticEditorExtension<Object>(scenePreparer: _secondScenePreparer),
       ]);
 
       expect(

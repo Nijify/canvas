@@ -49,12 +49,8 @@ abstract final class CanvasViewportPlanner {
     }
 
     final hasPadding = paddingPx > 0;
-    final viewportW = hasPadding
-        ? math.max(1.0, outW - paddingPx * 2)
-        : outW;
-    final viewportH = hasPadding
-        ? math.max(1.0, outH - paddingPx * 2)
-        : outH;
+    final viewportW = hasPadding ? math.max(1.0, outW - paddingPx * 2) : outW;
+    final viewportH = hasPadding ? math.max(1.0, outH - paddingPx * 2) : outH;
 
     final t = computeViewport(
       artboardW: artboard.w,
