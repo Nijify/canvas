@@ -1,7 +1,7 @@
 // Path: oss_packages/canvas_editor_flutter/lib/src/editor_extensions.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFieldKey, SceneRenderBuilder;
+    show CanvasFieldKey, ScenePreparer;
 import 'package:canvas_editor_flutter/src/editor_field_codecs.dart'
     show FieldCodec;
 import 'package:canvas_editor_flutter/src/editor_hosts.dart'
@@ -32,7 +32,7 @@ class EditorExtensionContext<TSourceDocument> {
 /// Product-agnostic capability-composition seam for editor surfaces.
 ///
 /// Construction-time configuration is read once, before [attach]:
-/// - [renderBuilder]
+/// - [scenePreparer]
 /// - [fieldCodecs]
 /// - [surfaceFeatures]
 ///
@@ -43,10 +43,11 @@ class EditorExtensionContext<TSourceDocument> {
 abstract class EditorExtension<TSourceDocument> {
   const EditorExtension();
 
-  /// Optional render strategy for the runtime render pipeline.
+  /// Optional transformation applied after document resolution and before the
+  /// runtime render pipeline builds its snapshot.
   ///
-  /// Later non-null contributions win when extensions are composed.
-  SceneRenderBuilder? get renderBuilder => null;
+  /// An editor session may have at most one contributed preparer.
+  ScenePreparer? get scenePreparer => null;
 
   /// Additional or overriding document field codecs.
   ///
@@ -71,14 +72,14 @@ abstract class EditorExtension<TSourceDocument> {
 class StaticEditorExtension<TSourceDocument>
     extends EditorExtension<TSourceDocument> {
   const StaticEditorExtension({
-    this.renderBuilder,
+    this.scenePreparer,
     this.fieldCodecs = const <CanvasFieldKey, FieldCodec>{},
     this.surfaceFeatures = const EditorSurfaceFeatures(),
     this.actionSpecs = const <EditorActionSpec>[],
   });
 
   @override
-  final SceneRenderBuilder? renderBuilder;
+  final ScenePreparer? scenePreparer;
 
   @override
   final Map<CanvasFieldKey, FieldCodec> fieldCodecs;
@@ -97,12 +98,24 @@ class CompositeEditorExtension<TSourceDocument>
   final List<EditorExtension<TSourceDocument>> extensions;
 
   @override
-  SceneRenderBuilder? get renderBuilder {
-    for (final extension in extensions.reversed) {
-      final candidate = extension.renderBuilder;
-      if (candidate != null) return candidate;
+  ScenePreparer? get scenePreparer {
+    ScenePreparer? result;
+
+    for (final extension in extensions) {
+      final candidate = extension.scenePreparer;
+      if (candidate == null) continue;
+
+      if (result != null) {
+        throw StateError(
+          'Multiple editor extensions contributed a ScenePreparer. '
+          'Compose preparation explicitly and contribute exactly one preparer.',
+        );
+      }
+
+      result = candidate;
     }
-    return null;
+
+    return result;
   }
 
   @override

@@ -256,7 +256,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       List<EditorExtension<TSourceDocument>>.unmodifiable(widget.extensions),
     );
 
-    final renderBuilder = _extension.renderBuilder ?? defaultSceneRenderBuilder;
+    final scenePreparer = _extension.scenePreparer;
 
     final fieldCodecs = Map<CanvasFieldKey, FieldCodec>.unmodifiable(
       _extension.fieldCodecs,
@@ -272,7 +272,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       renderPipeline: renderPipeline,
       imageIntrinsics: _pool,
       initialContext: widget.initialResolveContext,
-      renderBuilder: renderBuilder,
+      scenePreparer: scenePreparer,
       maxHistory: 100,
       contentBounds: viewportFraming.contentBoundsSpec,
       extraFieldCodecs: fieldCodecs,

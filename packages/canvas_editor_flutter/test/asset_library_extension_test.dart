@@ -193,7 +193,7 @@ CanvasSceneDocument _emptyScene() {
 
 RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
   final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
-  return defaultSceneRenderBuilder(pipeline, scene);
+  return pipeline.build(scene);
 }
 
 void main() {

@@ -1,5 +1,21 @@
 # Unreleased
 
+# 0.5.0
+
+- **Breaking:** require `canvas_core 0.6.x` and
+  `canvas_renderer_flutter 0.5.x`.
+- **Breaking:** replace `EditorExtension.renderBuilder` and
+  `StaticEditorExtension.renderBuilder` with `scenePreparer`.
+- **Breaking:** reject extension compositions with more than one non-null
+  `ScenePreparer` by throwing `StateError`.
+- **Breaking:** change `EditorExports.renderPng()` to accept a typed
+  `preparedScene` instead of scene JSON.
+- Resolve source documents through `EditorDocumentAdapter`, apply optional
+  scene preparation once, and then call `CanvasRenderPipeline.build()`.
+- Preserve canonical editable scenes for editing, history, persistence, and
+  scene JSON export while using prepared runtime scenes for drawing and PNG
+  export.
+- Remove the PNG scene JSON encode/decode round trip.
 - Consume the `CanvasViewportTransform` returned directly by
   `CanvasViewportPlanner.plan()`.
 

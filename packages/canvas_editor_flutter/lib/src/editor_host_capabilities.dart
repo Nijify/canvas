@@ -5,7 +5,8 @@
 
 import 'dart:typed_data';
 
-import 'package:canvas_core/canvas_core_runtime.dart' show CanvasFit;
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show CanvasFit, CanvasSceneDocument;
 
 typedef JsonMap = Map<String, Object?>;
 
@@ -37,13 +38,14 @@ class EditorExportSpec {
   final bool tight;
 }
 
-// ------------------------------------------------------------
-// PNG export
-// ------------------------------------------------------------
-
+/// Host-provided renderer for an already-prepared editor scene.
+///
+/// The editor supplies the effective scene currently displayed to the user.
+/// Implementations must render it directly without applying scene preparation
+/// again.
 abstract class EditorExports {
   Future<Uint8List> renderPng({
-    required String documentJson,
+    required CanvasSceneDocument preparedScene,
     required EditorExportSpec spec,
   });
 }

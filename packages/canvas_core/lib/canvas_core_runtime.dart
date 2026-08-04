@@ -178,11 +178,13 @@ export 'src/foundation/paint/canvas_fill.dart';
 // The generic runtime surface includes:
 //   • CanvasRenderPipeline
 //   • RenderSnapshot
-//   • SceneRenderBuilder
-//   • defaultSceneRenderBuilder
+//   • ScenePreparer
 //
-// Domain-specific preparation and rendering policies belong in extension
-// packages outside canvas_core.
+// Scene preparers transform runtime scenes. CanvasRenderPipeline remains the
+// sole owner of compute, paint-op construction, content bounds, and snapshots.
+//
+// Domain-specific preparation policies belong in extension packages outside
+// canvas_core.
 export 'src/runtime/render/canvas_render_pipeline.dart';
 
 export 'src/runtime/viewport/canvas_viewport_planner.dart';

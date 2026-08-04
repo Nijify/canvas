@@ -110,4 +110,3 @@ CanvasViewportTransform computeViewport({
     recordingH: targetH + bleed * 2,
   );
 }
-

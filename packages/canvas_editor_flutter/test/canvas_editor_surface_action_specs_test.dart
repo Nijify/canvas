@@ -26,7 +26,7 @@ final class _ActionMarker {
 
 final class _LifecycleActionExtension
     extends EditorExtension<CanvasSceneDocument> {
-  int renderBuilderReads = 0;
+  int scenePreparerReads = 0;
   int fieldCodecsReads = 0;
   int surfaceFeaturesReads = 0;
   int actionSpecsReads = 0;
@@ -42,9 +42,9 @@ final class _LifecycleActionExtension
   _ActionMarker? invokedMarker;
 
   @override
-  SceneRenderBuilder? get renderBuilder {
-    renderBuilderReads++;
-    events.add('renderBuilder');
+  ScenePreparer? get scenePreparer {
+    scenePreparerReads++;
+    events.add('scenePreparer');
     return null;
   }
 
@@ -184,14 +184,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(extension.events.take(5).toList(), <String>[
-        'renderBuilder',
+        'scenePreparer',
         'fieldCodecs',
         'surfaceFeatures',
         'attach',
         'actionSpecs',
       ]);
 
-      expect(extension.renderBuilderReads, 1);
+      expect(extension.scenePreparerReads, 1);
       expect(extension.fieldCodecsReads, 1);
       expect(extension.surfaceFeaturesReads, 1);
       expect(extension.actionSpecsReads, 1);
@@ -218,7 +218,7 @@ void main() {
       extension.setEnabled(true);
       await tester.pump();
 
-      expect(extension.renderBuilderReads, 1);
+      expect(extension.scenePreparerReads, 1);
       expect(extension.fieldCodecsReads, 1);
       expect(extension.surfaceFeaturesReads, 1);
       expect(extension.actionSpecsReads, 1);

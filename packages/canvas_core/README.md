@@ -86,14 +86,35 @@ final restored = CanvasSceneDocument.fromJson(json);
 
 ## Rendering pipeline
 
-The canonical flow is:
+The canonical runtime flow is:
 
 ```text
 CanvasSceneDocument
-  -> computeScene(scene, services)
-  -> buildPaintOpsFromScene(scene, computed)
+  -> optional host-invoked ScenePreparer
+  -> CanvasRenderPipeline.build()
+  -> RenderSnapshot
   -> renderer-specific PaintOp replay
 ```
+
+`ScenePreparer` is a synchronous, renderer-neutral transformation applied by
+the host before building:
+
+```dart
+final renderPipeline = CanvasRenderPipeline(
+  textMeasurer: myTextMeasurer,
+  images: myImageIntrinsics,
+  icons: myIconResolver,
+);
+
+final preparedScene =
+    scenePreparer?.call(document, renderPipeline.services) ?? document;
+
+final snapshot = renderPipeline.build(preparedScene);
+```
+
+`CanvasRenderPipeline` does not invoke preparation automatically. Its stable
+`services` instance can be shared with preparation so preparation and final
+layout use the same host services.
 
 Renderers consume `PaintOp` values. They do not need to interpret the scene graph, layout rules, or z-order themselves.
 

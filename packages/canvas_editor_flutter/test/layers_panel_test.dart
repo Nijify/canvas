@@ -60,7 +60,7 @@ CanvasSceneDocument _scene(List<Node> children) {
 
 RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
   final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
-  return defaultSceneRenderBuilder(pipeline, scene);
+  return pipeline.build(scene);
 }
 
 class _RecordingEditorController implements EditorController {

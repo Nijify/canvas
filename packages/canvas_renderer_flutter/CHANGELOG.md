@@ -1,7 +1,15 @@
 ## Unreleased
 
+## 0.5.0
+
+- **Breaking:** require `canvas_core 0.6.x`.
 - **Breaking:** stop re-exporting `CanvasFit` and `ContentBoundsPolicy`.
   Import these core-owned types from `canvas_core_runtime.dart`.
+- **Breaking:** require one typed `CanvasSceneDocument` in
+  `CanvasDocumentExporter.exportPng()` and remove the `documentJson` input.
+- **Breaking:** remove exporter-level `renderBuilder` support. Callers that
+  use scene preparation must supply the already-prepared runtime scene.
+- Render the supplied scene directly through `CanvasRenderPipeline.build()`.
 - Consume the `CanvasViewportTransform` returned directly by
   `CanvasViewportPlanner.plan()`.
 

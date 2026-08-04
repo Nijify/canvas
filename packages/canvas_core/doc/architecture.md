@@ -20,10 +20,18 @@ The canonical runtime flow is:
 
 ```text
 CanvasSceneDocument
-  -> computeScene(scene, services)
-  -> buildPaintOpsFromScene(scene, computed)
+  -> optional host-invoked ScenePreparer
+  -> CanvasRenderPipeline.build()
+  -> RenderSnapshot
   -> renderer-specific PaintOp replay
 ```
+
+`CanvasRenderPipeline.services` is constructed once with the pipeline and
+remains stable for its lifetime. Hosts should pass this exact service bundle to
+a `ScenePreparer` before calling `build()`.
+
+Preparers transform runtime scenes. They do not construct `RenderSnapshot`
+values or replace pipeline rendering.
 
 ### Headless editor utilities
 
@@ -46,11 +54,9 @@ Use this when you need interaction mechanics over runtime scenes, including hist
 ```text
 Host/app data
   -> CanvasSceneDocument
-  -> CoreServices
-  -> computeScene(...)
-  -> ComputedScene
-  -> buildPaintOpsFromScene(...)
-  -> PaintOp list
+  -> optional ScenePreparer with pipeline.services
+  -> CanvasRenderPipeline.build()
+  -> RenderSnapshot
   -> renderer
 ```
 

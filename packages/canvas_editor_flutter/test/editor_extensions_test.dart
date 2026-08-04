@@ -6,28 +6,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
-RenderSnapshot _firstRenderBuilder(
-  CanvasRenderPipeline pipeline,
-  CanvasSceneDocument scene, {
-  ContentBoundsSpec? contentBounds,
-}) {
-  return defaultSceneRenderBuilder(
-    pipeline,
-    scene,
-    contentBounds: contentBounds,
-  );
+CanvasSceneDocument _firstScenePreparer(
+  CanvasSceneDocument scene,
+  CoreServices _,
+) {
+  return scene;
 }
 
-RenderSnapshot _secondRenderBuilder(
-  CanvasRenderPipeline pipeline,
-  CanvasSceneDocument scene, {
-  ContentBoundsSpec? contentBounds,
-}) {
-  return defaultSceneRenderBuilder(
-    pipeline,
-    scene,
-    contentBounds: contentBounds,
-  );
+CanvasSceneDocument _secondScenePreparer(
+  CanvasSceneDocument scene,
+  CoreServices _,
+) {
+  return scene;
 }
 
 FieldCodec _codec(String fallback) {
@@ -102,13 +92,36 @@ EditorActionSpec _action(EditorActionId id) {
 
 void main() {
   group('CompositeEditorExtension construction contributions', () {
-    test('uses the later non-null render builder', () {
+    test('allows zero scene preparers', () {
+      const extension = CompositeEditorExtension<Object>([]);
+
+      expect(extension.scenePreparer, isNull);
+    });
+
+    test('exposes one scene preparer by identity', () {
       final extension = CompositeEditorExtension<Object>([
-        StaticEditorExtension<Object>(renderBuilder: _firstRenderBuilder),
-        StaticEditorExtension<Object>(renderBuilder: _secondRenderBuilder),
+        StaticEditorExtension<Object>(scenePreparer: _firstScenePreparer),
       ]);
 
-      expect(extension.renderBuilder, same(_secondRenderBuilder));
+      expect(extension.scenePreparer, same(_firstScenePreparer));
+    });
+
+    test('rejects multiple scene preparers', () {
+      final extension = CompositeEditorExtension<Object>([
+        StaticEditorExtension<Object>(scenePreparer: _firstScenePreparer),
+        StaticEditorExtension<Object>(scenePreparer: _secondScenePreparer),
+      ]);
+
+      expect(
+        () => extension.scenePreparer,
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Multiple editor extensions contributed a ScenePreparer'),
+          ),
+        ),
+      );
     });
 
     test('merges codecs in order with later keys overriding earlier keys', () {

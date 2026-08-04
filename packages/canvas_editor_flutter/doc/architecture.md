@@ -109,13 +109,28 @@ Application
   -> CanvasSceneEditor
   -> CanvasEditorSurface<CanvasSceneDocument>
   -> EditorRuntime<CanvasSceneDocument>
-  -> canvas_core compute/render contracts
+  -> EditorDocumentAdapter.resolve()
+  -> optional ScenePreparer
+  -> CanvasRenderPipeline.build()
+  -> RenderSnapshot
   -> canvas_renderer_flutter drawing/export support
 ```
 
-The editor mutates `CanvasSceneDocument` values directly. It delegates
-deterministic geometry and paint planning to `canvas_core`, then delegates
-Flutter drawing and image/text helpers to `canvas_renderer_flutter`.
+The editor mutates canonical `CanvasSceneDocument` values directly. It
+delegates source conversion to the document adapter, optional runtime-only
+transformation to the scene preparer, deterministic geometry and paint planning
+to `canvas_core`, and Flutter drawing and image/text helpers to
+`canvas_renderer_flutter`.
+
+The editor intentionally maintains two scene views:
+
+* `editableScene` is canonical state used for editing, history, persistence, and
+  scene JSON export.
+* `renderScene` is resolved and prepared runtime state used for drawing and PNG
+  export.
+
+Prepared runtime state must not be written back to canonical state merely
+because it is available in `RenderSnapshot`.
 
 ## Mutation model
 
@@ -209,7 +224,7 @@ editor behavior.
 
 Construction-time contributions are read once before `attach`:
 
-* `renderBuilder`
+* `scenePreparer`
 * `fieldCodecs`
 * `surfaceFeatures`
 
@@ -232,8 +247,11 @@ actions, validated for duplicate IDs, and frozen for the editor session.
 depend on state created in `attach` and may be read again after an extension
 requests a rebuild.
 
-`EditorRuntime` does not depend on extensions. It receives a render builder and
-field codecs as plain constructor inputs.
+`EditorRuntime` does not depend on extensions. It receives an optional
+`ScenePreparer` and field codecs as plain constructor inputs. The preparer
+receives the scene produced by the document adapter and the same stable
+`CoreServices` instance used by `CanvasRenderPipeline.build()`. Extension
+composition accepts at most one preparer.
 
 ## Capability model
 
@@ -247,6 +265,10 @@ editor model:
 Applications provide environment-specific implementations such as picker UI,
 file access, durable media storage, and output destinations. The editor owns the
 shared document behavior after those integrations return a result.
+
+PNG export receives the prepared runtime scene. JSON export receives canonical
+editable state. Export infrastructure must not prepare an editor-provided
+render scene again.
 
 ## Package boundaries
 
