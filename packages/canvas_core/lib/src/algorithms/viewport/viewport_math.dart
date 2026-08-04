@@ -1,6 +1,5 @@
 // Path: lib/src/algorithms/viewport/viewport_math.dart
 
-import 'dart:math' as math;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 
 enum CanvasFit { contain, cover, stretch }
@@ -112,29 +111,3 @@ CanvasViewportTransform computeViewport({
   );
 }
 
-CanvasViewportTransform computeViewportWithPadding({
-  required double artboardW,
-  required double artboardH,
-  required double viewportW,
-  required double viewportH,
-  Rect2D? bounds,
-  double paddingPx = 0,
-  CanvasFit fit = CanvasFit.contain,
-  double? minUniformScale,
-  double? maxUniformScale,
-}) {
-  final targetW = math.max(1.0, viewportW - paddingPx * 2);
-  final targetH = math.max(1.0, viewportH - paddingPx * 2);
-
-  return computeViewport(
-    artboardW: artboardW,
-    artboardH: artboardH,
-    targetW: targetW,
-    targetH: targetH,
-    bounds: bounds,
-    bleed: paddingPx,
-    fit: fit,
-    minUniformScale: minUniformScale,
-    maxUniformScale: maxUniformScale,
-  );
-}

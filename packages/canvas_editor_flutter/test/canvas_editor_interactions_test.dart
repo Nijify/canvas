@@ -236,7 +236,7 @@ void main() {
       minUniformScale: kEditorCameraMinScale,
       maxUniformScale: kEditorCameraMaxScale,
       snappingEnabled: false,
-    ).transform;
+    );
 
     expect(camera.value.viewportW, viewport.viewportPx.width);
     expect(camera.value.viewportH, viewport.viewportPx.height);

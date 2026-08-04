@@ -153,11 +153,7 @@ export 'src/runtime/traversal/stack_order.dart'
 // 9) Viewport + export helpers (renderer-agnostic)
 // ============================================================================
 export 'src/algorithms/viewport/viewport_math.dart'
-    show
-        CanvasFit,
-        CanvasViewportTransform,
-        computeViewport,
-        computeViewportWithPadding;
+    show CanvasFit, CanvasViewportTransform, computeViewport;
 
 // Crop-to-content / content bounds helpers
 export 'src/algorithms/export/content_bounds_policy.dart'

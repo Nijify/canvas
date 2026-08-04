@@ -28,8 +28,6 @@ library;
 export 'src/flutter_canvas_renderer.dart'
     show CanvasRenderer, CanvasRendererOptions, MissingImageBehavior;
 
-export 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFit, ContentBoundsPolicy;
 export 'src/canvas_document_exporter.dart'
     show CanvasDocumentExporter, CanvasExportSpec;
 

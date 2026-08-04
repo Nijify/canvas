@@ -1,3 +1,10 @@
+## Unreleased
+
+- **Breaking:** stop re-exporting `CanvasFit` and `ContentBoundsPolicy`.
+  Import these core-owned types from `canvas_core_runtime.dart`.
+- Consume the `CanvasViewportTransform` returned directly by
+  `CanvasViewportPlanner.plan()`.
+
 ## 0.4.0
 
 - **Breaking:** make `FlutterTextPipeline` implement the core `TextMeasurer`

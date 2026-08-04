@@ -88,7 +88,7 @@ void main() {
           minUniformScale: kEditorCameraMinScale,
           maxUniformScale: kEditorCameraMaxScale,
           snappingEnabled: false,
-        ).transform;
+        );
 
         controller.syncToLayout(
           viewportPx: viewportPx,
@@ -133,7 +133,7 @@ void main() {
           minUniformScale: kEditorCameraMinScale,
           maxUniformScale: kEditorCameraMaxScale,
           snappingEnabled: false,
-        ).transform;
+        );
 
         controller.syncToLayout(
           viewportPx: viewportPx,
@@ -185,7 +185,7 @@ void main() {
         minUniformScale: kEditorCameraMinScale,
         maxUniformScale: kEditorCameraMaxScale,
         snappingEnabled: false,
-      ).transform;
+      );
 
       controller.syncToLayout(
         viewportPx: viewportPx,
@@ -239,7 +239,7 @@ void main() {
         minUniformScale: kEditorCameraMinScale,
         maxUniformScale: kEditorCameraMaxScale,
         snappingEnabled: false,
-      ).transform;
+      );
 
       controller.syncToLayout(
         viewportPx: viewportPx,
