@@ -167,7 +167,7 @@ class CanvasDocumentExporter {
     final maxW = spec.widthPx.toDouble();
     final maxH = spec.heightPx.toDouble();
 
-    final plan = CanvasViewportPlanner.plan(
+    final vp = CanvasViewportPlanner.plan(
       artboard: art,
       targetW: maxW,
       targetH: maxH,
@@ -178,8 +178,6 @@ class CanvasDocumentExporter {
       snappingEnabled: false,
       pixelRatioForSnapping: spec.pixelRatio, // ignored when snapping disabled
     );
-
-    final vp = plan.transform;
 
     final pr = spec.pixelRatio.clamp(1.0, 4.0).toDouble();
 

@@ -3,27 +3,8 @@
 import 'dart:math' as math;
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/algorithms/viewport/viewport_math.dart'
-    show
-        CanvasViewportTransform,
-        CanvasFit,
-        computeViewport,
-        computeViewportWithPadding;
+    show CanvasViewportTransform, CanvasFit, computeViewport;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-
-/// Extra sizing info for export tight mode.
-class CanvasViewportPlanResult {
-  const CanvasViewportPlanResult({
-    required this.transform,
-    required this.outputW,
-    required this.outputH,
-  });
-
-  final CanvasViewportTransform transform;
-
-  /// Final logical output size (pre pixelRatio) used for recordingW/H math.
-  final double outputW;
-  final double outputH;
-}
 
 abstract final class CanvasViewportPlanner {
   /// Plan a viewport transform for editor/thumb/export.
@@ -38,7 +19,7 @@ abstract final class CanvasViewportPlanner {
   /// - Controlled by [snappingEnabled].
   /// - Export default MUST pass snappingEnabled=false (mathematically exact).
   ///   TODO: future "sharp as possible" export mode can enable snapping.
-  static CanvasViewportPlanResult plan({
+  static CanvasViewportTransform plan({
     required Size2D artboard,
     required double targetW,
     required double targetH,
@@ -67,40 +48,30 @@ abstract final class CanvasViewportPlanner {
       }
     }
 
-    // Padding path: use computeViewportWithPadding (inner padding).
-    // Bleed path: use computeViewport with bleed (outer margin).
-    final CanvasViewportTransform t = (paddingPx > 0)
-        ? computeViewportWithPadding(
-            artboardW: artboard.w,
-            artboardH: artboard.h,
-            viewportW: outW,
-            viewportH: outH,
-            bounds: bounds,
-            paddingPx: paddingPx,
-            fit: fit,
-            minUniformScale: minUniformScale,
-            maxUniformScale: maxUniformScale,
-          )
-        : computeViewport(
-            artboardW: artboard.w,
-            artboardH: artboard.h,
-            targetW: outW,
-            targetH: outH,
-            bounds: bounds,
-            bleed: bleedPx,
-            fit: fit,
-            minUniformScale: minUniformScale,
-            maxUniformScale: maxUniformScale,
-          );
+    final hasPadding = paddingPx > 0;
+    final viewportW = hasPadding
+        ? math.max(1.0, outW - paddingPx * 2)
+        : outW;
+    final viewportH = hasPadding
+        ? math.max(1.0, outH - paddingPx * 2)
+        : outH;
+
+    final t = computeViewport(
+      artboardW: artboard.w,
+      artboardH: artboard.h,
+      targetW: viewportW,
+      targetH: viewportH,
+      bounds: bounds,
+      bleed: hasPadding ? paddingPx : bleedPx,
+      fit: fit,
+      minUniformScale: minUniformScale,
+      maxUniformScale: maxUniformScale,
+    );
 
     final snapped = snappingEnabled
         ? t.snapTranslation(pixelRatioForSnapping)
         : t;
 
-    return CanvasViewportPlanResult(
-      transform: snapped,
-      outputW: outW,
-      outputH: outH,
-    );
+    return snapped;
   }
 }

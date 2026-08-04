@@ -174,7 +174,7 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
     required Size2D artboard,
     required double paddingPx,
   }) {
-    final plan = CanvasViewportPlanner.plan(
+    final transform = CanvasViewportPlanner.plan(
       artboard: artboard,
       targetW: viewportPx.width,
       targetH: viewportPx.height,
@@ -185,8 +185,6 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
       maxUniformScale: kEditorCameraMaxScale,
       snappingEnabled: false,
     );
-
-    final transform = plan.transform;
 
     return (
       scale: transform.scaleX,
@@ -199,7 +197,7 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
     required Rect2D bounds,
     required double paddingPx,
   }) {
-    final plan = CanvasViewportPlanner.plan(
+    final transform = CanvasViewportPlanner.plan(
       // The planner uses [bounds] as the fit target when it is provided.
       // Artboard dimensions are only relevant to artboard-fit mode.
       artboard: const Size2D(1, 1),
@@ -212,8 +210,6 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
       maxUniformScale: kEditorCameraMaxScale,
       snappingEnabled: false,
     );
-
-    final transform = plan.transform;
 
     return (
       scale: transform.scaleX,

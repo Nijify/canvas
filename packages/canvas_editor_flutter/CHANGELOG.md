@@ -1,3 +1,8 @@
+# Unreleased
+
+- Consume the `CanvasViewportTransform` returned directly by
+  `CanvasViewportPlanner.plan()`.
+
 # 0.4.0
 
 - **Breaking:** require `canvas_core 0.5.x` and

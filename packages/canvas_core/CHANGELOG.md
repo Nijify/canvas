@@ -3,6 +3,11 @@
 - **Breaking:** remove the unused `CanvasViewportPolicy` and
   `CanvasViewportSource` APIs. Use `CanvasViewportPlanner` and select the
   bounds to fit explicitly.
+- **Breaking:** make `CanvasViewportPlanner.plan()` return
+  `CanvasViewportTransform` directly and remove `CanvasViewportPlanResult`.
+- **Breaking:** remove `computeViewportWithPadding`. Use
+  `CanvasViewportPlanner.plan()` with `paddingPx`, or call `computeViewport`
+  directly for low-level viewport math.
 
 ## 0.5.0
 
