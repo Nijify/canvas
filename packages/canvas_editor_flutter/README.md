@@ -13,7 +13,7 @@ image import, and export capabilities.
   extensions, shell configuration, and interaction behavior.
 * Selection, movement, viewport behavior, inspector UI, layers, history, and
   editor actions.
-* Composable seams for render builders, field codecs, live surface
+* Composable seams for scene preparation, field codecs, live surface
   configuration, actions, providers, and custom inspector rows.
 * `CanvasRuntimeResources` for font loading, icon catalogs, and media/source
   resolution.
@@ -149,9 +149,11 @@ Widget build(BuildContext context) {
 }
 ```
 
-A JSON export is the runtime `CanvasSceneDocument` JSON. A PNG export is
-delegated to a `PngExportCapability` supplied by the application, commonly
-backed by `CanvasDocumentExporter` from `canvas_renderer_flutter`.
+Scene JSON export uses the canonical editable scene. PNG export uses the
+current prepared render scene and passes it to the application as a typed
+`CanvasSceneDocument`, commonly through a `PngExportCapability` backed by
+`CanvasDocumentExporter` from `canvas_renderer_flutter`. The PNG path does not
+serialize and decode the scene between the editor and exporter.
 
 ## Composition model
 
@@ -177,20 +179,39 @@ inputs.
 
 An `EditorExtension` may contribute:
 
-| Timing                                   | Contribution                                      |
-| ---------------------------------------- | ------------------------------------------------- |
-| Before `attach`, once per editor session | `renderBuilder`, `fieldCodecs`, `surfaceFeatures` |
-| After `attach`, once per editor session  | `actionSpecs`                                     |
-| During widget-tree builds                | `buildProviders`, `inspectorFieldRowBuilder`      |
+| Timing                                   | Contribution                                       |
+| ---------------------------------------- | -------------------------------------------------- |
+| Before `attach`, once per editor session | `scenePreparer`, `fieldCodecs`, `surfaceFeatures`  |
+| After `attach`, once per editor session  | `actionSpecs`                                      |
+| During widget-tree builds                | `buildProviders`, `inspectorFieldRowBuilder`       |
 
 `EditorSurfaceFeatures` owns live editor-surface behavior: inspector sections
 and headers, viewport framing, viewport behavior, interaction policy, selection
 chrome, and scene-object presentation.
 
-`renderBuilder` and `fieldCodecs` are direct extension contributions because
-they configure runtime rendering and document-field semantics. `EditorRuntime`
-receives those values as plain constructor inputs and remains unaware of
-extension composition.
+`scenePreparer` and `fieldCodecs` are direct extension contributions because
+they configure runtime scene preparation and document-field semantics.
+`EditorRuntime` receives those values as plain constructor inputs and remains
+unaware of extension composition.
+
+Extension composition permits at most one non-null `scenePreparer`. Contributing
+more than one preparer throws `StateError`; preparation order must not depend on
+extension ordering.
+
+The runtime rendering sequence is:
+
+```text
+canonical source document
+  -> EditorDocumentAdapter.resolve()
+  -> optional ScenePreparer
+  -> CanvasRenderPipeline.build()
+  -> RenderSnapshot
+```
+
+The adapter converts the source document into a runtime scene. The preparer may
+transform that resolved scene. The render pipeline remains the only owner of
+scene computation, paint-operation generation, content bounds, and snapshot
+construction.
 
 ## Architecture
 

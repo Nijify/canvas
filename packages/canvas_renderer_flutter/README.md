@@ -7,7 +7,7 @@
 - `CanvasRenderer` for drawing `PaintOp` lists on a `dart:ui` canvas.
 - `FlutterTextPipeline` as the shared Flutter text measurement, painting, caching, and resource-ownership engine.
 - `FlutterImagePool` for decoded raster ownership, stable intrinsic metadata, repaint notifications, asynchronous request ordering, and image disposal.
-- `CanvasDocumentExporter` for PNG export from a `CanvasSceneDocument` or scene JSON.
+- `CanvasDocumentExporter` for PNG export from an already-prepared `CanvasSceneDocument`.
 - Core-to-Flutter value mappers for colors, rects, sizes, offsets, and gradients.
 - Optional `ImageProvider` helpers for apps that want to convert common image refs into Flutter `ImageProvider`s.
 
@@ -177,11 +177,13 @@ Use one pool per editor, thumbnail, or other document rendering surface. Image s
 
 ## Export a scene to PNG
 
+`CanvasDocumentExporter` accepts an already-prepared runtime scene. It does not decode scene JSON or invoke application-specific scene preparation. If an application uses a `ScenePreparer`, prepare the scene before calling `exportPng()`; the exporter passes the supplied scene directly to `CanvasRenderPipeline.build()`.
+
 Create an operation-scoped text pipeline and keep it alive until `exportPng()` completes:
 
 ```dart
 Future<Uint8List> exportExample(
-  CanvasSceneDocument document,
+  CanvasSceneDocument preparedScene,
 ) async {
   final textPipeline = FlutterTextPipeline(
     fallbackFontFamilies: const ['Noto Sans'],
@@ -193,7 +195,7 @@ Future<Uint8List> exportExample(
 
   try {
     return await exporter.exportPng(
-      document: document,
+      document: preparedScene,
       resolveImage: (id) async => imageCache[id],
       resolveIntrinsicSize: (id) async => intrinsicSizes[id],
       spec: const CanvasExportSpec(
@@ -208,6 +210,8 @@ Future<Uint8List> exportExample(
 ```
 
 The exporter accepts decoded images separately from intrinsic image sizes. Stable intrinsic metadata affects layout; decoded `ui.Image` dimensions are used only for painting.
+
+Before export, ensure font registration, image intrinsic resolution, and raster preloading cover the prepared scene. Preparation may introduce or modify runtime nodes that were not present in the canonical source scene.
 
 Images returned by `resolveImage` are borrowed:
 
