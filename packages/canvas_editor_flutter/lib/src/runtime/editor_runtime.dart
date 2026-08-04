@@ -28,13 +28,9 @@ final class EditorRuntime<TSourceDocument>
     Object? initialContext,
     rt.ContentBoundsSpec? contentBounds,
 
-    /// Caller-supplied render strategy.
-    ///
-    /// This shared editor document/render state is intentionally generic:
-    /// it does not hardcode domain-specific extensions. Host applications can
-    /// provide a render builder that prepares/resolves their scene before
-    /// delegating to the runtime pipeline.
-    this.renderBuilder = rt.defaultSceneRenderBuilder,
+    /// Optional scene transformation applied after adapter resolution and
+    /// before the runtime pipeline builds the render snapshot.
+    this.scenePreparer,
 
     Map<rt.CanvasFieldKey, FieldCodec> extraFieldCodecs =
         const <rt.CanvasFieldKey, FieldCodec>{},
@@ -54,6 +50,7 @@ final class EditorRuntime<TSourceDocument>
         if (_canUndoListenable.value != canUndo) {
           _canUndoListenable.value = canUndo;
         }
+
         if (_canRedoListenable.value != canRedo) {
           _canRedoListenable.value = canRedo;
         }
@@ -67,11 +64,14 @@ final class EditorRuntime<TSourceDocument>
     _pipeline = RenderPipelineDriver<TSourceDocument>(
       initialSourceDocument: initial,
       build: (canonical) {
-        final resolved = _adapter.resolve(canonical, _ctx);
+        final resolvedScene = _adapter.resolve(canonical, _ctx);
 
-        return renderBuilder(
-          renderPipeline,
-          resolved,
+        final preparedScene =
+            scenePreparer?.call(resolvedScene, renderPipeline.services) ??
+            resolvedScene;
+
+        return renderPipeline.build(
+          preparedScene,
           contentBounds: contentBounds,
         );
       },
@@ -98,7 +98,7 @@ final class EditorRuntime<TSourceDocument>
   final rt.ImageIntrinsics? imageIntrinsics;
   final EditorDocumentAdapter<TSourceDocument> _adapter;
 
-  final rt.SceneRenderBuilder renderBuilder;
+  final rt.ScenePreparer? scenePreparer;
 
   StreamSubscription<rt.ElementId>? _imgSub;
 

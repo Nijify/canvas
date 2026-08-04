@@ -206,12 +206,11 @@ Future<Uint8List> _renderCurrentPng(
   EditorActionContext ctx,
   PngExportCapability export,
 ) async {
-  final scene = ctx.renderScene;
+  final preparedScene = ctx.renderScene;
 
-  await ctx.resources.ensureFontsForScene(scene);
+  await ctx.resources.ensureFontsForScene(preparedScene);
 
-  final jsonStr = jsonEncode(scene.toJson());
-  final art = scene.artboardSize;
+  final art = preparedScene.artboardSize;
 
   const maxSide = 2048.0;
   final scale = maxSide / (art.w > art.h ? art.w : art.h);
@@ -219,14 +218,14 @@ Future<Uint8List> _renderCurrentPng(
   final h = (art.h * scale).round();
 
   return export.renderer.renderPng(
-    documentJson: jsonStr,
+    preparedScene: preparedScene,
     spec: EditorExportSpec(
       widthPx: w,
       heightPx: h,
       bleedPx: 0,
       transparent:
-          scene.backgroundFill is CanvasFillNone ||
-          !(scene.backgroundOpacity > 0),
+          preparedScene.backgroundFill is CanvasFillNone ||
+          !(preparedScene.backgroundOpacity > 0),
       fit: CanvasFit.contain,
       pixelRatio: 2.0,
     ),

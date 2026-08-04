@@ -33,63 +33,37 @@ class RenderSnapshot {
   final Rect2D? contentBounds;
 }
 
-/// Shared render-builder seam used by editors, thumbnails, exporters,
-/// and extension packages.
+/// Pure, synchronous transformation from one runtime scene to another.
 ///
-/// The input scene is a runtime scene that is ready for this builder's
-/// preparation/rendering rules. The default builder renders it directly.
-/// Custom builders may prepare it further before delegating to the runtime
-/// pipeline.
-typedef SceneRenderBuilder =
-    RenderSnapshot Function(
-      CanvasRenderPipeline pipeline,
-      CanvasSceneDocument scene, {
-      ContentBoundsSpec? contentBounds,
-    });
-
-/// Default generic runtime render builder.
-///
-/// Does not know about application-provided behavior.
-RenderSnapshot defaultSceneRenderBuilder(
-  CanvasRenderPipeline pipeline,
-  CanvasSceneDocument scene, {
-  ContentBoundsSpec? contentBounds,
-}) {
-  return pipeline.build(scene, contentBounds: contentBounds);
-}
+/// Preparers may apply domain-specific layout or placement policy, but do not
+/// compute paint operations or construct a [RenderSnapshot].
+typedef ScenePreparer =
+    CanvasSceneDocument Function(
+      CanvasSceneDocument scene,
+      CoreServices services,
+    );
 
 /// Reusable runtime render pipeline.
 ///
-/// Runtime renders a prepared [CanvasSceneDocument]. Domain-specific extensions
-/// should prepare their scenes before calling this pipeline, or expose their own
-/// wrapper extension from their package.
+/// Runtime renders an already-prepared [CanvasSceneDocument]. Domain-specific
+/// preparation belongs outside this class and may use [services] before
+/// delegating the prepared scene to [build].
 class CanvasRenderPipeline {
   CanvasRenderPipeline({
     required TextMeasurer textMeasurer,
     ImageIntrinsics? images,
     IconResolver? icons,
-  }) : _textMeasurer = textMeasurer,
-       _images = images,
-       _icons = icons;
+  }) : services = CoreServices(tm: textMeasurer, images: images, icons: icons);
 
-  final TextMeasurer _textMeasurer;
-  final ImageIntrinsics? _images;
-  final IconResolver? _icons;
-
-  /// Builds the service bundle used by runtime compute and paint planning.
+  /// Stable service bundle shared by scene preparation and final rendering.
   ///
-  /// Extension packages can use this to prepare a scene with exactly the same
-  /// service dependencies before delegating back to [build].
-  CoreServices createServices() {
-    return CoreServices(tm: _textMeasurer, images: _images, icons: _icons);
-  }
+  /// The same instance is retained for the lifetime of this pipeline.
+  final CoreServices services;
 
   RenderSnapshot build(
     CanvasSceneDocument scene, {
     ContentBoundsSpec? contentBounds,
   }) {
-    final services = createServices();
-
     final computed = computeScene(scene, services);
     final ops = buildPaintOpsFromScene(scene, computed);
 

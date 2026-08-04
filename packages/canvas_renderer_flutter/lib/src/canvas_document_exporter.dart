@@ -90,9 +90,10 @@ class CanvasDocumentExporter {
 
   final IconResolver? icons;
 
-  /// Export the provided [document] (or [documentJson]) to a PNG byte array.
+  /// Exports an already-prepared [document] to a PNG byte array.
   ///
-  /// At least one of [document] or [documentJson] must be provided.
+  /// This exporter does not resolve source documents or apply domain-specific
+  /// scene preparation. Callers must perform those steps before invoking it.
   ///
   /// Hard rules:
   /// - Layout MUST use stable intrinsic metadata (resolveIntrinsicSize).
@@ -103,43 +104,19 @@ class CanvasDocumentExporter {
   /// - The caller retains ownership of those image handles.
   /// - Images must remain valid until this future completes.
   /// - This exporter never disposes resolved input images.
-  ///
-  /// Render customization:
-  /// - By default this uses [defaultSceneRenderBuilder].
-  /// - Callers that need extra scene preparation can provide another
-  ///   [SceneRenderBuilder].
-  /// - This package remains product-agnostic and depends only on canvas_core.
   Future<Uint8List> exportPng({
-    CanvasSceneDocument? document,
-    String? documentJson,
+    required CanvasSceneDocument document,
     required Future<ui.Image?> Function(ElementId id) resolveImage,
     required Future<Size2D?> Function(ElementId id) resolveIntrinsicSize,
     required CanvasExportSpec spec,
-    SceneRenderBuilder renderBuilder = defaultSceneRenderBuilder,
   }) async {
-    if (document == null && documentJson == null) {
-      throw ArgumentError('Either document or documentJson must be provided.');
-    }
-
-    if (document != null && documentJson != null) {
-      throw ArgumentError('Provide either document or documentJson, not both.');
-    }
-
-    final scene =
-        document ??
-        CanvasSceneDocument.fromJson(
-          jsonDecode(documentJson!) as Map<String, dynamic>,
-        );
-
     // Paint-only images (decoded) + stable layout intrinsics (metadata).
-    final images = await _collectImages(scene, resolveImage);
+    final images = await _collectImages(document, resolveImage);
     final intrinsicsMap = await _collectIntrinsicSizes(
-      scene,
+      document,
       resolveIntrinsicSize,
     );
     final stableIntrinsics = _StableMapIntrinsics(intrinsicsMap);
-
-    // Generic runtime pipeline
 
     final renderPipeline = CanvasRenderPipeline(
       textMeasurer: _textPipeline,
@@ -147,9 +124,8 @@ class CanvasDocumentExporter {
       icons: icons,
     );
 
-    final built = renderBuilder(
-      renderPipeline,
-      scene,
+    final built = renderPipeline.build(
+      document,
       contentBounds: spec.cropToContent
           ? ContentBoundsSpec(
               paddingPx: spec.contentPaddingPx,
