@@ -29,12 +29,18 @@ class TextSpec {
 /// This object owns the [TextPainter] instances in its bounded layout cache.
 /// Callers that create a pipeline must dispose it. Renderers and exporters only
 /// borrow the pipeline supplied to them.
+
 class FlutterTextPipeline implements TextMeasurer {
   FlutterTextPipeline({
     int maxEntries = 4096,
     Iterable<String> fallbackFontFamilies = const <String>[],
-  }) : assert(maxEntries > 0),
-       _maxEntries = maxEntries,
+  }) : _maxEntries = maxEntries > 0
+           ? maxEntries
+           : throw ArgumentError.value(
+               maxEntries,
+               'maxEntries',
+               'must be greater than zero',
+             ),
        _fallbackFontFamilies = List<String>.unmodifiable(
          fallbackFontFamilies
              .map((family) => family.trim())

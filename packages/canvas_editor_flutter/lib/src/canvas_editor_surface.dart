@@ -126,7 +126,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   late final VoidCallback _documentListener;
 
   CanvasSceneDocument? _lastAssetScene;
-  int _assetRevision = 0;
   bool _isDisposing = false;
 
   // Latest viewport size reported by CanvasViewport (screen px).
@@ -180,15 +179,15 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
     _lastAssetScene = scene;
 
-    final requestRevision = ++_assetRevision;
-
     unawaited(() async {
       final result = await _assetCoordinator.ensureForScene(scene);
 
-      if (_isDisposing || requestRevision != _assetRevision) {
+      if (_isDisposing) {
         return;
       }
 
+      // Font registration changes Flutter text layout globally, even when the
+      // asset request that loaded the fonts is no longer the latest request.
       if (result.fontsLoaded) {
         _textPipeline.clearCache();
         _runtime.scheduleLayoutInvalidation();
@@ -358,7 +357,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   @override
   void dispose() {
     _isDisposing = true;
-    _assetRevision += 1;
 
     _runtime.render.removeListener(_renderListener);
     _runtime.document.removeListener(_documentListener);

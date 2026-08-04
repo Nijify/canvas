@@ -34,6 +34,12 @@ void main() {
       expect(pipeline, isA<TextMeasurer>());
     });
 
+    test('rejects non-positive cache limits', () {
+      expect(() => FlutterTextPipeline(maxEntries: 0), throwsArgumentError);
+
+      expect(() => FlutterTextPipeline(maxEntries: -1), throwsArgumentError);
+    });
+
     test('reuses cached layout for identical measurements', () {
       measure(letterSpacing: 1.25);
       expect(pipeline.cacheSize, 1);

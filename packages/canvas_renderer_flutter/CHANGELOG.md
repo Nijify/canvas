@@ -17,6 +17,8 @@
   behavior.
 - Throw `StateError` when measurement or painting is attempted after pipeline
   disposal.
+- Reject non-positive text-layout cache limits with `ArgumentError` in all
+    build modes.
 
 ## 0.3.1
 
