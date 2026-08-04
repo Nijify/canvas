@@ -1,13 +1,26 @@
 ## Unreleased
 
+## 0.6.0
+
+- **Breaking:** remove `SceneRenderBuilder` and
+  `defaultSceneRenderBuilder`. Use a `ScenePreparer` for synchronous
+  renderer-neutral scene transformation before calling
+  `CanvasRenderPipeline.build()`, or call `build()` directly when no
+  preparation is required.
+- **Breaking:** expose one stable `CanvasRenderPipeline.services` bundle and
+  remove `CanvasRenderPipeline.createServices()`. Preparation and final
+  layout can now use the exact same `CoreServices` instance.
+- Keep scene computation, paint-operation construction, content-bounds
+  calculation, and `RenderSnapshot` creation exclusively in
+  `CanvasRenderPipeline.build()`.
 - **Breaking:** remove the unused `CanvasViewportPolicy` and
   `CanvasViewportSource` APIs. Use `CanvasViewportPlanner` and select the
   bounds to fit explicitly.
 - **Breaking:** make `CanvasViewportPlanner.plan()` return
   `CanvasViewportTransform` directly and remove `CanvasViewportPlanResult`.
 - **Breaking:** remove `computeViewportWithPadding`. Use
-  `CanvasViewportPlanner.plan()` with `paddingPx`, or call `computeViewport`
-  directly for low-level viewport math.
+  `CanvasViewportPlanner.plan()` with `paddingPx`, or call
+  `computeViewport` directly for low-level viewport math.
 
 ## 0.5.0
 
