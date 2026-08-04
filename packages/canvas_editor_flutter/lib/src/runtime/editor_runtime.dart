@@ -60,8 +60,6 @@ final class EditorRuntime<TSourceDocument>
       },
     );
 
-    _textMeasureCache = rt.TextMeasureCache();
-
     _documentListenable = ValueNotifier<rt.CanvasSceneDocument>(
       _adapter.getBase(initial),
     );
@@ -75,7 +73,6 @@ final class EditorRuntime<TSourceDocument>
           renderPipeline,
           resolved,
           contentBounds: contentBounds,
-          textMeasureCache: _textMeasureCache,
         );
       },
       onSourceDocumentApplied: (canonical) {
@@ -119,7 +116,6 @@ final class EditorRuntime<TSourceDocument>
 
   late final TxnHistoryManager<TSourceDocument> _history;
   late final RenderPipelineDriver<TSourceDocument> _pipeline;
-  late final rt.TextMeasureCache _textMeasureCache;
 
   // Render output surface
   @override

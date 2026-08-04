@@ -1,3 +1,14 @@
+## 0.5.0
+
+- **Breaking:** remove `TextMeasureCache` and the `textMeasureCache`
+  parameters from `CoreServices`, `SceneRenderBuilder`,
+  `defaultSceneRenderBuilder`, `CanvasRenderPipeline.createServices()`, and
+  `CanvasRenderPipeline.build()`.
+- **Breaking:** remove the deprecated
+  `CanvasRenderPipeline.buildCanonical()` compatibility helper.
+- Delegate text measurement directly to the host-provided `TextMeasurer`.
+  Platform implementations are now responsible for their own caching strategy.
+
 ## 0.4.0
 
 - **Breaking:** change `TextData.letterSpacing` and

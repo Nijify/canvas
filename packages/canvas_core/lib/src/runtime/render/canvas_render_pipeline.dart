@@ -1,9 +1,12 @@
 // Path: lib/src/runtime/render/canvas_render_pipeline.dart
 
-import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
-    show computeScene, ComputedScene;
 import 'package:canvas_core/src/algorithms/export/content_bounds.dart'
     show computePaddedContentBounds;
+import 'package:canvas_core/src/algorithms/export/content_bounds_policy.dart'
+    show ContentBoundsSpec;
+import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
+    show ComputedScene, computeScene;
+import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/render_plan/op_builder_scene.dart'
     show buildPaintOpsFromScene;
 import 'package:canvas_core/src/render_plan/paint_ops.dart' show PaintOp;
@@ -14,11 +17,6 @@ import 'package:canvas_core/src/services/services.dart'
     show ImageIntrinsics, TextMeasurer;
 import 'package:canvas_core/src/services/services_context.dart'
     show CoreServices;
-import 'package:canvas_core/src/services/text_measure.dart'
-    show TextMeasureCache;
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-import 'package:canvas_core/src/algorithms/export/content_bounds_policy.dart'
-    show ContentBoundsSpec;
 
 /// Runtime render snapshot.
 class RenderSnapshot {
@@ -47,7 +45,6 @@ typedef SceneRenderBuilder =
       CanvasRenderPipeline pipeline,
       CanvasSceneDocument scene, {
       ContentBoundsSpec? contentBounds,
-      TextMeasureCache? textMeasureCache,
     });
 
 /// Default generic runtime render builder.
@@ -57,13 +54,8 @@ RenderSnapshot defaultSceneRenderBuilder(
   CanvasRenderPipeline pipeline,
   CanvasSceneDocument scene, {
   ContentBoundsSpec? contentBounds,
-  TextMeasureCache? textMeasureCache,
 }) {
-  return pipeline.build(
-    scene,
-    contentBounds: contentBounds,
-    textMeasureCache: textMeasureCache,
-  );
+  return pipeline.build(scene, contentBounds: contentBounds);
 }
 
 /// Reusable runtime render pipeline.
@@ -88,29 +80,22 @@ class CanvasRenderPipeline {
   ///
   /// Extension packages can use this to prepare a scene with exactly the same
   /// service dependencies before delegating back to [build].
-  CoreServices createServices({TextMeasureCache? textMeasureCache}) {
-    return CoreServices(
-      tm: _textMeasurer,
-      images: _images,
-      icons: _icons,
-      textMeasureCache: textMeasureCache ?? TextMeasureCache(),
-    );
+  CoreServices createServices() {
+    return CoreServices(tm: _textMeasurer, images: _images, icons: _icons);
   }
 
   RenderSnapshot build(
     CanvasSceneDocument scene, {
     ContentBoundsSpec? contentBounds,
-
-    /// Optional: inject a per-batch cache to avoid allocations.
-    TextMeasureCache? textMeasureCache,
   }) {
-    final services = createServices(textMeasureCache: textMeasureCache);
+    final services = createServices();
 
     final computed = computeScene(scene, services);
     final ops = buildPaintOpsFromScene(scene, computed);
 
     Rect2D? bounds;
     final spec = contentBounds;
+
     if (spec != null) {
       bounds = computePaddedContentBounds(
         scene: scene,
@@ -125,29 +110,6 @@ class CanvasRenderPipeline {
       computed: computed,
       ops: ops,
       contentBounds: bounds,
-    );
-  }
-}
-
-/// Compatibility helper for the generic runtime surface.
-///
-/// Guarantees:
-/// - renders an already-prepared runtime scene
-/// - no hard dependency on extension packages
-///
-/// Prefer [build] or [defaultSceneRenderBuilder] in new code. Extension
-/// packages should layer on top of this via extension methods from their own
-/// public barrels.
-extension CanvasRenderPipelineCanonical on CanvasRenderPipeline {
-  RenderSnapshot buildCanonical(
-    CanvasSceneDocument scene, {
-    ContentBoundsSpec? contentBounds,
-    TextMeasureCache? textMeasureCache,
-  }) {
-    return build(
-      scene,
-      contentBounds: contentBounds,
-      textMeasureCache: textMeasureCache,
     );
   }
 }

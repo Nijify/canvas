@@ -51,7 +51,6 @@ final class _SurfaceSeamExtension
     rt.CanvasRenderPipeline pipeline,
     rt.CanvasSceneDocument scene, {
     rt.ContentBoundsSpec? contentBounds,
-    rt.TextMeasureCache? textMeasureCache,
   }) {
     renderBuilderCalls += 1;
     lastContentBounds = contentBounds;
@@ -60,7 +59,6 @@ final class _SurfaceSeamExtension
       pipeline,
       scene,
       contentBounds: contentBounds,
-      textMeasureCache: textMeasureCache,
     );
   }
 

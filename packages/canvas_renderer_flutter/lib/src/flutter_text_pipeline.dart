@@ -3,12 +3,13 @@
 import 'dart:collection';
 import 'dart:ui' as ui;
 
+import 'package:canvas_core/canvas_core_runtime.dart' show Size2D, TextMeasurer;
 import 'package:flutter/painting.dart';
 
 class TextSpec {
   final String text;
   final String family;
-  final int weight; // 100..900
+  final int weight;
   final double size;
 
   /// Additional spacing between characters in logical Flutter pixels.
@@ -23,12 +24,12 @@ class TextSpec {
   });
 }
 
-class TextMetrics {
-  final double width, height, baseline; // alphabetic baseline
-  const TextMetrics(this.width, this.height, this.baseline);
-}
-
-class FlutterTextPipeline {
+/// Flutter text measurement and painting engine.
+///
+/// This object owns the [TextPainter] instances in its bounded layout cache.
+/// Callers that create a pipeline must dispose it. Renderers and exporters only
+/// borrow the pipeline supplied to them.
+class FlutterTextPipeline implements TextMeasurer {
   FlutterTextPipeline({
     int maxEntries = 4096,
     Iterable<String> fallbackFontFamilies = const <String>[],
@@ -43,141 +44,220 @@ class FlutterTextPipeline {
   final int _maxEntries;
   final List<String> _fallbackFontFamilies;
 
+  // LRU: touching an entry moves it to the end.
+  final LinkedHashMap<_Key, _CacheEntry> _cache =
+      LinkedHashMap<_Key, _CacheEntry>();
+
+  bool _disposed = false;
+
+  int get cacheSize => _cache.length;
+
+  /// Disposes cached layouts while keeping this pipeline reusable.
+  void clearCache() {
+    _ensureActive();
+    _disposeCache();
+  }
+
+  /// Permanently releases this pipeline and all cached text resources.
+  ///
+  /// Safe to call more than once.
+  void dispose() {
+    if (_disposed) return;
+
+    _disposed = true;
+    _disposeCache();
+  }
+
+  @override
+  Size2D measure({
+    required String text,
+    required String fontFamily,
+    required int fontWeight,
+    required double fontSize,
+    required double letterSpacing,
+  }) {
+    _ensureActive();
+
+    final entry = _getOrCreateLayoutEntry(
+      TextSpec(
+        text,
+        fontFamily,
+        fontWeight,
+        fontSize,
+        letterSpacing: letterSpacing,
+      ),
+    );
+
+    _ensureLaidOut(entry);
+
+    return Size2D(entry.painter.width, entry.painter.height);
+  }
+
+  void paint(
+    ui.Canvas canvas,
+    ui.Offset origin,
+    TextSpec spec, {
+    ui.Color? solid,
+    ui.Shader? shader,
+    double shadowOffset = 0,
+    TextOriginKind originKind = TextOriginKind.baseline,
+  }) {
+    _ensureActive();
+
+    final foregroundPaint = shader != null
+        ? (ui.Paint()..shader = shader)
+        : null;
+
+    if (shadowOffset != 0) {
+      final shadowPainter = _buildPainterUncached(
+        spec,
+        color: solid ?? const ui.Color(0xFF000000),
+      );
+
+      try {
+        shadowPainter.layout();
+
+        final shadowOrigin = _resolveOrigin(shadowPainter, origin, originKind);
+
+        shadowPainter.paint(
+          canvas,
+          ui.Offset(
+            shadowOrigin.dx + shadowOffset,
+            shadowOrigin.dy + shadowOffset,
+          ),
+        );
+      } finally {
+        shadowPainter.dispose();
+      }
+    }
+
+    // Reuse the cached layout-only painter when no visual override is needed.
+    if (foregroundPaint == null && solid == null) {
+      final entry = _getOrCreateLayoutEntry(spec);
+      _ensureLaidOut(entry);
+
+      final painter = entry.painter;
+      painter.paint(canvas, _resolveOrigin(painter, origin, originKind));
+      return;
+    }
+
+    // Colored and gradient variants are deliberately operation-scoped.
+    final painter = _buildPainterUncached(
+      spec,
+      color: solid,
+      foreground: foregroundPaint,
+    );
+
+    try {
+      painter.layout();
+      painter.paint(canvas, _resolveOrigin(painter, origin, originKind));
+    } finally {
+      painter.dispose();
+    }
+  }
+
   List<String> _fallbackFor(String primary) {
     final cleanPrimary = primary.trim();
+
     return _fallbackFontFamilies
         .where((family) => family != cleanPrimary)
         .toList(growable: false);
   }
 
-  // LRU: touch moves entry to end (most-recent).
-  final LinkedHashMap<_Key, _CacheEntry> _cache =
-      LinkedHashMap<_Key, _CacheEntry>();
-
-  int get cacheSize => _cache.length;
-
-  /// Clears all cached layout-only entries.
-  void clearCache() => _cache.clear();
-
-  TextMetrics measure(TextSpec s) {
-    final entry = _getOrCreateLayoutEntry(s);
-    _ensureLaidOut(entry);
-    return entry.metrics!;
-  }
-
-  // Paint with either a solid color or a prebuilt shader (for gradients).
-  void paint(
-    ui.Canvas canvas,
-    ui.Offset origin, // choose semantic via `originKind`
-    TextSpec s, {
-    ui.Color? solid,
-    ui.Shader? shader,
-    double shadowOffset = 0,
-    TextOriginKind originKind = TextOriginKind.baseline, // baseline or center
-  }) {
-    final fgPaint = (shader != null)
-        ? (ui.Paint()..shader = shader)
-        : null; // null ⇒ use `solid` color in style
-
-    // Shadow first (uncached painter with solid color)
-    if (shadowOffset != 0) {
-      final tpShadow = _buildPainterUncached(
-        s,
-        color: solid ?? const ui.Color(0xFF000000),
-      );
-      tpShadow.layout();
-      final o = _resolveOrigin(tpShadow, origin, originKind);
-      tpShadow.paint(
-        canvas,
-        ui.Offset(o.dx + shadowOffset, o.dy + shadowOffset),
+  ui.Offset _resolveOrigin(
+    TextPainter painter,
+    ui.Offset origin,
+    TextOriginKind kind,
+  ) {
+    if (kind == TextOriginKind.center) {
+      return ui.Offset(
+        origin.dx - painter.width / 2,
+        origin.dy - painter.height / 2,
       );
     }
 
-    // Fast path: layout-only variant (no shader/foreground, no explicit solid)
-    // Reuse cached painter + cached metrics and avoid re-layout.
-    if (fgPaint == null && solid == null) {
-      final entry = _getOrCreateLayoutEntry(s);
-      _ensureLaidOut(entry);
-      final tp = entry.painter;
-      tp.paint(canvas, _resolveOrigin(tp, origin, originKind));
-      return;
-    }
-
-    // Foreground / colored variants are not cached (metrics are identical).
-    final tp = _buildPainterUncached(s, color: solid, foreground: fgPaint);
-    tp.layout();
-    tp.paint(canvas, _resolveOrigin(tp, origin, originKind));
-  }
-
-  ui.Offset _resolveOrigin(TextPainter tp, ui.Offset origin, TextOriginKind k) {
-    if (k == TextOriginKind.center) {
-      // Center on BOTH axes: match core's local rect (-w/2..+w/2, -h/2..+h/2)
-      return ui.Offset(origin.dx - tp.width / 2, origin.dy - tp.height / 2);
-    }
-    // Alphabetic baseline origin: y is baseline, so move up by ascent.
-    final baseline = tp.computeDistanceToActualBaseline(
+    final baseline = painter.computeDistanceToActualBaseline(
       TextBaseline.alphabetic,
     );
+
     return ui.Offset(origin.dx, origin.dy - baseline);
   }
 
-  _CacheEntry _getOrCreateLayoutEntry(TextSpec s) {
-    final key = _Key(s.text, s.family, s.weight, s.size, s.letterSpacing);
+  _CacheEntry _getOrCreateLayoutEntry(TextSpec spec) {
+    final key = _Key(
+      spec.text,
+      spec.family,
+      spec.weight,
+      spec.size,
+      spec.letterSpacing,
+    );
 
-    // Touch for LRU: remove+reinsert.
+    // Remove and reinsert to mark the entry as most recently used.
     final existing = _cache.remove(key);
+
     if (existing != null) {
       _cache[key] = existing;
       return existing;
     }
 
-    final painter = _buildPainterUncached(s);
-    final entry = _CacheEntry(painter);
+    final entry = _CacheEntry(_buildPainterUncached(spec));
+
     _cache[key] = entry;
     _evictIfNeeded();
+
     return entry;
   }
 
   void _ensureLaidOut(_CacheEntry entry) {
-    if (entry.metrics != null) return;
-    final tp = entry.painter;
-    tp.layout();
-    final baseline = tp.computeDistanceToActualBaseline(
-      TextBaseline.alphabetic,
-    );
-    entry.metrics = TextMetrics(tp.width, tp.height, baseline.toDouble());
+    if (entry.isLaidOut) return;
+
+    entry.painter.layout();
+    entry.isLaidOut = true;
   }
 
   void _evictIfNeeded() {
     while (_cache.length > _maxEntries) {
-      // Remove least-recently used (front of LinkedHashMap).
-      _cache.remove(_cache.keys.first);
+      final oldestKey = _cache.keys.first;
+      _cache.remove(oldestKey)!.painter.dispose();
+    }
+  }
+
+  void _disposeCache() {
+    for (final entry in _cache.values) {
+      entry.painter.dispose();
+    }
+
+    _cache.clear();
+  }
+
+  void _ensureActive() {
+    if (_disposed) {
+      throw StateError('FlutterTextPipeline has been disposed.');
     }
   }
 
   TextPainter _buildPainterUncached(
-    TextSpec s, {
+    TextSpec spec, {
     ui.Paint? foreground,
     ui.Color? color,
   }) {
-    final fw = FontWeight.values.firstWhere(
-      (w) => w.value == s.weight,
+    final fontWeight = FontWeight.values.firstWhere(
+      (weight) => weight.value == spec.weight,
       orElse: () => FontWeight.w400,
     );
 
     final style = TextStyle(
-      fontFamily: s.family,
-      fontFamilyFallback: _fallbackFor(s.family),
-      fontWeight: fw,
-      fontSize: s.size,
-      letterSpacing: s.letterSpacing,
-      // If a shader is provided, it must go into foreground.
+      fontFamily: spec.family,
+      fontFamilyFallback: _fallbackFor(spec.family),
+      fontWeight: fontWeight,
+      fontSize: spec.size,
+      letterSpacing: spec.letterSpacing,
       foreground: foreground,
       color: foreground == null ? (color ?? const ui.Color(0xFF000000)) : null,
     );
 
     return TextPainter(
-      text: TextSpan(text: s.text, style: style),
+      text: TextSpan(text: spec.text, style: style),
       textDirection: ui.TextDirection.ltr,
     );
   }
@@ -187,17 +267,12 @@ enum TextOriginKind { baseline, center }
 
 class _CacheEntry {
   _CacheEntry(this.painter);
+
   final TextPainter painter;
-  TextMetrics? metrics;
+  bool isLaidOut = false;
 }
 
 class _Key {
-  final String text;
-  final String family;
-  final int weight;
-  final double size;
-  final double letterSpacing;
-
   const _Key(
     this.text,
     this.family,
@@ -206,15 +281,24 @@ class _Key {
     this.letterSpacing,
   );
 
-  @override
-  int get hashCode => Object.hash(text, family, weight, size, letterSpacing);
+  final String text;
+  final String family;
+  final int weight;
+  final double size;
+  final double letterSpacing;
 
   @override
-  bool operator ==(Object other) =>
-      other is _Key &&
-      text == other.text &&
-      family == other.family &&
-      weight == other.weight &&
-      size == other.size &&
-      letterSpacing == other.letterSpacing;
+  int get hashCode {
+    return Object.hash(text, family, weight, size, letterSpacing);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is _Key &&
+        text == other.text &&
+        family == other.family &&
+        weight == other.weight &&
+        size == other.size &&
+        letterSpacing == other.letterSpacing;
+  }
 }

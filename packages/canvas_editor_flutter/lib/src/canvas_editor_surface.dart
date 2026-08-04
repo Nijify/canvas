@@ -151,8 +151,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
     fallbackFontFamilies: _assets.fallbackFontFamilies,
   );
 
-  late final _textMeasurer = FlutterTextMeasurer(_textPipeline);
-
   late final EditorAssetCoordinator _assetCoordinator = EditorAssetCoordinator(
     assets: _assets,
     pool: _pool,
@@ -161,7 +159,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   );
 
   late final CanvasRenderPipeline renderPipeline = CanvasRenderPipeline(
-    textMeasurer: _textMeasurer,
+    textMeasurer: _textPipeline,
     images: _pool,
     icons: _assets.icons,
   );
@@ -192,6 +190,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       }
 
       if (result.fontsLoaded) {
+        _textPipeline.clearCache();
         _runtime.scheduleLayoutInvalidation();
       }
     }());
@@ -372,7 +371,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
     _assetCoordinator.dispose();
     _pool.dispose();
-    _textPipeline.clearCache();
+    _textPipeline.dispose();
 
     super.dispose();
   }

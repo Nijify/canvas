@@ -7,7 +7,6 @@ import 'dart:ui' as ui;
 import 'package:canvas_core/canvas_core_runtime.dart';
 
 import 'package:canvas_renderer_flutter/src/flutter_canvas_renderer.dart';
-import 'package:canvas_renderer_flutter/src/flutter_text_measurer.dart';
 import 'package:canvas_renderer_flutter/src/flutter_text_pipeline.dart';
 
 /// Export configuration for [CanvasDocumentExporter].
@@ -75,23 +74,20 @@ class CanvasExportSpec {
 /// - It does NOT hardcode application-specific component policies.
 /// - Host applications should resolve or preprocess scenes before they reach
 ///   this exporter.
+
 class CanvasDocumentExporter {
-  factory CanvasDocumentExporter({
-    FlutterTextPipeline? textPipeline,
-    IconResolver? icons,
-    Iterable<String> fallbackFontFamilies = const <String>[],
-  }) {
-    final p =
-        textPipeline ??
-        FlutterTextPipeline(fallbackFontFamilies: fallbackFontFamilies);
-    return CanvasDocumentExporter._(p, icons);
-  }
+  /// Creates an exporter that borrows [textPipeline].
+  ///
+  /// The caller must keep the pipeline alive until each export future completes
+  /// and remains responsible for disposing it.
+  CanvasDocumentExporter({
+    required FlutterTextPipeline textPipeline,
+    this.icons,
+  }) : _textPipeline = textPipeline;
 
-  CanvasDocumentExporter._(this._pipeline, this.icons)
-    : _textMeasurer = FlutterTextMeasurer(_pipeline);
+  /// Borrowed from the caller and never disposed by this exporter.
+  final FlutterTextPipeline _textPipeline;
 
-  final FlutterTextPipeline _pipeline;
-  final FlutterTextMeasurer _textMeasurer;
   final IconResolver? icons;
 
   /// Export the provided [document] (or [documentJson]) to a PNG byte array.
@@ -146,7 +142,7 @@ class CanvasDocumentExporter {
     // Generic runtime pipeline
 
     final renderPipeline = CanvasRenderPipeline(
-      textMeasurer: _textMeasurer,
+      textMeasurer: _textPipeline,
       images: stableIntrinsics,
       icons: icons,
     );
@@ -211,7 +207,7 @@ class CanvasDocumentExporter {
 
     CanvasRenderer(
       images: images,
-      text: _pipeline,
+      text: _textPipeline,
       intrinsics: stableIntrinsics,
       options: spec.rendererOptions,
     ).replay(canvas, built.ops);

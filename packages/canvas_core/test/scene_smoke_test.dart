@@ -31,11 +31,8 @@ class _FakeImages implements ImageIntrinsics {
   Stream<ElementId> get onIntrinsicUpdated => _ctrl.stream;
 }
 
-CoreServices _services() => CoreServices(
-  tm: _FakeTextMeasurer(),
-  images: _FakeImages(),
-  textMeasureCache: TextMeasureCache(),
-);
+CoreServices _services() =>
+    CoreServices(tm: _FakeTextMeasurer(), images: _FakeImages());
 
 TextData _td(String text) => TextData(
   text: text,
