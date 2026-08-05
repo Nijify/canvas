@@ -281,6 +281,17 @@ void main() {
 
       final ids = observedSpecs!.map((spec) => spec.id).toList(growable: false);
 
+      expect(
+        observedSpecs!
+            .where((spec) => spec.section == EditorToolbarSection.edit)
+            .map((spec) => spec.id)
+            .toSet(),
+        <EditorActionId>{
+          EditorActionIds.duplicate,
+          EditorActionIds.deleteSelection,
+        },
+      );
+
       for (final id in <EditorActionId>[
         EditorActionIds.undo,
         EditorActionIds.redo,

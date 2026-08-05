@@ -239,21 +239,21 @@ class EditorActionSpec {
 }
 
 class EditorActionDispatcher {
-  const EditorActionDispatcher({required this.actions, this.context});
+  const EditorActionDispatcher({
+    required this.actions,
+    required this.context,
+  });
 
-  /// Nullable only so tests/goldens can render toolbar UI without constructing
-  /// the full editor runtime context. Production editor shells always provide it.
-  final EditorActionContext? context;
+  final EditorActionContext context;
   final Map<EditorActionId, EditorActionSpec> actions;
 
   bool canInvoke(EditorActionId id) => actions.containsKey(id);
 
   void invoke(EditorActionId id) {
     final action = actions[id];
-    final ctx = context;
-    if (action == null || ctx == null) return;
+    if (action == null) return;
 
-    unawaited(Future<void>.sync(() => action.invoke(ctx)));
+    unawaited(Future<void>.sync(() => action.invoke(context)));
   }
 }
 
@@ -262,9 +262,7 @@ abstract final class EditorActionIds {
   static const redo = EditorActionId('editor.redo');
 
   static const duplicate = EditorActionId('editor.duplicate');
-  static const duplicateGroup = EditorActionId('editor.duplicateGroup');
   static const deleteSelection = EditorActionId('editor.deleteSelection');
-  static const deleteGroup = EditorActionId('editor.deleteGroup');
 
   static const bringToFront = EditorActionId('editor.bringToFront');
   static const sendToBack = EditorActionId('editor.sendToBack');

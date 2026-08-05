@@ -1,5 +1,14 @@
 # Unreleased
 
+# 0.6.0
+
+- **Breaking:** remove the redundant `EditorActionIds.duplicateGroup` and
+  `EditorActionIds.deleteGroup` actions.
+- **Breaking:** require `EditorActionDispatcher` to receive a non-null
+  `EditorActionContext`.
+- Keep the generic Duplicate and Delete actions working for groups and leaf
+  nodes.
+
 # 0.5.0
 
 - **Breaking:** require `canvas_core 0.6.x` and
