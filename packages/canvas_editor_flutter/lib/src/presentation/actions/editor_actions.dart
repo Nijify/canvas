@@ -239,10 +239,7 @@ class EditorActionSpec {
 }
 
 class EditorActionDispatcher {
-  const EditorActionDispatcher({
-    required this.actions,
-    required this.context,
-  });
+  const EditorActionDispatcher({required this.actions, required this.context});
 
   final EditorActionContext context;
   final Map<EditorActionId, EditorActionSpec> actions;
