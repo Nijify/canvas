@@ -170,8 +170,8 @@ Map<String, dynamic> _$CanvasIconDataToJson(_CanvasIconData instance) =>
 _GroupBehaviorRef _$GroupBehaviorRefFromJson(Map<String, dynamic> json) =>
     _GroupBehaviorRef(
       type: json['type'] as String,
-      version: (json['version'] as num?)?.toInt() ?? 1,
-      data: json['data'] as Map<String, dynamic>? ?? const <String, dynamic>{},
+      version: (json['version'] as num).toInt(),
+      data: json['data'] as Map<String, dynamic>,
     );
 
 Map<String, dynamic> _$GroupBehaviorRefToJson(_GroupBehaviorRef instance) =>

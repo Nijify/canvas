@@ -1621,13 +1621,13 @@ return $default(_that.type,_that.version,_that.data);case _:
 @JsonSerializable()
 
 class _GroupBehaviorRef implements GroupBehaviorRef {
-  const _GroupBehaviorRef({required this.type, this.version = 1, final  Map<String, dynamic> data = const <String, dynamic>{}}): _data = data;
+  const _GroupBehaviorRef({required this.type, required this.version, required final  Map<String, dynamic> data}): _data = data;
   factory _GroupBehaviorRef.fromJson(Map<String, dynamic> json) => _$GroupBehaviorRefFromJson(json);
 
 @override final  String type;
-@override@JsonKey() final  int version;
+@override final  int version;
  final  Map<String, dynamic> _data;
-@override@JsonKey() Map<String, dynamic> get data {
+@override Map<String, dynamic> get data {
   if (_data is EqualUnmodifiableMapView) return _data;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_data);

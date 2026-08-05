@@ -117,8 +117,8 @@ abstract class CanvasIconData with _$CanvasIconData {
 abstract class GroupBehaviorRef with _$GroupBehaviorRef {
   const factory GroupBehaviorRef({
     required String type,
-    @Default(1) int version,
-    @Default(<String, dynamic>{}) Map<String, dynamic> data,
+    required int version,
+    required Map<String, dynamic> data,
   }) = _GroupBehaviorRef;
 
   factory GroupBehaviorRef.fromJson(Map<String, dynamic> json) =>

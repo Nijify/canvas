@@ -1,4 +1,8 @@
-## Unreleased
+## 0.7.0
+
+- **Breaking:** require explicit `version` and `data` values when constructing
+  or deserializing `GroupBehaviorRef`.
+- Remove implicit version `1` and empty-data defaults from behavior envelopes.
 
 ## 0.6.0
 
