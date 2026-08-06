@@ -1,4 +1,8 @@
-# Unreleased
+# 0.7.0
+
+- **Breaking:** require `canvas_core 0.7.x`.
+- **Breaking:** require `canvas_renderer_flutter 0.6.x`.
+- Support the explicit component behavior `version` and `data` envelope introduced by `canvas_core 0.7.0`.
 
 # 0.6.0
 
