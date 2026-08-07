@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'example launches through optional asset-library and image-import integrations',
+    'example launches with public editor capabilities',
     (tester) async {
       await tester.pumpWidget(const CanvasEditorExampleApp());
       await tester.pumpAndSettle();
