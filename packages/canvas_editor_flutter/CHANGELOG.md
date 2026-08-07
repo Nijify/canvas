@@ -7,6 +7,8 @@
 - Move final PNG resource preparation, rendering, policy, and output ownership
   behind the host export port.
 - Keep scene JSON export based on the canonical editable scene.
+- Update the runnable example to demonstrate host-owned PNG rendering and
+  sharing through `PngExportPort`.
 
 # 0.7.0
 
