@@ -1,14 +1,19 @@
 // Path: oss_packages/canvas_editor_flutter/example/lib/main.dart
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
-import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 import 'package:canvas_editor_flutter/asset_library.dart';
+import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 import 'package:canvas_editor_flutter/extensions.dart' show EditorShellConfig;
 import 'package:canvas_editor_flutter/image_import.dart';
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart' as sharing;
+
+final _navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   runApp(const CanvasEditorExampleApp());
@@ -20,6 +25,7 @@ class CanvasEditorExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Canvas Editor Example',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -30,6 +36,16 @@ class CanvasEditorExampleApp extends StatelessWidget {
         initialScene: _demoDocument,
         resources: _demoResources,
         shell: EditorShellConfig.standalone,
+        pngExport: PngExportCapability(
+          port: _ExamplePngExportPort(
+            resources: _demoResources,
+            navigatorKey: _navigatorKey,
+          ),
+          availability: const PngExportAvailability(
+            canShare: true,
+            canSave: false,
+          ),
+        ),
         jsonExport: const JsonExportCapability(
           output: _ExampleJsonOutputPort(),
           availability: JsonExportAvailability(canCopy: true, canSave: false),
@@ -205,6 +221,119 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
     ),
   ],
 );
+
+final class _ExamplePngExportPort implements PngExportPort {
+  const _ExamplePngExportPort({
+    required this.resources,
+    required this.navigatorKey,
+  });
+
+  final CanvasRuntimeResources resources;
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  @override
+  Future<String> sharePng({
+    required CanvasSceneDocument editableScene,
+    required CanvasSceneDocument preparedScene,
+    required EditorExportSpec spec,
+    required String filename,
+    String? text,
+  }) async {
+    // This generic example has no document-level export policy, so it does not
+    // need to inspect editableScene. Product hosts can use that canonical scene
+    // for policy or compatibility checks before doing any rendering work.
+    final bytes = await _renderPng(
+      preparedScene: preparedScene,
+      spec: spec,
+    );
+
+    final context = navigatorKey.currentContext;
+    if (context == null) {
+      throw StateError('Unable to locate the app context for PNG sharing.');
+    }
+
+    final size = MediaQuery.sizeOf(context);
+
+    await sharing.SharePlus.instance.share(
+      sharing.ShareParams(
+        files: <sharing.XFile>[
+          sharing.XFile.fromData(
+            bytes,
+            mimeType: 'image/png',
+          ),
+        ],
+        fileNameOverrides: <String>[filename],
+        text: text,
+        sharePositionOrigin: Offset.zero & size,
+      ),
+    );
+
+    return 'PNG share sheet opened.';
+  }
+
+  @override
+  Future<String> savePng({
+    required CanvasSceneDocument editableScene,
+    required CanvasSceneDocument preparedScene,
+    required EditorExportSpec spec,
+    required String filename,
+  }) {
+    throw UnsupportedError(
+      'PNG saving is not available in this example.',
+    );
+  }
+
+  Future<Uint8List> _renderPng({
+    required CanvasSceneDocument preparedScene,
+    required EditorExportSpec spec,
+  }) async {
+    await resources.ensureFontsForScene(preparedScene);
+
+    final textPipeline = FlutterTextPipeline(
+      fallbackFontFamilies: resources.fallbackFontFamilies,
+    );
+
+    final imagePool = FlutterImagePool(
+      assetUrlsResolver: resources.media.resolveUrls,
+      assetMetasResolver: resources.media.resolveIntrinsicSizes,
+    );
+
+    try {
+      await imagePool.resolveSceneIntrinsics(preparedScene);
+
+      await imagePool.preloadScene(
+        preparedScene,
+        targetW: spec.widthPx,
+        targetH: spec.heightPx,
+      );
+
+      final exporter = CanvasDocumentExporter(
+        textPipeline: textPipeline,
+        icons: resources.icons,
+      );
+
+      return await exporter.exportPng(
+        document: preparedScene,
+        resolveImage: (id) async => imagePool.images[id],
+        resolveIntrinsicSize: (id) async => imagePool.intrinsicSize(id),
+        spec: CanvasExportSpec(
+          widthPx: spec.widthPx,
+          heightPx: spec.heightPx,
+          bleedPx: spec.bleedPx,
+          pixelRatio: spec.pixelRatio,
+          transparent: spec.transparent,
+          fit: spec.fit,
+          cropToContent: spec.cropToContent,
+          contentPaddingPx: spec.contentPaddingPx,
+          tight: spec.tight,
+        ),
+      );
+    } finally {
+      imagePool.dispose();
+      textPipeline.dispose();
+    }
+  }
+}
 
 final class _ExampleJsonOutputPort extends JsonOutputPort {
   const _ExampleJsonOutputPort();
