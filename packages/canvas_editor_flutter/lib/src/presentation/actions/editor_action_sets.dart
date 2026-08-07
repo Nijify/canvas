@@ -1,9 +1,9 @@
 // Path: oss_packages/canvas_editor_flutter/lib/src/presentation/actions/editor_action_sets.dart
 
 import 'dart:convert';
-import 'dart:typed_data';
+
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFillNone, CanvasFit;
+    show CanvasFillNone, CanvasFit, CanvasSceneDocument;
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:flutter/material.dart';
@@ -108,10 +108,12 @@ List<EditorActionSpec> pngExportActions(PngExportCapability capability) {
       isVisible: (_) => capability.canShare,
       invoke: (ctx) async {
         await _withSpinner(ctx, () async {
-          final bytes = await _renderCurrentPng(ctx, capability);
+          final preparedScene = ctx.renderScene;
 
-          final msg = await capability.output.sharePng(
-            bytes,
+          final msg = await capability.port.sharePng(
+            editableScene: ctx.editableScene,
+            preparedScene: preparedScene,
+            spec: _pngExportSpec(preparedScene),
             filename: 'canvas_export.png',
           );
 
@@ -128,10 +130,12 @@ List<EditorActionSpec> pngExportActions(PngExportCapability capability) {
       isVisible: (_) => capability.canSave,
       invoke: (ctx) async {
         await _withSpinner(ctx, () async {
-          final bytes = await _renderCurrentPng(ctx, capability);
+          final preparedScene = ctx.renderScene;
 
-          final msg = await capability.output.savePng(
-            bytes,
+          final msg = await capability.port.savePng(
+            editableScene: ctx.editableScene,
+            preparedScene: preparedScene,
+            spec: _pngExportSpec(preparedScene),
             filename: 'canvas_export.png',
           );
 
@@ -184,14 +188,7 @@ List<EditorActionSpec> sceneJsonExportActions(JsonExportCapability capability) {
   ];
 }
 
-Future<Uint8List> _renderCurrentPng(
-  EditorActionContext ctx,
-  PngExportCapability export,
-) async {
-  final preparedScene = ctx.renderScene;
-
-  await ctx.resources.ensureFontsForScene(preparedScene);
-
+EditorExportSpec _pngExportSpec(CanvasSceneDocument preparedScene) {
   final art = preparedScene.artboardSize;
 
   const maxSide = 2048.0;
@@ -199,17 +196,14 @@ Future<Uint8List> _renderCurrentPng(
   final w = (art.w * scale).round();
   final h = (art.h * scale).round();
 
-  return export.renderer.renderPng(
-    preparedScene: preparedScene,
-    spec: EditorExportSpec(
-      widthPx: w,
-      heightPx: h,
-      bleedPx: 0,
-      transparent:
-          preparedScene.backgroundFill is CanvasFillNone ||
-          !(preparedScene.backgroundOpacity > 0),
-      fit: CanvasFit.contain,
-      pixelRatio: 2.0,
-    ),
+  return EditorExportSpec(
+    widthPx: w,
+    heightPx: h,
+    bleedPx: 0,
+    transparent:
+        preparedScene.backgroundFill is CanvasFillNone ||
+        !(preparedScene.backgroundOpacity > 0),
+    fit: CanvasFit.contain,
+    pixelRatio: 2.0,
   );
 }
