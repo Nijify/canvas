@@ -1,3 +1,13 @@
+# 0.8.0
+
+- **Breaking:** replace the split `EditorExports` and `PngOutputPort` PNG
+  contracts with one host-owned `PngExportPort`.
+- Pass both the canonical editable scene and the prepared render scene to PNG
+  export hosts.
+- Move final PNG resource preparation, rendering, policy, and output ownership
+  behind the host export port.
+- Keep scene JSON export based on the canonical editable scene.
+
 # 0.7.0
 
 - **Breaking:** require `canvas_core 0.7.x`.
@@ -55,7 +65,6 @@
 - **Breaking:** remove `EditorExportFit` and use the shared `CanvasFit` type from
   `canvas_core`.
 - Keep the default export fit as `CanvasFit.contain`.
-- Keep PNG export fitting behavior unchanged.
 
 # 0.2.0
 

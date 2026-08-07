@@ -93,38 +93,47 @@ class _RecordingJsonOutputPort extends JsonOutputPort {
   }
 }
 
-class _RecordingEditorExports implements EditorExports {
+class _RecordingPngExportPort implements PngExportPort {
+  int shareCalls = 0;
+  int saveCalls = 0;
+
+  CanvasSceneDocument? editableScene;
   CanvasSceneDocument? preparedScene;
   EditorExportSpec? spec;
+  String? filename;
+  String? text;
 
   @override
-  Future<Uint8List> renderPng({
+  Future<String> sharePng({
+    required CanvasSceneDocument editableScene,
     required CanvasSceneDocument preparedScene,
     required EditorExportSpec spec,
-  }) async {
-    this.preparedScene = preparedScene;
-    this.spec = spec;
-    return Uint8List.fromList(const [1, 2, 3]);
-  }
-}
-
-class _RecordingPngOutputPort extends PngOutputPort {
-  Uint8List? sharedBytes;
-  Uint8List? savedBytes;
-
-  @override
-  Future<String> sharePng(
-    Uint8List bytes, {
     required String filename,
     String? text,
   }) async {
-    sharedBytes = bytes;
+    shareCalls++;
+    this.editableScene = editableScene;
+    this.preparedScene = preparedScene;
+    this.spec = spec;
+    this.filename = filename;
+    this.text = text;
+
     return 'shared';
   }
 
   @override
-  Future<String> savePng(Uint8List bytes, {required String filename}) async {
-    savedBytes = bytes;
+  Future<String> savePng({
+    required CanvasSceneDocument editableScene,
+    required CanvasSceneDocument preparedScene,
+    required EditorExportSpec spec,
+    required String filename,
+  }) async {
+    saveCalls++;
+    this.editableScene = editableScene;
+    this.preparedScene = preparedScene;
+    this.spec = spec;
+    this.filename = filename;
+
     return 'saved';
   }
 }
@@ -264,44 +273,94 @@ void main() {
     expect(decoded['backgroundOpacity'], 0.1);
   });
 
-  testWidgets('PNG export uses render/prepared scene', (tester) async {
-    final editableScene = _scene(0.1);
-    final renderScene = _scene(0.9);
+  testWidgets(
+    'PNG share delegates canonical and prepared scenes to host port',
+    (tester) async {
+      final editableScene = _scene(0.1);
+      final renderScene = _scene(0.9);
 
-    final renderer = _RecordingEditorExports();
-    final output = _RecordingPngOutputPort();
+      final port = _RecordingPngExportPort();
 
-    final actions = pngExportActions(
-      PngExportCapability(renderer: renderer, output: output),
-    );
+      final actions = pngExportActions(PngExportCapability(port: port));
 
-    final shareAction = actions.singleWhere(
-      (action) => action.id == EditorActionIds.sharePng,
-    );
+      final shareAction = actions.singleWhere(
+        (action) => action.id == EditorActionIds.sharePng,
+      );
 
-    final context = await _pumpContext(tester);
+      final context = await _pumpContext(tester);
 
-    final controller = _FakeEditorController(
-      renderSnapshot: _snapshotFor(renderScene),
-      document: editableScene,
-    );
+      final controller = _FakeEditorController(
+        renderSnapshot: _snapshotFor(renderScene),
+        document: editableScene,
+      );
 
-    final selection = SelectionController();
+      final selection = SelectionController();
 
-    addTearDown(selection.dispose);
-    addTearDown(controller.dispose);
+      addTearDown(selection.dispose);
+      addTearDown(controller.dispose);
 
-    final ctx = _actionContext(
-      context: context,
-      controller: controller,
-      selection: selection,
-    );
+      final ctx = _actionContext(
+        context: context,
+        controller: controller,
+        selection: selection,
+      );
 
-    await shareAction.invoke(ctx);
+      await shareAction.invoke(ctx);
 
-    expect(identical(renderer.preparedScene, renderScene), isTrue);
-    expect(renderer.preparedScene?.backgroundOpacity, 0.9);
-    expect(renderer.spec?.fit, CanvasFit.contain);
-    expect(output.sharedBytes, isNotNull);
-  });
+      expect(port.shareCalls, 1);
+      expect(port.saveCalls, 0);
+      expect(identical(port.editableScene, editableScene), isTrue);
+      expect(identical(port.preparedScene, renderScene), isTrue);
+      expect(port.editableScene?.backgroundOpacity, 0.1);
+      expect(port.preparedScene?.backgroundOpacity, 0.9);
+      expect(port.spec?.fit, CanvasFit.contain);
+      expect(port.spec?.widthPx, 2048);
+      expect(port.spec?.heightPx, 1365);
+      expect(port.spec?.pixelRatio, 2.0);
+      expect(port.filename, 'canvas_export.png');
+    },
+  );
+
+  testWidgets(
+    'PNG save delegates canonical and prepared scenes to host port',
+    (tester) async {
+      final editableScene = _scene(0.1);
+      final renderScene = _scene(0.9);
+
+      final port = _RecordingPngExportPort();
+
+      final actions = pngExportActions(PngExportCapability(port: port));
+
+      final saveAction = actions.singleWhere(
+        (action) => action.id == EditorActionIds.savePng,
+      );
+
+      final context = await _pumpContext(tester);
+
+      final controller = _FakeEditorController(
+        renderSnapshot: _snapshotFor(renderScene),
+        document: editableScene,
+      );
+
+      final selection = SelectionController();
+
+      addTearDown(selection.dispose);
+      addTearDown(controller.dispose);
+
+      final ctx = _actionContext(
+        context: context,
+        controller: controller,
+        selection: selection,
+      );
+
+      await saveAction.invoke(ctx);
+
+      expect(port.shareCalls, 0);
+      expect(port.saveCalls, 1);
+      expect(identical(port.editableScene, editableScene), isTrue);
+      expect(identical(port.preparedScene, renderScene), isTrue);
+      expect(port.spec?.fit, CanvasFit.contain);
+      expect(port.filename, 'canvas_export.png');
+    },
+  );
 }

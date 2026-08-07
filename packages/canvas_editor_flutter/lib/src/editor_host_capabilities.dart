@@ -3,8 +3,6 @@
 // Common host ports for the generic editor surface.
 // Host apps provide concrete implementations for persistence, media, and output.
 
-import 'dart:typed_data';
-
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFit, CanvasSceneDocument;
 
@@ -38,33 +36,32 @@ class EditorExportSpec {
   final bool tight;
 }
 
-/// Host-provided renderer for an already-prepared editor scene.
+/// Host-owned final PNG operation.
 ///
-/// The editor supplies the effective scene currently displayed to the user.
-/// Implementations must render it directly without applying scene preparation
-/// again.
-abstract class EditorExports {
-  Future<Uint8List> renderPng({
+/// The editor supplies both the canonical editable scene and the prepared scene
+/// currently used for visual rendering.
+///
+/// Implementations own the complete final PNG operation, including any host
+/// policy checks, runtime resource preparation, rendering, and platform output
+/// required to complete it.
+///
+/// Hosts should use [editableScene] for document-level policy or semantics and
+/// [preparedScene] for PNG rendering.
+abstract interface class PngExportPort {
+  Future<String> sharePng({
+    required CanvasSceneDocument editableScene,
     required CanvasSceneDocument preparedScene,
     required EditorExportSpec spec,
-  });
-}
-
-/// Host-provided PNG output actions.
-///
-/// The editor does not assume where bytes go. A host may save to Photos/Gallery,
-/// trigger a browser download, write to disk, upload to storage, or open a share
-/// sheet.
-abstract class PngOutputPort {
-  const PngOutputPort();
-
-  Future<String> sharePng(
-    Uint8List bytes, {
     required String filename,
     String? text,
   });
 
-  Future<String> savePng(Uint8List bytes, {required String filename});
+  Future<String> savePng({
+    required CanvasSceneDocument editableScene,
+    required CanvasSceneDocument preparedScene,
+    required EditorExportSpec spec,
+    required String filename,
+  });
 }
 
 class PngExportAvailability {
@@ -82,13 +79,11 @@ class PngExportAvailability {
 
 class PngExportCapability {
   const PngExportCapability({
-    required this.renderer,
-    required this.output,
+    required this.port,
     this.availability = PngExportAvailability.all,
   });
 
-  final EditorExports renderer;
-  final PngOutputPort output;
+  final PngExportPort port;
   final PngExportAvailability availability;
 
   bool get canShare => availability.canShare;

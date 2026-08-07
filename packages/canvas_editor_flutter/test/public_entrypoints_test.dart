@@ -20,7 +20,7 @@ void main() {
         turnkey.CanvasMediaResolver,
         turnkey.IconCatalogPort,
         turnkey.PngExportCapability,
-        turnkey.PngOutputPort,
+        turnkey.PngExportPort,
         turnkey.JsonExportCapability,
         turnkey.JsonOutputPort,
         turnkey.EditorExportSpec,
