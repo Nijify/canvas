@@ -1,6 +1,5 @@
 // Path: oss_packages/canvas_editor_flutter/example/lib/main.dart
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/asset_library.dart';
@@ -242,33 +241,27 @@ final class _ExamplePngExportPort implements PngExportPort {
     // This generic example has no document-level export policy, so it does not
     // need to inspect editableScene. Product hosts can use that canonical scene
     // for policy or compatibility checks before doing any rendering work.
-    final bytes = await _renderPng(
-      preparedScene: preparedScene,
-      spec: spec,
-    );
-
     final context = navigatorKey.currentContext;
     if (context == null) {
       throw StateError('Unable to locate the app context for PNG sharing.');
     }
 
-    final size = MediaQuery.sizeOf(context);
+    final sharePositionOrigin = Offset.zero & MediaQuery.sizeOf(context);
+
+    final bytes = await _renderPng(preparedScene: preparedScene, spec: spec);
 
     await sharing.SharePlus.instance.share(
       sharing.ShareParams(
         files: <sharing.XFile>[
-          sharing.XFile.fromData(
-            bytes,
-            mimeType: 'image/png',
-          ),
+          sharing.XFile.fromData(bytes, mimeType: 'image/png'),
         ],
         fileNameOverrides: <String>[filename],
         text: text,
-        sharePositionOrigin: Offset.zero & size,
+        sharePositionOrigin: sharePositionOrigin,
       ),
     );
 
-    return 'PNG share sheet opened.';
+    return 'PNG sharing started.';
   }
 
   @override
@@ -278,9 +271,7 @@ final class _ExamplePngExportPort implements PngExportPort {
     required EditorExportSpec spec,
     required String filename,
   }) {
-    throw UnsupportedError(
-      'PNG saving is not available in this example.',
-    );
+    throw UnsupportedError('PNG saving is not available in this example.');
   }
 
   Future<Uint8List> _renderPng({

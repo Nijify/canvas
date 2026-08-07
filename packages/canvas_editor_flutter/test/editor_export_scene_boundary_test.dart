@@ -321,46 +321,45 @@ void main() {
     },
   );
 
-  testWidgets(
-    'PNG save delegates canonical and prepared scenes to host port',
-    (tester) async {
-      final editableScene = _scene(0.1);
-      final renderScene = _scene(0.9);
+  testWidgets('PNG save delegates canonical and prepared scenes to host port', (
+    tester,
+  ) async {
+    final editableScene = _scene(0.1);
+    final renderScene = _scene(0.9);
 
-      final port = _RecordingPngExportPort();
+    final port = _RecordingPngExportPort();
 
-      final actions = pngExportActions(PngExportCapability(port: port));
+    final actions = pngExportActions(PngExportCapability(port: port));
 
-      final saveAction = actions.singleWhere(
-        (action) => action.id == EditorActionIds.savePng,
-      );
+    final saveAction = actions.singleWhere(
+      (action) => action.id == EditorActionIds.savePng,
+    );
 
-      final context = await _pumpContext(tester);
+    final context = await _pumpContext(tester);
 
-      final controller = _FakeEditorController(
-        renderSnapshot: _snapshotFor(renderScene),
-        document: editableScene,
-      );
+    final controller = _FakeEditorController(
+      renderSnapshot: _snapshotFor(renderScene),
+      document: editableScene,
+    );
 
-      final selection = SelectionController();
+    final selection = SelectionController();
 
-      addTearDown(selection.dispose);
-      addTearDown(controller.dispose);
+    addTearDown(selection.dispose);
+    addTearDown(controller.dispose);
 
-      final ctx = _actionContext(
-        context: context,
-        controller: controller,
-        selection: selection,
-      );
+    final ctx = _actionContext(
+      context: context,
+      controller: controller,
+      selection: selection,
+    );
 
-      await saveAction.invoke(ctx);
+    await saveAction.invoke(ctx);
 
-      expect(port.shareCalls, 0);
-      expect(port.saveCalls, 1);
-      expect(identical(port.editableScene, editableScene), isTrue);
-      expect(identical(port.preparedScene, renderScene), isTrue);
-      expect(port.spec?.fit, CanvasFit.contain);
-      expect(port.filename, 'canvas_export.png');
-    },
-  );
+    expect(port.shareCalls, 0);
+    expect(port.saveCalls, 1);
+    expect(identical(port.editableScene, editableScene), isTrue);
+    expect(identical(port.preparedScene, renderScene), isTrue);
+    expect(port.spec?.fit, CanvasFit.contain);
+    expect(port.filename, 'canvas_export.png');
+  });
 }
