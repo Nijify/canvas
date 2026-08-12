@@ -40,14 +40,13 @@ class CanvasEditorExampleApp extends StatelessWidget {
             resources: _demoResources,
             navigatorKey: _navigatorKey,
           ),
-          availability: const PngExportAvailability(
-            canShare: true,
-            canSave: false,
-          ),
+          canShare: true,
+          canSave: false,
         ),
         jsonExport: const JsonExportCapability(
           output: _ExampleJsonOutputPort(),
-          availability: JsonExportAvailability(canCopy: true, canSave: false),
+          canCopy: true,
+          canSave: false,
         ),
         extensions: [
           imageImportExtension<CanvasSceneDocument>(
