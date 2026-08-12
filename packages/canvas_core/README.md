@@ -77,6 +77,21 @@ final paintOps = buildPaintOpsFromScene(document, computed);
 `FlutterTextPipeline` from `canvas_renderer_flutter`; a server or CLI can
 implement `TextMeasurer` directly.
 
+## Immutable node editing
+
+`NodeEditingX` provides common immutable field edits that preserve node
+identity and tree structure:
+
+```dart
+final renamed = node.withName('Headline');
+final moved = renamed.withXf(nextTransform);
+final hidden = moved.withHidden(true);
+final locked = hidden.withLocked(true);
+```
+
+Use `SceneTreeOps` for structural operations such as adding, deleting, moving,
+duplicating, or reordering scene nodes.
+
 ## JSON round-trip
 
 ```dart

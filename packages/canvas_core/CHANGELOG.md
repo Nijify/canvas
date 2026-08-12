@@ -1,3 +1,13 @@
+## 0.8.0
+
+- **Breaking:** replace the exported `NodeMutations` extension with
+  `NodeEditingX`.
+- **Breaking:** remove the public `withId()` and `withChildren()` node
+  extension helpers. Structural identity and tree changes remain owned by
+  scene-tree and rewrite operations.
+- Keep `withName()`, `withXf()`, `withHidden()`, and `withLocked()` as the
+  public immutable node-editing convenience API.
+
 ## 0.7.0
 
 - **Breaking:** require explicit `version` and `data` values when constructing

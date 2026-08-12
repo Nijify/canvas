@@ -1,3 +1,16 @@
+# 0.9.0
+
+- **Breaking:** require `canvas_core 0.8.x` and
+  `canvas_renderer_flutter 0.7.x`.
+- **Breaking:** remove `PngExportAvailability`; configure `canShare` and
+  `canSave` directly on `PngExportCapability`.
+- **Breaking:** remove `JsonExportAvailability`; configure `canCopy` and
+  `canSave` directly on `JsonExportCapability`.
+- **Breaking:** remove the editor-owned `JsonMap` alias. Use
+  `Map<String, Object?>` or a domain-owned alias where needed.
+- Adopt the narrowed `NodeEditingX` runtime editing surface.
+- No intended editor, rendering, preparation, or export behavior changes.
+
 # 0.8.0
 
 - **Breaking:** replace the split `EditorExports` and `PngOutputPort` PNG
