@@ -1,7 +1,6 @@
 // Path: lib/src/runtime/traversal/rewrite.dart
 
 import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/runtime/model/node_mutations.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 /// Rewrite every root subtree in a scene document and preserve identity
@@ -68,7 +67,9 @@ Node rewritePostOrder(
       nextKids.add(nc);
     }
 
-    if (changed) n = n.withChildren(nextKids);
+    if (changed) {
+      n = n.copyWith(children: nextKids);
+    }
   }
 
   return fn(n);

@@ -135,16 +135,8 @@ export 'src/runtime/traversal/traversal.dart'
     show findById, findParentOf, visitSceneNodes, collectAllNodeIds;
 export 'src/runtime/traversal/rewrite.dart'
     show replaceById, rewriteSceneDocument, rewritePostOrder;
-// TODO(api): Promote this to a stable public NodeEditingX API.
-// Currently exported so external packages can immutably edit generic Node
-// fields without importing package:canvas_core/src/...
-// Before stabilizing:
-// - rename node_mutations.dart → node_editing.dart
-// - rename NodeMutations → NodeEditingX
-// - expose only safe helpers: withXf, withHidden, withName, withLocked
-// - stacking is controlled by sibling order, not a stored zIndex field
-// - reconsider whether withId and withChildren should remain public
-export 'src/runtime/model/node_mutations.dart' show NodeMutations;
+// Common immutable node edits that preserve identity and tree structure.
+export 'src/runtime/model/node_editing.dart' show NodeEditingX;
 export 'src/runtime/traversal/scene_tree_ops.dart' show SceneTreeOps;
 export 'src/runtime/traversal/stack_order.dart'
     show nodesInPaintOrder, nodesInFrontToBackOrder;
