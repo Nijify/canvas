@@ -6,8 +6,6 @@
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFit, CanvasSceneDocument;
 
-typedef JsonMap = Map<String, Object?>;
-
 /// Export configuration for editor host ports.
 class EditorExportSpec {
   const EditorExportSpec({
@@ -64,30 +62,16 @@ abstract interface class PngExportPort {
   });
 }
 
-class PngExportAvailability {
-  const PngExportAvailability({required this.canShare, required this.canSave});
-
-  static const none = PngExportAvailability(canShare: false, canSave: false);
-
-  static const all = PngExportAvailability(canShare: true, canSave: true);
-
-  final bool canShare;
-  final bool canSave;
-
-  bool get hasAny => canShare || canSave;
-}
-
 class PngExportCapability {
   const PngExportCapability({
     required this.port,
-    this.availability = PngExportAvailability.all,
+    this.canShare = true,
+    this.canSave = true,
   });
 
   final PngExportPort port;
-  final PngExportAvailability availability;
-
-  bool get canShare => availability.canShare;
-  bool get canSave => availability.canSave;
+  final bool canShare;
+  final bool canSave;
 }
 
 // ------------------------------------------------------------
@@ -102,32 +86,18 @@ abstract class JsonOutputPort {
   Future<String> saveJson({required String json, required String filename});
 }
 
-class JsonExportAvailability {
-  const JsonExportAvailability({required this.canCopy, required this.canSave});
-
-  static const none = JsonExportAvailability(canCopy: false, canSave: false);
-
-  static const all = JsonExportAvailability(canCopy: true, canSave: true);
-
-  final bool canCopy;
-  final bool canSave;
-
-  bool get hasAny => canCopy || canSave;
-}
-
 class JsonExportCapability {
   const JsonExportCapability({
     required this.output,
-    this.availability = JsonExportAvailability.all,
+    this.canCopy = true,
+    this.canSave = true,
     this.defaultFilename = 'canvas_scene.json',
     this.pretty = true,
   });
 
   final JsonOutputPort output;
-  final JsonExportAvailability availability;
+  final bool canCopy;
+  final bool canSave;
   final String defaultFilename;
   final bool pretty;
-
-  bool get canCopy => availability.canCopy;
-  bool get canSave => availability.canSave;
 }

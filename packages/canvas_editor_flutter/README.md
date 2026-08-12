@@ -136,17 +136,24 @@ rebuilds, autosave state updates, or ordinary UI changes.
 
 ## Export capabilities
 
-PNG and JSON export actions are opt-in capabilities:
+PNG and JSON export actions are opt-in capabilities. Configure action
+availability directly on each capability:
 
 ```dart
-Widget build(BuildContext context) {
-  return CanvasSceneEditor(
-    initialScene: scene,
-    resources: resources,
-    pngExport: pngExportCapability,
-    jsonExport: jsonExportCapability,
-  );
-}
+CanvasSceneEditor(
+  initialScene: scene,
+  resources: resources,
+  pngExport: PngExportCapability(
+    port: appPngExport,
+    canShare: true,
+    canSave: false,
+  ),
+  jsonExport: JsonExportCapability(
+    output: appJsonOutput,
+    canCopy: true,
+    canSave: false,
+  ),
+)
 ```
 
 Scene JSON export uses the canonical editable scene. PNG export uses the

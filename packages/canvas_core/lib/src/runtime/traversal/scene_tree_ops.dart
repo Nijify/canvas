@@ -1,8 +1,8 @@
 // Path: lib/src/runtime/traversal/scene_tree_ops.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
+import 'package:canvas_core/src/runtime/model/node_editing.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/runtime/model/node_mutations.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart'
     show CanvasSceneDocument;
 import 'package:canvas_core/src/runtime/traversal/traversal.dart'
@@ -144,12 +144,16 @@ abstract final class SceneTreeOps {
       idMap[n.id] = newId;
       created.add(newId);
 
-      final kids = n.childrenOrEmpty;
-      final clonedKids = kids.isEmpty
-          ? const <Node>[]
-          : [for (final c in kids) clone(c)];
-
-      return n.withId(newId).withChildren(clonedKids);
+      return switch (n) {
+        final TextNode node => node.copyWith(id: newId),
+        final ImageNode node => node.copyWith(id: newId),
+        final PathNode node => node.copyWith(id: newId),
+        final IconNode node => node.copyWith(id: newId),
+        final GroupNode node => node.copyWith(
+          id: newId,
+          children: [for (final child in node.children) clone(child)],
+        ),
+      };
     }
 
     // Clone subtree.
@@ -327,7 +331,11 @@ abstract final class SceneTreeOps {
       return doc.copyWith(children: children);
     }
 
-    return replaceById(doc, parent.id, parent.withChildren(children));
+    if (parent is! GroupNode) {
+      return doc;
+    }
+
+    return replaceById(doc, parent.id, parent.copyWith(children: children));
   }
 
   static bool _containsId(Node root, NodeId needle) {
