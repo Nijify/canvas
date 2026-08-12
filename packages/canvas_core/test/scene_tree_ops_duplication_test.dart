@@ -2,25 +2,19 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
 Node _text(String id) => Node.text(
-      id: id,
-      data: const TextData(
-        text: 't',
-        fontFamily: 'Inter',
-        fontWeight: 400,
-        fontSize: 12,
-      ),
-    );
+  id: id,
+  data: const TextData(
+    text: 't',
+    fontFamily: 'Inter',
+    fontWeight: 400,
+    fontSize: 12,
+  ),
+);
 
 void main() {
   test('duplicateSubtree clones nested structure with new IDs', () {
-    final nested = Node.group(
-      id: 'nested',
-      children: <Node>[_text('b')],
-    );
-    final group = Node.group(
-      id: 'g',
-      children: <Node>[_text('a'), nested],
-    );
+    final nested = Node.group(id: 'nested', children: <Node>[_text('b')]);
+    final group = Node.group(id: 'g', children: <Node>[_text('a'), nested]);
     final scene = CanvasSceneDocument(
       backgroundFill: const CanvasFill.none(),
       backgroundOpacity: 1.0,
