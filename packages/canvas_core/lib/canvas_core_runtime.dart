@@ -142,7 +142,16 @@ export 'src/runtime/traversal/stack_order.dart'
     show nodesInPaintOrder, nodesInFrontToBackOrder;
 
 // ============================================================================
-// 9) Viewport + export helpers (renderer-agnostic)
+// 9) Validation (headless, deterministic, domain-neutral)
+// ============================================================================
+export 'src/runtime/validation/scene_document_validation.dart'
+    show
+        CanvasSceneValidationCode,
+        CanvasSceneValidationIssue,
+        validateCanvasSceneDocument;
+
+// ============================================================================
+// 10) Viewport + export helpers (renderer-agnostic)
 // ============================================================================
 export 'src/algorithms/viewport/viewport_math.dart'
     show CanvasFit, CanvasViewportTransform, computeViewport;
@@ -159,12 +168,12 @@ export 'src/algorithms/export/content_bounds.dart'
     show computePaddedContentBounds;
 
 // ============================================================================
-// 10) Misc paint helpers
+// 11) Misc paint helpers
 // ============================================================================
 export 'src/foundation/paint/canvas_fill.dart';
 
 // ============================================================================
-// 11) Runtime render pipeline
+// 12) Runtime render pipeline
 // ============================================================================
 //
 // The generic runtime surface includes:
