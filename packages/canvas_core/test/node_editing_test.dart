@@ -33,6 +33,15 @@ void main() {
       expect(node.withName('  Headline  ').name, 'Headline');
       expect(node.withName('   ').name, isNull);
       expect(node.withName(longName).name, cappedName);
+
+      final eightyEmoji = List<String>.filled(80, '😀').join();
+      final eightyOneEmoji = List<String>.filled(81, '😀').join();
+
+      expect(node.withName(eightyEmoji).name, eightyEmoji);
+      expect(
+        node.withName(eightyOneEmoji).name,
+        List<String>.filled(80, '😀').join(),
+      );
     });
 
     test('safe edits preserve node identity and tree structure', () {

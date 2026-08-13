@@ -1,3 +1,15 @@
+## 0.8.1
+
+- Add deterministic, domain-neutral `CanvasSceneDocument` validation with
+  stable machine-readable issue codes and JSON Pointer paths.
+- Validate generic scene integrity including finite numeric values, established
+  ranges, globally unique node IDs, neutral group-behavior envelopes, and
+  recursively JSON-safe behavior data.
+- Keep unknown group behavior types and versions valid so optional extension
+  packages remain responsible for component semantics.
+- Make the existing 80-character node-name limit Unicode-safe in both
+  validation and `NodeEditingX` normalization.
+
 ## 0.8.0
 
 - **Breaking:** replace the exported `NodeMutations` extension with
