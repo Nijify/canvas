@@ -7,7 +7,11 @@ import 'package:canvas_core/src/runtime/model/node_model.dart';
 String? _normalizeLayerName(String? raw) {
   final value = raw?.trim();
   if (value == null || value.isEmpty) return null;
-  return value.length <= 80 ? value : value.substring(0, 80);
+
+  final runes = value.runes;
+  if (runes.length <= 80) return value;
+
+  return String.fromCharCodes(runes.take(80));
 }
 
 /// Common immutable edits that preserve node identity and tree structure.

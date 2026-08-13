@@ -139,7 +139,7 @@ final class _SceneValidator {
   }
 
   void _validateName(String? name, String path) {
-    if (name != null && name.length > 80) {
+    if (name != null && name.runes.length > 80) {
       _add(
         CanvasSceneValidationCode.nameTooLong,
         path,
@@ -198,12 +198,12 @@ final class _SceneValidator {
   void _validateImageData(ImageData data, String path) {
     final size = data.size;
     if (size != null) {
-      _validateFinite(size.w, '$path/size/w');
-      _validateFinite(size.h, '$path/size/h');
+      _validatePositive(size.w, '$path/size/w');
+      _validatePositive(size.h, '$path/size/h');
     }
 
-    _validateFinite(data.align.x, '$path/align/x');
-    _validateFinite(data.align.y, '$path/align/y');
+    _validateRange(data.align.x, '$path/align/x', 0, 1);
+    _validateRange(data.align.y, '$path/align/y', 0, 1);
   }
 
   void _validatePathData(PathData data, String path) {
@@ -240,7 +240,14 @@ final class _SceneValidator {
         }
       case CircleSource(:final r):
         _validateFinite(r, '$path/r');
-      case RegularPolygonSource(:final r, :final rotation):
+      case RegularPolygonSource(:final sides, :final r, :final rotation):
+        if (sides < 3) {
+          _add(
+            CanvasSceneValidationCode.valueOutOfRange,
+            '$path/sides',
+            'Regular polygon side count must be at least 3.',
+          );
+        }
         _validateFinite(r, '$path/r');
         _validateFinite(rotation, '$path/rotation');
       case StarSource(

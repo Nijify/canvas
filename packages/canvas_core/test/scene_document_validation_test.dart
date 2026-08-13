@@ -298,6 +298,60 @@ void main() {
       );
     });
 
+    test('node-name limit counts Unicode code points, not UTF-16 units', () {
+      final eightyEmoji = List<String>.filled(80, '😀').join();
+      final eightyOneEmoji = List<String>.filled(81, '😀').join();
+
+      expect(
+        validateCanvasSceneDocument(
+          _scene(children: <Node>[_text('valid', name: eightyEmoji)]),
+        ),
+        isEmpty,
+      );
+
+      expect(
+        _signature(
+          validateCanvasSceneDocument(
+            _scene(children: <Node>[_text('invalid', name: eightyOneEmoji)]),
+          ),
+        ),
+        <String>['nameTooLong|/children/0/name|'],
+      );
+    });
+
+    test('validates explicit image dimensions and alignment', () {
+      final scene = _scene(
+        children: <Node>[
+          Node.image(
+            id: 'image',
+            data: const ImageData(size: Size2D(-1, 0), align: Vec2(-0.1, 1.1)),
+          ),
+        ],
+      );
+
+      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
+        'valueOutOfRange|/children/0/data/size/w|',
+        'valueOutOfRange|/children/0/data/size/h|',
+        'valueOutOfRange|/children/0/data/align/x|',
+        'valueOutOfRange|/children/0/data/align/y|',
+      ]);
+    });
+
+    test('regular polygon requires at least three sides', () {
+      final scene = _scene(
+        children: <Node>[
+          Node.path(
+            id: 'polygon',
+            data: const PathData(source: RegularPolygonSource(2, 10)),
+          ),
+        ],
+      );
+
+      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
+        'valueOutOfRange|/children/0/data/source/sides|',
+      ]);
+    });
+
     test('multiple errors have deterministic codes, paths, and ordering', () {
       final scene = _scene(
         artboardSize: const Size2D(0, 360),
