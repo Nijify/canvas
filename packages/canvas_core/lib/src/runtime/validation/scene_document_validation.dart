@@ -60,7 +60,8 @@ List<CanvasSceneValidationIssue> validateCanvasSceneDocument(
 }
 
 final class _SceneValidator {
-  final List<CanvasSceneValidationIssue> issues = <CanvasSceneValidationIssue>[];
+  final List<CanvasSceneValidationIssue> issues =
+      <CanvasSceneValidationIssue>[];
   final Map<String, String> _firstNodeIdPath = <String, String>{};
   final HashSet<Node> _activeNodes = HashSet<Node>.identity();
   final HashSet<Object> _activeBehaviorContainers = HashSet<Object>.identity();
@@ -242,7 +243,12 @@ final class _SceneValidator {
       case RegularPolygonSource(:final r, :final rotation):
         _validateFinite(r, '$path/r');
         _validateFinite(rotation, '$path/rotation');
-      case StarSource(:final points, :final rOuter, :final rInner, :final rotation):
+      case StarSource(
+        :final points,
+        :final rOuter,
+        :final rInner,
+        :final rotation,
+      ):
         if (points < 3) {
           _add(
             CanvasSceneValidationCode.valueOutOfRange,
