@@ -65,6 +65,27 @@ abstract class EditorDocumentAdapter<TSourceDocument> {
   /// Resolves the canonical document into the runtime scene used for rendering.
   rt.CanvasSceneDocument resolve(TSourceDocument doc, Object? ctx);
 
+  /// Returns why a registered literal field cannot currently be edited.
+  ///
+  /// This is evaluated against the current canonical [TSourceDocument].
+  /// Return null to allow the literal commit, or a non-empty user-facing
+  /// reason to deny it.
+  ///
+  /// [nodeId] is [kSceneFieldsId] for registered scene-level fields.
+  ///
+  /// This hook governs registered literal edits through
+  /// [EditorController.commitField] only. It is not an authorization boundary
+  /// and does not restrict structural [EditorEdit] operations or
+  /// source-document-level mutations.
+  ///
+  /// Implementations must be synchronous, deterministic, side-effect-free,
+  /// and fast because this may be evaluated during UI builds and commits.
+  String? fieldEditDisabledReason(
+    TSourceDocument document,
+    rt.ElementId nodeId,
+    rt.CanvasFieldKey fieldKey,
+  ) => null;
+
   /// Optional hook for canonical cleanup after subtree deletion.
   TSourceDocument onDeleteSubtree(
     TSourceDocument doc,
@@ -198,9 +219,12 @@ abstract class EditorController {
 
   /// Commits a literal value for a registered field.
   ///
-  /// The field's `FieldCodec` owns field-specific policy, normalization, and
-  /// translation into an [EditorEdit]. Invalid or stale commit targets are
-  /// ignored safely.
+  /// The field's `FieldCodec` owns field-specific normalization and translation
+  /// into an [EditorEdit]. The current [EditorDocumentAdapter] may additionally
+  /// deny the literal edit based on canonical source-document state.
+  ///
+  /// Invalid, stale, or source-document-denied commit targets are ignored
+  /// safely.
   void commitField<T>(rt.ElementId nodeId, rt.CanvasFieldKey fieldKey, T value);
 
   /// Lifecycle hook for implementations that hold subscriptions.

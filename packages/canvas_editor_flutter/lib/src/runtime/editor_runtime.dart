@@ -394,6 +394,26 @@ final class EditorRuntime<TSourceDocument>
     return fallback;
   }
 
+  String? _fieldEditDisabledReason(
+    TSourceDocument document,
+    rt.ElementId nodeId,
+    rt.CanvasFieldKey fieldKey,
+  ) {
+    final reason = _adapter.fieldEditDisabledReason(document, nodeId, fieldKey);
+
+    if (reason == null) return null;
+
+    assert(
+      reason.trim().isNotEmpty,
+      'EditorDocumentAdapter.fieldEditDisabledReason must return null '
+      'or a non-empty reason.',
+    );
+
+    // Treat an invalid empty reason as no denial in release builds rather than
+    // disabling a field without a meaningful explanation.
+    return reason.trim().isEmpty ? null : reason;
+  }
+
   @override
   FieldState<T> getField<T>(rt.ElementId nodeId, rt.CanvasFieldKey fieldKey) {
     final codec = FieldCatalog.of(fieldKey, extra: _extraFieldCodecs);
@@ -409,7 +429,16 @@ final class EditorRuntime<TSourceDocument>
         );
       }
 
-      return FieldState<T>(reader(sceneNow) as T);
+      final presentDocument = _presentSourceDocument;
+
+      return FieldState<T>(
+        reader(sceneNow) as T,
+        disabledReason: _fieldEditDisabledReason(
+          presentDocument,
+          nodeId,
+          fieldKey,
+        ),
+      );
     }
 
     if (codec.isSceneOnly) {
@@ -428,8 +457,11 @@ final class EditorRuntime<TSourceDocument>
       );
     }
 
+    final presentDocument = _presentSourceDocument;
+    final presentBase = _adapter.getBase(presentDocument);
+
     final effective = rt.findById(sceneNow, nodeId);
-    final base = rt.findById(baseDocument, nodeId);
+    final base = rt.findById(presentBase, nodeId);
 
     final value = _readEffectiveOrBase<Object>(
       effective: effective,
@@ -438,9 +470,20 @@ final class EditorRuntime<TSourceDocument>
       read: (node) => readNode(node as rt.Node),
     );
 
+    if (base == null) {
+      return FieldState<T>(
+        value as T,
+        disabledReason: 'Missing canonical node',
+      );
+    }
+
     return FieldState<T>(
       value as T,
-      disabledReason: base == null ? 'Missing canonical node' : null,
+      disabledReason: _fieldEditDisabledReason(
+        presentDocument,
+        nodeId,
+        fieldKey,
+      ),
     );
   }
 
@@ -455,15 +498,26 @@ final class EditorRuntime<TSourceDocument>
     if (nodeId == kSceneFieldsId) {
       if (!codec.isSceneOnly) return;
 
+      final presentDocument = _presentSourceDocument;
+
+      if (_fieldEditDisabledReason(presentDocument, nodeId, fieldKey) != null) {
+        return;
+      }
+
       codec.commit(this, nodeId, value as Object);
       return;
     }
 
     if (codec.isSceneOnly) return;
 
-    final presentBase = _adapter.getBase(_presentSourceDocument);
+    final presentDocument = _presentSourceDocument;
+    final presentBase = _adapter.getBase(presentDocument);
 
     if (rt.findById(presentBase, nodeId) == null) return;
+
+    if (_fieldEditDisabledReason(presentDocument, nodeId, fieldKey) != null) {
+      return;
+    }
 
     codec.commit(this, nodeId, value as Object);
   }
