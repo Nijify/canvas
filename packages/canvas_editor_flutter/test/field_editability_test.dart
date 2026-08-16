@@ -161,7 +161,9 @@ void main() {
     addTearDown(runtime.dispose);
 
     expect(
-      runtime.getField<String>('t1', rt.CanvasFields.textContent).disabledReason,
+      runtime
+          .getField<String>('t1', rt.CanvasFields.textContent)
+          .disabledReason,
       isNull,
     );
 
@@ -200,10 +202,7 @@ void main() {
     runtime.document.addListener(() => documentNotifications += 1);
     runtime.render.addListener(() => renderNotifications += 1);
 
-    final state = runtime.getField<String>(
-      't1',
-      rt.CanvasFields.textContent,
-    );
+    final state = runtime.getField<String>('t1', rt.CanvasFields.textContent);
 
     expect(state.value, 'Original title');
     expect(state.disabledReason, 'Field is source-locked');
@@ -222,19 +221,22 @@ void main() {
     expect(renderNotifications, 0);
   });
 
-  test('intrinsic invalid-target reason takes precedence over adapter denial', () {
-    final runtime = _buildPolicyRuntime(
-      _PolicyDocument(base: _scene(), denyText: true),
-    );
-    addTearDown(runtime.dispose);
+  test(
+    'intrinsic invalid-target reason takes precedence over adapter denial',
+    () {
+      final runtime = _buildPolicyRuntime(
+        _PolicyDocument(base: _scene(), denyText: true),
+      );
+      addTearDown(runtime.dispose);
 
-    final state = runtime.getField<String>(
-      'missing',
-      rt.CanvasFields.textContent,
-    );
+      final state = runtime.getField<String>(
+        'missing',
+        rt.CanvasFields.textContent,
+      );
 
-    expect(state.disabledReason, 'Missing canonical node');
-  });
+      expect(state.disabledReason, 'Missing canonical node');
+    },
+  );
 
   test('scene-level registered fields can be denied', () {
     final runtime = _buildPolicyRuntime(
@@ -273,7 +275,9 @@ void main() {
     runtime.render.addListener(() => renderNotifications += 1);
 
     expect(
-      runtime.getField<String>('t1', rt.CanvasFields.textContent).disabledReason,
+      runtime
+          .getField<String>('t1', rt.CanvasFields.textContent)
+          .disabledReason,
       isNull,
     );
 
@@ -285,21 +289,27 @@ void main() {
     expect(documentNotifications, 0);
     expect(renderNotifications, 1);
     expect(
-      runtime.getField<String>('t1', rt.CanvasFields.textContent).disabledReason,
+      runtime
+          .getField<String>('t1', rt.CanvasFields.textContent)
+          .disabledReason,
       'Field is source-locked',
     );
 
     runtime.undo();
 
     expect(
-      runtime.getField<String>('t1', rt.CanvasFields.textContent).disabledReason,
+      runtime
+          .getField<String>('t1', rt.CanvasFields.textContent)
+          .disabledReason,
       isNull,
     );
 
     runtime.redo();
 
     expect(
-      runtime.getField<String>('t1', rt.CanvasFields.textContent).disabledReason,
+      runtime
+          .getField<String>('t1', rt.CanvasFields.textContent)
+          .disabledReason,
       'Field is source-locked',
     );
   });
@@ -319,7 +329,8 @@ void main() {
       expect(
         _xOf(runtime.sourceDocument.base),
         20,
-        reason: 'Published source should still lag the scheduled gesture frame.',
+        reason:
+            'Published source should still lag the scheduled gesture frame.',
       );
       expect(
         runtime
