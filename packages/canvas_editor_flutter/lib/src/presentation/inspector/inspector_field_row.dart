@@ -15,22 +15,11 @@ class InspectorFieldRow<T> extends StatefulWidget {
     required this.nodeId,
     required this.controller,
     required this.spec,
-    this.forceDisabled = false,
-    this.disabledReasonOverride,
   });
 
   final ElementId nodeId;
   final EditorController controller;
   final InspectorFieldSpec<T> spec;
-
-  /// Optional external lock.
-  ///
-  /// Generic by design: read-only mode, locked selection, permissions,
-  /// or feature overlays can all use this without base inspector
-  /// knowing why.
-  final bool forceDisabled;
-
-  final String? disabledReasonOverride;
 
   @override
   State<InspectorFieldRow<T>> createState() => _InspectorFieldRowState<T>();
@@ -61,9 +50,7 @@ class _InspectorFieldRowState<T> extends State<InspectorFieldRow<T>> {
 
     final identityChanged =
         oldWidget.nodeId != widget.nodeId ||
-        oldWidget.controller != widget.controller ||
-        oldWidget.forceDisabled != widget.forceDisabled ||
-        oldWidget.disabledReasonOverride != widget.disabledReasonOverride;
+        oldWidget.controller != widget.controller;
 
     if (specChanged || identityChanged) {
       _closeEditSession();
@@ -151,11 +138,8 @@ class _InspectorFieldRowState<T> extends State<InspectorFieldRow<T>> {
       widget.spec.fieldKey,
     );
 
-    final enabled = st.disabledReason == null && !widget.forceDisabled;
-
-    final disabledHint = enabled
-        ? null
-        : (widget.disabledReasonOverride ?? st.disabledReason);
+    final disabledHint = st.disabledReason;
+    final enabled = disabledHint == null;
 
     _scheduleCloseIfNeeded(enabled);
 

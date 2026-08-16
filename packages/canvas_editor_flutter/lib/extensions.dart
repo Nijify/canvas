@@ -89,7 +89,8 @@ export 'src/editor_api.dart'
         EditorEdit,
         EditorEditResult,
         SelectionState,
-        FieldState;
+        FieldState,
+        kSceneFieldsId;
 
 export 'src/editor_edits.dart' show EditorEdits;
 export 'src/editor_field_codecs.dart' show FieldCodec;

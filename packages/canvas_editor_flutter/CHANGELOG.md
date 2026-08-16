@@ -1,3 +1,15 @@
+# 0.10.0
+
+- **Breaking:** remove `InspectorFieldRow.forceDisabled` and
+  `InspectorFieldRow.disabledReasonOverride`; registered field editability now
+  flows through `FieldState.disabledReason`.
+- Add `EditorDocumentAdapter.fieldEditDisabledReason(...)` for
+  source-document-aware registered literal edit restrictions.
+- Enforce source-document field denial in `EditorRuntime.commitField()` using
+  the current canonical transaction state.
+- Apply source-document editability to scene-level registered fields.
+- Export `kSceneFieldsId` through the public `extensions.dart` entrypoint.
+
 # 0.9.0
 
 - **Breaking:** require `canvas_core 0.8.x` and
