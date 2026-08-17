@@ -4,8 +4,8 @@ import 'package:canvas_editor_flutter/src/editor_extensions.dart';
 import 'package:canvas_editor_flutter/src/editor_surface_features.dart';
 import 'package:canvas_editor_flutter/src/image_import.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
-import 'package:canvas_editor_flutter/src/presentation/inspector/inspector.dart'
-    show ImageInspectorPanel;
+import 'package:canvas_editor_flutter/src/editor_api.dart'
+    show EditorController;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 import 'package:flutter/material.dart';
@@ -59,21 +59,25 @@ class _ImageImportExtension<TSourceDocument>
   @override
   EditorSurfaceFeatures get surfaceFeatures {
     return EditorSurfaceFeatures(
-      inspectorBuilder: (context) {
-        final selected =
-            context.selectedRenderedNode ?? context.selectedEditableNode;
+      inspectorSections: [
+        (context) {
+          final selected =
+              context.selectedRenderedNode ?? context.selectedEditableNode;
 
-        if (selected is! ImageNode) return null;
+          if (selected is! ImageNode) {
+            return null;
+          }
 
-        return ImageInspectorPanel(
-          nodeId: selected.id,
-          inspector: context,
-          sourceControls: context.fieldRow<String>(
+          return context.fieldRow<String>(
             selected.id,
-            _imageSourceSpec(imageImport: imageImport),
-          ),
-        );
-      },
+            _imageSourceSpec(
+              imageImport: imageImport,
+              controller: context.controller,
+              nodeId: selected.id,
+            ),
+          );
+        },
+      ],
     );
   }
 
@@ -142,6 +146,8 @@ class _ImageImportExtension<TSourceDocument>
 
 InspectorFieldSpec<String> _imageSourceSpec({
   required ImageImportPort imageImport,
+  required EditorController controller,
+  required ElementId nodeId,
 }) {
   return InspectorFieldSpec<String>(
     fieldKey: CanvasFields.imageSource,
@@ -160,9 +166,12 @@ InspectorFieldSpec<String> _imageSourceSpec({
           final label = value.trim().isEmpty ? '(none)' : value;
 
           return _ImageSourcePickerControl(
+            key: ValueKey('image-import-source:$nodeId'),
             enabled: enabled,
             currentSourceLabel: label,
             imageImport: imageImport,
+            controller: controller,
+            nodeId: nodeId,
             commitSourceRef: commit,
           );
         },
@@ -171,15 +180,20 @@ InspectorFieldSpec<String> _imageSourceSpec({
 
 class _ImageSourcePickerControl extends StatefulWidget {
   const _ImageSourcePickerControl({
+    super.key,
     required this.enabled,
     required this.currentSourceLabel,
     required this.imageImport,
+    required this.controller,
+    required this.nodeId,
     required this.commitSourceRef,
   });
 
   final bool enabled;
   final String currentSourceLabel;
   final ImageImportPort imageImport;
+  final EditorController controller;
+  final ElementId nodeId;
   final ValueChanged<String> commitSourceRef;
 
   @override
@@ -190,8 +204,27 @@ class _ImageSourcePickerControl extends StatefulWidget {
 class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
   bool _isImporting = false;
 
+  ImageNode? _canonicalImage(EditorController controller, ElementId nodeId) {
+    final node = findById(controller.document.value, nodeId);
+
+    return node is ImageNode ? node : null;
+  }
+
   Future<void> _import(ImageImportSource source) async {
-    if (!widget.enabled || _isImporting) return;
+    if (!widget.enabled || _isImporting) {
+      return;
+    }
+
+    final controller = widget.controller;
+    final targetNodeId = widget.nodeId;
+
+    final originalImage = _canonicalImage(controller, targetNodeId);
+
+    if (originalImage == null) {
+      return;
+    }
+
+    final originalSourcePath = originalImage.data.sourcePath;
 
     setState(() => _isImporting = true);
 
@@ -205,8 +238,41 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         },
       );
 
-      if (!mounted || sourceRef == null) return;
+      if (!mounted || sourceRef == null) {
+        return;
+      }
 
+      // A state object created for one image must never commit an async result
+      // into another target.
+      if (widget.controller != controller || widget.nodeId != targetNodeId) {
+        return;
+      }
+
+      final latestImage = _canonicalImage(controller, targetNodeId);
+
+      if (latestImage == null) {
+        return;
+      }
+
+      // The original target changed while the picker/import was running.
+      // Discard the stale result instead of overwriting newer user intent.
+      if (latestImage.data.sourcePath != originalSourcePath) {
+        return;
+      }
+
+      // Editability may have changed while awaiting the host import, for example
+      // because an authoring binding was added.
+      final fieldState = controller.getField<String>(
+        targetNodeId,
+        CanvasFields.imageSource,
+      );
+
+      if (fieldState.disabledReason != null) {
+        return;
+      }
+
+      // Keep the registered-field path authoritative. This preserves field
+      // codecs, runtime policy, custom field-row behavior, and normal history.
       widget.commitSourceRef(sourceRef);
     } finally {
       if (mounted) {

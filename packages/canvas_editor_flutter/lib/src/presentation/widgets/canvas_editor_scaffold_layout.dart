@@ -19,7 +19,7 @@ import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.da
 import 'package:canvas_editor_flutter/src/presentation/widgets/editor_app_bar.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_context.dart'
-    show InspectorBuilder, InspectorFieldRowBuilder;
+    show InspectorBuilder, InspectorSectionBuilder, InspectorFieldRowBuilder;
 import 'package:canvas_editor_flutter/src/presentation/layers/layers_panel.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +45,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
     required this.repaint,
     required this.appBarBuilder,
     required this.inspectorBuilder,
+    required this.inspectorSections,
     required this.interactionPolicy,
     required this.viewportBehavior,
     required this.sceneObjectPolicy,
@@ -68,6 +69,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
 
   final EditorAppBarBuilder? appBarBuilder;
   final InspectorBuilder? inspectorBuilder;
+  final List<InspectorSectionBuilder> inspectorSections;
   final EditorInteractionPolicy interactionPolicy;
   final CanvasViewportBehavior? viewportBehavior;
   final SceneObjectPresentationPolicy sceneObjectPolicy;
@@ -129,6 +131,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
         selection: selection,
         resources: resources,
         builder: inspectorBuilder,
+        sections: inspectorSections,
         fieldRowBuilder: inspectorFieldRowBuilder,
       );
 
@@ -173,6 +176,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
           selection: selection,
           resources: resources,
           builder: inspectorBuilder,
+          sections: inspectorSections,
           compact: true,
           fieldRowBuilder: inspectorFieldRowBuilder,
         ),

@@ -48,7 +48,11 @@ export 'src/presentation/layers/scene_object_tree.dart'
 
 // Inspector composition.
 export 'src/presentation/inspector/inspector_context.dart'
-    show InspectorContext, InspectorBuilder, InspectorFieldRowBuilder;
+    show
+        InspectorContext,
+        InspectorBuilder,
+        InspectorSectionBuilder,
+        InspectorFieldRowBuilder;
 
 export 'src/presentation/inspector/inspector.dart'
     show TextInspectorPanel, IconInspectorPanel;

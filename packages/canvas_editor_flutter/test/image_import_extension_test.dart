@@ -1,5 +1,7 @@
 // Path: oss_packages/canvas_editor_flutter/test/image_import_extension_test.dart
 
+import 'dart:async';
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/extensions.dart';
 import 'package:canvas_editor_flutter/image_import.dart';
@@ -11,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'editor_runtime_fakes.dart';
 
 const _existingImageId = 'existing-image';
+const _secondImageId = 'second-image';
 const _replaceGalleryKey = ValueKey('image-import-replace-gallery');
 const _replaceCameraKey = ValueKey('image-import-replace-camera');
 
@@ -25,6 +28,30 @@ CanvasSceneDocument _sceneWithImage() {
         data: ImageData(
           sourcePath: 'media:existing-image',
           size: Size2D(200, 160),
+        ),
+      ),
+    ],
+  );
+}
+
+CanvasSceneDocument _sceneWithTwoImagesSharingSource() {
+  return const CanvasSceneDocument(
+    artboardSize: Size2D(300, 200),
+    backgroundFill: CanvasFill.none(),
+    backgroundOpacity: 1.0,
+    children: <Node>[
+      Node.image(
+        id: _existingImageId,
+        data: ImageData(
+          sourcePath: 'media:shared-image',
+          size: Size2D(200, 160),
+        ),
+      ),
+      Node.image(
+        id: _secondImageId,
+        data: ImageData(
+          sourcePath: 'media:shared-image',
+          size: Size2D(120, 100),
         ),
       ),
     ],
@@ -52,6 +79,43 @@ final class _RecordingImageImportPort implements ImageImportPort {
   }) async {
     requestedSources.add(source);
     return result;
+  }
+}
+
+final class _DeferredImageImportPort implements ImageImportPort {
+  final List<ImageImportSource> requestedSources = <ImageImportSource>[];
+  final Completer<ImageImportResult> _completer =
+      Completer<ImageImportResult>();
+
+  @override
+  Future<ImageImportResult> importImage({
+    required ImageImportSource source,
+  }) {
+    requestedSources.add(source);
+    return _completer.future;
+  }
+
+  void complete(ImageImportResult result) {
+    _completer.complete(result);
+  }
+}
+
+final class _AdditiveImageSectionExtension
+    extends EditorExtension<CanvasSceneDocument> {
+  @override
+  EditorSurfaceFeatures get surfaceFeatures {
+    return EditorSurfaceFeatures(
+      inspectorSections: <InspectorSectionBuilder>[
+        (context) {
+          final selected =
+              context.selectedRenderedNode ?? context.selectedEditableNode;
+
+          if (selected is! ImageNode) return null;
+
+          return const Text('Extra image section');
+        },
+      ],
+    );
   }
 }
 
@@ -130,6 +194,12 @@ ImageNode _singleImage(EditorController controller) {
   return controller.document.value.children.single as ImageNode;
 }
 
+ImageNode _imageById(EditorController controller, String id) {
+  final node = findById(controller.document.value, id);
+  expect(node, isA<ImageNode>());
+  return node! as ImageNode;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -164,6 +234,48 @@ void main() {
         _singleImage(editor.controller).data.sourcePath,
         'media:replacement-image',
       );
+      expect(editor.controller.canUndo.value, isTrue);
+
+      editor.controller.undo();
+      await tester.pumpAndSettle();
+
+      expect(
+        _singleImage(editor.controller).data.sourcePath,
+        'media:existing-image',
+      );
+    },
+  );
+
+  testWidgets(
+    'image import coexists with later additive Image content and intrinsic geometry',
+    (tester) async {
+      final imageImport = _RecordingImageImportPort(
+        ImageImportResult.success('media:unused'),
+      );
+
+      final editor = await _pumpEditor(
+        tester,
+        scene: _sceneWithImage(),
+        imageImport: imageImport,
+        extraExtensions: <EditorExtension<CanvasSceneDocument>>[
+          _AdditiveImageSectionExtension(),
+        ],
+      );
+
+      editor.selection.selectItems(const <String>[_existingImageId]);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(_replaceGalleryKey), findsOneWidget);
+      expect(find.text('Extra image section'), findsOneWidget);
+      expect(find.text('Width: 200'), findsOneWidget);
+      expect(find.text('Height: 160'), findsOneWidget);
+
+      final sourceTop = tester.getTopLeft(find.byKey(_replaceGalleryKey)).dy;
+      final extraTop = tester.getTopLeft(find.text('Extra image section')).dy;
+      final geometryTop = tester.getTopLeft(find.text('Width: 200')).dy;
+
+      expect(sourceTop, lessThan(extraTop));
+      expect(extraTop, lessThan(geometryTop));
     },
   );
 
@@ -222,6 +334,82 @@ void main() {
       expect(
         find.text('Failed to replace image: Upload failed'),
         findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'pending replacement cannot migrate to a newly selected image with the same source',
+    (tester) async {
+      final imageImport = _DeferredImageImportPort();
+
+      final editor = await _pumpEditor(
+        tester,
+        scene: _sceneWithTwoImagesSharingSource(),
+        imageImport: imageImport,
+      );
+
+      editor.selection.selectItems(const <String>[_existingImageId]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(_replaceGalleryKey));
+      await tester.pump();
+
+      expect(imageImport.requestedSources, <ImageImportSource>[
+        ImageImportSource.gallery,
+      ]);
+
+      editor.selection.selectItems(const <String>[_secondImageId]);
+      await tester.pump();
+
+      imageImport.complete(
+        ImageImportResult.success('media:stale-replacement'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        _imageById(editor.controller, _existingImageId).data.sourcePath,
+        'media:shared-image',
+      );
+      expect(
+        _imageById(editor.controller, _secondImageId).data.sourcePath,
+        'media:shared-image',
+      );
+    },
+  );
+
+  testWidgets(
+    'pending replacement is discarded when the canonical source changes',
+    (tester) async {
+      final imageImport = _DeferredImageImportPort();
+
+      final editor = await _pumpEditor(
+        tester,
+        scene: _sceneWithImage(),
+        imageImport: imageImport,
+      );
+
+      editor.selection.selectItems(const <String>[_existingImageId]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(_replaceGalleryKey));
+      await tester.pump();
+
+      editor.controller.commitField<String>(
+        _existingImageId,
+        CanvasFields.imageSource,
+        'media:newer-source',
+      );
+      await tester.pump();
+
+      imageImport.complete(
+        ImageImportResult.success('media:stale-replacement'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        _singleImage(editor.controller).data.sourcePath,
+        'media:newer-source',
       );
     },
   );
@@ -319,28 +507,29 @@ void main() {
     expect(find.text('Failed to add image: Upload failed'), findsOneWidget);
   });
 
-  testWidgets('later Image inspector replaces image-import inspector panel', (
-    tester,
-  ) async {
-    final imageImport = _RecordingImageImportPort(
-      ImageImportResult.success('media:unused'),
-    );
+  testWidgets(
+    'exclusive Image inspector suppresses additive and intrinsic Image content',
+    (tester) async {
+      final imageImport = _RecordingImageImportPort(
+        ImageImportResult.success('media:unused'),
+      );
 
-    final editor = await _pumpEditor(
-      tester,
-      scene: _sceneWithImage(),
-      imageImport: imageImport,
-      extraExtensions: <EditorExtension<CanvasSceneDocument>>[
-        _LaterImagePanelExtension(),
-      ],
-    );
+      final editor = await _pumpEditor(
+        tester,
+        scene: _sceneWithImage(),
+        imageImport: imageImport,
+        extraExtensions: <EditorExtension<CanvasSceneDocument>>[
+          _LaterImagePanelExtension(),
+        ],
+      );
 
-    editor.selection.selectItems(const <String>[_existingImageId]);
-    await tester.pumpAndSettle();
+      editor.selection.selectItems(const <String>[_existingImageId]);
+      await tester.pumpAndSettle();
 
-    expect(find.text('Later image panel'), findsOneWidget);
-    expect(find.byKey(_replaceGalleryKey), findsNothing);
-    expect(find.byKey(_replaceCameraKey), findsNothing);
-    expect(find.text('Width: 200'), findsNothing);
-  });
+      expect(find.text('Later image panel'), findsOneWidget);
+      expect(find.byKey(_replaceGalleryKey), findsNothing);
+      expect(find.byKey(_replaceCameraKey), findsNothing);
+      expect(find.text('Width: 200'), findsNothing);
+    },
+  );
 }

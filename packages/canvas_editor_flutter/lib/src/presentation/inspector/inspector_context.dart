@@ -14,6 +14,15 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_field
 /// earlier builder should get an opportunity to handle it.
 typedef InspectorBuilder = Widget? Function(InspectorContext context);
 
+/// Builds additive content inside the standard inspector for the current
+/// single-item selection.
+///
+/// Returning null means this section does not apply to the current selection.
+///
+/// These sections are only used when no exclusive [InspectorBuilder] handles
+/// the selection.
+typedef InspectorSectionBuilder = Widget? Function(InspectorContext context);
+
 /// Builds one field row.
 ///
 /// Extensions can decorate the standard field row with supplemental controls
