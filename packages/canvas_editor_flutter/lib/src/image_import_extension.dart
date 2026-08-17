@@ -4,8 +4,8 @@ import 'package:canvas_editor_flutter/src/editor_extensions.dart';
 import 'package:canvas_editor_flutter/src/editor_surface_features.dart';
 import 'package:canvas_editor_flutter/src/image_import.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
-import 'package:canvas_editor_flutter/src/presentation/inspector/inspector.dart'
-    show ImageInspectorPanel;
+import 'package:canvas_editor_flutter/src/editor_api.dart'
+    show EditorController;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 import 'package:flutter/material.dart';
@@ -59,21 +59,25 @@ class _ImageImportExtension<TSourceDocument>
   @override
   EditorSurfaceFeatures get surfaceFeatures {
     return EditorSurfaceFeatures(
-      inspectorBuilder: (context) {
-        final selected =
-            context.selectedRenderedNode ?? context.selectedEditableNode;
+      inspectorSections: [
+        (context) {
+          final selected =
+              context.selectedRenderedNode ?? context.selectedEditableNode;
 
-        if (selected is! ImageNode) return null;
+          if (selected is! ImageNode) {
+            return null;
+          }
 
-        return ImageInspectorPanel(
-          nodeId: selected.id,
-          inspector: context,
-          sourceControls: context.fieldRow<String>(
+          return context.fieldRow<String>(
             selected.id,
-            _imageSourceSpec(imageImport: imageImport),
-          ),
-        );
-      },
+            _imageSourceSpec(
+              imageImport: imageImport,
+              controller: context.controller,
+              nodeId: selected.id,
+            ),
+          );
+        },
+      ],
     );
   }
 
@@ -142,6 +146,8 @@ class _ImageImportExtension<TSourceDocument>
 
 InspectorFieldSpec<String> _imageSourceSpec({
   required ImageImportPort imageImport,
+  required EditorController controller,
+  required ElementId nodeId,
 }) {
   return InspectorFieldSpec<String>(
     fieldKey: CanvasFields.imageSource,
@@ -160,9 +166,12 @@ InspectorFieldSpec<String> _imageSourceSpec({
           final label = value.trim().isEmpty ? '(none)' : value;
 
           return _ImageSourcePickerControl(
+            key: ValueKey('image-import-source:$nodeId'),
             enabled: enabled,
             currentSourceLabel: label,
             imageImport: imageImport,
+            controller: controller,
+            nodeId: nodeId,
             commitSourceRef: commit,
           );
         },
