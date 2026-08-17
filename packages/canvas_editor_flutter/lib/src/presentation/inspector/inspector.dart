@@ -232,7 +232,6 @@ class ImageInspectorPanel extends StatelessWidget {
 /// Source-independent image layout controls.
 ///
 /// This is intentionally not a full inspector panel or an [InspectorCard].
-/// It can be embedded by the base Image inspector and importer-owned panels.
 class ImageGeometryInspectorControls extends StatelessWidget {
   const ImageGeometryInspectorControls({
     super.key,
@@ -291,7 +290,16 @@ Widget _buildIconInspectorPanel({
         const HintText('No icons available.'),
       ],
       const Gap(12),
-      inspector.fieldRow<double>(nodeId, iconSizeSpec()),
+      inspector.fieldRow<double>(
+        nodeId,
+        doubleSliderSpec(
+          fieldKey: CanvasFields.iconSizePx,
+          title: 'Size',
+          uiLabel: 'Size',
+          min: 16,
+          max: 200,
+        ),
+      ),
       const Gap(12),
       FillEditor(
         nodeId: nodeId,
@@ -300,7 +308,16 @@ Widget _buildIconInspectorPanel({
         header: 'Fill',
       ),
       const Gap(12),
-      inspector.fieldRow<double>(nodeId, iconShadowOffsetSpec()),
+      inspector.fieldRow<double>(
+        nodeId,
+        doubleSliderSpec(
+          fieldKey: CanvasFields.iconShadowOffset,
+          title: 'Shadow Offset',
+          uiLabel: 'Shadow Offset',
+          min: 0,
+          max: 20,
+        ),
+      ),
     ],
   );
 }
