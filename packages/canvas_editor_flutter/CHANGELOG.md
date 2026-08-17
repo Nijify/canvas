@@ -1,3 +1,18 @@
+# 0.11.1
+
+- Add the optional `image_tools.dart` capability entrypoint.
+- Add the provider-neutral `BackgroundRemovalPort` and typed background-removal
+  results.
+- Add `backgroundRemovalExtension` for host-owned background removal inside the
+  standard Image inspector.
+- Keep background removal target-safe across asynchronous selection, source,
+  target, field-editability, and prepared-scene changes.
+- Commit successful replacements through the registered
+  `CanvasFields.imageSource` field path so normal field policy and undo/redo
+  remain authoritative.
+- Keep image processing, persistence, provider lifecycle, byte handling, and
+  cleanup of unreferenced outputs outside Canvas.
+
 # 0.11.0
 
 - **Breaking:** image import no longer participates in the exclusive

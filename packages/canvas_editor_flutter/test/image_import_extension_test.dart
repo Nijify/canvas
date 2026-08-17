@@ -88,9 +88,7 @@ final class _DeferredImageImportPort implements ImageImportPort {
       Completer<ImageImportResult>();
 
   @override
-  Future<ImageImportResult> importImage({
-    required ImageImportSource source,
-  }) {
+  Future<ImageImportResult> importImage({required ImageImportSource source}) {
     requestedSources.add(source);
     return _completer.future;
   }

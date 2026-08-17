@@ -8,6 +8,7 @@ import 'package:canvas_editor_flutter/asset_library.dart' as assets;
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart' as turnkey;
 import 'package:canvas_editor_flutter/extensions.dart' as composable;
 import 'package:canvas_editor_flutter/image_import.dart' as image_import;
+import 'package:canvas_editor_flutter/image_tools.dart' as image_tools;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -74,7 +75,7 @@ void main() {
       expect(supportedTypes, hasLength(14));
     });
 
-    test('capability entrypoints export asset and image integrations', () {
+    test('capability entrypoints export focused optional integrations', () {
       final supportedTypes = <Type>[
         assets.CanvasAssetLibraryItem,
         assets.CanvasAssetLibrary,
@@ -82,14 +83,23 @@ void main() {
         image_import.ImageImportSource,
         image_import.ImageImportResult,
         image_import.ImageImportPort,
+        image_tools.BackgroundRemovalResult,
+        image_tools.BackgroundRemovalSuccess,
+        image_tools.BackgroundRemovalFailure,
+        image_tools.BackgroundRemovalFailureKind,
+        image_tools.BackgroundRemovalPort,
       ];
 
-      expect(supportedTypes, hasLength(6));
+      expect(supportedTypes, hasLength(11));
       expect(
         assets.canvasAssetLibraryExtension<CanvasSceneDocument>,
         isNotNull,
       );
       expect(image_import.imageImportExtension<CanvasSceneDocument>, isNotNull);
+      expect(
+        image_tools.backgroundRemovalExtension<CanvasSceneDocument>,
+        isNotNull,
+      );
     });
   });
 }

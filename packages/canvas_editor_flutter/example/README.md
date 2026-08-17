@@ -1,20 +1,50 @@
-# canvas_editor example
+# canvas_editor_flutter example
 
-A runnable standalone editor reference app. It demonstrates the standard
-inspector and layers panel, normal scene editing, JSON export, and the optional
-`Add → Assets` integration with host-owned asset selection UI and bundled
-`asset:` image references.
+A runnable standalone integration example for `canvas_editor_flutter`.
+
+It demonstrates:
+
+- the standard editor inspector and layers panel;
+- user-image acquisition through `image_import.dart`;
+- curated assets through `asset_library.dart`;
+- host-owned background removal through `image_tools.dart`;
+- JSON export;
+- PNG sharing.
+
+## Background-removal demo
+
+Choose:
+
+`Add → Assets → Background removal demo`
+
+Select the inserted image and use:
+
+`Image tools → Remove background`
+
+The example does not run background-removal ML.
+
+Its `BackgroundRemovalPort` is deliberately deterministic: the bundled demo
+input maps to a precomputed transparent PNG with the same raster dimensions.
+
+Other images return `unsupported`.
+
+This demonstrates the host integration boundary only:
+
+```text
+sourceRef
+  → BackgroundRemovalPort
+  → durable replacement sourceRef
+```
+
+Real applications may implement that port using local processing, a backend
+service, durable media storage, or another provider.
 
 ## Run
 
 From the repository root:
 
 ```sh
-cd oss_packages/canvas_editor/example
 flutter pub get
+cd packages/canvas_editor_flutter/example
 flutter run -d chrome
 ```
-
-The example keeps normal hosted package dependencies in `pubspec.yaml` so the
-published package example remains valid for pub.dev consumers. In this monorepo,
-Dart workspace resolution uses the local in-repo packages during development.
