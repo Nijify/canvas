@@ -34,3 +34,17 @@ This demonstrates the host integration boundary only:
 sourceRef
   → BackgroundRemovalPort
   → durable replacement sourceRef
+```
+
+Real applications may implement that port using local processing, a backend
+service, durable media storage, or another provider.
+
+## Run
+
+From the repository root:
+
+```sh
+flutter pub get
+cd packages/canvas_editor_flutter/example
+flutter run -d chrome
+```
