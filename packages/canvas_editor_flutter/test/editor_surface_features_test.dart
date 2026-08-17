@@ -21,6 +21,7 @@ void main() {
       const features = EditorSurfaceFeatures();
 
       expect(features.inspectorBuilder, isNull);
+      expect(features.inspectorSections, isEmpty);
       expect(features.viewportFraming, isNull);
       expect(features.viewportBehavior, isNull);
       expect(features.selectionChromeMode, isNull);
@@ -43,6 +44,29 @@ void main() {
       expect(content.paddingPx, 4);
       expect(content.contentBoundsSpec, isNotNull);
       expect(content.contentBoundsSpec!.paddingPx, 24);
+    });
+
+    test('merge appends inspector sections in registration order', () {
+      Widget? firstSection(InspectorContext context) {
+        return const Text('First section');
+      }
+
+      Widget? secondSection(InspectorContext context) {
+        return const Text('Second section');
+      }
+
+      final first = EditorSurfaceFeatures(
+        inspectorSections: <InspectorSectionBuilder>[firstSection],
+      );
+      final second = EditorSurfaceFeatures(
+        inspectorSections: <InspectorSectionBuilder>[secondSection],
+      );
+
+      final merged = first.merge(second);
+
+      expect(merged.inspectorSections, hasLength(2));
+      expect(merged.inspectorSections[0], same(firstSection));
+      expect(merged.inspectorSections[1], same(secondSection));
     });
 
     test(
