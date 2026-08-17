@@ -95,10 +95,7 @@ void main() {
         assets.canvasAssetLibraryExtension<CanvasSceneDocument>,
         isNotNull,
       );
-      expect(
-        image_import.imageImportExtension<CanvasSceneDocument>,
-        isNotNull,
-      );
+      expect(image_import.imageImportExtension<CanvasSceneDocument>, isNotNull);
       expect(
         image_tools.backgroundRemovalExtension<CanvasSceneDocument>,
         isNotNull,

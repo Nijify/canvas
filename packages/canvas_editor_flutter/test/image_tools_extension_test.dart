@@ -24,10 +24,7 @@ CanvasSceneDocument _singleImageScene({String? sourceRef = 'media:original'}) {
     children: <Node>[
       Node.image(
         id: _imageA,
-        data: ImageData(
-          sourcePath: sourceRef,
-          size: const Size2D(200, 160),
-        ),
+        data: ImageData(sourcePath: sourceRef, size: const Size2D(200, 160)),
       ),
     ],
   );
@@ -41,17 +38,11 @@ CanvasSceneDocument _twoImageScene() {
     children: <Node>[
       Node.image(
         id: _imageA,
-        data: ImageData(
-          sourcePath: 'media:shared',
-          size: Size2D(200, 160),
-        ),
+        data: ImageData(sourcePath: 'media:shared', size: Size2D(200, 160)),
       ),
       Node.image(
         id: _imageB,
-        data: ImageData(
-          sourcePath: 'media:shared',
-          size: Size2D(120, 100),
-        ),
+        data: ImageData(sourcePath: 'media:shared', size: Size2D(120, 100)),
       ),
     ],
   );
@@ -78,8 +69,7 @@ CanvasSceneDocument _textScene() {
   );
 }
 
-final class _RecordingBackgroundRemovalPort
-    implements BackgroundRemovalPort {
+final class _RecordingBackgroundRemovalPort implements BackgroundRemovalPort {
   _RecordingBackgroundRemovalPort(this.result);
 
   BackgroundRemovalResult result;
@@ -94,8 +84,7 @@ final class _RecordingBackgroundRemovalPort
   }
 }
 
-final class _DeferredBackgroundRemovalPort
-    implements BackgroundRemovalPort {
+final class _DeferredBackgroundRemovalPort implements BackgroundRemovalPort {
   final List<String> sourceRefs = <String>[];
   final Completer<BackgroundRemovalResult> _completer =
       Completer<BackgroundRemovalResult>();
@@ -113,8 +102,7 @@ final class _DeferredBackgroundRemovalPort
   }
 }
 
-final class _ThrowingBackgroundRemovalPort
-    implements BackgroundRemovalPort {
+final class _ThrowingBackgroundRemovalPort implements BackgroundRemovalPort {
   @override
   Future<BackgroundRemovalResult> removeBackground({
     required String sourceRef,
@@ -189,10 +177,7 @@ final class _ImageSourceDeniedAdapter
 }
 
 final class _MountedEditor {
-  const _MountedEditor({
-    required this.controller,
-    required this.selection,
-  });
+  const _MountedEditor({required this.controller, required this.selection});
 
   final EditorController controller;
   final SelectionController selection;
@@ -247,10 +232,7 @@ _MountedEditor _mountedEditor(WidgetTester tester) {
 
   return _MountedEditor(
     controller: scaffoldContext.read<EditorController>(),
-    selection: Provider.of<SelectionController>(
-      scaffoldContext,
-      listen: false,
-    ),
+    selection: Provider.of<SelectionController>(scaffoldContext, listen: false),
   );
 }
 
@@ -412,60 +394,61 @@ void main() {
 
       expect(find.text('Bound to brand.logo'), findsOneWidget);
 
-      final button = tester.widget<OutlinedButton>(find.byKey(_removeButtonKey));
+      final button = tester.widget<OutlinedButton>(
+        find.byKey(_removeButtonKey),
+      );
       expect(button.onPressed, isNull);
       expect(port.sourceRefs, isEmpty);
     },
   );
 
-  testWidgets(
-    'effective source mismatch disables background removal',
-    (tester) async {
-      final port = _RecordingBackgroundRemovalPort(
-        const BackgroundRemovalSuccess(sourceRef: 'media:foreground'),
-      );
+  testWidgets('effective source mismatch disables background removal', (
+    tester,
+  ) async {
+    final port = _RecordingBackgroundRemovalPort(
+      const BackgroundRemovalSuccess(sourceRef: 'media:foreground'),
+    );
 
-      final preparer = StaticEditorExtension<CanvasSceneDocument>(
-        scenePreparer: (scene, _) {
-          return scene.copyWith(
-            children: <Node>[
-              for (final node in scene.children)
-                if (node is ImageNode && node.id == _imageA)
-                  node.copyWith(
-                    data: node.data.copyWith(sourcePath: 'media:prepared'),
-                  )
-                else
-                  node,
-            ],
-          );
-        },
-      );
+    final preparer = StaticEditorExtension<CanvasSceneDocument>(
+      scenePreparer: (scene, _) {
+        return scene.copyWith(
+          children: <Node>[
+            for (final node in scene.children)
+              if (node is ImageNode && node.id == _imageA)
+                node.copyWith(
+                  data: node.data.copyWith(sourcePath: 'media:prepared'),
+                )
+              else
+                node,
+          ],
+        );
+      },
+    );
 
-      final editor = await _pumpSceneEditor(
-        tester,
-        scene: _singleImageScene(),
-        extensions: <EditorExtension<CanvasSceneDocument>>[
-          preparer,
-          backgroundRemovalExtension<CanvasSceneDocument>(port: port),
-        ],
-      );
+    final editor = await _pumpSceneEditor(
+      tester,
+      scene: _singleImageScene(),
+      extensions: <EditorExtension<CanvasSceneDocument>>[
+        preparer,
+        backgroundRemovalExtension<CanvasSceneDocument>(port: port),
+      ],
+    );
 
-      editor.selection.selectItems(const <String>[_imageA]);
-      await tester.pumpAndSettle();
+    editor.selection.selectItems(const <String>[_imageA]);
+    await tester.pumpAndSettle();
 
-      expect(
-        find.text(
-          'This image source is resolved at runtime and cannot be '
-          'transformed directly.',
-        ),
-        findsOneWidget,
-      );
+    expect(
+      find.text(
+        'This image source is resolved at runtime and cannot be '
+        'transformed directly.',
+      ),
+      findsOneWidget,
+    );
 
-      final button = tester.widget<OutlinedButton>(find.byKey(_removeButtonKey));
-      expect(button.onPressed, isNull);
-      expect(port.sourceRefs, isEmpty);
-    },
-  );
+    final button = tester.widget<OutlinedButton>(find.byKey(_removeButtonKey));
+    expect(button.onPressed, isNull);
+    expect(port.sourceRefs, isEmpty);
+  });
 
   testWidgets(
     'pending result cannot migrate to another image with the same source',
@@ -506,43 +489,42 @@ void main() {
     },
   );
 
-  testWidgets(
-    'pending result is discarded when the canonical source changes',
-    (tester) async {
-      final port = _DeferredBackgroundRemovalPort();
+  testWidgets('pending result is discarded when the canonical source changes', (
+    tester,
+  ) async {
+    final port = _DeferredBackgroundRemovalPort();
 
-      final editor = await _pumpSceneEditor(
-        tester,
-        scene: _singleImageScene(),
-        extensions: <EditorExtension<CanvasSceneDocument>>[
-          backgroundRemovalExtension<CanvasSceneDocument>(port: port),
-        ],
-      );
+    final editor = await _pumpSceneEditor(
+      tester,
+      scene: _singleImageScene(),
+      extensions: <EditorExtension<CanvasSceneDocument>>[
+        backgroundRemovalExtension<CanvasSceneDocument>(port: port),
+      ],
+    );
 
-      editor.selection.selectItems(const <String>[_imageA]);
-      await tester.pumpAndSettle();
+    editor.selection.selectItems(const <String>[_imageA]);
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(_removeButtonKey));
-      await tester.pump();
+    await tester.tap(find.byKey(_removeButtonKey));
+    await tester.pump();
 
-      editor.controller.commitField<String>(
-        _imageA,
-        CanvasFields.imageSource,
-        'media:newer-source',
-      );
-      await tester.pump();
+    editor.controller.commitField<String>(
+      _imageA,
+      CanvasFields.imageSource,
+      'media:newer-source',
+    );
+    await tester.pump();
 
-      port.complete(
-        const BackgroundRemovalSuccess(sourceRef: 'media:stale-result'),
-      );
-      await tester.pumpAndSettle();
+    port.complete(
+      const BackgroundRemovalSuccess(sourceRef: 'media:stale-result'),
+    );
+    await tester.pumpAndSettle();
 
-      expect(
-        _imageById(editor.controller, _imageA).data.sourcePath,
-        'media:newer-source',
-      );
-    },
-  );
+    expect(
+      _imageById(editor.controller, _imageA).data.sourcePath,
+      'media:newer-source',
+    );
+  });
 
   testWidgets('pending result is safe when the target is deleted', (
     tester,
@@ -574,40 +556,39 @@ void main() {
     expect(findById(editor.controller.document.value, _imageA), isNull);
   });
 
-  testWidgets(
-    'same-source success is rejected without creating an edit',
-    (tester) async {
-      final port = _RecordingBackgroundRemovalPort(
-        const BackgroundRemovalSuccess(sourceRef: 'media:original'),
-      );
+  testWidgets('same-source success is rejected without creating an edit', (
+    tester,
+  ) async {
+    final port = _RecordingBackgroundRemovalPort(
+      const BackgroundRemovalSuccess(sourceRef: 'media:original'),
+    );
 
-      final editor = await _pumpSceneEditor(
-        tester,
-        scene: _singleImageScene(),
-        extensions: <EditorExtension<CanvasSceneDocument>>[
-          backgroundRemovalExtension<CanvasSceneDocument>(port: port),
-        ],
-      );
+    final editor = await _pumpSceneEditor(
+      tester,
+      scene: _singleImageScene(),
+      extensions: <EditorExtension<CanvasSceneDocument>>[
+        backgroundRemovalExtension<CanvasSceneDocument>(port: port),
+      ],
+    );
 
-      editor.selection.selectItems(const <String>[_imageA]);
-      await tester.pumpAndSettle();
+    editor.selection.selectItems(const <String>[_imageA]);
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(_removeButtonKey));
-      await tester.pump();
+    await tester.tap(find.byKey(_removeButtonKey));
+    await tester.pump();
 
-      expect(
-        _imageById(editor.controller, _imageA).data.sourcePath,
-        'media:original',
-      );
-      expect(editor.controller.canUndo.value, isFalse);
-      expect(
-        find.text(
-          'Background removal did not return a usable replacement image.',
-        ),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(
+      _imageById(editor.controller, _imageA).data.sourcePath,
+      'media:original',
+    );
+    expect(editor.controller.canUndo.value, isFalse);
+    expect(
+      find.text(
+        'Background removal did not return a usable replacement image.',
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('typed failure creates no edit and shows safe feedback', (
     tester,

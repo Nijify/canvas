@@ -6,6 +6,7 @@ import 'package:canvas_editor_flutter/asset_library.dart';
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 import 'package:canvas_editor_flutter/extensions.dart' show EditorShellConfig;
 import 'package:canvas_editor_flutter/image_import.dart';
+import 'package:canvas_editor_flutter/image_tools.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart' as sharing;
 
 final _navigatorKey = GlobalKey<NavigatorState>();
+
+const _backgroundRemovalDemoSourceRef =
+    'asset:assets/demo_assets/background_removal_input.png';
+
+const _backgroundRemovalDemoForegroundRef =
+    'asset:assets/demo_assets/background_removal_foreground.png';
 
 void main() {
   runApp(const CanvasEditorExampleApp());
@@ -48,9 +55,13 @@ class CanvasEditorExampleApp extends StatelessWidget {
           canCopy: true,
           canSave: false,
         ),
+
         extensions: [
           imageImportExtension<CanvasSceneDocument>(
             imageImport: _demoImageImport,
+          ),
+          backgroundRemovalExtension<CanvasSceneDocument>(
+            port: const _ExampleBackgroundRemovalPort(),
           ),
           canvasAssetLibraryExtension<CanvasSceneDocument>(
             library: _demoAssetLibrary,
@@ -72,6 +83,15 @@ final _demoResources = CanvasRuntimeResources(
 
 final CanvasAssetLibrary _demoAssetLibrary = LocalCanvasAssetLibrary(
   <CanvasAssetLibraryItem>[
+    const CanvasAssetLibraryItem(
+      id: 'background-removal-demo',
+      label: 'Background removal demo',
+      category: 'image tools',
+      sourceRef: _backgroundRemovalDemoSourceRef,
+      thumbnailRef: _backgroundRemovalDemoSourceRef,
+      intrinsicSize: Size2D(320, 180),
+      tags: <String>['background', 'removal', 'foreground', 'demo'],
+    ),
     const CanvasAssetLibraryItem(
       id: 'abstract-orange',
       label: 'Abstract orange',
@@ -208,8 +228,8 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
       xf: Transform2D(position: Vec2(370, 245)),
       data: TextData(
         text:
-            'Use Add → Image or Add → Assets, then edit the selected image '
-            'in the inspector.',
+            'Try Add → Assets → Background removal demo, then use '
+            'Image tools in the inspector.',
         fontFamily: 'Roboto',
         fontWeight: 400,
         fontSize: 18,
@@ -343,6 +363,30 @@ final class _ExampleJsonOutputPort extends JsonOutputPort {
   }
 }
 
+final class _ExampleBackgroundRemovalPort implements BackgroundRemovalPort {
+  const _ExampleBackgroundRemovalPort();
+
+  @override
+  Future<BackgroundRemovalResult> removeBackground({
+    required String sourceRef,
+  }) async {
+    final normalizedSourceRef = sourceRef.trim();
+
+    if (normalizedSourceRef != _backgroundRemovalDemoSourceRef) {
+      return const BackgroundRemovalFailure(
+        kind: BackgroundRemovalFailureKind.unsupported,
+        message:
+            'The public example only supports the bundled '
+            'background-removal demo image.',
+      );
+    }
+
+    return const BackgroundRemovalSuccess(
+      sourceRef: _backgroundRemovalDemoForegroundRef,
+    );
+  }
+}
+
 final class _ExampleImageImportPort implements ImageImportPort {
   _ExampleImageImportPort({ImagePicker? picker})
     : _picker = picker ?? ImagePicker();
@@ -437,6 +481,10 @@ final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
 
   @override
   Future<Size2D?> resolveIntrinsicSize(String ref) async {
+    if (ref.trim() == _backgroundRemovalDemoForegroundRef) {
+      return const Size2D(320, 180);
+    }
+
     return _demoAssetLibrary.intrinsicSizeFor(ref);
   }
 
