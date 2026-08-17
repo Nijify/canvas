@@ -1,3 +1,17 @@
+# 0.11.0
+
+- **Breaking:** image import no longer participates in the exclusive
+  `InspectorBuilder` chain. It contributes source controls to the standard
+  inspector instead, so an exclusive inspector override now suppresses image
+  import content together with the intrinsic inspector.
+- Add `InspectorSectionBuilder` and
+  `EditorSurfaceFeatures.inspectorSections` for additive standard-inspector
+  content composed in extension registration order.
+- Keep additive inspector content inside the standard inspector card and before
+  intrinsic field controls.
+- Make asynchronous image replacement target-safe by rejecting stale results
+  after selection, source, target, or field-editability changes.
+
 # 0.10.0
 
 - **Breaking:** remove `InspectorFieldRow.forceDisabled` and
