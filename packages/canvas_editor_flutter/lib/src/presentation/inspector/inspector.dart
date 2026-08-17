@@ -30,13 +30,42 @@ Widget _defaultInspectorFieldRowBuilder<T>(
 Widget _buildInspectorPanel({
   required String title,
   required List<Widget> children,
+  List<Widget> leadingSections = const <Widget>[],
 }) {
   return InspectorCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Text(title), const Gap(8), ...children],
+      children: [
+        Text(title),
+        const Gap(8),
+
+        for (var index = 0; index < leadingSections.length; index++) ...[
+          if (index > 0) const Gap(12),
+          leadingSections[index],
+        ],
+
+        if (leadingSections.isNotEmpty && children.isNotEmpty) const Gap(12),
+
+        ...children,
+      ],
     ),
   );
+}
+
+List<Widget> _buildInspectorSections(
+  InspectorContext inspector,
+  List<InspectorSectionBuilder> builders,
+) {
+  final sections = <Widget>[];
+
+  for (final builder in builders) {
+    final section = builder(inspector);
+    if (section != null) {
+      sections.add(section);
+    }
+  }
+
+  return sections;
 }
 
 Widget _buildBackgroundPanel({required InspectorContext inspector}) {
@@ -69,7 +98,11 @@ Widget _buildBackgroundPanel({required InspectorContext inspector}) {
 ///
 /// Optional feature builders get the first opportunity to handle the current
 /// selection. Returning null delegates to this complete base inspector.
-Widget buildSceneInspector(InspectorContext inspector) {
+Widget buildSceneInspector(
+  InspectorContext inspector, {
+  List<InspectorSectionBuilder> sectionBuilders =
+      const <InspectorSectionBuilder>[],
+}) {
   final selectionState = inspector.selection.value;
 
   if (selectionState.hasItems && selectionState.ids.length > 1) {
@@ -85,8 +118,6 @@ Widget buildSceneInspector(InspectorContext inspector) {
     return _buildBackgroundPanel(inspector: inspector);
   }
 
-  // Preserve the previous rendered-scene dispatch behavior, while falling back
-  // to the canonical node when a custom render pipeline omits the selected node.
   final selected =
       inspector.selectedRenderedNode ?? inspector.selectedEditableNode;
 
@@ -94,16 +125,62 @@ Widget buildSceneInspector(InspectorContext inspector) {
     return const InspectorCard(child: Text('Selected object is unavailable'));
   }
 
+  final sections = _buildInspectorSections(inspector, sectionBuilders);
+
   return switch (selected) {
-    TextNode node => TextInspectorPanel(nodeId: node.id, inspector: inspector),
-    ImageNode node => ImageInspectorPanel(
+    TextNode node => _buildTextInspectorPanel(
       nodeId: node.id,
       inspector: inspector,
+      leadingSections: sections,
     ),
-    PathNode node => _buildPathPanel(inspector: inspector, nodeId: node.id),
-    IconNode node => IconInspectorPanel(nodeId: node.id, inspector: inspector),
+    ImageNode node => _buildImageInspectorPanel(
+      nodeId: node.id,
+      inspector: inspector,
+      leadingSections: sections,
+    ),
+    PathNode node => _buildPathPanel(
+      inspector: inspector,
+      nodeId: node.id,
+      leadingSections: sections,
+    ),
+    IconNode node => _buildIconInspectorPanel(
+      nodeId: node.id,
+      inspector: inspector,
+      leadingSections: sections,
+    ),
     _ => const InspectorCard(child: Text('No editable properties')),
   };
+}
+
+Widget _buildTextInspectorPanel({
+  required ElementId nodeId,
+  required InspectorContext inspector,
+  List<Widget> leadingSections = const <Widget>[],
+}) {
+  final fonts = inspector.resources.fonts.pickerFonts;
+
+  return _buildInspectorPanel(
+    title: 'Text',
+    leadingSections: leadingSections,
+    children: [
+      inspector.fieldRow<String>(nodeId, textContentSpec()),
+      const Gap(12),
+      inspector.fieldRow<String>(nodeId, textFontFamilySpec(fonts: fonts)),
+      const Gap(12),
+      inspector.fieldRow<double>(nodeId, textFontSizeSpec()),
+      inspector.fieldRow<double>(nodeId, textLetterSpacingSpec()),
+      inspector.fieldRow<int>(nodeId, textBoldSpec()),
+      const Gap(12),
+      FillEditor(
+        nodeId: nodeId,
+        inspector: inspector,
+        ids: FillFieldIds.text,
+        header: 'Fill',
+      ),
+      const Gap(12),
+      inspector.fieldRow<double>(nodeId, textShadowOffsetSpec()),
+    ],
+  );
 }
 
 class TextInspectorPanel extends StatelessWidget {
@@ -118,30 +195,22 @@ class TextInspectorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fonts = inspector.resources.fonts.pickerFonts;
-
-    return _buildInspectorPanel(
-      title: 'Text',
-      children: [
-        inspector.fieldRow<String>(nodeId, textContentSpec()),
-        const Gap(12),
-        inspector.fieldRow<String>(nodeId, textFontFamilySpec(fonts: fonts)),
-        const Gap(12),
-        inspector.fieldRow<double>(nodeId, textFontSizeSpec()),
-        inspector.fieldRow<double>(nodeId, textLetterSpacingSpec()),
-        inspector.fieldRow<int>(nodeId, textBoldSpec()),
-        const Gap(12),
-        FillEditor(
-          nodeId: nodeId,
-          inspector: inspector,
-          ids: FillFieldIds.text,
-          header: 'Fill',
-        ),
-        const Gap(12),
-        inspector.fieldRow<double>(nodeId, textShadowOffsetSpec()),
-      ],
-    );
+    return _buildTextInspectorPanel(nodeId: nodeId, inspector: inspector);
   }
+}
+
+Widget _buildImageInspectorPanel({
+  required ElementId nodeId,
+  required InspectorContext inspector,
+  List<Widget> leadingSections = const <Widget>[],
+}) {
+  return _buildInspectorPanel(
+    title: 'Image',
+    leadingSections: leadingSections,
+    children: [
+      ImageGeometryInspectorControls(nodeId: nodeId, inspector: inspector),
+    ],
+  );
 }
 
 class ImageInspectorPanel extends StatelessWidget {
@@ -149,22 +218,14 @@ class ImageInspectorPanel extends StatelessWidget {
     super.key,
     required this.nodeId,
     required this.inspector,
-    this.sourceControls,
   });
 
   final ElementId nodeId;
   final InspectorContext inspector;
-  final Widget? sourceControls;
 
   @override
   Widget build(BuildContext context) {
-    return _buildInspectorPanel(
-      title: 'Image',
-      children: [
-        if (sourceControls != null) ...[sourceControls!, const Gap(12)],
-        ImageGeometryInspectorControls(nodeId: nodeId, inspector: inspector),
-      ],
-    );
+    return _buildImageInspectorPanel(nodeId: nodeId, inspector: inspector);
   }
 }
 
@@ -213,6 +274,37 @@ class ImageGeometryInspectorControls extends StatelessWidget {
   }
 }
 
+Widget _buildIconInspectorPanel({
+  required ElementId nodeId,
+  required InspectorContext inspector,
+  List<Widget> leadingSections = const <Widget>[],
+}) {
+  final catalogItems = inspector.resources.icons.items;
+
+  return _buildInspectorPanel(
+    title: 'Icon',
+    leadingSections: leadingSections,
+    children: [
+      inspector.fieldRow<String>(nodeId, iconRefSpec(icons: catalogItems)),
+      if (catalogItems.isEmpty) ...[
+        const Gap(8),
+        const HintText('No icons available.'),
+      ],
+      const Gap(12),
+      inspector.fieldRow<double>(nodeId, iconSizeSpec()),
+      const Gap(12),
+      FillEditor(
+        nodeId: nodeId,
+        inspector: inspector,
+        ids: FillFieldIds.icon,
+        header: 'Fill',
+      ),
+      const Gap(12),
+      inspector.fieldRow<double>(nodeId, iconShadowOffsetSpec()),
+    ],
+  );
+}
+
 class IconInspectorPanel extends StatelessWidget {
   const IconInspectorPanel({
     super.key,
@@ -225,56 +317,18 @@ class IconInspectorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final catalogItems = inspector.resources.icons.items;
-
-    return _buildInspectorPanel(
-      title: 'Icon',
-      children: [
-        inspector.fieldRow<String>(nodeId, iconRefSpec(icons: catalogItems)),
-        if (catalogItems.isEmpty) ...[
-          const Gap(8),
-          const HintText('No icons available.'),
-        ],
-        const Gap(12),
-        inspector.fieldRow<double>(
-          nodeId,
-          doubleSliderSpec(
-            fieldKey: CanvasFields.iconSizePx,
-            title: 'Size',
-            uiLabel: 'Size',
-            min: 16,
-            max: 200,
-          ),
-        ),
-        const Gap(12),
-        FillEditor(
-          nodeId: nodeId,
-          inspector: inspector,
-          ids: FillFieldIds.icon,
-          header: 'Fill',
-        ),
-        const Gap(12),
-        inspector.fieldRow<double>(
-          nodeId,
-          doubleSliderSpec(
-            fieldKey: CanvasFields.iconShadowOffset,
-            title: 'Shadow Offset',
-            uiLabel: 'Shadow Offset',
-            min: 0,
-            max: 20,
-          ),
-        ),
-      ],
-    );
+    return _buildIconInspectorPanel(nodeId: nodeId, inspector: inspector);
   }
 }
 
 Widget _buildPathPanel({
   required InspectorContext inspector,
   required ElementId nodeId,
+  List<Widget> leadingSections = const <Widget>[],
 }) {
   return _buildInspectorPanel(
     title: 'Path',
+    leadingSections: leadingSections,
     children: [
       const Gap(4),
       FillEditor(
@@ -295,6 +349,7 @@ class Inspector extends StatelessWidget {
     required this.selection,
     required this.resources,
     this.builder,
+    this.sections = const <InspectorSectionBuilder>[],
     this.compact = false,
     this.fieldRowBuilder,
   });
@@ -306,6 +361,7 @@ class Inspector extends StatelessWidget {
   final CanvasRuntimeResources resources;
 
   final InspectorBuilder? builder;
+  final List<InspectorSectionBuilder> sections;
   final bool compact;
   final InspectorFieldRowBuilder? fieldRowBuilder;
 
@@ -329,7 +385,7 @@ class Inspector extends StatelessWidget {
 
     final panel =
         builder?.call(inspectorContext) ??
-        buildSceneInspector(inspectorContext);
+        buildSceneInspector(inspectorContext, sectionBuilders: sections);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(compact ? 8 : 12),

@@ -457,6 +457,8 @@ class _CanvasEditorSurfaceState<TSourceDocument>
                             repaint: _pool.revision,
                             appBarBuilder: widget.appBarBuilder,
                             inspectorBuilder: _surfaceFeatures.inspectorBuilder,
+                            inspectorSections:
+                                _surfaceFeatures.inspectorSections,
                             interactionPolicy:
                                 _surfaceFeatures.interactionPolicy,
                             viewportBehavior: _surfaceFeatures.viewportBehavior,

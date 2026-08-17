@@ -6,7 +6,7 @@ import 'package:canvas_editor_flutter/src/interaction/canvas_viewport_behavior.d
 import 'package:canvas_editor_flutter/src/interaction/editor_interaction_policy.dart'
     show EditorInteractionPolicy;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_context.dart'
-    show InspectorBuilder;
+    show InspectorBuilder, InspectorSectionBuilder;
 import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.dart'
     show SceneObjectPresentationPolicy;
 import 'package:flutter/foundation.dart';
@@ -59,10 +59,12 @@ class EditorViewportFraming {
 ///
 /// Document adaptation and field read/write behavior are configured through
 /// separate composition contracts.
+
 @immutable
 class EditorSurfaceFeatures {
   const EditorSurfaceFeatures({
     this.inspectorBuilder,
+    this.inspectorSections = const <InspectorSectionBuilder>[],
     this.viewportFraming,
     this.interactionPolicy = const EditorInteractionPolicy(),
     this.viewportBehavior,
@@ -70,11 +72,21 @@ class EditorSurfaceFeatures {
     this.sceneObjectPolicy,
   });
 
-  /// Optional inspector contribution.
+  /// Optional exclusive complete-inspector override.
   ///
   /// Later extensions get the first opportunity to handle a selection.
-  /// Returning null delegates to the earlier builder.
+  /// Returning null delegates to the earlier builder. If every override returns
+  /// null, the standard inspector and its additive sections are rendered.
   final InspectorBuilder? inspectorBuilder;
+
+  /// Additive body content for the standard inspector.
+  ///
+  /// Sections are evaluated in extension registration order and rendered before
+  /// the standard inspector's intrinsic field content.
+  ///
+  /// Sections are ignored when an exclusive [inspectorBuilder] handles the
+  /// current selection.
+  final List<InspectorSectionBuilder> inspectorSections;
 
   /// Optional live-editor viewport framing.
   ///
@@ -103,6 +115,10 @@ class EditorSurfaceFeatures {
         inspectorBuilder,
         other.inspectorBuilder,
       ),
+      inspectorSections: <InspectorSectionBuilder>[
+        ...inspectorSections,
+        ...other.inspectorSections,
+      ],
       viewportFraming: other.viewportFraming ?? viewportFraming,
       interactionPolicy: interactionPolicy.merge(other.interactionPolicy),
       viewportBehavior: other.viewportBehavior ?? viewportBehavior,
