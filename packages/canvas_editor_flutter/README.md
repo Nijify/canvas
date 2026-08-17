@@ -4,7 +4,7 @@
 documents. It provides a turnkey editing experience and composable APIs for
 custom document models and product experiences, including viewport controls,
 selection, layers, inspector UI, history, runtime resources, asset libraries,
-image import, and export capabilities.
+image import, image tools, and export capabilities.
 
 ## Features
 
@@ -17,7 +17,7 @@ image import, and export capabilities.
   configuration, actions, providers, and custom inspector rows.
 * `CanvasRuntimeResources` for font loading, icon catalogs, and media/source
   resolution.
-* Asset-library and user-image acquisition capabilities.
+* Asset-library, user-image acquisition, and host-owned image-tool capabilities.
 * PNG and JSON export capabilities.
 
 ## Installation
@@ -56,6 +56,12 @@ For Gallery, Camera, or other user-image acquisition flows:
 import 'package:canvas_editor_flutter/image_import.dart';
 ```
 
+For host-owned destructive image transformations such as background removal:
+
+```dart
+import 'package:canvas_editor_flutter/image_tools.dart';
+```
+
 The capability entrypoints are additive. The turnkey editor remains a complete
 scene editor without them; import a capability only when the application needs
 that workflow.
@@ -85,7 +91,7 @@ CanvasSceneEditor(
 `CanvasRuntimeResources` connect the editor to fonts, icons, and media sources
 used by the document.
 
-To add user-image acquisition:
+To add user-image acquisition and background removal:
 
 ```dart
 CanvasSceneEditor(
@@ -95,12 +101,25 @@ CanvasSceneEditor(
     imageImportExtension(
       imageImport: appImageImportPort,
     ),
+    backgroundRemovalExtension(
+      port: appBackgroundRemovalPort,
+    ),
   ],
 )
 ```
 
 `imageImportExtension(...)` adds image acquisition, durable source import,
 image replacement, and Add → Image behavior.
+
+`backgroundRemovalExtension(...)` adds an Image-tools inspector section. Canvas
+validates the selected target, field editability, and canonical/effective source
+state before and after the asynchronous operation, then commits the returned
+replacement through `CanvasFields.imageSource`. The host owns image access,
+processing, persistence, and creation of the new durable source reference.
+
+A successful `BackgroundRemovalPort` result may become stale before the editor
+can adopt it. Hosts must tolerate temporarily unreferenced outputs; cleanup and
+resource lifecycle remain host responsibilities.
 
 A curated asset library is supplied through `canvasAssetLibraryExtension(...)`.
 The application provides the catalog and selection presentation; the extension
@@ -234,7 +253,8 @@ layering, extension, lifecycle, and export guidance.
 * `canvas_renderer_flutter` owns Flutter drawing, text measurement, image
   helpers, and scene export support.
 * Applications own persistence, authentication, analytics, network clients,
-  permissions, and product-specific workflows.
+  permissions, image processing, media lifecycle, and product-specific
+  workflows.
 
 ## Localization
 

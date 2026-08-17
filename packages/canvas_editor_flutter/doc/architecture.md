@@ -36,6 +36,12 @@ For Gallery, Camera, or other user-image acquisition flows:
 import 'package:canvas_editor_flutter/image_import.dart';
 ```
 
+For host-owned destructive image transformations such as background removal:
+
+```dart
+import 'package:canvas_editor_flutter/image_tools.dart';
+```
+
 The capability entrypoints are additive. The turnkey entrypoint remains a
 complete scene editor without them.
 
@@ -69,6 +75,7 @@ CanvasSceneEditor(
   resources: resources,
   extensions: [
     imageImportExtension(imageImport: imageImport),
+    backgroundRemovalExtension(port: backgroundRemoval),
     canvasAssetLibraryExtension(
       library: assetLibrary,
       presentSelection: presentAssetSelection,
@@ -97,8 +104,8 @@ runtime and UI components.
 3. **Application boundary integration**:
 
    * runtime resources: media/source resolution, font loading, and icon catalogs;
-   * capabilities: asset selection, image acquisition, PNG export, and JSON
-     export;
+   * capabilities: asset selection, image acquisition, host-owned image
+     transformations, PNG export, and JSON export;
    * product workflows: persistence, permissions, networking, and surrounding
      application UI.
 
@@ -260,11 +267,27 @@ editor model:
 
 * `asset_library.dart` provides curated catalog contracts and asset insertion;
 * `image_import.dart` provides image acquisition and replacement;
+* `image_tools.dart` provides host-owned destructive image transformations,
+  beginning with background removal;
 * PNG and JSON export capabilities add editor export actions.
 
+Background removal follows a source-reference boundary. Canvas supplies the
+canonical image source only when it agrees with the effective rendered field and
+the registered field remains editable. The host performs any required image
+access, processing, encoding, persistence, or remote work and returns a new
+durable source reference. Canvas revalidates the target after the asynchronous
+operation and commits an accepted replacement through
+`CanvasFields.imageSource`.
+
+A successful host result is not guaranteed to be adopted. The image may be
+replaced, deleted, rebound, or otherwise become stale before the result returns.
+Hosts must tolerate temporarily unreferenced outputs. Canvas does not own media
+cleanup, rollback, provider lifecycle, or garbage collection.
+
 Applications provide environment-specific implementations such as picker UI,
-file access, durable media storage, and output destinations. The editor owns the
-shared document behavior after those integrations return a result.
+file access, image processing, durable media storage, and output destinations.
+The editor owns shared document safety and mutation behavior after those
+integrations return a result.
 
 PNG export receives the prepared runtime scene. JSON export receives canonical
 editable state. Export infrastructure must not prepare an editor-provided
@@ -279,4 +302,5 @@ render scene again.
 * `canvas_renderer_flutter` owns Flutter drawing, image helpers, text
   measurement, and render/export support.
 * Applications own product-specific persistence, permissions, authentication,
-  analytics, networking, and workflow decisions.
+  analytics, networking, image processing, media lifecycle, and workflow
+  decisions.
