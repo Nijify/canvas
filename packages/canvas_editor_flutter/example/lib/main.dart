@@ -7,6 +7,7 @@ import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 import 'package:canvas_editor_flutter/extensions.dart' show EditorShellConfig;
 import 'package:canvas_editor_flutter/image_import.dart';
 import 'package:canvas_editor_flutter/image_tools.dart';
+import 'package:canvas_editor_flutter_example/data_uri_image_metadata.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -351,6 +352,12 @@ final class _ExampleJsonOutputPort extends JsonOutputPort {
   @override
   Future<String> copyJson({required String json}) async {
     await Clipboard.setData(ClipboardData(text: json));
+
+    if (json.contains(';base64,')) {
+      return 'Scene JSON copied. Imported images are embedded, so the JSON '
+          'can be large.';
+    }
+
     return 'Scene JSON copied to clipboard.';
   }
 
@@ -447,19 +454,24 @@ final class _DemoFontAssets implements CanvasFontAssets {
   const _DemoFontAssets();
 
   @override
-  Iterable<String> get fallbackFontFamilies => const <String>['Roboto'];
+  Iterable<String> get fallbackFontFamilies => const <String>[
+    'Noto Sans Symbols',
+  ];
 
   @override
   List<FontDef> get loadableFonts => const <FontDef>[
     FontDef(family: 'Roboto', label: 'Roboto'),
+    FontDef(family: 'Noto Sans Symbols', label: 'Noto Sans Symbols'),
   ];
 
   @override
-  List<FontDef> get pickerFonts => loadableFonts;
+  List<FontDef> get pickerFonts => const <FontDef>[
+    FontDef(family: 'Roboto', label: 'Roboto'),
+  ];
 
   @override
   Future<void> ensureLoaded(Iterable<String> families) async {
-    // The example uses Flutter's default Material font.
+    // The example fonts are bundled by Flutter and available at startup.
   }
 }
 
@@ -477,15 +489,19 @@ final class _DemoIconCatalog implements IconCatalogPort {
 }
 
 final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
-  const _ExampleCanvasMediaResolver();
+  final DataUriImageMetadataResolver _dataUriMetadata =
+      DataUriImageMetadataResolver();
 
   @override
   Future<Size2D?> resolveIntrinsicSize(String ref) async {
-    if (ref.trim() == _backgroundRemovalDemoForegroundRef) {
+    final trimmed = ref.trim();
+
+    if (trimmed == _backgroundRemovalDemoForegroundRef) {
       return const Size2D(320, 180);
     }
 
-    return _demoAssetLibrary.intrinsicSizeFor(ref);
+    final dataUriSize = await _dataUriMetadata.resolve(trimmed);
+    return dataUriSize ?? _demoAssetLibrary.intrinsicSizeFor(trimmed);
   }
 
   @override

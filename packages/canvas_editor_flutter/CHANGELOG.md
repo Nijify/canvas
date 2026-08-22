@@ -1,3 +1,12 @@
+# 0.11.2
+
+- Invalidate cached text measurement and rendered layout when Flutter reports
+  that the available fonts have changed.
+- Size newly imported images from stable intrinsic metadata while retaining the
+  existing 200-by-200 fallback when metadata is unavailable.
+- Update the runnable example with deterministic symbol fallback, data-URI
+  image metadata, and clearer embedded-image JSON export feedback.
+
 # 0.11.1
 
 - Add the optional `image_tools.dart` capability entrypoint.

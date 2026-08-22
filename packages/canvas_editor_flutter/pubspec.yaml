@@ -1,6 +1,6 @@
 name: canvas_editor_flutter
 description: Complete Flutter scene editor for canvas_core documents with turnkey UI and composable editing, asset, image-import, image-tools, and export capabilities.
-version: 0.11.1
+version: 0.11.2
 repository: https://github.com/Nijify/canvas
 issue_tracker: https://github.com/Nijify/canvas/issues
 topics:

@@ -172,6 +172,13 @@ class _CanvasEditorSurfaceState<TSourceDocument>
     ),
   );
 
+  void _invalidateFontLayouts() {
+    if (_isDisposing) return;
+
+    _textPipeline.clearCache();
+    _runtime.scheduleLayoutInvalidation();
+  }
+
   void _ensureAssetsForScene(CanvasSceneDocument scene) {
     if (identical(_lastAssetScene, scene) || _lastAssetScene == scene) {
       return;
@@ -189,8 +196,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       // Font registration changes Flutter text layout globally, even when the
       // asset request that loaded the fonts is no longer the latest request.
       if (result.fontsLoaded) {
-        _textPipeline.clearCache();
-        _runtime.scheduleLayoutInvalidation();
+        _invalidateFontLayouts();
       }
     }());
   }
@@ -278,6 +284,8 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       extraFieldCodecs: fieldCodecs,
     );
 
+    PaintingBinding.instance.systemFonts.addListener(_invalidateFontLayouts);
+
     _ensureAssetsForScene(_runtime.render.value.scene);
 
     _extension.attach(
@@ -357,6 +365,10 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   @override
   void dispose() {
     _isDisposing = true;
+
+    PaintingBinding.instance.systemFonts.removeListener(
+      _invalidateFontLayouts,
+    );
 
     _runtime.render.removeListener(_renderListener);
     _runtime.document.removeListener(_documentListener);

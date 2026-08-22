@@ -11,7 +11,8 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.da
 import 'package:flutter/material.dart';
 
 const _initialImageTopLeft = Vec2(80, 80);
-const _initialImageSize = Size2D(200, 200);
+const _initialImageFallbackSize = Size2D(200, 200);
+const _initialImageMaxSide = 200.0;
 
 int _imageImportAddSequence = 0;
 
@@ -118,22 +119,51 @@ class _ImageImportExtension<TSourceDocument>
 
       if (sourceRef == null || !context.buildContext.mounted) return;
 
-      context.addNodeAndSelect(_buildImportedImage(sourceRef));
+      final size = await _resolveInitialImageSize(context, sourceRef);
+      if (!context.buildContext.mounted) return;
+
+      context.addNodeAndSelect(_buildImportedImage(sourceRef, size));
     } finally {
       _isAdding = false;
       _requestSurfaceRebuild();
     }
   }
 
-  ImageNode _buildImportedImage(String sourceRef) {
+  Future<Size2D> _resolveInitialImageSize(
+    EditorActionContext context,
+    String sourceRef,
+  ) async {
+    final Size2D? intrinsic;
+
+    try {
+      intrinsic = await context.resources.media.resolveIntrinsicSize(sourceRef);
+    } on Exception {
+      return _initialImageFallbackSize;
+    }
+
+    if (intrinsic == null ||
+        !intrinsic.w.isFinite ||
+        !intrinsic.h.isFinite ||
+        intrinsic.w <= 0 ||
+        intrinsic.h <= 0) {
+      return _initialImageFallbackSize;
+    }
+
+    final longestSide = intrinsic.w > intrinsic.h ? intrinsic.w : intrinsic.h;
+    final scale = _initialImageMaxSide / longestSide;
+
+    return Size2D(intrinsic.w * scale, intrinsic.h * scale);
+  }
+
+  ImageNode _buildImportedImage(String sourceRef, Size2D size) {
     final position = Vec2(
-      _initialImageTopLeft.x + _initialImageSize.w * 0.5,
-      _initialImageTopLeft.y + _initialImageSize.h * 0.5,
+      _initialImageTopLeft.x + size.w * 0.5,
+      _initialImageTopLeft.y + size.h * 0.5,
     );
 
     return ImageNode(
       id: _nextImageId(),
-      data: ImageData(size: _initialImageSize, sourcePath: sourceRef),
+      data: ImageData(size: size, sourcePath: sourceRef),
       xf: Transform2D(position: position),
     );
   }

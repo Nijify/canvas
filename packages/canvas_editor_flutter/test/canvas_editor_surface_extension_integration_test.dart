@@ -202,6 +202,44 @@ void main() {
     },
   );
 
+  testWidgets('system font changes invalidate mounted editor text layout', (
+    tester,
+  ) async {
+    final extension = _SurfaceSeamExtension();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SizedBox.expand(
+          child: CanvasSceneEditor(
+            initialScene: _fixtureScene(),
+            resources: canvasRuntimeResourcesForTest(),
+            extensions: <EditorExtension<rt.CanvasSceneDocument>>[extension],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final callsBefore = extension.scenePreparerCalls;
+
+    await PaintingBinding.instance.handleSystemMessage(<String, dynamic>{
+      'type': 'fontsChange',
+    });
+    await tester.pump();
+
+    expect(extension.scenePreparerCalls, greaterThan(callsBefore));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    await PaintingBinding.instance.handleSystemMessage(<String, dynamic>{
+      'type': 'fontsChange',
+    });
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('content-bounds render changes force a camera refit', (
     tester,
   ) async {
