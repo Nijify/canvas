@@ -1,0 +1,11 @@
+{
+  "name": "Canvas Editor Demo",
+  "short_name": "Canvas Editor",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#4F46E5",
+  "description": "Interactive Flutter demo for canvas_editor_flutter.",
+  "orientation": "any",
+  "prefer_related_applications": false
+}

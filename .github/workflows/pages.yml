@@ -1,0 +1,67 @@
+name: Pages
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - ".github/workflows/pages.yml"
+      - "packages/canvas_core/**"
+      - "packages/canvas_renderer_flutter/**"
+      - "packages/canvas_editor_flutter/**"
+      - "pubspec.lock"
+      - "pubspec.yaml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.7
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Test example
+        working-directory: packages/canvas_editor_flutter/example
+        run: flutter test
+
+      - name: Build web example
+        working-directory: packages/canvas_editor_flutter/example
+        run: flutter build web --release --base-href /canvas/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: packages/canvas_editor_flutter/example/build/web
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

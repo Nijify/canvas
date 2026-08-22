@@ -2,6 +2,10 @@
 
 A runnable standalone integration example for `canvas_editor_flutter`.
 
+The hosted web demo is available at:
+
+<https://nijify.github.io/canvas/>
+
 It demonstrates:
 
 - the standard editor inspector and layers panel;
@@ -48,3 +52,13 @@ flutter pub get
 cd packages/canvas_editor_flutter/example
 flutter run -d chrome
 ```
+
+## Build for GitHub Pages
+
+From the example directory:
+
+```sh
+flutter build web --release --base-href /canvas/
+```
+
+The Pages workflow publishes `build/web` after changes are merged to `master`.
