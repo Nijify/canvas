@@ -98,6 +98,39 @@ final class _DeferredImageImportPort implements ImageImportPort {
   }
 }
 
+final class _SizedMediaResolver implements CanvasMediaResolver {
+  _SizedMediaResolver(this.sizes);
+
+  final Map<String, Size2D> sizes;
+  final List<String> requestedIntrinsicSizes = <String>[];
+
+  @override
+  Future<Size2D?> resolveIntrinsicSize(String ref) async {
+    requestedIntrinsicSizes.add(ref);
+    return sizes[ref];
+  }
+
+  @override
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
+    final resolved = <String, Size2D>{};
+
+    for (final ref in refs) {
+      final size = sizes[ref];
+      if (size != null) resolved[ref] = size;
+    }
+
+    return resolved;
+  }
+
+  @override
+  Future<String?> resolveUrl(String ref) async => null;
+
+  @override
+  Future<Map<String, String>> resolveUrls(List<String> refs) async {
+    return const <String, String>{};
+  }
+}
+
 final class _AdditiveImageSectionExtension
     extends EditorExtension<CanvasSceneDocument> {
   @override
@@ -150,6 +183,7 @@ Future<_MountedEditor> _pumpEditor(
   WidgetTester tester, {
   required CanvasSceneDocument scene,
   required ImageImportPort imageImport,
+  CanvasRuntimeResources? resources,
   List<EditorExtension<CanvasSceneDocument>> extraExtensions =
       const <EditorExtension<CanvasSceneDocument>>[],
 }) async {
@@ -160,7 +194,7 @@ Future<_MountedEditor> _pumpEditor(
       home: SizedBox.expand(
         child: CanvasSceneEditor(
           initialScene: scene,
-          resources: canvasRuntimeResourcesForTest(),
+          resources: resources ?? canvasRuntimeResourcesForTest(),
           extensions: <EditorExtension<CanvasSceneDocument>>[
             imageImportExtension<CanvasSceneDocument>(imageImport: imageImport),
             ...extraExtensions,
@@ -452,6 +486,40 @@ void main() {
       expect(editor.controller.canUndo.value, isTrue);
     },
   );
+
+  testWidgets('Add Image preserves resolved intrinsic aspect ratio', (
+    tester,
+  ) async {
+    final imageImport = _RecordingImageImportPort(
+      ImageImportResult.success('media:wide-image'),
+    );
+    final media = _SizedMediaResolver(const <String, Size2D>{
+      'media:wide-image': Size2D(800, 400),
+    });
+
+    final editor = await _pumpEditor(
+      tester,
+      scene: _emptyScene(),
+      imageImport: imageImport,
+      resources: CanvasRuntimeResources(
+        fonts: TestFontAssets(),
+        icons: TestIconCatalogPort(),
+        media: media,
+      ),
+    );
+
+    editor.actions.invoke(EditorActionIds.addImage);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('image-import-add-gallery')));
+    await tester.pumpAndSettle();
+
+    final image = _singleImage(editor.controller);
+
+    expect(media.requestedIntrinsicSizes, <String>['media:wide-image']);
+    expect(image.data.size, const Size2D(200, 100));
+    expect(image.xf.position, const Vec2(180, 130));
+  });
 
   testWidgets('dismissing Add Image leaves the document untouched', (
     tester,
