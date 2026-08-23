@@ -42,6 +42,9 @@ void main() {
     final resolver = DataUriImageMetadataResolver();
 
     expect(await resolver.resolve('asset:example.png'), isNull);
-    expect(await resolver.resolve('data:image/png;base64,not-an-image'), isNull);
+    expect(
+      await resolver.resolve('data:image/png;base64,not-an-image'),
+      isNull,
+    );
   });
 }

@@ -366,9 +366,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   void dispose() {
     _isDisposing = true;
 
-    PaintingBinding.instance.systemFonts.removeListener(
-      _invalidateFontLayouts,
-    );
+    PaintingBinding.instance.systemFonts.removeListener(_invalidateFontLayouts);
 
     _runtime.render.removeListener(_renderListener);
     _runtime.document.removeListener(_documentListener);
