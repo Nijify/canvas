@@ -94,12 +94,7 @@ void main() {
     test('rejects a legacy-only background payload', () {
       final legacy = <String, Object?>{
         'artboardSize': {'w': 740.0, 'h': 360.0},
-        'bgGradient': {
-          'color1': 0,
-          'color2': 0,
-          'angle': 0.0,
-          'width': 0.0,
-        },
+        'bgGradient': {'color1': 0, 'color2': 0, 'angle': 0.0, 'width': 0.0},
         'bgOpacity': 0.0,
         'children': <Object?>[],
       };
