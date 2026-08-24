@@ -5,7 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/serialization/serializers.dart';
+import 'package:canvas_core/src/serialization/converters.dart';
 
 part 'scene_document.freezed.dart';
 part 'scene_document.g.dart';

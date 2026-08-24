@@ -95,8 +95,8 @@ duplicating, or reordering scene nodes.
 ## JSON round-trip
 
 ```dart
-final json = document.toJson();
-final restored = CanvasSceneDocument.fromJson(json);
+final json = encodeCanvasScene(document);
+final restored = decodeCanvasScene(json);
 ```
 
 ## Rendering pipeline

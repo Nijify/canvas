@@ -1,3 +1,9 @@
+# 0.11.3
+
+- Route scene JSON exports through the canonical `canvas_core` serialization
+  boundary.
+- Require `canvas_core 0.8.2`.
+
 # 0.11.2
 
 - Invalidate cached text measurement and rendered layout when Flutter reports

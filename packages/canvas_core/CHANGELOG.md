@@ -1,3 +1,9 @@
+## 0.8.2
+
+- Add `encodeCanvasScene` and `decodeCanvasScene` as the canonical external
+  JSON boundary for `CanvasSceneDocument` values.
+- Keep scene decoding separate from semantic document validation.
+
 ## 0.8.1
 
 - Add deterministic, domain-neutral `CanvasSceneDocument` validation with
