@@ -84,7 +84,7 @@ void main() {
         final raw = _loadJson(name);
         _assertNoForbiddenKeys(raw);
 
-        final scene = CanvasSceneDocument.fromJson(raw);
+        final scene = decodeCanvasScene(raw);
 
         final validationIssues = validateCanvasSceneDocument(scene);
         expect(

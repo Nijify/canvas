@@ -4,11 +4,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
+import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/foundation/style/style_types.dart'
     show FillRule, StrokeCap, StrokeJoin;
 import 'package:canvas_core/src/path/path_source.dart';
-import 'package:canvas_core/src/serialization/serializers.dart';
-import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
+import 'package:canvas_core/src/serialization/converters.dart';
+import 'package:canvas_core/src/serialization/path_converters.dart';
 
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';

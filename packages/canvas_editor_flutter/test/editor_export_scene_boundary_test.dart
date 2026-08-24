@@ -270,7 +270,7 @@ void main() {
 
     final decoded = jsonDecode(output.copiedJson!) as Map<String, dynamic>;
 
-    expect(decoded['backgroundOpacity'], 0.1);
+    expect(decoded, equals(encodeCanvasScene(editableScene)));
   });
 
   testWidgets(

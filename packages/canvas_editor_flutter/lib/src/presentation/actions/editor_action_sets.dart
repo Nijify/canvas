@@ -3,7 +3,7 @@
 import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFillNone, CanvasFit, CanvasSceneDocument;
+    show CanvasFillNone, CanvasFit, CanvasSceneDocument, encodeCanvasScene;
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:flutter/material.dart';
@@ -148,7 +148,7 @@ List<EditorActionSpec> pngExportActions(PngExportCapability capability) {
 
 List<EditorActionSpec> sceneJsonExportActions(JsonExportCapability capability) {
   String encodeScene(EditorActionContext ctx) {
-    final jsonMap = ctx.editableScene.toJson();
+    final jsonMap = encodeCanvasScene(ctx.editableScene);
     if (!capability.pretty) return jsonEncode(jsonMap);
     return const JsonEncoder.withIndent('  ').convert(jsonMap);
   }

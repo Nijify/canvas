@@ -303,7 +303,7 @@ void main() {
 
       // The callback must emit the editable/base scene, not a render snapshot
       // and not serialized JSON.
-      expect(emittedScene.toJson(), equals(currentBaseScene.toJson()));
+      expect(emittedScene, currentBaseScene);
     },
   );
 }

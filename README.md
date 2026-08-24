@@ -76,8 +76,8 @@ final document = CanvasSceneDocument(
 Canvas documents support JSON round-tripping:
 
 ```dart
-final json = document.toJson();
-final restored = CanvasSceneDocument.fromJson(json);
+final json = encodeCanvasScene(document);
+final restored = decodeCanvasScene(json);
 ```
 
 See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, paint operations, serialization, and interaction utilities.

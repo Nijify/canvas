@@ -33,6 +33,18 @@ a `ScenePreparer` before calling `build()`.
 Preparers transform runtime scenes. They do not construct `RenderSnapshot`
 values or replace pipeline rendering.
 
+External and persisted document JSON crosses the runtime boundary through
+`decodeCanvasScene` and `encodeCanvasScene`:
+
+```text
+external JSON -> decodeCanvasScene -> CanvasSceneDocument
+CanvasSceneDocument -> encodeCanvasScene -> external JSON
+```
+
+Generated model serializers remain implementation-level primitives. Semantic
+document validation stays explicit and follows decoding when a caller requires
+it.
+
 ### Headless editor utilities
 
 ```dart
