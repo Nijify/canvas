@@ -130,10 +130,7 @@ Size2D _initialAssetSize(CanvasAssetLibraryItem item) {
 }
 
 Size2D? _validIntrinsicSize(Size2D size) {
-  if (!size.w.isFinite ||
-      !size.h.isFinite ||
-      size.w <= 0 ||
-      size.h <= 0) {
+  if (!size.w.isFinite || !size.h.isFinite || size.w <= 0 || size.h <= 0) {
     return null;
   }
 

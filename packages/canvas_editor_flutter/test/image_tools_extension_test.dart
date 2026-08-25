@@ -434,9 +434,7 @@ void main() {
         return replaceById(
           nextScene,
           _imageA,
-          node.copyWith(
-            data: node.data.copyWith(assetId: preparedAssetId),
-          ),
+          node.copyWith(data: node.data.copyWith(assetId: preparedAssetId)),
         );
       },
     );

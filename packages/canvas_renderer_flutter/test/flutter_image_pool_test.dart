@@ -20,10 +20,7 @@ CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
       for (var i = 0; i < sourceRefs.length; i++)
         Node.image(
           id: 'image-$i',
-          data: ImageData(
-            assetId: 'asset-$i',
-            size: const Size2D(100, 100),
-          ),
+          data: ImageData(assetId: 'asset-$i', size: const Size2D(100, 100)),
         ),
     ],
   );

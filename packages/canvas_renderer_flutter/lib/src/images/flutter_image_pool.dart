@@ -184,10 +184,7 @@ class FlutterImagePool implements ImageIntrinsics {
     return value;
   }
 
-  CanvasImageAsset? _assetForImage(
-    CanvasSceneDocument scene,
-    ImageNode image,
-  ) {
+  CanvasImageAsset? _assetForImage(CanvasSceneDocument scene, ImageNode image) {
     final assetId = image.data.assetId;
     return assetId == null ? null : scene.assets[assetId];
   }
@@ -447,9 +444,7 @@ class FlutterImagePool implements ImageIntrinsics {
       for (final image in imageNodes)
         image.id: sourceByElement[image.id] == null
             ? null
-            : _usableIntrinsicSize(
-                assetByElement[image.id]?.intrinsicSize,
-              ),
+            : _usableIntrinsicSize(assetByElement[image.id]?.intrinsicSize),
     };
 
     _reconcileIntrinsicSources(sourceByElement);
@@ -511,9 +506,7 @@ class FlutterImagePool implements ImageIntrinsics {
       for (final image in imageNodes)
         image.id: sourceByElement[image.id] == null
             ? null
-            : _usableIntrinsicSize(
-                assetByElement[image.id]?.intrinsicSize,
-              ),
+            : _usableIntrinsicSize(assetByElement[image.id]?.intrinsicSize),
     };
 
     _reconcileRasterSources(sourceByElement);
@@ -563,9 +556,7 @@ class FlutterImagePool implements ImageIntrinsics {
       return;
     }
 
-    final source = sourceRef == null
-        ? null
-        : _normalizedSourceSync(sourceRef);
+    final source = sourceRef == null ? null : _normalizedSourceSync(sourceRef);
 
     _dlog(
       'POOL_PRELOAD',

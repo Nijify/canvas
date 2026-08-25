@@ -30,10 +30,7 @@ CanvasSceneDocument _sceneWithImage() {
     children: <Node>[
       Node.image(
         id: _existingImageId,
-        data: ImageData(
-          assetId: _existingAssetId,
-          size: Size2D(200, 160),
-        ),
+        data: ImageData(assetId: _existingAssetId, size: Size2D(200, 160)),
       ),
     ],
   );
@@ -50,17 +47,11 @@ CanvasSceneDocument _sceneWithTwoImagesSharingSource() {
     children: <Node>[
       Node.image(
         id: _existingImageId,
-        data: ImageData(
-          assetId: _sharedAssetId,
-          size: Size2D(200, 160),
-        ),
+        data: ImageData(assetId: _sharedAssetId, size: Size2D(200, 160)),
       ),
       Node.image(
         id: _secondImageId,
-        data: ImageData(
-          assetId: _sharedAssetId,
-          size: Size2D(120, 100),
-        ),
+        data: ImageData(assetId: _sharedAssetId, size: Size2D(120, 100)),
       ),
     ],
   );

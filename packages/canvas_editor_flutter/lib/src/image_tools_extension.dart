@@ -351,10 +351,7 @@ final class _BackgroundRemovalControlState
   }
 }
 
-String? _sourceRefForImage(
-  CanvasSceneDocument scene,
-  ImageNode image,
-) {
+String? _sourceRefForImage(CanvasSceneDocument scene, ImageNode image) {
   final assetId = image.data.assetId;
   return assetId == null ? null : scene.assets[assetId]?.sourceRef;
 }

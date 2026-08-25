@@ -153,8 +153,7 @@ class _ImageImportExtension<TSourceDocument>
     }
   }
 
-  Future<({Size2D frameSize, Size2D? intrinsicSize})>
-  _resolveInitialImageSize(
+  Future<({Size2D frameSize, Size2D? intrinsicSize})> _resolveInitialImageSize(
     EditorActionContext context,
     String sourceRef,
   ) async {
@@ -163,10 +162,7 @@ class _ImageImportExtension<TSourceDocument>
     try {
       intrinsic = await context.resources.media.resolveIntrinsicSize(sourceRef);
     } on Exception {
-      return (
-        frameSize: _initialImageFallbackSize,
-        intrinsicSize: null,
-      );
+      return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
     }
 
     if (intrinsic == null ||
@@ -174,10 +170,7 @@ class _ImageImportExtension<TSourceDocument>
         !intrinsic.h.isFinite ||
         intrinsic.w <= 0 ||
         intrinsic.h <= 0) {
-      return (
-        frameSize: _initialImageFallbackSize,
-        intrinsicSize: null,
-      );
+      return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
     }
 
     final longestSide = intrinsic.w > intrinsic.h ? intrinsic.w : intrinsic.h;

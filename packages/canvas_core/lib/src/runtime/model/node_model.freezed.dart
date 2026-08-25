@@ -579,7 +579,9 @@ as double,
 /// @nodoc
 mixin _$ImageData {
 
-@NullableSize2DConverter() Size2D? get size; String? get sourcePath; ImageFit get fit;@Vec2Converter() Vec2 get align;
+/// Null represents an intentionally unfilled image frame.
+ CanvasAssetId? get assetId;/// Editable destination-frame dimensions in document units.
+@Size2DConverter() Size2D get size; ImageFit get fit;@Vec2Converter() Vec2 get align;
 /// Create a copy of ImageData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -592,16 +594,16 @@ $ImageDataCopyWith<ImageData> get copyWith => _$ImageDataCopyWithImpl<ImageData>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageData&&(identical(other.size, size) || other.size == size)&&(identical(other.sourcePath, sourcePath) || other.sourcePath == sourcePath)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,size,sourcePath,fit,align);
+int get hashCode => Object.hash(runtimeType,assetId,size,fit,align);
 
 @override
 String toString() {
-  return 'ImageData(size: $size, sourcePath: $sourcePath, fit: $fit, align: $align)';
+  return 'ImageData(assetId: $assetId, size: $size, fit: $fit, align: $align)';
 }
 
 
@@ -612,7 +614,7 @@ abstract mixin class $ImageDataCopyWith<$Res>  {
   factory $ImageDataCopyWith(ImageData value, $Res Function(ImageData) _then) = _$ImageDataCopyWithImpl;
 @useResult
 $Res call({
-@NullableSize2DConverter() Size2D? size, String? sourcePath, ImageFit fit,@Vec2Converter() Vec2 align
+ CanvasAssetId? assetId,@Size2DConverter() Size2D size, ImageFit fit,@Vec2Converter() Vec2 align
 });
 
 
@@ -629,11 +631,11 @@ class _$ImageDataCopyWithImpl<$Res>
 
 /// Create a copy of ImageData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? size = freezed,Object? sourcePath = freezed,Object? fit = null,Object? align = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? assetId = freezed,Object? size = null,Object? fit = null,Object? align = null,}) {
   return _then(_self.copyWith(
-size: freezed == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
-as Size2D?,sourcePath: freezed == sourcePath ? _self.sourcePath : sourcePath // ignore: cast_nullable_to_non_nullable
-as String?,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
+assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
+as CanvasAssetId?,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as Size2D,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
 as ImageFit,align: null == align ? _self.align : align // ignore: cast_nullable_to_non_nullable
 as Vec2,
   ));
@@ -720,10 +722,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@NullableSize2DConverter()  Size2D? size,  String? sourcePath,  ImageFit fit, @Vec2Converter()  Vec2 align)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CanvasAssetId? assetId, @Size2DConverter()  Size2D size,  ImageFit fit, @Vec2Converter()  Vec2 align)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ImageData() when $default != null:
-return $default(_that.size,_that.sourcePath,_that.fit,_that.align);case _:
+return $default(_that.assetId,_that.size,_that.fit,_that.align);case _:
   return orElse();
 
 }
@@ -741,10 +743,10 @@ return $default(_that.size,_that.sourcePath,_that.fit,_that.align);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@NullableSize2DConverter()  Size2D? size,  String? sourcePath,  ImageFit fit, @Vec2Converter()  Vec2 align)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CanvasAssetId? assetId, @Size2DConverter()  Size2D size,  ImageFit fit, @Vec2Converter()  Vec2 align)  $default,) {final _that = this;
 switch (_that) {
 case _ImageData():
-return $default(_that.size,_that.sourcePath,_that.fit,_that.align);case _:
+return $default(_that.assetId,_that.size,_that.fit,_that.align);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -761,10 +763,10 @@ return $default(_that.size,_that.sourcePath,_that.fit,_that.align);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@NullableSize2DConverter()  Size2D? size,  String? sourcePath,  ImageFit fit, @Vec2Converter()  Vec2 align)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CanvasAssetId? assetId, @Size2DConverter()  Size2D size,  ImageFit fit, @Vec2Converter()  Vec2 align)?  $default,) {final _that = this;
 switch (_that) {
 case _ImageData() when $default != null:
-return $default(_that.size,_that.sourcePath,_that.fit,_that.align);case _:
+return $default(_that.assetId,_that.size,_that.fit,_that.align);case _:
   return null;
 
 }
@@ -776,11 +778,13 @@ return $default(_that.size,_that.sourcePath,_that.fit,_that.align);case _:
 @JsonSerializable()
 
 class _ImageData implements ImageData {
-  const _ImageData({@NullableSize2DConverter() this.size, this.sourcePath, this.fit = ImageFit.contain, @Vec2Converter() this.align = const Vec2(0.5, 0.5)});
+  const _ImageData({this.assetId, @Size2DConverter() required this.size, this.fit = ImageFit.contain, @Vec2Converter() this.align = const Vec2(0.5, 0.5)});
   factory _ImageData.fromJson(Map<String, dynamic> json) => _$ImageDataFromJson(json);
 
-@override@NullableSize2DConverter() final  Size2D? size;
-@override final  String? sourcePath;
+/// Null represents an intentionally unfilled image frame.
+@override final  CanvasAssetId? assetId;
+/// Editable destination-frame dimensions in document units.
+@override@Size2DConverter() final  Size2D size;
 @override@JsonKey() final  ImageFit fit;
 @override@JsonKey()@Vec2Converter() final  Vec2 align;
 
@@ -797,16 +801,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageData&&(identical(other.size, size) || other.size == size)&&(identical(other.sourcePath, sourcePath) || other.sourcePath == sourcePath)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,size,sourcePath,fit,align);
+int get hashCode => Object.hash(runtimeType,assetId,size,fit,align);
 
 @override
 String toString() {
-  return 'ImageData(size: $size, sourcePath: $sourcePath, fit: $fit, align: $align)';
+  return 'ImageData(assetId: $assetId, size: $size, fit: $fit, align: $align)';
 }
 
 
@@ -817,7 +821,7 @@ abstract mixin class _$ImageDataCopyWith<$Res> implements $ImageDataCopyWith<$Re
   factory _$ImageDataCopyWith(_ImageData value, $Res Function(_ImageData) _then) = __$ImageDataCopyWithImpl;
 @override @useResult
 $Res call({
-@NullableSize2DConverter() Size2D? size, String? sourcePath, ImageFit fit,@Vec2Converter() Vec2 align
+ CanvasAssetId? assetId,@Size2DConverter() Size2D size, ImageFit fit,@Vec2Converter() Vec2 align
 });
 
 
@@ -834,11 +838,11 @@ class __$ImageDataCopyWithImpl<$Res>
 
 /// Create a copy of ImageData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? size = freezed,Object? sourcePath = freezed,Object? fit = null,Object? align = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? assetId = freezed,Object? size = null,Object? fit = null,Object? align = null,}) {
   return _then(_ImageData(
-size: freezed == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
-as Size2D?,sourcePath: freezed == sourcePath ? _self.sourcePath : sourcePath // ignore: cast_nullable_to_non_nullable
-as String?,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
+assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
+as CanvasAssetId?,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as Size2D,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
 as ImageFit,align: null == align ? _self.align : align // ignore: cast_nullable_to_non_nullable
 as Vec2,
   ));
