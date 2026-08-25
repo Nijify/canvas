@@ -13,6 +13,8 @@ import 'editor_runtime_fakes.dart';
 
 const _imageA = 'image-a';
 const _imageB = 'image-b';
+const _assetA = 'asset-a';
+const _sharedAsset = 'shared-asset';
 const _textId = 'text-a';
 const _removeButtonKey = ValueKey('remove-background-button');
 
@@ -21,10 +23,18 @@ CanvasSceneDocument _singleImageScene({String? sourceRef = 'media:original'}) {
     artboardSize: const Size2D(300, 200),
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1,
+    assets: sourceRef == null
+        ? const <CanvasAssetId, CanvasImageAsset>{}
+        : <CanvasAssetId, CanvasImageAsset>{
+            _assetA: CanvasImageAsset(sourceRef: sourceRef),
+          },
     children: <Node>[
       Node.image(
         id: _imageA,
-        data: ImageData(sourcePath: sourceRef, size: const Size2D(200, 160)),
+        data: ImageData(
+          assetId: sourceRef == null ? null : _assetA,
+          size: const Size2D(200, 160),
+        ),
       ),
     ],
   );
@@ -35,14 +45,17 @@ CanvasSceneDocument _twoImageScene() {
     artboardSize: Size2D(300, 200),
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1,
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      _sharedAsset: CanvasImageAsset(sourceRef: 'media:shared'),
+    },
     children: <Node>[
       Node.image(
         id: _imageA,
-        data: ImageData(sourcePath: 'media:shared', size: Size2D(200, 160)),
+        data: ImageData(assetId: _sharedAsset, size: Size2D(200, 160)),
       ),
       Node.image(
         id: _imageB,
-        data: ImageData(sourcePath: 'media:shared', size: Size2D(120, 100)),
+        data: ImageData(assetId: _sharedAsset, size: Size2D(120, 100)),
       ),
     ],
   );
@@ -236,10 +249,13 @@ _MountedEditor _mountedEditor(WidgetTester tester) {
   );
 }
 
-ImageNode _imageById(EditorController controller, ElementId id) {
-  final node = findById(controller.document.value, id);
-  expect(node, isA<ImageNode>());
-  return node! as ImageNode;
+String? _imageSourceRef(EditorController controller, ElementId id) {
+  final scene = controller.document.value;
+  final image = findById(scene, id);
+  if (image is! ImageNode) return null;
+
+  final assetId = image.data.assetId;
+  return assetId == null ? null : scene.assets[assetId]?.sourceRef;
 }
 
 void main() {
@@ -270,25 +286,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(port.sourceRefs, <String>['media:original']);
-      expect(
-        _imageById(editor.controller, _imageA).data.sourcePath,
-        'media:foreground',
-      );
+      expect(_imageSourceRef(editor.controller, _imageA), 'media:foreground');
       expect(editor.controller.canUndo.value, isTrue);
 
       editor.controller.undo();
       await tester.pumpAndSettle();
-      expect(
-        _imageById(editor.controller, _imageA).data.sourcePath,
-        'media:original',
-      );
+      expect(_imageSourceRef(editor.controller, _imageA), 'media:original');
 
       editor.controller.redo();
       await tester.pumpAndSettle();
-      expect(
-        _imageById(editor.controller, _imageA).data.sourcePath,
-        'media:foreground',
-      );
+      expect(_imageSourceRef(editor.controller, _imageA), 'media:foreground');
     },
   );
 
@@ -411,16 +418,23 @@ void main() {
 
     final preparer = StaticEditorExtension<CanvasSceneDocument>(
       scenePreparer: (scene, _) {
-        return scene.copyWith(
-          children: <Node>[
-            for (final node in scene.children)
-              if (node is ImageNode && node.id == _imageA)
-                node.copyWith(
-                  data: node.data.copyWith(sourcePath: 'media:prepared'),
-                )
-              else
-                node,
-          ],
+        final node = findById(scene, _imageA);
+        if (node is! ImageNode) return scene;
+
+        const preparedAssetId = 'prepared-asset';
+        final nextScene = scene.copyWith(
+          assets: <CanvasAssetId, CanvasImageAsset>{
+            ...scene.assets,
+            preparedAssetId: const CanvasImageAsset(
+              sourceRef: 'media:prepared',
+            ),
+          },
+        );
+
+        return replaceById(
+          nextScene,
+          _imageA,
+          node.copyWith(data: node.data.copyWith(assetId: preparedAssetId)),
         );
       },
     );
@@ -478,14 +492,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        _imageById(editor.controller, _imageA).data.sourcePath,
-        'media:shared',
-      );
-      expect(
-        _imageById(editor.controller, _imageB).data.sourcePath,
-        'media:shared',
-      );
+      expect(_imageSourceRef(editor.controller, _imageA), 'media:shared');
+      expect(_imageSourceRef(editor.controller, _imageB), 'media:shared');
     },
   );
 
@@ -520,10 +528,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      _imageById(editor.controller, _imageA).data.sourcePath,
-      'media:newer-source',
-    );
+    expect(_imageSourceRef(editor.controller, _imageA), 'media:newer-source');
   });
 
   testWidgets('pending result is safe when the target is deleted', (
@@ -577,10 +582,7 @@ void main() {
     await tester.tap(find.byKey(_removeButtonKey));
     await tester.pump();
 
-    expect(
-      _imageById(editor.controller, _imageA).data.sourcePath,
-      'media:original',
-    );
+    expect(_imageSourceRef(editor.controller, _imageA), 'media:original');
     expect(editor.controller.canUndo.value, isFalse);
     expect(
       find.text(
@@ -614,10 +616,7 @@ void main() {
     await tester.tap(find.byKey(_removeButtonKey));
     await tester.pump();
 
-    expect(
-      _imageById(editor.controller, _imageA).data.sourcePath,
-      'media:original',
-    );
+    expect(_imageSourceRef(editor.controller, _imageA), 'media:original');
     expect(editor.controller.canUndo.value, isFalse);
     expect(find.text('Could not process this image.'), findsOneWidget);
   });
@@ -641,10 +640,7 @@ void main() {
     await tester.tap(find.byKey(_removeButtonKey));
     await tester.pump();
 
-    expect(
-      _imageById(editor.controller, _imageA).data.sourcePath,
-      'media:original',
-    );
+    expect(_imageSourceRef(editor.controller, _imageA), 'media:original');
     expect(editor.controller.canUndo.value, isFalse);
     expect(
       find.text('Unable to remove the background. Please try again.'),

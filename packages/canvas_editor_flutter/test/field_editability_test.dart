@@ -185,7 +185,7 @@ void main() {
       extraFieldCodecs: <rt.CanvasFieldKey, FieldCodec>{
         rt.CanvasFields.textContent: FieldCodec(
           fallback: '',
-          readNode: (node) => (node as rt.TextNode).data.text,
+          readNode: (_, node) => (node as rt.TextNode).data.text,
           commit: (controller, nodeId, value) {
             codecCommitCalls += 1;
           },

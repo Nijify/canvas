@@ -374,20 +374,22 @@ final class EditorRuntime<TSourceDocument>
   }
 
   T _readEffectiveOrBase<T>({
+    required rt.CanvasSceneDocument effectiveScene,
     required Object? effective,
+    required rt.CanvasSceneDocument baseScene,
     required Object? base,
-    required T Function(Object node) read,
+    required T Function(rt.CanvasSceneDocument scene, Object node) read,
     required T fallback,
   }) {
     if (effective != null) {
       try {
-        return read(effective);
+        return read(effectiveScene, effective);
       } catch (_) {}
     }
 
     if (base != null) {
       try {
-        return read(base);
+        return read(baseScene, base);
       } catch (_) {}
     }
 
@@ -464,10 +466,12 @@ final class EditorRuntime<TSourceDocument>
     final base = rt.findById(presentBase, nodeId);
 
     final value = _readEffectiveOrBase<Object>(
+      effectiveScene: sceneNow,
       effective: effective,
+      baseScene: presentBase,
       base: base,
       fallback: codec.fallback,
-      read: (node) => readNode(node as rt.Node),
+      read: (scene, node) => readNode(scene, node as rt.Node),
     );
 
     if (base == null) {

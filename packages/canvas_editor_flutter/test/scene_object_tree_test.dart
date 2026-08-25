@@ -14,7 +14,7 @@ const _textData = TextData(
   shadowOffset: 0,
 );
 
-const _imageData = ImageData(sourcePath: 'media:1', size: Size2D(100, 100));
+const _imageData = ImageData(assetId: 'asset-1', size: Size2D(100, 100));
 
 PathData _rectData() {
   return const PathData(
@@ -68,6 +68,9 @@ CanvasSceneDocument _scene(List<Node> children) {
     artboardSize: const Size2D(300, 200),
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
+    assets: const <CanvasAssetId, CanvasImageAsset>{
+      'asset-1': CanvasImageAsset(sourceRef: 'media:1'),
+    },
     children: children,
   );
 }

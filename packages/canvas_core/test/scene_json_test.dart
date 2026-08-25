@@ -30,6 +30,26 @@ CanvasSceneDocument _scene({double backgroundOpacity = 0.5}) {
   );
 }
 
+CanvasSceneDocument _imageScene() {
+  return const CanvasSceneDocument(
+    artboardSize: Size2D(640, 480),
+    backgroundFill: CanvasFill.none(),
+    backgroundOpacity: 1,
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      'asset-1': CanvasImageAsset(
+        sourceRef: 'media:image-1',
+        intrinsicSize: Size2D(1600, 900),
+      ),
+    },
+    children: <Node>[
+      Node.image(
+        id: 'image-1',
+        data: ImageData(assetId: 'asset-1', size: Size2D(320, 180)),
+      ),
+    ],
+  );
+}
+
 void main() {
   group('scene JSON boundary', () {
     test('preserves the generated scene wire format', () {
@@ -53,6 +73,36 @@ void main() {
       expect(json['backgroundOpacity'], 0.5);
       expect(json.containsKey('bgGradient'), isFalse);
       expect(json.containsKey('bgOpacity'), isFalse);
+    });
+
+    test('uses the image asset registry wire shape', () {
+      final json = encodeCanvasScene(_imageScene());
+      final assets = json['assets'] as Map<String, dynamic>;
+      final asset = assets['asset-1'] as Map<String, dynamic>;
+      final children = json['children'] as List<dynamic>;
+      final image = children.single as Map<String, dynamic>;
+      final data = image['data'] as Map<String, dynamic>;
+
+      expect(asset['sourceRef'], 'media:image-1');
+      expect(asset['intrinsicSize'], <String, dynamic>{
+        'w': 1600.0,
+        'h': 900.0,
+      });
+      expect(data['assetId'], 'asset-1');
+      expect(data['size'], <String, dynamic>{'w': 320.0, 'h': 180.0});
+      expect(data.containsKey('sourcePath'), isFalse);
+
+      expect(decodeCanvasScene(json), _imageScene());
+    });
+
+    test('requires image frame size when decoding', () {
+      final json = encodeCanvasScene(_imageScene());
+      final children = json['children'] as List<dynamic>;
+      final image = children.single as Map<String, dynamic>;
+      final data = image['data'] as Map<String, dynamic>;
+      data.remove('size');
+
+      expect(() => decodeCanvasScene(json), throwsA(anything));
     });
 
     test('preserves generated scene decoding', () {

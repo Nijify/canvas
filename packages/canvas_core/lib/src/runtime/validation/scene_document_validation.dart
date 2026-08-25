@@ -2,6 +2,7 @@
 
 import 'dart:collection';
 
+import 'package:canvas_core/src/foundation/ids.dart' show CanvasAssetId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
@@ -12,6 +13,9 @@ enum CanvasSceneValidationCode {
   nonFiniteNumber,
   valueOutOfRange,
   invalidColor,
+  blankAssetId,
+  blankAssetSourceRef,
+  missingImageAsset,
   blankNodeId,
   duplicateNodeId,
   nameTooLong,
@@ -65,15 +69,56 @@ final class _SceneValidator {
   final Map<String, String> _firstNodeIdPath = <String, String>{};
   final HashSet<Node> _activeNodes = HashSet<Node>.identity();
   final HashSet<Object> _activeBehaviorContainers = HashSet<Object>.identity();
+  Map<CanvasAssetId, CanvasImageAsset> _assets =
+      const <CanvasAssetId, CanvasImageAsset>{};
 
   void validate(CanvasSceneDocument document) {
+    _assets = document.assets;
+
     _validatePositive(document.artboardSize.w, '/artboardSize/w');
     _validatePositive(document.artboardSize.h, '/artboardSize/h');
     _validateFill(document.backgroundFill, '/backgroundFill');
     _validateRange(document.backgroundOpacity, '/backgroundOpacity', 0, 1);
 
+    final assetIds = document.assets.keys.toList()..sort();
+    for (final assetId in assetIds) {
+      _validateImageAsset(
+        assetId,
+        document.assets[assetId]!,
+        '/assets/${_pointerSegment(assetId)}',
+      );
+    }
+
     for (var index = 0; index < document.children.length; index++) {
       _validateNode(document.children[index], '/children/$index');
+    }
+  }
+
+  void _validateImageAsset(
+    CanvasAssetId assetId,
+    CanvasImageAsset asset,
+    String path,
+  ) {
+    if (assetId.trim().isEmpty) {
+      _add(
+        CanvasSceneValidationCode.blankAssetId,
+        path,
+        'Asset ID must be nonblank.',
+      );
+    }
+
+    if (asset.sourceRef.trim().isEmpty) {
+      _add(
+        CanvasSceneValidationCode.blankAssetSourceRef,
+        '$path/sourceRef',
+        'Image asset source reference must be nonblank.',
+      );
+    }
+
+    final intrinsicSize = asset.intrinsicSize;
+    if (intrinsicSize != null) {
+      _validatePositive(intrinsicSize.w, '$path/intrinsicSize/w');
+      _validatePositive(intrinsicSize.h, '$path/intrinsicSize/h');
     }
   }
 
@@ -196,10 +241,16 @@ final class _SceneValidator {
   }
 
   void _validateImageData(ImageData data, String path) {
-    final size = data.size;
-    if (size != null) {
-      _validatePositive(size.w, '$path/size/w');
-      _validatePositive(size.h, '$path/size/h');
+    _validatePositive(data.size.w, '$path/size/w');
+    _validatePositive(data.size.h, '$path/size/h');
+
+    final assetId = data.assetId;
+    if (assetId != null && !_assets.containsKey(assetId)) {
+      _add(
+        CanvasSceneValidationCode.missingImageAsset,
+        '$path/assetId',
+        'Image asset reference must resolve in the document asset registry.',
+      );
     }
 
     _validateRange(data.align.x, '$path/align/x', 0, 1);

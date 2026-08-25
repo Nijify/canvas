@@ -77,7 +77,9 @@ rt.CanvasSceneDocument _sceneWithIcon(String iconRef) {
   );
 }
 
-rt.CanvasSceneDocument _sceneWithImage({rt.Size2D? size}) {
+rt.CanvasSceneDocument _sceneWithImage({
+  rt.Size2D size = const rt.Size2D(200, 200),
+}) {
   return rt.CanvasSceneDocument(
     artboardSize: const rt.Size2D(300, 200),
     backgroundFill: const rt.CanvasFill.none(),
@@ -96,7 +98,7 @@ String _iconRefOf(rt.CanvasSceneDocument scene) {
   return (node as rt.IconNode).data.iconRef;
 }
 
-rt.Size2D? _imageSizeOf(rt.CanvasSceneDocument scene) {
+rt.Size2D _imageSizeOf(rt.CanvasSceneDocument scene) {
   final node = rt.findById(scene, 'img1');
   return (node as rt.ImageNode).data.size;
 }
@@ -653,8 +655,6 @@ void main() {
       'Second value',
     );
 
-    // This callback belongs to the completed first session. It must not close
-    // the newer session.
     closeFirst();
 
     runtime.commitField<String>(
@@ -696,7 +696,7 @@ void main() {
 
       final overrideCodec = FieldCodec(
         fallback: 'Custom codec fallback',
-        readNode: (node) {
+        readNode: (_, node) {
           readCalls += 1;
           expect(node, isA<rt.TextNode>());
           return overrideReadValue;
@@ -814,21 +814,18 @@ void main() {
     expect(_imageSizeOf(runtime.sourceDocument), const rt.Size2D(320, 180));
   });
 
-  test(
-    'unchanged effective image fallback does not materialize nullable size',
-    () {
-      final runtime = _buildSceneRuntime(_sceneWithImage());
-      addTearDown(runtime.dispose);
+  test('unchanged required image dimension commit is a no-op', () {
+    final runtime = _buildSceneRuntime(_sceneWithImage());
+    addTearDown(runtime.dispose);
 
-      expect(_imageSizeOf(runtime.sourceDocument), isNull);
-      expect(runtime.canUndo.value, isFalse);
+    expect(_imageSizeOf(runtime.sourceDocument), const rt.Size2D(200, 200));
+    expect(runtime.canUndo.value, isFalse);
 
-      runtime.commitField<double>('img1', rt.CanvasFields.imageWidthPx, 200);
+    runtime.commitField<double>('img1', rt.CanvasFields.imageWidthPx, 200);
 
-      expect(_imageSizeOf(runtime.sourceDocument), isNull);
-      expect(runtime.canUndo.value, isFalse);
-    },
-  );
+    expect(_imageSizeOf(runtime.sourceDocument), const rt.Size2D(200, 200));
+    expect(runtime.canUndo.value, isFalse);
+  });
 
   test('field editability and commits use canonical nodes', () {
     final omittedRuntime = _buildSceneRuntime(

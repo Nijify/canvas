@@ -6,6 +6,7 @@ import 'package:canvas_editor_flutter/src/image_import.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart'
     show EditorController;
+import 'package:canvas_editor_flutter/src/editor_edits.dart' show EditorEdits;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 import 'package:flutter/material.dart';
@@ -119,17 +120,40 @@ class _ImageImportExtension<TSourceDocument>
 
       if (sourceRef == null || !context.buildContext.mounted) return;
 
-      final size = await _resolveInitialImageSize(context, sourceRef);
+      final sizes = await _resolveInitialImageSize(context, sourceRef);
       if (!context.buildContext.mounted) return;
 
-      context.addNodeAndSelect(_buildImportedImage(sourceRef, size));
+      final nodeId = _nextImageId();
+      final assetId = nodeId;
+      final node = _buildImportedImage(
+        nodeId: nodeId,
+        assetId: assetId,
+        size: sizes.frameSize,
+      );
+
+      context.controller.applyEdit(
+        EditorEdits.updateScene((scene) {
+          final nextScene = scene.copyWith(
+            assets: <CanvasAssetId, CanvasImageAsset>{
+              ...scene.assets,
+              assetId: CanvasImageAsset(
+                sourceRef: sourceRef,
+                intrinsicSize: sizes.intrinsicSize,
+              ),
+            },
+          );
+
+          return SceneTreeOps.addNode(nextScene, node);
+        }),
+      );
+      context.selectItems([nodeId]);
     } finally {
       _isAdding = false;
       _requestSurfaceRebuild();
     }
   }
 
-  Future<Size2D> _resolveInitialImageSize(
+  Future<({Size2D frameSize, Size2D? intrinsicSize})> _resolveInitialImageSize(
     EditorActionContext context,
     String sourceRef,
   ) async {
@@ -138,7 +162,7 @@ class _ImageImportExtension<TSourceDocument>
     try {
       intrinsic = await context.resources.media.resolveIntrinsicSize(sourceRef);
     } on Exception {
-      return _initialImageFallbackSize;
+      return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
     }
 
     if (intrinsic == null ||
@@ -146,24 +170,31 @@ class _ImageImportExtension<TSourceDocument>
         !intrinsic.h.isFinite ||
         intrinsic.w <= 0 ||
         intrinsic.h <= 0) {
-      return _initialImageFallbackSize;
+      return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
     }
 
     final longestSide = intrinsic.w > intrinsic.h ? intrinsic.w : intrinsic.h;
     final scale = _initialImageMaxSide / longestSide;
 
-    return Size2D(intrinsic.w * scale, intrinsic.h * scale);
+    return (
+      frameSize: Size2D(intrinsic.w * scale, intrinsic.h * scale),
+      intrinsicSize: intrinsic,
+    );
   }
 
-  ImageNode _buildImportedImage(String sourceRef, Size2D size) {
+  ImageNode _buildImportedImage({
+    required ElementId nodeId,
+    required CanvasAssetId assetId,
+    required Size2D size,
+  }) {
     final position = Vec2(
       _initialImageTopLeft.x + size.w * 0.5,
       _initialImageTopLeft.y + size.h * 0.5,
     );
 
     return ImageNode(
-      id: _nextImageId(),
-      data: ImageData(size: size, sourcePath: sourceRef),
+      id: nodeId,
+      data: ImageData(assetId: assetId, size: size),
       xf: Transform2D(position: position),
     );
   }
@@ -234,12 +265,6 @@ class _ImageSourcePickerControl extends StatefulWidget {
 class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
   bool _isImporting = false;
 
-  ImageNode? _canonicalImage(EditorController controller, ElementId nodeId) {
-    final node = findById(controller.document.value, nodeId);
-
-    return node is ImageNode ? node : null;
-  }
-
   Future<void> _import(ImageImportSource source) async {
     if (!widget.enabled || _isImporting) {
       return;
@@ -248,13 +273,17 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
     final controller = widget.controller;
     final targetNodeId = widget.nodeId;
 
-    final originalImage = _canonicalImage(controller, targetNodeId);
+    final originalScene = controller.document.value;
+    final originalImage = findById(originalScene, targetNodeId);
 
-    if (originalImage == null) {
+    if (originalImage is! ImageNode) {
       return;
     }
 
-    final originalSourcePath = originalImage.data.sourcePath;
+    final originalAssetId = originalImage.data.assetId;
+    final originalSourceRef = originalAssetId == null
+        ? null
+        : originalScene.assets[originalAssetId]?.sourceRef;
 
     setState(() => _isImporting = true);
 
@@ -278,15 +307,22 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         return;
       }
 
-      final latestImage = _canonicalImage(controller, targetNodeId);
+      final latestScene = controller.document.value;
+      final latestImage = findById(latestScene, targetNodeId);
 
-      if (latestImage == null) {
+      if (latestImage is! ImageNode) {
         return;
       }
 
+      final latestAssetId = latestImage.data.assetId;
+      final latestSourceRef = latestAssetId == null
+          ? null
+          : latestScene.assets[latestAssetId]?.sourceRef;
+
       // The original target changed while the picker/import was running.
       // Discard the stale result instead of overwriting newer user intent.
-      if (latestImage.data.sourcePath != originalSourcePath) {
+      if (latestAssetId != originalAssetId ||
+          latestSourceRef != originalSourceRef) {
         return;
       }
 

@@ -64,10 +64,8 @@ Map<String, dynamic> _$TextDataToJson(_TextData instance) => <String, dynamic>{
 };
 
 _ImageData _$ImageDataFromJson(Map<String, dynamic> json) => _ImageData(
-  size: const NullableSize2DConverter().fromJson(
-    json['size'] as Map<String, dynamic>?,
-  ),
-  sourcePath: json['sourcePath'] as String?,
+  assetId: json['assetId'] as String?,
+  size: const Size2DConverter().fromJson(json['size'] as Map<String, dynamic>),
   fit: $enumDecodeNullable(_$ImageFitEnumMap, json['fit']) ?? ImageFit.contain,
   align: json['align'] == null
       ? const Vec2(0.5, 0.5)
@@ -76,8 +74,8 @@ _ImageData _$ImageDataFromJson(Map<String, dynamic> json) => _ImageData(
 
 Map<String, dynamic> _$ImageDataToJson(_ImageData instance) =>
     <String, dynamic>{
-      'size': const NullableSize2DConverter().toJson(instance.size),
-      'sourcePath': instance.sourcePath,
+      'assetId': instance.assetId,
+      'size': const Size2DConverter().toJson(instance.size),
       'fit': _$ImageFitEnumMap[instance.fit]!,
       'align': const Vec2Converter().toJson(instance.align),
     };

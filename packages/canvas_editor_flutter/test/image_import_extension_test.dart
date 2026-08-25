@@ -14,6 +14,8 @@ import 'editor_runtime_fakes.dart';
 
 const _existingImageId = 'existing-image';
 const _secondImageId = 'second-image';
+const _existingAssetId = 'existing-asset';
+const _sharedAssetId = 'shared-asset';
 const _replaceGalleryKey = ValueKey('image-import-replace-gallery');
 const _replaceCameraKey = ValueKey('image-import-replace-camera');
 
@@ -22,13 +24,13 @@ CanvasSceneDocument _sceneWithImage() {
     artboardSize: Size2D(300, 200),
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1.0,
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      _existingAssetId: CanvasImageAsset(sourceRef: 'media:existing-image'),
+    },
     children: <Node>[
       Node.image(
         id: _existingImageId,
-        data: ImageData(
-          sourcePath: 'media:existing-image',
-          size: Size2D(200, 160),
-        ),
+        data: ImageData(assetId: _existingAssetId, size: Size2D(200, 160)),
       ),
     ],
   );
@@ -39,20 +41,17 @@ CanvasSceneDocument _sceneWithTwoImagesSharingSource() {
     artboardSize: Size2D(300, 200),
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1.0,
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      _sharedAssetId: CanvasImageAsset(sourceRef: 'media:shared-image'),
+    },
     children: <Node>[
       Node.image(
         id: _existingImageId,
-        data: ImageData(
-          sourcePath: 'media:shared-image',
-          size: Size2D(200, 160),
-        ),
+        data: ImageData(assetId: _sharedAssetId, size: Size2D(200, 160)),
       ),
       Node.image(
         id: _secondImageId,
-        data: ImageData(
-          sourcePath: 'media:shared-image',
-          size: Size2D(120, 100),
-        ),
+        data: ImageData(assetId: _sharedAssetId, size: Size2D(120, 100)),
       ),
     ],
   );
@@ -226,10 +225,22 @@ ImageNode _singleImage(EditorController controller) {
   return controller.document.value.children.single as ImageNode;
 }
 
-ImageNode _imageById(EditorController controller, String id) {
-  final node = findById(controller.document.value, id);
-  expect(node, isA<ImageNode>());
-  return node! as ImageNode;
+String? _imageSourceRef(EditorController controller, String imageId) {
+  final scene = controller.document.value;
+  final image = findById(scene, imageId);
+  if (image is! ImageNode) return null;
+
+  final assetId = image.data.assetId;
+  return assetId == null ? null : scene.assets[assetId]?.sourceRef;
+}
+
+CanvasImageAsset? _imageAsset(EditorController controller, String imageId) {
+  final scene = controller.document.value;
+  final image = findById(scene, imageId);
+  if (image is! ImageNode) return null;
+
+  final assetId = image.data.assetId;
+  return assetId == null ? null : scene.assets[assetId];
 }
 
 void main() {
@@ -263,7 +274,7 @@ void main() {
         ImageImportSource.gallery,
       ]);
       expect(
-        _singleImage(editor.controller).data.sourcePath,
+        _imageSourceRef(editor.controller, _existingImageId),
         'media:replacement-image',
       );
       expect(editor.controller.canUndo.value, isTrue);
@@ -272,7 +283,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        _singleImage(editor.controller).data.sourcePath,
+        _imageSourceRef(editor.controller, _existingImageId),
         'media:existing-image',
       );
     },
@@ -334,7 +345,7 @@ void main() {
       ImageImportSource.gallery,
     ]);
     expect(
-      _singleImage(editor.controller).data.sourcePath,
+      _imageSourceRef(editor.controller, _existingImageId),
       'media:existing-image',
     );
     expect(find.byType(SnackBar), findsNothing);
@@ -360,7 +371,7 @@ void main() {
       await tester.pump();
 
       expect(
-        _singleImage(editor.controller).data.sourcePath,
+        _imageSourceRef(editor.controller, _existingImageId),
         'media:existing-image',
       );
       expect(
@@ -400,11 +411,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        _imageById(editor.controller, _existingImageId).data.sourcePath,
+        _imageSourceRef(editor.controller, _existingImageId),
         'media:shared-image',
       );
       expect(
-        _imageById(editor.controller, _secondImageId).data.sourcePath,
+        _imageSourceRef(editor.controller, _secondImageId),
         'media:shared-image',
       );
     },
@@ -440,7 +451,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        _singleImage(editor.controller).data.sourcePath,
+        _imageSourceRef(editor.controller, _existingImageId),
         'media:newer-source',
       );
     },
@@ -475,9 +486,10 @@ void main() {
       ]);
 
       final image = _singleImage(editor.controller);
-      final size = image.data.size as Size2D;
+      final size = image.data.size;
 
-      expect(image.data.sourcePath, 'media:added-image');
+      expect(_imageSourceRef(editor.controller, image.id), 'media:added-image');
+      expect(image.data.assetId, isNotNull);
       expect(size.w, 200);
       expect(size.h, 200);
       expect(image.xf.position.x, 180);
@@ -519,6 +531,10 @@ void main() {
     expect(media.requestedIntrinsicSizes, <String>['media:wide-image']);
     expect(image.data.size, const Size2D(200, 100));
     expect(image.xf.position, const Vec2(180, 130));
+    expect(
+      _imageAsset(editor.controller, image.id)?.intrinsicSize,
+      const Size2D(800, 400),
+    );
   });
 
   testWidgets('dismissing Add Image leaves the document untouched', (

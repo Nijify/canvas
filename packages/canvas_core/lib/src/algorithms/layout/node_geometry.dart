@@ -70,9 +70,9 @@ final class NodeGeometry {
 
       case ImageNode(id: final id, data: final d):
         final intrinsic = s.images?.intrinsicSize(id);
-        final layout = d.size ?? intrinsic;
+        final layout = d.size;
 
-        if (layout == null || layout.w <= 0 || layout.h <= 0) {
+        if (layout.w <= 0 || layout.h <= 0) {
           // Not measurable yet (prevents degenerate bounds affecting snap/pick/fit)
           return null;
         }

@@ -1,3 +1,14 @@
+# 0.12.0
+
+- **Breaking:** require `canvas_core 0.9.x` and
+  `canvas_renderer_flutter 0.8.x`.
+- Create and rebind document-local image assets for asset-library insertion,
+  image import, source replacement, and background removal.
+- Keep `CanvasFields.imageSource` as the semantic editing field while storing
+  canonical image sources in the scene asset registry.
+- Persist resolved intrinsic dimensions for newly imported and library images
+  when available.
+
 # 0.11.3
 
 - Route scene JSON exports through the canonical `canvas_core` serialization
