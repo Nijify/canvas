@@ -234,12 +234,6 @@ ImageNode _singleImage(EditorController controller) {
   return controller.document.value.children.single as ImageNode;
 }
 
-ImageNode _imageById(EditorController controller, String id) {
-  final node = findById(controller.document.value, id);
-  expect(node, isA<ImageNode>());
-  return node! as ImageNode;
-}
-
 String? _imageSourceRef(EditorController controller, String imageId) {
   final scene = controller.document.value;
   final image = findById(scene, imageId);
