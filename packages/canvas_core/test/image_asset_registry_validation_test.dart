@@ -45,10 +45,7 @@ void main() {
       );
 
       expect(issues, hasLength(1));
-      expect(
-        issues.single.code,
-        CanvasSceneValidationCode.blankAssetSourceRef,
-      );
+      expect(issues.single.code, CanvasSceneValidationCode.blankAssetSourceRef);
       expect(issues.single.path, '/assets/asset-1/sourceRef');
     });
   });
