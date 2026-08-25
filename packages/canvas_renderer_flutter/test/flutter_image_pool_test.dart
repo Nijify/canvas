@@ -12,12 +12,16 @@ CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
     artboardSize: const Size2D(300, 200),
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      for (var i = 0; i < sourceRefs.length; i++)
+        'asset-$i': CanvasImageAsset(sourceRef: sourceRefs[i]),
+    },
     children: [
       for (var i = 0; i < sourceRefs.length; i++)
         Node.image(
           id: 'image-$i',
           data: ImageData(
-            sourcePath: sourceRefs[i],
+            assetId: 'asset-$i',
             size: const Size2D(100, 100),
           ),
         ),
