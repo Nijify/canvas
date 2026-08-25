@@ -133,11 +133,14 @@ void main() {
         artboardSize: const Size2D(16, 16),
         backgroundFill: const CanvasFill.none(),
         backgroundOpacity: 1.0,
+        assets: const {
+          'asset-1': CanvasImageAsset(sourceRef: 'test:image'),
+        },
         children: [
           Node.image(
             id: 'image-1',
             data: const ImageData(
-              sourcePath: 'test:image',
+              assetId: 'asset-1',
               size: Size2D(16, 16),
             ),
           ),
