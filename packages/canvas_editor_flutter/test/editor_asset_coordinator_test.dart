@@ -99,10 +99,13 @@ CanvasSceneDocument _imageScene(String sourceRef) {
     artboardSize: const Size2D(300, 200),
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
-    children: [
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      'asset-0': CanvasImageAsset(sourceRef: sourceRef),
+    },
+    children: const [
       Node.image(
         id: 'image-0',
-        data: ImageData(sourcePath: sourceRef, size: const Size2D(100, 100)),
+        data: ImageData(assetId: 'asset-0', size: Size2D(100, 100)),
       ),
     ],
   );
