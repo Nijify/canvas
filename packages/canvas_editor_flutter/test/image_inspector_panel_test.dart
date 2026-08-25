@@ -12,16 +12,20 @@ import 'package:provider/provider.dart';
 import 'editor_runtime_fakes.dart';
 
 const _imageId = 'image-1';
+const _assetId = 'asset-1';
 
 CanvasSceneDocument _fixtureScene() {
   return const CanvasSceneDocument(
     artboardSize: Size2D(300, 200),
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1.0,
+    assets: <CanvasAssetId, CanvasImageAsset>{
+      _assetId: CanvasImageAsset(sourceRef: 'media:test-image'),
+    },
     children: <Node>[
       Node.image(
         id: _imageId,
-        data: ImageData(sourcePath: 'media:test-image', size: Size2D(200, 160)),
+        data: ImageData(assetId: _assetId, size: Size2D(200, 160)),
       ),
     ],
   );
