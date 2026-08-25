@@ -1,3 +1,13 @@
+## 0.9.0
+
+- **Breaking:** normalize image backing sources into the document-local
+  `CanvasSceneDocument.assets` registry.
+- **Breaking:** replace `ImageData.sourcePath` with nullable `assetId` and make
+  `ImageData.size` a required editable frame size.
+- Add `CanvasImageAsset` with an opaque `sourceRef` and optional persisted
+  intrinsic dimensions.
+- Validate image asset records and image-to-asset references.
+
 ## 0.8.2
 
 - Add `encodeCanvasScene` and `decodeCanvasScene` as the canonical external
