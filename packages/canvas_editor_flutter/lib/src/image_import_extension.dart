@@ -272,12 +272,6 @@ class _ImageSourcePickerControl extends StatefulWidget {
 class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
   bool _isImporting = false;
 
-  ImageNode? _canonicalImage(EditorController controller, ElementId nodeId) {
-    final node = findById(controller.document.value, nodeId);
-
-    return node is ImageNode ? node : null;
-  }
-
   Future<void> _import(ImageImportSource source) async {
     if (!widget.enabled || _isImporting) {
       return;
@@ -286,13 +280,17 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
     final controller = widget.controller;
     final targetNodeId = widget.nodeId;
 
-    final originalImage = _canonicalImage(controller, targetNodeId);
+    final originalScene = controller.document.value;
+    final originalImage = findById(originalScene, targetNodeId);
 
-    if (originalImage == null) {
+    if (originalImage is! ImageNode) {
       return;
     }
 
     final originalAssetId = originalImage.data.assetId;
+    final originalSourceRef = originalAssetId == null
+        ? null
+        : originalScene.assets[originalAssetId]?.sourceRef;
 
     setState(() => _isImporting = true);
 
@@ -316,15 +314,22 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         return;
       }
 
-      final latestImage = _canonicalImage(controller, targetNodeId);
+      final latestScene = controller.document.value;
+      final latestImage = findById(latestScene, targetNodeId);
 
-      if (latestImage == null) {
+      if (latestImage is! ImageNode) {
         return;
       }
 
+      final latestAssetId = latestImage.data.assetId;
+      final latestSourceRef = latestAssetId == null
+          ? null
+          : latestScene.assets[latestAssetId]?.sourceRef;
+
       // The original target changed while the picker/import was running.
       // Discard the stale result instead of overwriting newer user intent.
-      if (latestImage.data.assetId != originalAssetId) {
+      if (latestAssetId != originalAssetId ||
+          latestSourceRef != originalSourceRef) {
         return;
       }
 
