@@ -95,7 +95,7 @@ final class _SurfaceSeamExtension
     return <rt.CanvasFieldKey, FieldCodec>{
       rt.CanvasFields.textContent: FieldCodec(
         fallback: _customFieldValue,
-        readNode: (_) {
+        readNode: (_, __) {
           codecReadCalls += 1;
           return _customFieldValue;
         },
