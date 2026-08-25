@@ -1,3 +1,10 @@
+## 0.8.0
+
+- **Breaking:** require `canvas_core 0.9.x`.
+- Resolve image sources through the document-local image asset registry.
+- Prefer persisted image intrinsic dimensions before falling back to host
+  metadata resolution.
+
 ## 0.7.0
 
 - **Breaking:** require `canvas_core 0.8.x`.
