@@ -298,14 +298,18 @@ void main() {
 
         expect(receivedLibrary, same(library));
 
-        final inserted =
-            harness.controller.document.value.children.single as ImageNode;
-
+        final scene = harness.controller.document.value;
+        final inserted = scene.children.single as ImageNode;
         final imageData = inserted.data;
-        final insertedSize = imageData.size as Size2D;
+        final insertedSize = imageData.size;
+        final assetId = imageData.assetId;
 
-        expect(imageData.sourcePath, selected.sourceRef);
-        expect(imageData.sourcePath, isNot(selected.thumbnailRef));
+        expect(assetId, isNotNull);
+        final asset = scene.assets[assetId];
+        expect(asset, isNotNull);
+        expect(asset!.sourceRef, selected.sourceRef);
+        expect(asset.sourceRef, isNot(selected.thumbnailRef));
+        expect(asset.intrinsicSize, selected.intrinsicSize);
         expect(insertedSize.w, closeTo(220, 0.001));
         expect(insertedSize.h, closeTo(110, 0.001));
 
@@ -340,8 +344,7 @@ void main() {
       final inserted =
           harness.controller.document.value.children.single as ImageNode;
 
-      final imageData = inserted.data;
-      final insertedSize = imageData.size as Size2D;
+      final insertedSize = inserted.data.size;
 
       expect(insertedSize.w, closeTo(120, 0.001));
       expect(insertedSize.h, closeTo(240, 0.001));
