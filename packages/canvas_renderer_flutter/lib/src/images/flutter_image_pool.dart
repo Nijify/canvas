@@ -184,6 +184,26 @@ class FlutterImagePool implements ImageIntrinsics {
     return value;
   }
 
+  CanvasImageAsset? _assetForImage(
+    CanvasSceneDocument scene,
+    ImageNode image,
+  ) {
+    final assetId = image.data.assetId;
+    return assetId == null ? null : scene.assets[assetId];
+  }
+
+  Size2D? _usableIntrinsicSize(Size2D? size) {
+    if (size == null ||
+        !size.w.isFinite ||
+        !size.h.isFinite ||
+        size.w <= 0 ||
+        size.h <= 0) {
+      return null;
+    }
+
+    return size;
+  }
+
   int? _decodeSide(int? width, int? height) {
     if (width == null && height == null) return null;
     if (width == null) return height;
@@ -414,14 +434,37 @@ class FlutterImagePool implements ImageIntrinsics {
 
     final imageNodes = _collectImageNodes(scene, includeHidden: includeHidden);
 
+    final assetByElement = <ElementId, CanvasImageAsset?>{
+      for (final image in imageNodes) image.id: _assetForImage(scene, image),
+    };
+
     final sourceByElement = <ElementId, String?>{
       for (final image in imageNodes)
-        image.id: _sourceKeyFromRaw(image.data.sourcePath),
+        image.id: _sourceKeyFromRaw(assetByElement[image.id]?.sourceRef),
+    };
+
+    final persistedIntrinsicByElement = <ElementId, Size2D?>{
+      for (final image in imageNodes)
+        image.id: sourceByElement[image.id] == null
+            ? null
+            : _usableIntrinsicSize(
+                assetByElement[image.id]?.intrinsicSize,
+              ),
     };
 
     _reconcileIntrinsicSources(sourceByElement);
 
-    final sourceRefs = sourceByElement.values.whereType<String>().toSet();
+    for (final entry in persistedIntrinsicByElement.entries) {
+      if (entry.value != null) {
+        _setIntrinsicSize(entry.key, entry.value);
+      }
+    }
+
+    final sourceRefs = sourceByElement.entries
+        .where((entry) => persistedIntrinsicByElement[entry.key] == null)
+        .map((entry) => entry.value)
+        .whereType<String>()
+        .toSet();
 
     await _primeMetaCache(sourceRefs);
 
@@ -431,7 +474,9 @@ class FlutterImagePool implements ImageIntrinsics {
 
     for (final entry in sourceByElement.entries) {
       final sourceRef = entry.value;
-      final size = sourceRef == null ? null : _metaCache[sourceRef];
+      final size =
+          persistedIntrinsicByElement[entry.key] ??
+          (sourceRef == null ? null : _metaCache[sourceRef]);
 
       _setIntrinsicSize(entry.key, size);
     }
@@ -453,9 +498,22 @@ class FlutterImagePool implements ImageIntrinsics {
 
     final imageNodes = _collectImageNodes(scene, includeHidden: includeHidden);
 
+    final assetByElement = <ElementId, CanvasImageAsset?>{
+      for (final image in imageNodes) image.id: _assetForImage(scene, image),
+    };
+
     final sourceByElement = <ElementId, String?>{
       for (final image in imageNodes)
-        image.id: _sourceKeyFromRaw(image.data.sourcePath),
+        image.id: _sourceKeyFromRaw(assetByElement[image.id]?.sourceRef),
+    };
+
+    final persistedIntrinsicByElement = <ElementId, Size2D?>{
+      for (final image in imageNodes)
+        image.id: sourceByElement[image.id] == null
+            ? null
+            : _usableIntrinsicSize(
+                assetByElement[image.id]?.intrinsicSize,
+              ),
     };
 
     _reconcileRasterSources(sourceByElement);
@@ -468,7 +526,13 @@ class FlutterImagePool implements ImageIntrinsics {
       return;
     }
 
-    await _primeMetaCache(sourceRefs);
+    final unresolvedMetaRefs = sourceByElement.entries
+        .where((entry) => persistedIntrinsicByElement[entry.key] == null)
+        .map((entry) => entry.value)
+        .whereType<String>()
+        .toSet();
+
+    await _primeMetaCache(unresolvedMetaRefs);
 
     if (!_isCurrentPreloadRequest(generation)) {
       return;
@@ -483,6 +547,7 @@ class FlutterImagePool implements ImageIntrinsics {
           generation: generation,
           side: side,
           sourceRef: sourceByElement[image.id],
+          persistedIntrinsic: persistedIntrinsicByElement[image.id],
         ),
     ]);
   }
@@ -492,17 +557,19 @@ class FlutterImagePool implements ImageIntrinsics {
     required int generation,
     required int? side,
     required String? sourceRef,
+    required Size2D? persistedIntrinsic,
   }) async {
     if (!_isCurrentPreloadRequest(generation)) {
       return;
     }
 
-    final raw = image.data.sourcePath;
-    final source = raw == null ? null : _normalizedSourceSync(raw);
+    final source = sourceRef == null
+        ? null
+        : _normalizedSourceSync(sourceRef);
 
     _dlog(
       'POOL_PRELOAD',
-      'el=${image.id} raw="$raw" sourceRef=$sourceRef '
+      'el=${image.id} assetId=${image.data.assetId} sourceRef=$sourceRef '
           'normalized="$source"',
     );
 
@@ -511,7 +578,9 @@ class FlutterImagePool implements ImageIntrinsics {
       return;
     }
 
-    final meta = sourceRef == null ? null : _metaCache[sourceRef];
+    final meta =
+        persistedIntrinsic ??
+        (sourceRef == null ? null : _metaCache[sourceRef]);
     final dimensions = _decodeDimsFromMeta(side, meta);
     final loadedKey = '$source@${dimensions.w ?? 0}x${dimensions.h ?? 0}';
 

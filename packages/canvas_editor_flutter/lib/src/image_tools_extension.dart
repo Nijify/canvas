@@ -123,7 +123,8 @@ final class _BackgroundRemovalControlState
     EditorController controller,
     ElementId nodeId,
   ) {
-    final canonicalNode = findById(controller.document.value, nodeId);
+    final canonicalScene = controller.document.value;
+    final canonicalNode = findById(canonicalScene, nodeId);
 
     if (canonicalNode is! ImageNode) {
       return const _BackgroundRemovalAvailability.disabled(
@@ -139,7 +140,10 @@ final class _BackgroundRemovalControlState
       );
     }
 
-    final canonicalSource = canonicalNode.data.sourcePath?.trim();
+    final canonicalSource = _sourceRefForImage(
+      canonicalScene,
+      canonicalNode,
+    )?.trim();
 
     if (canonicalSource == null || canonicalSource.isEmpty) {
       return const _BackgroundRemovalAvailability.disabled(
@@ -268,10 +272,11 @@ final class _BackgroundRemovalControlState
 
       // commitField is intentionally void and may reject a stale or denied
       // target. Verify canonical adoption before reporting success.
-      final committedNode = findById(controller.document.value, targetNodeId);
+      final committedScene = controller.document.value;
+      final committedNode = findById(committedScene, targetNodeId);
 
       final committedSource = committedNode is ImageNode
-          ? committedNode.data.sourcePath?.trim()
+          ? _sourceRefForImage(committedScene, committedNode)?.trim()
           : null;
 
       if (committedSource != replacementSourceRef) {
@@ -344,6 +349,14 @@ final class _BackgroundRemovalControlState
       ],
     );
   }
+}
+
+String? _sourceRefForImage(
+  CanvasSceneDocument scene,
+  ImageNode image,
+) {
+  final assetId = image.data.assetId;
+  return assetId == null ? null : scene.assets[assetId]?.sourceRef;
 }
 
 final class _BackgroundRemovalAvailability {

@@ -111,7 +111,7 @@ export 'src/foundation/fields/canvas_field_key.dart'
     show CanvasFieldKey, CanvasFields, CanvasFieldKeyConverter;
 export 'src/foundation/geometry/geometry.dart' show Rect2D;
 export 'src/foundation/geometry/geometry_ext.dart';
-export 'src/foundation/ids.dart' show ElementId;
+export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 
 // Derived geometry helpers (selection bounds, unions)
 export 'src/algorithms/layout/selection_geometry.dart'

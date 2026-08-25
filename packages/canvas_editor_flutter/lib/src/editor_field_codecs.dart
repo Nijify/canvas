@@ -13,7 +13,8 @@ typedef CommitFn =
       Object value,
     );
 
-typedef ReadNodeFn = Object Function(rt.Node node);
+typedef ReadNodeFn =
+    Object Function(rt.CanvasSceneDocument scene, rt.Node node);
 typedef ReadSceneFn = Object Function(rt.CanvasSceneDocument scene);
 
 /// Defines read and literal commit behavior for one registered canvas field.
@@ -32,7 +33,7 @@ class FieldCodec {
 
   final Object fallback;
 
-  /// Reads from a runtime node in the effective rendered scene.
+  /// Reads from a runtime node with its effective rendered scene context.
   final ReadNodeFn? readNode;
 
   /// Reads from the scene for the kSceneFieldsId pseudo node.
@@ -110,7 +111,7 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.textContent: FieldCodec(
       fallback: '',
-      readNode: (node) => (node as rt.TextNode).data.text,
+      readNode: (_, node) => (node as rt.TextNode).data.text,
       commit: (controller, nodeId, value) {
         final text = value as String;
 
@@ -125,7 +126,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textFontFamily: FieldCodec(
       fallback: 'Inter',
-      readNode: (node) => (node as rt.TextNode).data.fontFamily,
+      readNode: (_, node) => (node as rt.TextNode).data.fontFamily,
       commit: (controller, nodeId, value) {
         final fontFamily = value as String;
 
@@ -142,7 +143,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
-      readNode: (node) => (node as rt.TextNode).data.fill,
+      readNode: (_, node) => (node as rt.TextNode).data.fill,
       commit: (controller, nodeId, value) {
         _commitFill(controller, nodeId, value as rt.CanvasFill);
       },
@@ -150,7 +151,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textFontSize: FieldCodec(
       fallback: 28.0,
-      readNode: (node) => (node as rt.TextNode).data.fontSize,
+      readNode: (_, node) => (node as rt.TextNode).data.fontSize,
       commit: (controller, nodeId, value) {
         final fontSize = value as double;
 
@@ -165,7 +166,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textFontWeight: FieldCodec(
       fallback: 400,
-      readNode: (node) => (node as rt.TextNode).data.fontWeight,
+      readNode: (_, node) => (node as rt.TextNode).data.fontWeight,
       commit: (controller, nodeId, value) {
         final fontWeight = value as int;
 
@@ -182,7 +183,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textLetterSpacing: FieldCodec(
       fallback: 0.0,
-      readNode: (node) => (node as rt.TextNode).data.letterSpacing,
+      readNode: (_, node) => (node as rt.TextNode).data.letterSpacing,
       commit: (controller, nodeId, value) {
         final letterSpacing = value as double;
 
@@ -199,7 +200,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textShadowOffset: FieldCodec(
       fallback: 0.0,
-      readNode: (node) => (node as rt.TextNode).data.shadowOffset,
+      readNode: (_, node) => (node as rt.TextNode).data.shadowOffset,
       commit: (controller, nodeId, value) {
         final shadowOffset = value as double;
 
@@ -219,7 +220,7 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.iconRef: FieldCodec(
       fallback: '',
-      readNode: (node) => (node as rt.IconNode).data.iconRef,
+      readNode: (_, node) => (node as rt.IconNode).data.iconRef,
       commit: (controller, nodeId, value) {
         final iconRef = value as String;
 
@@ -234,7 +235,7 @@ class FieldCatalog {
 
     rt.CanvasFields.iconFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
-      readNode: (node) => (node as rt.IconNode).data.fill,
+      readNode: (_, node) => (node as rt.IconNode).data.fill,
       commit: (controller, nodeId, value) {
         _commitFill(controller, nodeId, value as rt.CanvasFill);
       },
@@ -242,7 +243,7 @@ class FieldCatalog {
 
     rt.CanvasFields.iconSizePx: FieldCodec(
       fallback: 48.0,
-      readNode: (node) => (node as rt.IconNode).data.sizePx,
+      readNode: (_, node) => (node as rt.IconNode).data.sizePx,
       commit: (controller, nodeId, value) {
         final sizePx = value as double;
 
@@ -257,7 +258,7 @@ class FieldCatalog {
 
     rt.CanvasFields.iconShadowOffset: FieldCodec(
       fallback: 0.0,
-      readNode: (node) => (node as rt.IconNode).data.shadowOffset,
+      readNode: (_, node) => (node as rt.IconNode).data.shadowOffset,
       commit: (controller, nodeId, value) {
         final shadowOffset = value as double;
 
@@ -277,41 +278,70 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.imageSource: FieldCodec(
       fallback: '',
-      readNode: (node) => (node as rt.ImageNode).data.sourcePath ?? '',
+      readNode: (scene, node) {
+        final image = node as rt.ImageNode;
+        final assetId = image.data.assetId;
+
+        return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
+      },
       commit: (controller, nodeId, value) {
         final requested = value as String;
-        final sourcePath = requested.trim().isEmpty ? null : requested;
+        final sourceRef = requested.trim().isEmpty ? null : requested;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
-          if (node is! rt.ImageNode) return node;
-          if (node.data.sourcePath == sourcePath) return node;
+        controller.applyEdit(
+          EditorEdits.updateScene((scene) {
+            final node = rt.findById(scene, nodeId);
+            if (node is! rt.ImageNode) return scene;
 
-          return node.copyWith(
-            data: node.data.copyWith(sourcePath: sourcePath),
-          );
-        });
+            final currentAssetId = node.data.assetId;
+            final currentSourceRef = currentAssetId == null
+                ? null
+                : scene.assets[currentAssetId]?.sourceRef;
+
+            if (sourceRef == null) {
+              if (currentAssetId == null) return scene;
+
+              return rt.replaceById(
+                scene,
+                nodeId,
+                node.copyWith(data: node.data.copyWith(assetId: null)),
+              );
+            }
+
+            if (currentSourceRef == sourceRef) return scene;
+
+            final assetId = _nextImageAssetId(scene, nodeId);
+            final nextScene = scene.copyWith(
+              assets: <rt.CanvasAssetId, rt.CanvasImageAsset>{
+                ...scene.assets,
+                assetId: rt.CanvasImageAsset(sourceRef: sourceRef),
+              },
+            );
+
+            return rt.replaceById(
+              nextScene,
+              nodeId,
+              node.copyWith(data: node.data.copyWith(assetId: assetId)),
+            );
+          }),
+        );
       },
     ),
 
     rt.CanvasFields.imageWidthPx: FieldCodec(
       fallback: 200.0,
-      readNode: (node) {
-        final size = (node as rt.ImageNode).data.size;
-        return (size?.w ?? 200.0).toDouble();
-      },
+      readNode: (_, node) => (node as rt.ImageNode).data.size.w.toDouble(),
       commit: (controller, nodeId, value) {
         final width = value as double;
 
         _commitNodeUpdate(controller, nodeId, (node) {
           if (node is! rt.ImageNode) return node;
 
-          final effectiveSize = node.data.size ?? const rt.Size2D(200, 200);
-
-          // Do not materialize the nullable fallback for an unchanged value.
-          if (effectiveSize.w == width) return node;
+          final size = node.data.size;
+          if (size.w == width) return node;
 
           return node.copyWith(
-            data: node.data.copyWith(size: rt.Size2D(width, effectiveSize.h)),
+            data: node.data.copyWith(size: rt.Size2D(width, size.h)),
           );
         });
       },
@@ -319,23 +349,18 @@ class FieldCatalog {
 
     rt.CanvasFields.imageHeightPx: FieldCodec(
       fallback: 200.0,
-      readNode: (node) {
-        final size = (node as rt.ImageNode).data.size;
-        return (size?.h ?? 200.0).toDouble();
-      },
+      readNode: (_, node) => (node as rt.ImageNode).data.size.h.toDouble(),
       commit: (controller, nodeId, value) {
         final height = value as double;
 
         _commitNodeUpdate(controller, nodeId, (node) {
           if (node is! rt.ImageNode) return node;
 
-          final effectiveSize = node.data.size ?? const rt.Size2D(200, 200);
-
-          // Do not materialize the nullable fallback for an unchanged value.
-          if (effectiveSize.h == height) return node;
+          final size = node.data.size;
+          if (size.h == height) return node;
 
           return node.copyWith(
-            data: node.data.copyWith(size: rt.Size2D(effectiveSize.w, height)),
+            data: node.data.copyWith(size: rt.Size2D(size.w, height)),
           );
         });
       },
@@ -346,7 +371,7 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.pathFill: FieldCodec(
       fallback: const rt.CanvasFill.none(),
-      readNode: (node) => (node as rt.PathNode).data.fill,
+      readNode: (_, node) => (node as rt.PathNode).data.fill,
       commit: (controller, nodeId, value) {
         _commitFill(controller, nodeId, value as rt.CanvasFill);
       },
@@ -387,4 +412,21 @@ class FieldCatalog {
       },
     ),
   };
+}
+
+int _imageAssetSequence = 0;
+
+rt.CanvasAssetId _nextImageAssetId(
+  rt.CanvasSceneDocument scene,
+  rt.ElementId nodeId,
+) {
+  while (true) {
+    final candidate =
+        '${nodeId}_asset_${DateTime.now().microsecondsSinceEpoch}_'
+        '${_imageAssetSequence++}';
+
+    if (!scene.assets.containsKey(candidate)) {
+      return candidate;
+    }
+  }
 }

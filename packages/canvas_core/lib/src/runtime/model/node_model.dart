@@ -3,7 +3,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:canvas_core/src/foundation/core_types.dart';
-import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
+import 'package:canvas_core/src/foundation/ids.dart'
+    show CanvasAssetId, ElementId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/foundation/style/style_types.dart'
     show FillRule, StrokeCap, StrokeJoin;
@@ -63,8 +64,11 @@ enum ImageFit { contain, cover, fill }
 @freezed
 abstract class ImageData with _$ImageData {
   const factory ImageData({
-    @NullableSize2DConverter() Size2D? size,
-    String? sourcePath,
+    /// Null represents an intentionally unfilled image frame.
+    CanvasAssetId? assetId,
+
+    /// Editable destination-frame dimensions in document units.
+    @Size2DConverter() required Size2D size,
     @Default(ImageFit.contain) ImageFit fit,
     @Vec2Converter() @Default(Vec2(0.5, 0.5)) Vec2 align,
   }) = _ImageData;

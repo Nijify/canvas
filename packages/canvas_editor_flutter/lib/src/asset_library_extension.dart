@@ -3,7 +3,16 @@
 import 'dart:math' as math;
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show ImageData, ImageFit, ImageNode, Size2D, Transform2D, Vec2;
+    show
+        CanvasAssetId,
+        CanvasImageAsset,
+        ImageData,
+        ImageFit,
+        ImageNode,
+        SceneTreeOps,
+        Size2D,
+        Transform2D,
+        Vec2;
 import 'package:canvas_editor_flutter/src/asset_library.dart'
     show
         CanvasAssetLibrary,
@@ -11,6 +20,7 @@ import 'package:canvas_editor_flutter/src/asset_library.dart'
         CanvasAssetLibrarySelectionPresenter;
 import 'package:canvas_editor_flutter/src/editor_extensions.dart'
     show EditorExtension, StaticEditorExtension;
+import 'package:canvas_editor_flutter/src/editor_edits.dart' show EditorEdits;
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart'
     show EditorActionId, EditorActionSpec, EditorToolbarSection;
 import 'package:flutter/material.dart' show Icons;
@@ -52,13 +62,20 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
             return;
           }
 
+          if (selected.sourceRef.trim().isEmpty) {
+            context.ui.toast('Unable to add asset: missing image source.');
+            return;
+          }
+
           final artboard = context.editableScene.artboardSize;
           final size = _initialAssetSize(selected);
+          final nodeId = _nextAssetNodeId();
+          final assetId = nodeId;
 
           final node = ImageNode(
-            id: _nextAssetNodeId(),
+            id: nodeId,
             data: ImageData(
-              sourcePath: selected.sourceRef,
+              assetId: assetId,
               size: size,
               fit: ImageFit.contain,
               align: const Vec2(0.5, 0.5),
@@ -66,7 +83,22 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
             xf: Transform2D(position: Vec2(artboard.w * 0.5, artboard.h * 0.5)),
           );
 
-          context.addNodeAndSelect(node);
+          context.controller.applyEdit(
+            EditorEdits.updateScene((scene) {
+              final nextScene = scene.copyWith(
+                assets: <CanvasAssetId, CanvasImageAsset>{
+                  ...scene.assets,
+                  assetId: CanvasImageAsset(
+                    sourceRef: selected.sourceRef,
+                    intrinsicSize: _validIntrinsicSize(selected.intrinsicSize),
+                  ),
+                },
+              );
+
+              return SceneTreeOps.addNode(nextScene, node);
+            }),
+          );
+          context.selectItems([nodeId]);
         },
       ),
     ],
@@ -95,6 +127,17 @@ Size2D _initialAssetSize(CanvasAssetLibraryItem item) {
     (width / longestSide) * maxExtent,
     (height / longestSide) * maxExtent,
   );
+}
+
+Size2D? _validIntrinsicSize(Size2D size) {
+  if (!size.w.isFinite ||
+      !size.h.isFinite ||
+      size.w <= 0 ||
+      size.h <= 0) {
+    return null;
+  }
+
+  return size;
 }
 
 double _safeDefaultSize(double value) {
