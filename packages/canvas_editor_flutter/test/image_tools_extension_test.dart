@@ -249,12 +249,6 @@ _MountedEditor _mountedEditor(WidgetTester tester) {
   );
 }
 
-ImageNode _imageById(EditorController controller, ElementId id) {
-  final node = findById(controller.document.value, id);
-  expect(node, isA<ImageNode>());
-  return node! as ImageNode;
-}
-
 String? _imageSourceRef(EditorController controller, ElementId id) {
   final scene = controller.document.value;
   final image = findById(scene, id);
