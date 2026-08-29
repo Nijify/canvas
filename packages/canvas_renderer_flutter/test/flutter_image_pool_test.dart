@@ -207,37 +207,34 @@ void main() {
       expect(pool.intrinsicSize('image-0'), isNull);
     });
 
-    test(
-      'falls back to isolated resolvers when bulk metadata fails',
-      () async {
-        final requestedRefs = <String>[];
+    test('falls back to isolated resolvers when bulk metadata fails', () async {
+      final requestedRefs = <String>[];
 
-        final pool = FlutterImagePool(
-          assetMetasResolver: (_) async {
-            throw StateError('Bulk metadata unavailable');
-          },
-          assetMetaResolver: (sourceRef) async {
-            requestedRefs.add(sourceRef);
+      final pool = FlutterImagePool(
+        assetMetasResolver: (_) async {
+          throw StateError('Bulk metadata unavailable');
+        },
+        assetMetaResolver: (sourceRef) async {
+          requestedRefs.add(sourceRef);
 
-            if (sourceRef == 'media:one') {
-              return const Size2D(640, 480);
-            }
+          if (sourceRef == 'media:one') {
+            return const Size2D(640, 480);
+          }
 
-            throw StateError('Metadata unavailable for $sourceRef');
-          },
-        );
+          throw StateError('Metadata unavailable for $sourceRef');
+        },
+      );
 
-        await pool.resolveSceneIntrinsics(
-          _sceneWithImages(['media:one', 'media:two']),
-        );
+      await pool.resolveSceneIntrinsics(
+        _sceneWithImages(['media:one', 'media:two']),
+      );
 
-        expect(requestedRefs, unorderedEquals(['media:one', 'media:two']));
-        expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
-        expect(pool.intrinsicSize('image-1'), isNull);
+      expect(requestedRefs, unorderedEquals(['media:one', 'media:two']));
+      expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
+      expect(pool.intrinsicSize('image-1'), isNull);
 
-        pool.dispose();
-      },
-    );
+      pool.dispose();
+    });
   });
 
   group('FlutterImagePool decoded image ownership', () {

@@ -60,10 +60,7 @@ Future<Size2D?> _decodeDataUriImage(String ref) async {
     try {
       if (image.width <= 0 || image.height <= 0) return null;
 
-      return Size2D(
-        image.width.toDouble(),
-        image.height.toDouble(),
-      );
+      return Size2D(image.width.toDouble(), image.height.toDouble());
     } finally {
       image.dispose();
     }

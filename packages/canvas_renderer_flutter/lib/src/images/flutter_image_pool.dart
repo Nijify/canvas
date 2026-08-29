@@ -314,10 +314,7 @@ class FlutterImagePool implements ImageIntrinsics {
       } catch (error, stackTrace) {
         if (_disposed) return;
 
-        _dlog(
-          'POOL_META',
-          'bulk resolver exception=$error\n$stackTrace',
-        );
+        _dlog('POOL_META', 'bulk resolver exception=$error\n$stackTrace');
       }
     }
 

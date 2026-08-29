@@ -258,9 +258,7 @@ void main() {
       final fonts = _FakeFonts();
       final icons = _FakeIcons();
       final media = _FakeMedia(
-        urls: const <String, String>{
-          'media:one': 'asset:assets/resolved.png',
-        },
+        urls: const <String, String>{'media:one': 'asset:assets/resolved.png'},
         intrinsicSizes: const <String, Size2D>{},
       );
 
@@ -285,9 +283,7 @@ void main() {
         pool: pool,
       );
 
-      final resultFuture = coordinator.ensureForScene(
-        _imageScene('media:one'),
-      );
+      final resultFuture = coordinator.ensureForScene(_imageScene('media:one'));
 
       await metadataStarted.future;
       await pumpEventQueue();
