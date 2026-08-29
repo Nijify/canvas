@@ -51,22 +51,23 @@ Future<Size2D?> _decodeDataUriImage(String ref) async {
   final bytes = data.contentAsBytes();
   if (bytes.isEmpty) return null;
 
-  final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+  final codec = await ui.instantiateImageCodec(bytes);
 
   try {
-    final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
 
     try {
-      if (descriptor.width <= 0 || descriptor.height <= 0) return null;
+      if (image.width <= 0 || image.height <= 0) return null;
 
       return Size2D(
-        descriptor.width.toDouble(),
-        descriptor.height.toDouble(),
+        image.width.toDouble(),
+        image.height.toDouble(),
       );
     } finally {
-      descriptor.dispose();
+      image.dispose();
     }
   } finally {
-    buffer.dispose();
+    codec.dispose();
   }
 }
