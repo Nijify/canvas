@@ -296,20 +296,29 @@ class FlutterImagePool implements ImageIntrinsics {
     if (missing.isEmpty) return;
 
     if (assetMetasResolver != null) {
-      final resolvedByRef = await assetMetasResolver!(missing);
-      if (_disposed) return;
+      try {
+        final resolvedByRef = await assetMetasResolver!(missing);
+        if (_disposed) return;
 
-      for (final ref in missing) {
-        final size = resolvedByRef[ref];
+        for (final ref in missing) {
+          final size = resolvedByRef[ref];
 
-        if (size == null) {
-          _metaCache.remove(ref);
-        } else {
-          _metaCache[ref] = size;
+          if (size == null) {
+            _metaCache.remove(ref);
+          } else {
+            _metaCache[ref] = size;
+          }
         }
-      }
 
-      return;
+        return;
+      } catch (error, stackTrace) {
+        if (_disposed) return;
+
+        _dlog(
+          'POOL_META',
+          'bulk resolver exception=$error\n$stackTrace',
+        );
+      }
     }
 
     final resolver = assetMetaResolver;
@@ -519,18 +528,9 @@ class FlutterImagePool implements ImageIntrinsics {
       return;
     }
 
-    final unresolvedMetaRefs = sourceByElement.entries
-        .where((entry) => persistedIntrinsicByElement[entry.key] == null)
-        .map((entry) => entry.value)
-        .whereType<String>()
-        .toSet();
-
-    await _primeMetaCache(unresolvedMetaRefs);
-
-    if (!_isCurrentPreloadRequest(generation)) {
-      return;
-    }
-
+    // Do not fetch optional metadata on the raster critical path. Each image
+    // uses persisted or already-cached metadata when available, then falls
+    // back to a one-sided decode hint.
     final side = _decodeSide(targetW, targetH);
 
     await Future.wait([

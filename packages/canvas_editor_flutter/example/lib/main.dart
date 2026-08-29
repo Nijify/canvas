@@ -506,17 +506,28 @@ final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
 
   @override
   Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
-    final resolved = <String, Size2D>{};
+    final entries = await Future.wait([
+      for (final ref in refs) _resolveIntrinsicSizeEntry(ref),
+    ]);
 
-    for (final ref in refs) {
+    return Map<String, Size2D>.fromEntries(
+      entries.whereType<MapEntry<String, Size2D>>(),
+    );
+  }
+
+  Future<MapEntry<String, Size2D>?> _resolveIntrinsicSizeEntry(
+    String ref,
+  ) async {
+    try {
       final size = await resolveIntrinsicSize(ref);
-
-      if (size != null) {
-        resolved[ref] = size;
-      }
+      return size == null ? null : MapEntry(ref, size);
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Example image metadata resolution failed for "$ref": '
+        '$error\n$stackTrace',
+      );
+      return null;
     }
-
-    return resolved;
   }
 
   @override

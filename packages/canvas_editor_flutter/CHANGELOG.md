@@ -1,3 +1,10 @@
+# 0.12.1
+
+- Bound best-effort intrinsic metadata lookup during image import and retain the
+  existing 200-by-200 fallback when metadata is unavailable.
+- Allow intrinsic metadata resolution and raster preload to proceed
+  independently so optional metadata cannot block image rendering.
+
 # 0.12.0
 
 - **Breaking:** require `canvas_core 0.9.x` and

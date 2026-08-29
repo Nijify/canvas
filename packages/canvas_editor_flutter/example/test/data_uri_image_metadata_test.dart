@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 
@@ -47,4 +48,27 @@ void main() {
       isNull,
     );
   });
+
+  test(
+    'caches a bounded decode result when metadata remains pending',
+    () async {
+      final decode = Completer<Size2D?>();
+      var decodeCalls = 0;
+      final resolver = DataUriImageMetadataResolver(
+        decodeTimeout: Duration.zero,
+        decoder: (_) {
+          decodeCalls++;
+          return decode.future;
+        },
+      );
+      const ref = 'data:image/png;base64,AA==';
+
+      expect(await resolver.resolve(ref), isNull);
+      expect(await resolver.resolve(ref), isNull);
+      expect(decodeCalls, 1);
+
+      decode.complete(const Size2D(1, 1));
+      await pumpEventQueue();
+    },
+  );
 }

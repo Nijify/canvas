@@ -246,6 +246,67 @@ void main() {
 
     pool.dispose();
   });
+
+  test(
+    'coordinator preloads raster while intrinsic metadata is pending',
+    () async {
+      final decoded = await _createImage();
+      final metadata = Completer<Map<String, Size2D>>();
+      final metadataStarted = Completer<void>();
+      final decoderStarted = Completer<void>();
+
+      final fonts = _FakeFonts();
+      final icons = _FakeIcons();
+      final media = _FakeMedia(
+        urls: const <String, String>{
+          'media:one': 'asset:assets/resolved.png',
+        },
+        intrinsicSizes: const <String, Size2D>{},
+      );
+
+      final pool = FlutterImagePool(
+        assetUrlsResolver: media.resolveUrls,
+        assetMetasResolver: (refs) {
+          metadataStarted.complete();
+          return metadata.future;
+        },
+        decoder: (_) async {
+          decoderStarted.complete();
+          return decoded;
+        },
+      );
+
+      final coordinator = EditorAssetCoordinator(
+        assets: CanvasRuntimeResources(
+          fonts: fonts,
+          icons: icons,
+          media: media,
+        ),
+        pool: pool,
+      );
+
+      final resultFuture = coordinator.ensureForScene(
+        _imageScene('media:one'),
+      );
+
+      await metadataStarted.future;
+      await pumpEventQueue();
+
+      expect(decoderStarted.isCompleted, isTrue);
+
+      final result = await resultFuture;
+
+      expect(result.fontsLoaded, isFalse);
+      expect(identical(pool.images['image-0'], decoded), isTrue);
+
+      metadata.complete(const <String, Size2D>{});
+      await pumpEventQueue();
+
+      coordinator.dispose();
+      pool.dispose();
+      expect(decoded.debugDisposed, isTrue);
+    },
+  );
 }
 
 final class _BlockingFonts implements CanvasFontAssets {

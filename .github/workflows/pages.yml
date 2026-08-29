@@ -38,6 +38,10 @@ jobs:
         working-directory: packages/canvas_editor_flutter/example
         run: flutter test
 
+      - name: Test data URI metadata in Chrome
+        working-directory: packages/canvas_editor_flutter/example
+        run: flutter test --platform chrome test/data_uri_image_metadata_test.dart
+
       - name: Build web example
         working-directory: packages/canvas_editor_flutter/example
         run: flutter build web --release --base-href /canvas/
