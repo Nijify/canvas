@@ -167,16 +167,15 @@ class _ImageImportExtension<TSourceDocument>
             _initialImageMetadataTimeout,
             onTimeout: () {
               debugPrint(
-                'Canvas image import timed out while resolving intrinsic '
-                'metadata for "$sourceRef".',
+                'Canvas image import timed out while resolving intrinsic metadata.',
               );
               return null;
             },
           );
     } catch (error, stackTrace) {
       debugPrint(
-        'Canvas image import could not resolve intrinsic metadata for '
-        '"$sourceRef": $error\n$stackTrace',
+        'Canvas image import could not resolve intrinsic metadata: '
+        '$error\n$stackTrace',
       );
       return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
     }

@@ -523,7 +523,7 @@ final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
       return size == null ? null : MapEntry(ref, size);
     } catch (error, stackTrace) {
       debugPrint(
-        'Example image metadata resolution failed for "$ref": '
+        'Example image metadata resolution failed: '
         '$error\n$stackTrace',
       );
       return null;
