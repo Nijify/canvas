@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 const _initialImageTopLeft = Vec2(80, 80);
 const _initialImageFallbackSize = Size2D(200, 200);
 const _initialImageMaxSide = 200.0;
+const _initialImageMetadataTimeout = Duration(seconds: 2);
 
 int _imageImportAddSequence = 0;
 
@@ -160,8 +161,22 @@ class _ImageImportExtension<TSourceDocument>
     final Size2D? intrinsic;
 
     try {
-      intrinsic = await context.resources.media.resolveIntrinsicSize(sourceRef);
-    } on Exception {
+      intrinsic = await context.resources.media
+          .resolveIntrinsicSize(sourceRef)
+          .timeout(
+            _initialImageMetadataTimeout,
+            onTimeout: () {
+              debugPrint(
+                'Canvas image import timed out while resolving intrinsic metadata.',
+              );
+              return null;
+            },
+          );
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Canvas image import could not resolve intrinsic metadata: '
+        '$error\n$stackTrace',
+      );
       return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
     }
 

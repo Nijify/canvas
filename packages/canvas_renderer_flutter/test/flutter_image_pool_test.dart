@@ -206,6 +206,35 @@ void main() {
       await expectLater(future, completes);
       expect(pool.intrinsicSize('image-0'), isNull);
     });
+
+    test('falls back to isolated resolvers when bulk metadata fails', () async {
+      final requestedRefs = <String>[];
+
+      final pool = FlutterImagePool(
+        assetMetasResolver: (_) async {
+          throw StateError('Bulk metadata unavailable');
+        },
+        assetMetaResolver: (sourceRef) async {
+          requestedRefs.add(sourceRef);
+
+          if (sourceRef == 'media:one') {
+            return const Size2D(640, 480);
+          }
+
+          throw StateError('Metadata unavailable for $sourceRef');
+        },
+      );
+
+      await pool.resolveSceneIntrinsics(
+        _sceneWithImages(['media:one', 'media:two']),
+      );
+
+      expect(requestedRefs, unorderedEquals(['media:one', 'media:two']));
+      expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
+      expect(pool.intrinsicSize('image-1'), isNull);
+
+      pool.dispose();
+    });
   });
 
   group('FlutterImagePool decoded image ownership', () {
@@ -252,6 +281,45 @@ void main() {
       await subscription.cancel();
       pool.dispose();
 
+      expect(decoded.debugDisposed, isTrue);
+    });
+
+    test('raster preload proceeds while metadata remains pending', () async {
+      final decoded = await _createImage();
+      final metadata = Completer<Map<String, Size2D>>();
+      final metadataStarted = Completer<void>();
+      final decoderStarted = Completer<void>();
+      var metadataCalls = 0;
+
+      final pool = FlutterImagePool(
+        assetMetasResolver: (_) {
+          metadataCalls++;
+          metadataStarted.complete();
+          return metadata.future;
+        },
+        decoder: (_) async {
+          decoderStarted.complete();
+          return decoded;
+        },
+      );
+      final scene = _sceneWithImages(['asset:assets/test.png']);
+
+      final intrinsicFuture = pool.resolveSceneIntrinsics(scene);
+      await metadataStarted.future;
+
+      final preloadFuture = pool.preloadScene(scene, targetW: 128);
+      await pumpEventQueue();
+
+      expect(decoderStarted.isCompleted, isTrue);
+      expect(metadataCalls, 1);
+
+      await preloadFuture;
+      expect(identical(pool.images['image-0'], decoded), isTrue);
+
+      metadata.complete(const <String, Size2D>{});
+      await intrinsicFuture;
+
+      pool.dispose();
       expect(decoded.debugDisposed, isTrue);
     });
 

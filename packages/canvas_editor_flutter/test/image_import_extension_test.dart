@@ -130,6 +130,34 @@ final class _SizedMediaResolver implements CanvasMediaResolver {
   }
 }
 
+final class _PendingMediaResolver implements CanvasMediaResolver {
+  final Completer<Size2D?> intrinsicSize = Completer<Size2D?>();
+  final Completer<Map<String, Size2D>> intrinsicSizes =
+      Completer<Map<String, Size2D>>();
+
+  final List<String> requestedIntrinsicSizes = <String>[];
+
+  @override
+  Future<Size2D?> resolveIntrinsicSize(String ref) {
+    requestedIntrinsicSizes.add(ref);
+    return intrinsicSize.future;
+  }
+
+  @override
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) {
+    requestedIntrinsicSizes.addAll(refs);
+    return intrinsicSizes.future;
+  }
+
+  @override
+  Future<String?> resolveUrl(String ref) async => null;
+
+  @override
+  Future<Map<String, String>> resolveUrls(List<String> refs) async {
+    return const <String, String>{};
+  }
+}
+
 final class _AdditiveImageSectionExtension
     extends EditorExtension<CanvasSceneDocument> {
   @override
@@ -536,6 +564,49 @@ void main() {
       const Size2D(800, 400),
     );
   });
+
+  testWidgets(
+    'Add Image falls back when intrinsic metadata does not complete',
+    (tester) async {
+      final imageImport = _RecordingImageImportPort(
+        ImageImportResult.success('media:pending-image'),
+      );
+      final media = _PendingMediaResolver();
+
+      final editor = await _pumpEditor(
+        tester,
+        scene: _emptyScene(),
+        imageImport: imageImport,
+        resources: CanvasRuntimeResources(
+          fonts: TestFontAssets(),
+          icons: TestIconCatalogPort(),
+          media: media,
+        ),
+      );
+
+      editor.actions.invoke(EditorActionIds.addImage);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('image-import-add-gallery')));
+      await tester.pump();
+
+      expect(editor.controller.document.value.children, isEmpty);
+
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+
+      final image = _singleImage(editor.controller);
+
+      expect(image.data.size, const Size2D(200, 200));
+      expect(image.xf.position, const Vec2(180, 180));
+      expect(_imageAsset(editor.controller, image.id)?.intrinsicSize, isNull);
+      expect(editor.selection.firstId, image.id);
+
+      media.intrinsicSize.complete(null);
+      media.intrinsicSizes.complete(const <String, Size2D>{});
+      await tester.pump();
+    },
+  );
 
   testWidgets('dismissing Add Image leaves the document untouched', (
     tester,

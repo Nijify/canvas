@@ -1,3 +1,9 @@
+## 0.8.1
+
+- Start raster decoding without waiting for optional intrinsic metadata.
+- Contain bulk metadata resolver failures and fall back to isolated per-source
+  resolution when available.
+
 ## 0.8.0
 
 - **Breaking:** require `canvas_core 0.9.x`.
