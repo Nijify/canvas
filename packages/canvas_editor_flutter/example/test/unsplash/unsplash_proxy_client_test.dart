@@ -70,10 +70,7 @@ void main() {
     await client.trackDownload(photo);
 
     expect(requested?.path, '/api/unsplash/track');
-    expect(
-      requested?.queryParameters['path'],
-      '/photos/photo-1/download',
-    );
+    expect(requested?.queryParameters['path'], '/photos/photo-1/download');
     expect(requested?.queryParameters['query'], 'ixid=track');
   });
 

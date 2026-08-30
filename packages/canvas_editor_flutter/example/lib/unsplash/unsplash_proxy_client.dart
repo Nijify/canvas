@@ -7,8 +7,8 @@ typedef UnsplashGet = Future<String> Function(Uri uri);
 
 final class UnsplashProxyClient {
   UnsplashProxyClient({required Uri baseUri, UnsplashGet? get})
-      : _baseUri = baseUri,
-        _get = get ?? _defaultGet;
+    : _baseUri = baseUri,
+      _get = get ?? _defaultGet;
 
   final Uri _baseUri;
   final UnsplashGet _get;
@@ -17,10 +17,9 @@ final class UnsplashProxyClient {
     final normalized = query.trim();
     if (normalized.isEmpty) return const <UnsplashPhoto>[];
 
-    final uri = _resolve(
-      'unsplash/search',
-      <String, String>{'query': normalized},
-    );
+    final uri = _resolve('unsplash/search', <String, String>{
+      'query': normalized,
+    });
     final body = await _get(uri);
     final decoded = jsonDecode(body);
 
@@ -59,13 +58,10 @@ final class UnsplashProxyClient {
     // Pass only the validated Unsplash path/query to the proxy. The proxy should
     // reconstruct the api.unsplash.com URL server-side and must not accept an
     // arbitrary upstream URL.
-    final uri = _resolve(
-      'unsplash/track',
-      <String, String>{
-        'path': download.path,
-        if (download.hasQuery) 'query': download.query,
-      },
-    );
+    final uri = _resolve('unsplash/track', <String, String>{
+      'path': download.path,
+      if (download.hasQuery) 'query': download.query,
+    });
 
     await _get(uri);
   }

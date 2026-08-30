@@ -23,10 +23,7 @@ Future<CanvasAssetLibraryItem?> presentExampleAssetSelection({
 }
 
 class UnsplashCreditBar extends StatelessWidget {
-  const UnsplashCreditBar({
-    super.key,
-    required this.creditsBySourceRef,
-  });
+  const UnsplashCreditBar({super.key, required this.creditsBySourceRef});
 
   final Map<String, UnsplashCredit> creditsBySourceRef;
 
@@ -57,10 +54,7 @@ class UnsplashCreditBar extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     for (final credit in credits)
-                      _Attribution(
-                        credit: credit,
-                        compact: true,
-                      ),
+                      _Attribution(credit: credit, compact: true),
                   ],
                 ),
               ),
@@ -317,10 +311,7 @@ final class _ExampleAssetSelectionDialogState
 }
 
 class _Attribution extends StatelessWidget {
-  const _Attribution({
-    required this.credit,
-    this.compact = false,
-  });
+  const _Attribution({required this.credit, this.compact = false});
 
   final UnsplashCredit credit;
   final bool compact;
@@ -364,9 +355,9 @@ Future<void> _openUrl(BuildContext context, Uri uri) async {
     if (!context.mounted) return;
   }
 
-  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-    const SnackBar(content: Text('Unable to open link.')),
-  );
+  ScaffoldMessenger.maybeOf(
+    context,
+  )?.showSnackBar(const SnackBar(content: Text('Unable to open link.')));
 }
 
 String _assetPathFromRef(String ref) {

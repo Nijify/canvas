@@ -39,7 +39,9 @@ void main() {
       ],
     );
 
-    expect(session.visibleCreditsForScene(scene).keys, <String>[photo.sourceRef]);
+    expect(session.visibleCreditsForScene(scene).keys, <String>[
+      photo.sourceRef,
+    ]);
   });
 
   test('deduplicates duplicate nodes that share the same source', () {

@@ -14,9 +14,7 @@ void main() {
       },
       'user': <String, Object?>{
         'name': 'Jane Doe',
-        'links': <String, Object?>{
-          'html': 'https://unsplash.com/@jane',
-        },
+        'links': <String, Object?>{'html': 'https://unsplash.com/@jane'},
       },
       'links': <String, Object?>{
         'download_location':

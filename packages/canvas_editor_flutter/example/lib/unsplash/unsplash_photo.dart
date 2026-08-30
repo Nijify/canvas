@@ -80,7 +80,8 @@ final class UnsplashPhoto {
   }
 }
 
-Uri get attributedUnsplashUrl => withUnsplashReferral(Uri.parse('https://unsplash.com/'));
+Uri get attributedUnsplashUrl =>
+    withUnsplashReferral(Uri.parse('https://unsplash.com/'));
 
 Uri withUnsplashReferral(Uri uri) {
   return uri.replace(

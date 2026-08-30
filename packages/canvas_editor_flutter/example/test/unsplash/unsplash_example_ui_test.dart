@@ -10,9 +10,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       const MaterialApp(
-        home: UnsplashCreditBar(
-          creditsBySourceRef: <String, UnsplashCredit>{},
-        ),
+        home: UnsplashCreditBar(creditsBySourceRef: <String, UnsplashCredit>{}),
       ),
     );
 

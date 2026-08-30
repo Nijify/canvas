@@ -21,9 +21,7 @@ import 'package:share_plus/share_plus.dart' as sharing;
 
 final _navigatorKey = GlobalKey<NavigatorState>();
 
-const _unsplashProxyBaseUrl = String.fromEnvironment(
-  'UNSPLASH_PROXY_BASE_URL',
-);
+const _unsplashProxyBaseUrl = String.fromEnvironment('UNSPLASH_PROXY_BASE_URL');
 
 const _backgroundRemovalDemoSourceRef =
     'asset:assets/demo_assets/background_removal_input.png';
@@ -106,9 +104,7 @@ class _ExampleEditorPageState extends State<_ExampleEditorPage> {
             ],
           ),
         ),
-        UnsplashCreditBar(
-          creditsBySourceRef: _visibleUnsplashCredits,
-        ),
+        UnsplashCreditBar(creditsBySourceRef: _visibleUnsplashCredits),
       ],
     );
   }
@@ -141,9 +137,7 @@ class _ExampleEditorPageState extends State<_ExampleEditorPage> {
     try {
       await client.trackDownload(photo);
     } catch (error, stackTrace) {
-      debugPrint(
-        'Unsplash download tracking failed: $error\n$stackTrace',
-      );
+      debugPrint('Unsplash download tracking failed: $error\n$stackTrace');
     }
   }
 
