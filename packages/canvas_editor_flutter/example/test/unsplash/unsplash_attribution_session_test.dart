@@ -24,6 +24,8 @@ void main() {
     final session = UnsplashAttributionSession()..register(photo);
     final scene = CanvasSceneDocument(
       artboardSize: const Size2D(800, 600),
+      backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
+      backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
         'used': CanvasImageAsset(sourceRef: photo.sourceRef),
         'orphan': CanvasImageAsset(sourceRef: photo.sourceRef),
@@ -44,6 +46,8 @@ void main() {
     final session = UnsplashAttributionSession()..register(photo);
     final scene = CanvasSceneDocument(
       artboardSize: const Size2D(800, 600),
+      backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
+      backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
         'a': CanvasImageAsset(sourceRef: photo.sourceRef),
         'b': CanvasImageAsset(sourceRef: photo.sourceRef),
@@ -69,6 +73,8 @@ void main() {
     final session = UnsplashAttributionSession()..register(photo);
     final scene = CanvasSceneDocument(
       artboardSize: const Size2D(800, 600),
+      backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
+      backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
         'image': CanvasImageAsset(sourceRef: photo.sourceRef),
       },
