@@ -1,4 +1,5 @@
 // Path: oss_packages/canvas_editor_flutter/example/lib/main.dart
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -8,6 +9,10 @@ import 'package:canvas_editor_flutter/extensions.dart' show EditorShellConfig;
 import 'package:canvas_editor_flutter/image_import.dart';
 import 'package:canvas_editor_flutter/image_tools.dart';
 import 'package:canvas_editor_flutter_example/data_uri_image_metadata.dart';
+import 'package:canvas_editor_flutter_example/unsplash/unsplash_attribution_session.dart';
+import 'package:canvas_editor_flutter_example/unsplash/unsplash_example_ui.dart';
+import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
+import 'package:canvas_editor_flutter_example/unsplash/unsplash_proxy_client.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +20,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart' as sharing;
 
 final _navigatorKey = GlobalKey<NavigatorState>();
+
+const _unsplashProxyBaseUrl = String.fromEnvironment(
+  'UNSPLASH_PROXY_BASE_URL',
+);
 
 const _backgroundRemovalDemoSourceRef =
     'asset:assets/demo_assets/background_removal_input.png';
@@ -39,39 +48,150 @@ class CanvasEditorExampleApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: CanvasSceneEditor(
-        initialScene: _demoDocument,
-        resources: _demoResources,
-        shell: EditorShellConfig.standalone,
-        pngExport: PngExportCapability(
-          port: _ExamplePngExportPort(
-            resources: _demoResources,
-            navigatorKey: _navigatorKey,
-          ),
-          canShare: true,
-          canSave: false,
-        ),
-        jsonExport: const JsonExportCapability(
-          output: _ExampleJsonOutputPort(),
-          canCopy: true,
-          canSave: false,
-        ),
-
-        extensions: [
-          imageImportExtension<CanvasSceneDocument>(
-            imageImport: _demoImageImport,
-          ),
-          backgroundRemovalExtension<CanvasSceneDocument>(
-            port: const _ExampleBackgroundRemovalPort(),
-          ),
-          canvasAssetLibraryExtension<CanvasSceneDocument>(
-            library: _demoAssetLibrary,
-            presentSelection: _presentDemoAssetSelection,
-          ),
-        ],
-      ),
+      home: const _ExampleEditorPage(),
     );
   }
+}
+
+class _ExampleEditorPage extends StatefulWidget {
+  const _ExampleEditorPage();
+
+  @override
+  State<_ExampleEditorPage> createState() => _ExampleEditorPageState();
+}
+
+class _ExampleEditorPageState extends State<_ExampleEditorPage> {
+  final UnsplashAttributionSession _unsplashAttribution =
+      UnsplashAttributionSession();
+
+  late final UnsplashProxyClient? _unsplashClient = _createUnsplashClient();
+
+  Map<String, UnsplashCredit> _visibleUnsplashCredits =
+      const <String, UnsplashCredit>{};
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: CanvasSceneEditor(
+            initialScene: _demoDocument,
+            resources: _demoResources,
+            shell: EditorShellConfig.standalone,
+            onSceneChanged: _handleSceneChanged,
+            pngExport: PngExportCapability(
+              port: _ExamplePngExportPort(
+                resources: _demoResources,
+                navigatorKey: _navigatorKey,
+              ),
+              canShare: true,
+              canSave: false,
+            ),
+            jsonExport: const JsonExportCapability(
+              output: _ExampleJsonOutputPort(),
+              canCopy: true,
+              canSave: false,
+            ),
+            extensions: [
+              imageImportExtension<CanvasSceneDocument>(
+                imageImport: _demoImageImport,
+              ),
+              backgroundRemovalExtension<CanvasSceneDocument>(
+                port: const _ExampleBackgroundRemovalPort(),
+              ),
+              canvasAssetLibraryExtension<CanvasSceneDocument>(
+                library: _demoAssetLibrary,
+                presentSelection: _presentAssetSelection,
+              ),
+            ],
+          ),
+        ),
+        UnsplashCreditBar(
+          creditsBySourceRef: _visibleUnsplashCredits,
+        ),
+      ],
+    );
+  }
+
+  Future<CanvasAssetLibraryItem?> _presentAssetSelection(
+    BuildContext context,
+    CanvasAssetLibrary library,
+  ) {
+    return presentExampleAssetSelection(
+      context: context,
+      library: library,
+      unsplashClient: _unsplashClient,
+      onUnsplashSelected: _handleUnsplashSelected,
+    );
+  }
+
+  void _handleUnsplashSelected(UnsplashPhoto photo) {
+    _unsplashAttribution.register(photo);
+
+    final client = _unsplashClient;
+    if (client == null) return;
+
+    unawaited(_trackUnsplashDownload(client, photo));
+  }
+
+  Future<void> _trackUnsplashDownload(
+    UnsplashProxyClient client,
+    UnsplashPhoto photo,
+  ) async {
+    try {
+      await client.trackDownload(photo);
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Unsplash download tracking failed: $error\n$stackTrace',
+      );
+    }
+  }
+
+  void _handleSceneChanged(CanvasSceneDocument scene) {
+    final next = _unsplashAttribution.visibleCreditsForScene(scene);
+    if (_sameCredits(_visibleUnsplashCredits, next) || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _visibleUnsplashCredits = next;
+    });
+  }
+}
+
+UnsplashProxyClient? _createUnsplashClient() {
+  final raw = _unsplashProxyBaseUrl.trim();
+  if (raw.isEmpty) return null;
+
+  final uri = Uri.tryParse(raw);
+  if (uri == null ||
+      (uri.scheme != 'https' && uri.scheme != 'http') ||
+      uri.host.isEmpty) {
+    debugPrint(
+      'Ignoring invalid UNSPLASH_PROXY_BASE_URL: $_unsplashProxyBaseUrl',
+    );
+    return null;
+  }
+
+  return UnsplashProxyClient(baseUri: uri);
+}
+
+bool _sameCredits(
+  Map<String, UnsplashCredit> current,
+  Map<String, UnsplashCredit> next,
+) {
+  if (current.length != next.length) return false;
+
+  for (final entry in current.entries) {
+    final other = next[entry.key];
+    if (other == null ||
+        other.photographerName != entry.value.photographerName ||
+        other.photographerUrl != entry.value.photographerUrl) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 final _demoImageImport = _ExampleImageImportPort();
@@ -122,59 +242,6 @@ final CanvasAssetLibrary _demoAssetLibrary = LocalCanvasAssetLibrary(
     ),
   ],
 );
-
-Future<CanvasAssetLibraryItem?> _presentDemoAssetSelection(
-  BuildContext context,
-  CanvasAssetLibrary library,
-) {
-  return showDialog<CanvasAssetLibraryItem>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: const Text('Demo assets'),
-        content: SizedBox(
-          width: 360,
-          height: 340,
-          child: ListView.separated(
-            itemCount: library.items.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, index) {
-              final item = library.items[index];
-
-              return ListTile(
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    _assetPathFromRef(item.thumbnailRef),
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) {
-                      return const SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Icon(Icons.image_outlined),
-                      );
-                    },
-                  ),
-                ),
-                title: Text(item.label),
-                subtitle: Text(item.category),
-                onTap: () => Navigator.of(dialogContext).pop(item),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      );
-    },
-  );
-}
 
 String _assetPathFromRef(String ref) {
   final trimmed = ref.trim();
@@ -535,6 +602,16 @@ final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
     final trimmed = ref.trim();
 
     if (trimmed.startsWith('data:')) {
+      return trimmed;
+    }
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri != null &&
+        (uri.scheme == 'https' || uri.scheme == 'http') &&
+        uri.host.isNotEmpty) {
+      // Direct remote URLs are already renderable. Preserve the API-returned
+      // URL verbatim, including query parameters required by providers such as
+      // Unsplash.
       return trimmed;
     }
 
