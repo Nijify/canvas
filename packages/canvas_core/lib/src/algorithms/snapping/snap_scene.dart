@@ -7,7 +7,6 @@ import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 
 import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
     show ComputedScene;
-import 'package:canvas_core/src/runtime/model/node_model.dart' show NodeId;
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 import 'package:canvas_core/src/algorithms/snapping/keylines.dart'
@@ -43,9 +42,6 @@ SnapResult snapScene({
   final tolWorld = opts.toleranceScreenPx / math.max(opts.zoom, 1e-6);
   if (tolWorld <= 0) return SnapResult.none;
 
-  // Convert ignore set to NodeId (same underlying type, but keeps intent).
-  final ignore = config.ignoreIds.cast<NodeId>();
-
   // Gather candidates
   final cands = <SnapCandidate>[];
 
@@ -53,7 +49,9 @@ SnapResult snapScene({
     cands.addAll(artboardKeylines(doc.artboardSize));
   }
   if (opts.snapToObjects) {
-    cands.addAll(sceneObjectKeylines(doc, computed, ignoreIds: ignore));
+    cands.addAll(
+      sceneObjectKeylines(doc, computed, ignoreIds: config.ignoreIds),
+    );
   }
   if (opts.snapToGuides) {
     cands.addAll(config.transientGuideCandidates);

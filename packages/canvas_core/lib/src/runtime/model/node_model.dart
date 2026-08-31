@@ -15,10 +15,6 @@ import 'package:canvas_core/src/serialization/path_converters.dart';
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';
 
-// Temporary alias retained while downstream package consumers are migrated on
-// this draft branch. Remove before the cleanup PR is marked ready.
-typedef NodeId = ElementId;
-
 enum OriginKind { center, custom }
 
 @freezed

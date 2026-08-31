@@ -1,6 +1,7 @@
 // Path: lib/src/algorithms/snapping/snap_types.dart
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 
 enum SnapKind { keyline, guide, grid, object }
 
@@ -86,8 +87,8 @@ class SnapConfig {
   /// Optional grid step (world units). If null/<=0, grid disabled.
   final double? gridStepWorld;
 
-  /// Ids to ignore (e.g., current selection).
-  final Set<String> ignoreIds;
+  /// Element IDs to ignore (e.g., current selection).
+  final Set<ElementId> ignoreIds;
 
   /// Optional clipping frame for guides (defaults to artboard).
   final Rect2D? guideFrameWorld;

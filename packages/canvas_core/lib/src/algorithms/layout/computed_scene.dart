@@ -15,7 +15,8 @@ import 'package:canvas_core/src/foundation/math/affine2d.dart' show matFromTRS;
 
 import 'package:canvas_core/src/services/services_context.dart'
     show CoreServices;
-import 'package:canvas_core/src/services/icon_resolver.dart' show ResolvedIconText;
+import 'package:canvas_core/src/services/icon_resolver.dart'
+    show ResolvedIconText;
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
