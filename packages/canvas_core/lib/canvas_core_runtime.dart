@@ -58,8 +58,7 @@ export 'src/runtime/model/node_model.dart'
 // ============================================================================
 export 'src/algorithms/layout/computed_scene.dart'
     show ComputedScene, DrawItem, computeScene;
-export 'src/algorithms/layout/layout_payloads.dart'
-    show ImagePlacement, IconTextPayload;
+export 'src/algorithms/layout/layout_payloads.dart' show ImagePlacement;
 export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 
 // ============================================================================
@@ -71,11 +70,9 @@ export 'src/render_plan/op_builder_scene.dart' show buildPaintOpsFromScene;
 export 'src/render_plan/gradient_resolver.dart'
     show ResolvedLinearGradient, resolveLinearGradient;
 
-// Shared style enums (used by models and IR)
 export 'src/foundation/style/style_types.dart'
     show FillRule, StrokeCap, StrokeJoin;
 
-// Path IR + declarative sources (runtime reads these; compilation is internal)
 export 'src/path/path_ir.dart' show PathCmd, PathIR, PathStyle, PathVerb;
 export 'src/path/path_source.dart'
     show
@@ -113,7 +110,6 @@ export 'src/foundation/geometry/geometry.dart' show Rect2D;
 export 'src/foundation/geometry/geometry_ext.dart';
 export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 
-// Derived geometry helpers (selection bounds, unions)
 export 'src/algorithms/layout/selection_geometry.dart'
     show selectionGeometry, selectionUnionBounds;
 
@@ -135,7 +131,6 @@ export 'src/runtime/traversal/traversal.dart'
     show findById, findParentOf, visitSceneNodes, collectAllNodeIds;
 export 'src/runtime/traversal/rewrite.dart'
     show replaceById, rewriteSceneDocument, rewritePostOrder;
-// Common immutable node edits that preserve identity and tree structure.
 export 'src/runtime/model/node_editing.dart' show NodeEditingX;
 export 'src/runtime/traversal/scene_tree_ops.dart' show SceneTreeOps;
 export 'src/runtime/traversal/stack_order.dart'
@@ -156,7 +151,6 @@ export 'src/runtime/validation/scene_document_validation.dart'
 export 'src/algorithms/viewport/viewport_math.dart'
     show CanvasFit, CanvasViewportTransform, computeViewport;
 
-// Crop-to-content / content bounds helpers
 export 'src/algorithms/export/content_bounds_policy.dart'
     show
         ContentBoundsPolicy,
@@ -175,17 +169,6 @@ export 'src/foundation/paint/canvas_fill.dart';
 // ============================================================================
 // 12) Runtime render pipeline
 // ============================================================================
-//
-// The generic runtime surface includes:
-//   • CanvasRenderPipeline
-//   • RenderSnapshot
-//   • ScenePreparer
-//
-// Scene preparers transform runtime scenes. CanvasRenderPipeline remains the
-// sole owner of compute, paint-op construction, content bounds, and snapshots.
-//
-// Domain-specific preparation policies belong in extension packages outside
-// canvas_core.
 export 'src/runtime/render/canvas_render_pipeline.dart';
 
 export 'src/runtime/viewport/canvas_viewport_planner.dart';
