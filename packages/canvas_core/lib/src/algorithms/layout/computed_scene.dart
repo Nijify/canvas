@@ -9,10 +9,12 @@ import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
     show Rect2DX;
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/foundation/math/affine2d.dart' show matFromTRS;
 
 import 'package:canvas_core/src/services/services_context.dart'
     show CoreServices;
+import 'package:canvas_core/src/services/icon_resolver.dart' show ResolvedIconText;
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
@@ -20,28 +22,28 @@ import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
 import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 
 final class DrawItem {
-  final NodeId leafId;
-  final List<NodeId> groupStack; // root..parent group ids
+  final ElementId leafId;
+  final List<ElementId> groupStack; // root..parent group ids
   const DrawItem({required this.leafId, required this.groupStack});
 }
 
 final class ComputedScene {
   final List<DrawItem> drawList;
 
-  final Map<NodeId, Node> nodeById;
+  final Map<ElementId, Node> nodeById;
 
-  final Map<NodeId, vm.Matrix4> worldById;
-  final Map<NodeId, vm.Matrix4> inverseWorldById;
+  final Map<ElementId, vm.Matrix4> worldById;
+  final Map<ElementId, vm.Matrix4> inverseWorldById;
 
-  final Map<NodeId, Rect2D> localBoundsById;
-  final Map<NodeId, Rect2D> visualBoundsWorldById;
+  final Map<ElementId, Rect2D> localBoundsById;
+  final Map<ElementId, Rect2D> visualBoundsWorldById;
 
-  final Map<NodeId, PathIR> pathIRById;
-  final Map<NodeId, ImagePlacement> imagePlacementById;
+  final Map<ElementId, PathIR> pathIRById;
+  final Map<ElementId, ImagePlacement> imagePlacementById;
 
   // icon pre-resolution (so paint is pure)
-  final Map<NodeId, IconTextPayload> iconTextById;
-  final Map<NodeId, PathIR> iconPathIRById;
+  final Map<ElementId, ResolvedIconText> iconTextById;
+  final Map<ElementId, PathIR> iconPathIRById;
 
   const ComputedScene({
     required this.drawList,
@@ -70,18 +72,18 @@ Vec2 _pivotFromOrigin(OriginKind origin, Rect2D? b, Vec2? custom) {
 ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   final geom = NodeGeometry(services);
   final drawList = <DrawItem>[];
-  final nodeById = <NodeId, Node>{};
+  final nodeById = <ElementId, Node>{};
 
-  final worldById = <NodeId, vm.Matrix4>{};
-  final inverseWorldById = <NodeId, vm.Matrix4>{};
+  final worldById = <ElementId, vm.Matrix4>{};
+  final inverseWorldById = <ElementId, vm.Matrix4>{};
 
-  final localBoundsById = <NodeId, Rect2D>{};
-  final visualBoundsWorldById = <NodeId, Rect2D>{};
+  final localBoundsById = <ElementId, Rect2D>{};
+  final visualBoundsWorldById = <ElementId, Rect2D>{};
 
-  final pathIRById = <NodeId, PathIR>{};
-  final imagePlacementById = <NodeId, ImagePlacement>{};
-  final iconTextById = <NodeId, IconTextPayload>{};
-  final iconPathIRById = <NodeId, PathIR>{};
+  final pathIRById = <ElementId, PathIR>{};
+  final imagePlacementById = <ElementId, ImagePlacement>{};
+  final iconTextById = <ElementId, ResolvedIconText>{};
+  final iconPathIRById = <ElementId, PathIR>{};
 
   // -----------------------------
   // Helpers
@@ -159,7 +161,7 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   Rect2D? walk(
     Node n,
     vm.Matrix4 parentWorld,
-    List<NodeId> groupStack,
+    List<ElementId> groupStack,
     bool ancestorHidden,
   ) {
     final hidden = ancestorHidden || n.hidden;
@@ -206,7 +208,7 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   }
 
   for (final n in nodesInPaintOrder(doc.children)) {
-    walk(n, vm.Matrix4.identity(), const <NodeId>[], false);
+    walk(n, vm.Matrix4.identity(), const <ElementId>[], false);
   }
 
   return ComputedScene(
