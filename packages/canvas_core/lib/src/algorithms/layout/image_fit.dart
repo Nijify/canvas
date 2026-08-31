@@ -4,7 +4,9 @@ import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 
-({Rect2D src, Rect2D dst}) imageSrcDst({
+typedef ImagePlacement = ({Rect2D src, Rect2D dst});
+
+ImagePlacement imageSrcDst({
   required Size2D intrinsic,
   required Size2D layout,
   required ImageFit fit,

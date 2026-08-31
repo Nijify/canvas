@@ -1,7 +1,8 @@
 // Path: lib/src/algorithms/layout/computed_scene.dart
 
+import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
+    show ImagePlacement;
 import 'package:canvas_core/src/algorithms/layout/node_geometry.dart';
-import 'package:canvas_core/src/algorithms/layout/layout_payloads.dart';
 import 'package:canvas_core/src/runtime/traversal/stack_order.dart';
 import 'package:vector_math/vector_math_64.dart' as vm;
 
