@@ -45,6 +45,11 @@ abstract class TextData with _$TextData {
     required String fontFamily,
     required FontWeightNum fontWeight,
     required double fontSize,
+
+    /// Additional spacing between characters in logical canvas units.
+    ///
+    /// The original text must remain unchanged. Platform text implementations
+    /// must apply this value through their native text-layout API.
     @Default(0.0) double letterSpacing,
     @CanvasFillConverter()
     @Default(CanvasFill.solid(0xFF111111))
@@ -61,7 +66,10 @@ enum ImageFit { contain, cover, fill }
 @freezed
 abstract class ImageData with _$ImageData {
   const factory ImageData({
+    /// Null represents an intentionally unfilled image frame.
     CanvasAssetId? assetId,
+
+    /// Editable destination-frame dimensions in document units.
     @Size2DConverter() required Size2D size,
     @Default(ImageFit.contain) ImageFit fit,
     @Vec2Converter() @Default(Vec2(0.5, 0.5)) Vec2 align,
@@ -108,6 +116,10 @@ abstract class CanvasIconData with _$CanvasIconData {
       _$CanvasIconDataFromJson(json);
 }
 
+/// Generic runtime-owned behavior envelope for optional group semantics.
+///
+/// Core runtime owns only this neutral container.
+/// Optional packs own the meaning of `type` + `version` + `data`.
 @freezed
 abstract class GroupBehaviorRef with _$GroupBehaviorRef {
   const factory GroupBehaviorRef({
@@ -120,6 +132,17 @@ abstract class GroupBehaviorRef with _$GroupBehaviorRef {
       _$GroupBehaviorRefFromJson(json);
 }
 
+/// Runtime scene-graph node (hierarchical TRS).
+///
+/// Notes:
+/// - All nodes (including groups) have a real Transform2D.
+/// - Group nodes structurally own children (no groupId).
+/// - IDs are intended to be globally unique within the document.
+/// - Optional user-facing display names live in [name].
+/// - Optional higher-level group semantics live in GroupNode.behavior.
+///   Core runtime does not interpret product/domain behavior types directly.
+/// - Sibling order is paint/stack order:
+///   earlier siblings paint behind later siblings.
 @Freezed(unionKey: 'runtimeType')
 sealed class Node with _$Node {
   const Node._();
@@ -127,6 +150,9 @@ sealed class Node with _$Node {
   const factory Node.text({
     required ElementId id,
     String? name,
+    // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
+    // Candidate for removal from the persisted scene model after layer
+    // visibility UX is intentionally redesigned or removed.
     @Default(false) bool hidden,
     @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
