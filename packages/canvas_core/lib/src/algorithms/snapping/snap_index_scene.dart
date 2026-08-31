@@ -5,7 +5,6 @@ import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
     show Rect2DX;
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 
-import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
