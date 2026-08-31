@@ -35,7 +35,10 @@ List<PaintOp> _paintOps({
     backgroundOpacity: backgroundOpacity,
   );
 
-  final computed = computeScene(scene, CoreServices(tm: _FakeTextMeasurer()));
+  final computed = computeScene(
+    scene,
+    CoreServices(textMeasurer: _FakeTextMeasurer()),
+  );
 
   return buildPaintOpsFromScene(scene, computed);
 }

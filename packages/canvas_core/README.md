@@ -11,7 +11,8 @@ Use it when you want to model or transform canvas-style documents without depend
 - `computeScene` for deterministic transforms, draw order, bounds, and cached geometry.
 - `buildPaintOpsFromScene` for a renderer-neutral draw plan.
 - Headless editor helpers for hit testing, snapping, history, and viewport calculation.
-- Host-service contracts for text measurement, image intrinsics, and icon resolution.
+- Host-service contracts for text measurement, image intrinsics, image source resolution, and icon resolution.
+- Generic scene font-family discovery for renderer/resource preflight.
 
 ## Installation
 
@@ -68,7 +69,7 @@ final document = CanvasSceneDocument(
   ],
 );
 
-final services = CoreServices(tm: myTextMeasurer);
+final services = CoreServices(textMeasurer: myTextMeasurer);
 final computed = computeScene(document, services);
 final paintOps = buildPaintOpsFromScene(document, computed);
 ```
@@ -76,6 +77,21 @@ final paintOps = buildPaintOpsFromScene(document, computed);
 `myTextMeasurer` is supplied by your runtime. A Flutter app can use
 `FlutterTextPipeline` from `canvas_renderer_flutter`; a server or CLI can
 implement `TextMeasurer` directly.
+
+## Runtime resource discovery
+
+Core discovers logical resource requirements without loading platform resources.
+
+Use `collectSceneFontFamilies` to collect text and font-backed icon families,
+including hidden and nested scene content:
+
+```dart
+final fontFamilies = collectSceneFontFamilies(
+  document,
+  fallbackFontFamilies: fallbackFontFamilies,
+  icons: myIconResolver,
+);
+```
 
 ## Immutable node editing
 

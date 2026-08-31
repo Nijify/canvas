@@ -1,7 +1,5 @@
 // Path: test/scene_smoke_test.dart
 
-import 'dart:async';
-
 import 'package:test/test.dart';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -22,17 +20,12 @@ class _FakeTextMeasurer implements TextMeasurer {
 }
 
 class _FakeImages implements ImageIntrinsics {
-  final _ctrl = StreamController<ElementId>.broadcast();
-
   @override
   Size2D? intrinsicSize(ElementId id) => null;
-
-  @override
-  Stream<ElementId> get onIntrinsicUpdated => _ctrl.stream;
 }
 
 CoreServices _services() =>
-    CoreServices(tm: _FakeTextMeasurer(), images: _FakeImages());
+    CoreServices(textMeasurer: _FakeTextMeasurer(), images: _FakeImages());
 
 TextData _td(String text) => TextData(
   text: text,

@@ -26,7 +26,7 @@ final class NodeGeometry {
 
     switch (n) {
       case TextNode(:final data):
-        final m = s.measureText(
+        final m = s.textMeasurer.measure(
           text: data.text,
           fontFamily: data.fontFamily,
           fontWeight: data.fontWeight,
@@ -36,7 +36,7 @@ final class NodeGeometry {
         return Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
 
       case IconNode(id: final id, data: final d):
-        // ✅ IMPORTANT:
+        // IMPORTANT:
         // For layout stability (esp. LogoLayoutPolicy), icon bounds must be
         // deterministic across different icon implementations (font glyph vs svg/path).
         //

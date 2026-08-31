@@ -120,11 +120,15 @@ export 'src/algorithms/layout/selection_geometry.dart'
 // ============================================================================
 export 'src/serialization/serializers.dart';
 
-export 'src/services/services.dart' show ImageIntrinsics, TextMeasurer;
+export 'src/services/services.dart'
+    show CanvasImageAssetResolver, ImageIntrinsics, TextMeasurer;
 export 'src/services/services_context.dart' show CoreServices;
 
 export 'src/services/icon_resolver.dart'
     show IconResolver, ResolvedIcon, ResolvedIconText, ResolvedIconPath;
+
+export 'src/runtime/resources/scene_font_families.dart'
+    show collectSceneFontFamilies;
 
 // ============================================================================
 // 8) Traversal / query helpers (headless, deterministic)
