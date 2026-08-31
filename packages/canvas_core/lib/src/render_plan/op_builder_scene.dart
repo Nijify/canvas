@@ -14,10 +14,20 @@ import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
     show ComputedScene;
 import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 
+// -----------------------------------------------------------------------------
+// Fill helpers (single source of truth)
+// -----------------------------------------------------------------------------
+//
+// Text/Icon have invariant: fill ∈ {solid, gradient} (never none).
+// Path may still be none.
+//
+// Shadow color rule:
+// - solid => that color
+// - gradient => grad.color1 (deterministic)
 Color32 _shadowColorFromFill(CanvasFill fill) => switch (fill) {
   CanvasFillSolid(:final color) => color,
   CanvasFillGradient(:final grad) => grad.color1,
-  CanvasFillNone() => 0x00000000,
+  CanvasFillNone() => 0x00000000, // should not happen for text/icon
 };
 
 Color32 _applyOpacityToArgb(Color32 argb, double opacity) {
@@ -32,6 +42,7 @@ List<PaintOp> buildPaintOpsFromScene(
 ) {
   final ops = <PaintOp>[];
 
+  // Background
   final backgroundRect = Rect2D.fromLTWH(
     0,
     0,
@@ -43,9 +54,16 @@ List<PaintOp> buildPaintOpsFromScene(
     switch (doc.backgroundFill) {
       case CanvasFillNone():
         break;
+
       case CanvasFillSolid(:final color):
-        ops.add(FillRectOp(backgroundRect, _applyOpacityToArgb(color, doc.backgroundOpacity)));
+        ops.add(
+          FillRectOp(
+            backgroundRect,
+            _applyOpacityToArgb(color, doc.backgroundOpacity),
+          ),
+        );
         break;
+
       case CanvasFillGradient(:final grad):
         ops.add(
           FillRectGradientOp(
@@ -63,6 +81,7 @@ List<PaintOp> buildPaintOpsFromScene(
 
   for (final item in computed.drawList) {
     final leafId = item.leafId;
+
     final leaf = computed.nodeById[leafId];
     if (leaf == null) continue;
 
@@ -70,6 +89,7 @@ List<PaintOp> buildPaintOpsFromScene(
     if (world == null) continue;
 
     final (six: s6) = toABCDExy(world);
+
     ops.add(SaveOp());
     final set = SetTransformOp(s6[0], s6[1], s6[2], s6[3], s6[4], s6[5]);
     if (!set.isIdentity) ops.add(set);
@@ -92,8 +112,10 @@ List<PaintOp> buildPaintOpsFromScene(
               ),
             );
             break;
+
           case CanvasFillGradient(:final grad):
             final resolved = resolveLinearGradient(grad, doc.artboardSize);
+
             ops.add(
               DrawTextOp(
                 text: d.text,
@@ -103,12 +125,15 @@ List<PaintOp> buildPaintOpsFromScene(
                 letterSpacing: d.letterSpacing,
                 originBaselineCenter: const Vec2(0, 0),
                 gradient: resolved,
+                // Provide a deterministic solid fallback for shadow rendering.
                 solid: _shadowColorFromFill(d.fill),
                 shadowOffset: d.shadowOffset,
               ),
             );
             break;
+
           case CanvasFillNone():
+            // Should be impossible for TextData; skip defensively.
             break;
         }
         break;
@@ -133,6 +158,7 @@ List<PaintOp> buildPaintOpsFromScene(
                 ),
               );
               break;
+
             case CanvasFillGradient(:final grad):
               final resolved = resolveLinearGradient(grad, doc.artboardSize);
               ops.add(
@@ -143,27 +169,36 @@ List<PaintOp> buildPaintOpsFromScene(
                   size: d.sizePx,
                   originBaselineCenter: const Vec2(0, 0),
                   gradient: resolved,
+                  // Deterministic shadow color derived from fill.
                   solid: _shadowColorFromFill(d.fill),
                   shadowOffset: d.shadowOffset,
                 ),
               );
               break;
+
             case CanvasFillNone():
+              // Should be impossible for icons; skip defensively.
               break;
           }
         } else if (iconPath != null) {
+          // Unified mental model: apply CanvasIconData.fill to *path-based* icons too.
           switch (d.fill) {
             case CanvasFillNone():
+              // Should be impossible; safe no-op.
               break;
+
             case CanvasFillSolid():
+              // Ensure IR has fill enabled; some renderers treat fill=null as no-op.
               final c = _shadowColorFromFill(d.fill);
               final ir = (iconPath.style.fill == null)
                   ? PathIR(iconPath.cmds, iconPath.style.copyWith(fill: c))
                   : iconPath;
               ops.add(FillPathOp(ir));
               break;
+
             case CanvasFillGradient(:final grad):
               final resolved = resolveLinearGradient(grad, doc.artboardSize);
+              // Ensure IR has fill enabled.
               final seed = grad.color1;
               final ir = (iconPath.style.fill == null)
                   ? PathIR(iconPath.cmds, iconPath.style.copyWith(fill: seed))
@@ -192,9 +227,11 @@ List<PaintOp> buildPaintOpsFromScene(
         switch (d.fill) {
           case CanvasFillNone():
             break;
+
           case CanvasFillSolid():
             if (ir.style.fill != null) ops.add(FillPathOp(ir));
             break;
+
           case CanvasFillGradient(:final grad):
             final resolved = resolveLinearGradient(grad, doc.artboardSize);
             ops.add(FillPathGradientOp(ir, resolved));
