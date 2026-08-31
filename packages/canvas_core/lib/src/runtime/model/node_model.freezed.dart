@@ -1739,7 +1739,7 @@ Node _$NodeFromJson(
 /// @nodoc
 mixin _$Node {
 
- NodeId get id; String? get name;// TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
+ ElementId get id; String? get name;// TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
 // Candidate for removal from the persisted scene model after layer
 // visibility UX is intentionally redesigned or removed.
  bool get hidden; bool get locked; Transform2D get xf;
@@ -1902,7 +1902,7 @@ return group(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)?  text,TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)?  image,TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)?  path,TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)?  text,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)?  image,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)?  path,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
 return text(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
@@ -1927,7 +1927,7 @@ return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)  text,required TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)  image,required TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)  path,required TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)  text,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)  image,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)  path,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
 switch (_that) {
 case TextNode():
 return text(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case ImageNode():
@@ -1948,7 +1948,7 @@ return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)?  text,TResult? Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)?  image,TResult? Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)?  path,TResult? Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( NodeId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)?  text,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)?  image,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)?  path,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
 return text(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
@@ -1970,7 +1970,7 @@ class TextNode extends Node {
   const TextNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'text',super._();
   factory TextNode.fromJson(Map<String, dynamic> json) => _$TextNodeFromJson(json);
 
-@override final  NodeId id;
+@override final  ElementId id;
 @override final  String? name;
 // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
 // Candidate for removal from the persisted scene model after layer
@@ -2018,7 +2018,7 @@ abstract mixin class $TextNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $TextNodeCopyWith(TextNode value, $Res Function(TextNode) _then) = _$TextNodeCopyWithImpl;
 @override @useResult
 $Res call({
- NodeId id, String? name, bool hidden, bool locked, Transform2D xf, TextData data, String? role
+ ElementId id, String? name, bool hidden, bool locked, Transform2D xf, TextData data, String? role
 });
 
 
@@ -2038,7 +2038,7 @@ class _$TextNodeCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(TextNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as NodeId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
@@ -2076,7 +2076,7 @@ class ImageNode extends Node {
   const ImageNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'image',super._();
   factory ImageNode.fromJson(Map<String, dynamic> json) => _$ImageNodeFromJson(json);
 
-@override final  NodeId id;
+@override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
 @override@JsonKey() final  bool locked;
@@ -2121,7 +2121,7 @@ abstract mixin class $ImageNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $ImageNodeCopyWith(ImageNode value, $Res Function(ImageNode) _then) = _$ImageNodeCopyWithImpl;
 @override @useResult
 $Res call({
- NodeId id, String? name, bool hidden, bool locked, Transform2D xf, ImageData data, String? role
+ ElementId id, String? name, bool hidden, bool locked, Transform2D xf, ImageData data, String? role
 });
 
 
@@ -2141,7 +2141,7 @@ class _$ImageNodeCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(ImageNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as NodeId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
@@ -2179,7 +2179,7 @@ class PathNode extends Node {
   const PathNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'path',super._();
   factory PathNode.fromJson(Map<String, dynamic> json) => _$PathNodeFromJson(json);
 
-@override final  NodeId id;
+@override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
 @override@JsonKey() final  bool locked;
@@ -2224,7 +2224,7 @@ abstract mixin class $PathNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $PathNodeCopyWith(PathNode value, $Res Function(PathNode) _then) = _$PathNodeCopyWithImpl;
 @override @useResult
 $Res call({
- NodeId id, String? name, bool hidden, bool locked, Transform2D xf, PathData data, String? role
+ ElementId id, String? name, bool hidden, bool locked, Transform2D xf, PathData data, String? role
 });
 
 
@@ -2244,7 +2244,7 @@ class _$PathNodeCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(PathNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as NodeId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
@@ -2282,7 +2282,7 @@ class IconNode extends Node {
   const IconNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'icon',super._();
   factory IconNode.fromJson(Map<String, dynamic> json) => _$IconNodeFromJson(json);
 
-@override final  NodeId id;
+@override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
 @override@JsonKey() final  bool locked;
@@ -2327,7 +2327,7 @@ abstract mixin class $IconNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $IconNodeCopyWith(IconNode value, $Res Function(IconNode) _then) = _$IconNodeCopyWithImpl;
 @override @useResult
 $Res call({
- NodeId id, String? name, bool hidden, bool locked, Transform2D xf, CanvasIconData data, String? role
+ ElementId id, String? name, bool hidden, bool locked, Transform2D xf, CanvasIconData data, String? role
 });
 
 
@@ -2347,7 +2347,7 @@ class _$IconNodeCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(IconNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as NodeId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
@@ -2385,7 +2385,7 @@ class GroupNode extends Node {
   const GroupNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), this.behavior, final  List<Node> children = const <Node>[], final  String? $type}): _children = children,$type = $type ?? 'group',super._();
   factory GroupNode.fromJson(Map<String, dynamic> json) => _$GroupNodeFromJson(json);
 
-@override final  NodeId id;
+@override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
 @override@JsonKey() final  bool locked;
@@ -2436,7 +2436,7 @@ abstract mixin class $GroupNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $GroupNodeCopyWith(GroupNode value, $Res Function(GroupNode) _then) = _$GroupNodeCopyWithImpl;
 @override @useResult
 $Res call({
- NodeId id, String? name, bool hidden, bool locked, Transform2D xf, GroupBehaviorRef? behavior, List<Node> children
+ ElementId id, String? name, bool hidden, bool locked, Transform2D xf, GroupBehaviorRef? behavior, List<Node> children
 });
 
 
@@ -2456,7 +2456,7 @@ class _$GroupNodeCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? behavior = freezed,Object? children = null,}) {
   return _then(GroupNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as NodeId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
