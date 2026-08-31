@@ -2,6 +2,7 @@
 
 import 'package:canvas_core/src/algorithms/layout/layout_payloads.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/services/icon_resolver.dart';
@@ -17,10 +18,10 @@ final class NodeGeometry {
 
   Rect2D? leafLocalBounds(
     Node n, {
-    Map<NodeId, PathIR>? pathIRById,
-    Map<NodeId, ImagePlacement>? imagePlacementById,
-    Map<NodeId, IconTextPayload>? iconTextById,
-    Map<NodeId, PathIR>? iconPathIRById,
+    Map<ElementId, PathIR>? pathIRById,
+    Map<ElementId, ImagePlacement>? imagePlacementById,
+    Map<ElementId, ResolvedIconText>? iconTextById,
+    Map<ElementId, PathIR>? iconPathIRById,
   }) {
     final s = services;
 
@@ -47,11 +48,7 @@ final class NodeGeometry {
         final resolved = s.icons?.resolve(d.iconRef);
         switch (resolved) {
           case ResolvedIconText():
-            iconTextById?[id] = IconTextPayload(
-              glyph: resolved.glyph,
-              family: resolved.fontFamily,
-              weight: resolved.fontWeight,
-            );
+            iconTextById?[id] = resolved;
             // Return stable bounds (do NOT use measured glyph bounds for layout).
             final sz = d.sizePx;
             return Rect2D.fromLTWH(-sz / 2, -sz / 2, sz, sz);
@@ -84,10 +81,7 @@ final class NodeGeometry {
           align: d.align,
         );
 
-        imagePlacementById?[id] = ImagePlacement(
-          src: placement.src,
-          dst: placement.dst,
-        );
+        imagePlacementById?[id] = placement;
         return placement.dst;
 
       case PathNode(id: final id, data: final d):
