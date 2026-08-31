@@ -1,6 +1,7 @@
 // Path: lib/src/runtime/traversal/scene_tree_ops.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/runtime/model/node_editing.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart'
@@ -10,18 +11,18 @@ import 'package:canvas_core/src/runtime/traversal/traversal.dart'
 import 'package:canvas_core/src/runtime/traversal/rewrite.dart'
     show replaceById;
 
-typedef IdGenerator = String Function(String oldId);
+typedef IdGenerator = ElementId Function(ElementId oldId);
 
 typedef DuplicateSceneSubtreeResult = ({
   CanvasSceneDocument doc,
-  Map<NodeId, NodeId> idMap,
-  List<NodeId> createdIds,
-  NodeId? primaryId,
+  Map<ElementId, ElementId> idMap,
+  List<ElementId> createdIds,
+  ElementId? primaryId,
 });
 
 typedef DeleteSceneSubtreeResult = ({
   CanvasSceneDocument doc,
-  Set<NodeId> deletedIds,
+  Set<ElementId> deletedIds,
 });
 
 abstract final class SceneTreeOps {
@@ -32,7 +33,7 @@ abstract final class SceneTreeOps {
   static CanvasSceneDocument addNode(
     CanvasSceneDocument doc,
     Node node, {
-    NodeId? parentId,
+    ElementId? parentId,
     int? index,
   }) {
     if (parentId == null) {
@@ -54,7 +55,10 @@ abstract final class SceneTreeOps {
 
   /// Removes the subtree rooted at [id] (node + descendants).
   /// Returns [doc] unchanged if id not found.
-  static CanvasSceneDocument removeSubtree(CanvasSceneDocument doc, NodeId id) {
+  static CanvasSceneDocument removeSubtree(
+    CanvasSceneDocument doc,
+    ElementId id,
+  ) {
     final pr = findParentOf(doc, id);
     if (pr == null) return doc;
     return _removeAtParentRef(doc, pr);
@@ -63,10 +67,10 @@ abstract final class SceneTreeOps {
   /// Delete + return the full id set that was removed.
   static DeleteSceneSubtreeResult deleteSubtree(
     CanvasSceneDocument doc,
-    NodeId id,
+    ElementId id,
   ) {
     final node = findById(doc, id);
-    if (node == null) return (doc: doc, deletedIds: const <NodeId>{});
+    if (node == null) return (doc: doc, deletedIds: const <ElementId>{});
 
     final deletedIds = collectAllNodeIds(root: node);
     final nextDoc = removeSubtree(doc, id);
@@ -75,8 +79,8 @@ abstract final class SceneTreeOps {
 
   static CanvasSceneDocument moveSubtree(
     CanvasSceneDocument doc,
-    NodeId id, {
-    NodeId? newParentId,
+    ElementId id, {
+    ElementId? newParentId,
     int? toIndex,
   }) {
     final node = findById(doc, id);
@@ -120,7 +124,7 @@ abstract final class SceneTreeOps {
 
   static DuplicateSceneSubtreeResult duplicateSubtree(
     CanvasSceneDocument doc,
-    NodeId id, {
+    ElementId id, {
     Vec2 shift = const Vec2(16, 16),
     IdGenerator? idGen,
   }) {
@@ -136,8 +140,8 @@ abstract final class SceneTreeOps {
 
     final gen = idGen ?? _defaultIdGen();
 
-    final created = <NodeId>[];
-    final idMap = <NodeId, NodeId>{};
+    final created = <ElementId>[];
+    final idMap = <ElementId, ElementId>{};
 
     Node clone(Node n) {
       final newId = gen(n.id);
@@ -187,7 +191,7 @@ abstract final class SceneTreeOps {
 
   static CanvasSceneDocument replaceNodeXf(
     CanvasSceneDocument doc,
-    NodeId id,
+    ElementId id,
     Transform2D xf,
   ) {
     final node = findById(doc, id);
@@ -197,7 +201,7 @@ abstract final class SceneTreeOps {
 
   static CanvasSceneDocument translate(
     CanvasSceneDocument doc,
-    NodeId id,
+    ElementId id,
     Vec2 delta,
   ) {
     final node = findById(doc, id);
@@ -208,7 +212,7 @@ abstract final class SceneTreeOps {
 
   static CanvasSceneDocument rotate(
     CanvasSceneDocument doc,
-    NodeId id,
+    ElementId id,
     double deltaRad,
   ) {
     final node = findById(doc, id);
@@ -223,7 +227,7 @@ abstract final class SceneTreeOps {
 
   static CanvasSceneDocument uniformScale(
     CanvasSceneDocument doc,
-    NodeId id,
+    ElementId id,
     double mul,
   ) {
     final node = findById(doc, id);
@@ -246,7 +250,10 @@ abstract final class SceneTreeOps {
   /// Sibling order is paint order:
   /// - earlier siblings paint behind
   /// - later siblings paint in front
-  static CanvasSceneDocument bringToFront(CanvasSceneDocument doc, NodeId id) {
+  static CanvasSceneDocument bringToFront(
+    CanvasSceneDocument doc,
+    ElementId id,
+  ) {
     return _moveWithinCurrentParent(
       doc,
       id,
@@ -255,12 +262,15 @@ abstract final class SceneTreeOps {
   }
 
   /// Moves [id] to the back of its sibling stack.
-  static CanvasSceneDocument sendToBack(CanvasSceneDocument doc, NodeId id) {
+  static CanvasSceneDocument sendToBack(CanvasSceneDocument doc, ElementId id) {
     return _moveWithinCurrentParent(doc, id, targetIndexFor: (_, _) => 0);
   }
 
   /// Moves [id] one step toward the front within its sibling stack.
-  static CanvasSceneDocument bringForward(CanvasSceneDocument doc, NodeId id) {
+  static CanvasSceneDocument bringForward(
+    CanvasSceneDocument doc,
+    ElementId id,
+  ) {
     return _moveWithinCurrentParent(
       doc,
       id,
@@ -269,7 +279,10 @@ abstract final class SceneTreeOps {
   }
 
   /// Moves [id] one step toward the back within its sibling stack.
-  static CanvasSceneDocument sendBackward(CanvasSceneDocument doc, NodeId id) {
+  static CanvasSceneDocument sendBackward(
+    CanvasSceneDocument doc,
+    ElementId id,
+  ) {
     return _moveWithinCurrentParent(
       doc,
       id,
@@ -283,7 +296,7 @@ abstract final class SceneTreeOps {
 
   static CanvasSceneDocument _moveWithinCurrentParent(
     CanvasSceneDocument doc,
-    NodeId id, {
+    ElementId id, {
     required int Function(int currentIndex, int siblingCount) targetIndexFor,
   }) {
     final pr = findParentOf(doc, id);
@@ -338,7 +351,7 @@ abstract final class SceneTreeOps {
     return replaceById(doc, parent.id, parent.copyWith(children: children));
   }
 
-  static bool _containsId(Node root, NodeId needle) {
+  static bool _containsId(Node root, ElementId needle) {
     bool walk(Node n) {
       if (n.id == needle) return true;
       for (final c in n.childrenOrEmpty) {

@@ -148,8 +148,8 @@ List<PaintOp> buildPaintOpsFromScene(
               ops.add(
                 DrawTextOp(
                   text: iconText.glyph,
-                  family: iconText.family,
-                  weight: iconText.weight,
+                  family: iconText.fontFamily,
+                  weight: iconText.fontWeight,
                   size: d.sizePx,
                   originBaselineCenter: const Vec2(0, 0),
                   gradient: null,
@@ -164,8 +164,8 @@ List<PaintOp> buildPaintOpsFromScene(
               ops.add(
                 DrawTextOp(
                   text: iconText.glyph,
-                  family: iconText.family,
-                  weight: iconText.weight,
+                  family: iconText.fontFamily,
+                  weight: iconText.fontWeight,
                   size: d.sizePx,
                   originBaselineCenter: const Vec2(0, 0),
                   gradient: resolved,

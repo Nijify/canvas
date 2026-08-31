@@ -3,8 +3,8 @@
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
     show Rect2DX;
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 
-import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
@@ -30,14 +30,14 @@ import 'package:canvas_core/src/algorithms/snapping/snap_types.dart'
 List<SnapCandidate> sceneObjectKeylines(
   CanvasSceneDocument doc, // kept for API symmetry; not used internally
   ComputedScene computed, {
-  Set<NodeId> ignoreIds = const {},
+  Set<ElementId> ignoreIds = const {},
   bool includeLeaves = true,
   bool includeGroups = true,
 }) {
   final out = <SnapCandidate>[];
 
   // Accumulate group bounds from eligible leaves only (unlocked + not ignored).
-  final groupBounds = <NodeId, Rect2D>{};
+  final groupBounds = <ElementId, Rect2D>{};
 
   bool anyGroupIgnored(DrawItem item) {
     for (final gid in item.groupStack) {
@@ -46,7 +46,7 @@ List<SnapCandidate> sceneObjectKeylines(
     return false;
   }
 
-  bool groupIsLocked(NodeId gid) {
+  bool groupIsLocked(ElementId gid) {
     final g = computed.nodeById[gid];
     if (g == null) return false;
     return g.locked;

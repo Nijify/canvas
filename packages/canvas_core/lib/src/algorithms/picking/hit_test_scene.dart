@@ -6,6 +6,7 @@ import 'package:vector_math/vector_math_64.dart' as vm;
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 
 import 'package:canvas_core/src/path/path_hit_test.dart'
     show pathContainsClosedArea, pathHitsOutline;
@@ -42,7 +43,7 @@ Node? pickTopAtScene(
   required ComputedScene computed,
   bool includeLocked = false,
   bool selectLeaf = false,
-  Set<NodeId> ignoreIds = const {},
+  Set<ElementId> ignoreIds = const {},
   NodeHitTest? extraFilter,
   double viewportZoom = 1.0,
   double minPathHitSlopScreenPx = 6.0,
@@ -96,7 +97,7 @@ Node? pickLeafTopAtScene(
   Vec2 worldPos, {
   required ComputedScene computed,
   bool includeLocked = false,
-  Set<NodeId> ignoreIds = const {},
+  Set<ElementId> ignoreIds = const {},
   NodeHitTest? extraFilter,
   double viewportZoom = 1.0,
   double minPathHitSlopScreenPx = 6.0,
@@ -120,9 +121,9 @@ Node? pickLeafTopAtScene(
 
 Node? _choosePickedNode({
   required Node leaf,
-  required List<NodeId> groupStack,
+  required List<ElementId> groupStack,
   required ComputedScene computed,
-  required Set<NodeId> ignoreIds,
+  required Set<ElementId> ignoreIds,
   required bool includeLocked,
   required bool preferLeaf,
 }) {
@@ -150,7 +151,7 @@ Node? _choosePickedNode({
   return null;
 }
 
-bool _anyGroupIgnored(DrawItem item, Set<NodeId> ignoreIds) {
+bool _anyGroupIgnored(DrawItem item, Set<ElementId> ignoreIds) {
   for (final gid in item.groupStack) {
     if (ignoreIds.contains(gid)) return true;
   }
@@ -162,7 +163,7 @@ bool _anyGroupIgnored(DrawItem item, Set<NodeId> ignoreIds) {
 // ---------------------------------------------------------------------------
 
 bool _hitLeafAt(
-  NodeId leafId,
+  ElementId leafId,
   Node leaf,
   Vec2 worldPos,
   ComputedScene computed, {
@@ -239,7 +240,7 @@ double _visibleStrokeRadiusLocal(PathIR ir) {
 }
 
 double _localHitSlopForLeaf(
-  NodeId leafId,
+  ElementId leafId,
   ComputedScene computed, {
   required double viewportZoom,
   required double screenPx,

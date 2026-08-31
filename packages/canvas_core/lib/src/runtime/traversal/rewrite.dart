@@ -1,5 +1,6 @@
 // Path: lib/src/runtime/traversal/rewrite.dart
 
+import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
@@ -25,7 +26,7 @@ CanvasSceneDocument rewriteSceneDocument(
 /// If [id] does not exist, returns [doc] unchanged.
 CanvasSceneDocument replaceById(
   CanvasSceneDocument doc,
-  NodeId id,
+  ElementId id,
   Node updated,
 ) {
   return rewriteSceneDocument(

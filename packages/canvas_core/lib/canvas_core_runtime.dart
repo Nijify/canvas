@@ -42,7 +42,6 @@ export 'src/runtime/model/node_model.dart'
         ImageNode,
         PathNode,
         GroupNode,
-        NodeId,
         OriginKind,
         Transform2D,
         GroupBehaviorRef,
@@ -58,8 +57,7 @@ export 'src/runtime/model/node_model.dart'
 // ============================================================================
 export 'src/algorithms/layout/computed_scene.dart'
     show ComputedScene, DrawItem, computeScene;
-export 'src/algorithms/layout/layout_payloads.dart'
-    show ImagePlacement, IconTextPayload;
+export 'src/algorithms/layout/image_fit.dart' show ImagePlacement;
 export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 
 // ============================================================================

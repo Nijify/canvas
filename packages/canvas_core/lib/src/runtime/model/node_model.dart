@@ -15,8 +15,6 @@ import 'package:canvas_core/src/serialization/path_converters.dart';
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';
 
-typedef NodeId = ElementId;
-
 enum OriginKind { center, custom }
 
 @freezed
@@ -146,7 +144,7 @@ sealed class Node with _$Node {
   const Node._();
 
   const factory Node.text({
-    required NodeId id,
+    required ElementId id,
     String? name,
     // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
     // Candidate for removal from the persisted scene model after layer
@@ -159,7 +157,7 @@ sealed class Node with _$Node {
   }) = TextNode;
 
   const factory Node.image({
-    required NodeId id,
+    required ElementId id,
     String? name,
     @Default(false) bool hidden,
     @Default(false) bool locked,
@@ -169,7 +167,7 @@ sealed class Node with _$Node {
   }) = ImageNode;
 
   const factory Node.path({
-    required NodeId id,
+    required ElementId id,
     String? name,
     @Default(false) bool hidden,
     @Default(false) bool locked,
@@ -179,7 +177,7 @@ sealed class Node with _$Node {
   }) = PathNode;
 
   const factory Node.icon({
-    required NodeId id,
+    required ElementId id,
     String? name,
     @Default(false) bool hidden,
     @Default(false) bool locked,
@@ -189,7 +187,7 @@ sealed class Node with _$Node {
   }) = IconNode;
 
   const factory Node.group({
-    required NodeId id,
+    required ElementId id,
     String? name,
     @Default(false) bool hidden,
     @Default(false) bool locked,
@@ -202,7 +200,7 @@ sealed class Node with _$Node {
 }
 
 extension NodeFields on Node {
-  NodeId get id => switch (this) {
+  ElementId get id => switch (this) {
     TextNode(:final id) => id,
     ImageNode(:final id) => id,
     PathNode(:final id) => id,
