@@ -7,7 +7,7 @@ import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart'
     show CanvasSceneDocument;
 import 'package:canvas_core/src/runtime/traversal/traversal.dart'
-    show ParentRef, collectAllElementIds, findById, findParentOf;
+    show ParentRef, collectAllNodeIds, findById, findParentOf;
 import 'package:canvas_core/src/runtime/traversal/rewrite.dart'
     show replaceById;
 
@@ -72,7 +72,7 @@ abstract final class SceneTreeOps {
     final node = findById(doc, id);
     if (node == null) return (doc: doc, deletedIds: const <ElementId>{});
 
-    final deletedIds = collectAllElementIds(root: node);
+    final deletedIds = collectAllNodeIds(root: node);
     final nextDoc = removeSubtree(doc, id);
     return (doc: nextDoc, deletedIds: deletedIds);
   }
