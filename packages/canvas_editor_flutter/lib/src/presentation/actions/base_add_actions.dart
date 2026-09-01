@@ -52,13 +52,40 @@ void _addBaseShape(EditorActionContext ctx, {required PathSource source}) {
   ctx.addNodeAndSelect(_buildBasePath(source));
 }
 
+String? _configuredTextFontFamily(EditorActionContext ctx) {
+  for (final item in ctx.resources.pickerFonts) {
+    final family = item.family.trim();
+
+    if (family.isNotEmpty) {
+      return family;
+    }
+  }
+
+  for (final rawFamily in ctx.resources.fonts.fallbackFontFamilies) {
+    final family = rawFamily.trim();
+
+    if (family.isNotEmpty) {
+      return family;
+    }
+  }
+
+  return null;
+}
+
 void _addBaseText(EditorActionContext ctx) {
+  final fontFamily = _configuredTextFontFamily(ctx);
+
+  if (fontFamily == null) {
+    ctx.ui.toast('No text font is configured.');
+    return;
+  }
+
   ctx.addNodeAndSelect(
     TextNode(
       id: _genBaseAddId('text'),
       data: TextData(
         text: 'Your text',
-        fontFamily: 'Inter',
+        fontFamily: fontFamily,
         fontWeight: 700,
         fontSize: 32,
         letterSpacing: 0,
