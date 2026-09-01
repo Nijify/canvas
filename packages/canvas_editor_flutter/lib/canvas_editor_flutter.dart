@@ -20,9 +20,7 @@ export 'src/canvas_scene_editor.dart' show CanvasSceneEditor;
 export 'src/editor_host_capabilities.dart';
 export 'src/canvas_runtime_resources.dart'
     show
-        FontDef,
+        FontPickerItem,
         IconCatalogItem,
         IconCatalogPort,
-        CanvasFontAssets,
-        CanvasMediaResolver,
         CanvasRuntimeResources;

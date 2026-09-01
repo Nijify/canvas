@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFieldKey, CanvasFields;
 import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart'
-    show FontDef, IconCatalogItem;
-
+    show FontPickerItem, IconCatalogItem;
 import 'package:canvas_editor_flutter/src/presentation/inspector/controls.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 
@@ -261,7 +260,9 @@ InspectorFieldSpec<String> textContentSpec() {
   );
 }
 
-InspectorFieldSpec<String> textFontFamilySpec({required List<FontDef> fonts}) {
+InspectorFieldSpec<String> textFontFamilySpec({
+  required List<FontPickerItem> fonts,
+}) {
   String labelFor(String family) {
     for (final font in fonts) {
       if (font.family == family) return font.label;

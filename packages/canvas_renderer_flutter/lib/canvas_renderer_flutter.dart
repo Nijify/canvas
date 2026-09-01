@@ -35,10 +35,8 @@ export 'src/flutter_canvas_renderer.dart'
 // 2) Canonical final PNG rendering
 //    Mental model: scene -> resources -> preparation -> strict PNG output.
 // ============================================================================
-export 'src/canvas_png_renderer.dart'
-    show CanvasPngRenderer, CanvasPngSpec;
-export 'src/flutter_canvas_png_renderer.dart'
-    show FlutterCanvasPngRenderer;
+export 'src/canvas_png_renderer.dart' show CanvasPngRenderer, CanvasPngSpec;
+export 'src/flutter_canvas_png_renderer.dart' show FlutterCanvasPngRenderer;
 
 // ============================================================================
 // 3) Font loading

@@ -4,6 +4,8 @@ import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFillNone, CanvasFit, CanvasSceneDocument, encodeCanvasScene;
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
+    show CanvasPngSpec;
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:flutter/material.dart';
@@ -108,12 +110,11 @@ List<EditorActionSpec> pngExportActions(PngExportCapability capability) {
       isVisible: (_) => capability.canShare,
       invoke: (ctx) async {
         await _withSpinner(ctx, () async {
-          final preparedScene = ctx.renderScene;
+          final scene = ctx.controller.resolveSceneForOutput();
 
           final msg = await capability.port.sharePng(
-            editableScene: ctx.editableScene,
-            preparedScene: preparedScene,
-            spec: _pngExportSpec(preparedScene),
+            scene: scene,
+            spec: _pngExportSpec(scene),
             filename: 'canvas_export.png',
           );
 
@@ -128,14 +129,14 @@ List<EditorActionSpec> pngExportActions(PngExportCapability capability) {
       iconBuilder: (_) => Icons.download,
       isEnabled: (_) => true,
       isVisible: (_) => capability.canSave,
+
       invoke: (ctx) async {
         await _withSpinner(ctx, () async {
-          final preparedScene = ctx.renderScene;
+          final scene = ctx.controller.resolveSceneForOutput();
 
           final msg = await capability.port.savePng(
-            editableScene: ctx.editableScene,
-            preparedScene: preparedScene,
-            spec: _pngExportSpec(preparedScene),
+            scene: scene,
+            spec: _pngExportSpec(scene),
             filename: 'canvas_export.png',
           );
 
@@ -188,21 +189,22 @@ List<EditorActionSpec> sceneJsonExportActions(JsonExportCapability capability) {
   ];
 }
 
-EditorExportSpec _pngExportSpec(CanvasSceneDocument preparedScene) {
-  final art = preparedScene.artboardSize;
+CanvasPngSpec _pngExportSpec(CanvasSceneDocument scene) {
+  final art = scene.artboardSize;
 
   const maxSide = 2048.0;
   final scale = maxSide / (art.w > art.h ? art.w : art.h);
-  final w = (art.w * scale).round();
-  final h = (art.h * scale).round();
 
-  return EditorExportSpec(
-    widthPx: w,
-    heightPx: h,
+  final widthPx = (art.w * scale).round();
+  final heightPx = (art.h * scale).round();
+
+  return CanvasPngSpec(
+    widthPx: widthPx,
+    heightPx: heightPx,
     bleedPx: 0,
     transparent:
-        preparedScene.backgroundFill is CanvasFillNone ||
-        !(preparedScene.backgroundOpacity > 0),
+        scene.backgroundFill is CanvasFillNone ||
+        !(scene.backgroundOpacity > 0),
     fit: CanvasFit.contain,
     pixelRatio: 2.0,
   );

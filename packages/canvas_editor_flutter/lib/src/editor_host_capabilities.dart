@@ -1,63 +1,30 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_host_capabilities.dart
+// Path: lib/src/editor_host_capabilities.dart
 //
 // Common host ports for the generic editor surface.
-// Host apps provide concrete implementations for persistence, media, and output.
+// Host apps provide concrete implementations for persistence and output.
 
-import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFit, CanvasSceneDocument;
-
-/// Export configuration for editor host ports.
-class EditorExportSpec {
-  const EditorExportSpec({
-    required this.widthPx,
-    required this.heightPx,
-    this.bleedPx = 0,
-    this.pixelRatio = 2.0,
-    this.transparent = true,
-    this.fit = CanvasFit.contain,
-
-    // Optional export mode that trims empty artboard area around rendered content.
-    this.cropToContent = false,
-    this.contentPaddingPx = 0,
-    this.tight = false,
-  });
-
-  final int widthPx;
-  final int heightPx;
-  final int bleedPx;
-  final double pixelRatio;
-  final bool transparent;
-  final CanvasFit fit;
-
-  final bool cropToContent;
-  final double contentPaddingPx;
-  final bool tight;
-}
+import 'package:canvas_core/canvas_core_runtime.dart' show CanvasSceneDocument;
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
+    show CanvasPngSpec;
 
 /// Host-owned final PNG operation.
 ///
-/// The editor supplies both the canonical editable scene and the prepared scene
-/// currently used for visual rendering.
+/// The editor supplies one adapter-resolved canonical scene. It has not been
+/// passed through a ScenePreparer.
 ///
-/// Implementations own the complete final PNG operation, including any host
-/// policy checks, runtime resource preparation, rendering, and platform output
-/// required to complete it.
-///
-/// Hosts should use [editableScene] for document-level policy or semantics and
-/// [preparedScene] for PNG rendering.
+/// Implementations own any host-specific output validation and delegate final
+/// rendering to an authoritative PNG renderer.
 abstract interface class PngExportPort {
   Future<String> sharePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
     String? text,
   });
 
   Future<String> savePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
   });
 }

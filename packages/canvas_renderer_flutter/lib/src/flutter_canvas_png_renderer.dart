@@ -40,18 +40,11 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
     required CanvasSceneDocument scene,
     required CanvasPngSpec spec,
   }) async {
-    _validateScene(
-      scene,
-      stage: 'canonical',
-    );
+    _validateScene(scene, stage: 'canonical');
 
     final canonicalIconRefs = _collectIconRefs(scene);
 
-    _ensureIconsResolvable(
-      canonicalIconRefs,
-      _icons,
-      stage: 'canonical',
-    );
+    _ensureIconsResolvable(canonicalIconRefs, _icons, stage: 'canonical');
 
     final canonicalFontFamilies = collectSceneFontFamilies(
       scene,
@@ -69,9 +62,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       fallbackFontFamilies: _fonts.fallbackFontFamilies,
     );
 
-    final imagePool = FlutterImagePool(
-      resolver: _images,
-    );
+    final imagePool = FlutterImagePool(resolver: _images);
 
     try {
       final renderPipeline = CanvasRenderPipeline(
@@ -82,38 +73,20 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
 
       // Canonical metadata is required before preparation because preparation
       // may synchronously inspect image geometry through CoreServices.
-      await imagePool.resolveSceneIntrinsics(
-        scene,
-        includeHidden: true,
-      );
+      await imagePool.resolveSceneIntrinsics(scene, includeHidden: true);
 
-      _ensureRequiredIntrinsics(
-        scene,
-        imagePool,
-        stage: 'canonical',
-      );
+      _ensureRequiredIntrinsics(scene, imagePool, stage: 'canonical');
 
       // Final output owns preparation. A supplied preparer is invoked exactly
       // once and failures propagate to the caller.
       final prepared =
-          _scenePreparer?.call(
-            scene,
-            renderPipeline.services,
-          ) ??
-          scene;
+          _scenePreparer?.call(scene, renderPipeline.services) ?? scene;
 
-      _validateScene(
-        prepared,
-        stage: 'prepared',
-      );
+      _validateScene(prepared, stage: 'prepared');
 
       final preparedIconRefs = _collectIconRefs(prepared);
 
-      _ensureIconsResolvable(
-        preparedIconRefs,
-        _icons,
-        stage: 'prepared',
-      );
+      _ensureIconsResolvable(preparedIconRefs, _icons, stage: 'prepared');
 
       final preparedFontFamilies = collectSceneFontFamilies(
         prepared,
@@ -147,16 +120,9 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // create a new ElementId that legally reuses an already-approved logical
       // image sourceRef. Intrinsic metadata must therefore be published for the
       // prepared element IDs after resource conformance has been established.
-      await imagePool.resolveSceneIntrinsics(
-        prepared,
-        includeHidden: true,
-      );
+      await imagePool.resolveSceneIntrinsics(prepared, includeHidden: true);
 
-      _ensureRequiredIntrinsics(
-        prepared,
-        imagePool,
-        stage: 'prepared',
-      );
+      _ensureRequiredIntrinsics(prepared, imagePool, stage: 'prepared');
 
       // Raster decoding is required only for nodes that can actually paint in
       // the final prepared scene.
@@ -167,19 +133,14 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
         includeHidden: false,
       );
 
-      _ensureVisibleImagesDecoded(
-        prepared,
-        imagePool,
-      );
+      _ensureVisibleImagesDecoded(prepared, imagePool);
 
       final built = renderPipeline.build(
         prepared,
         contentBounds: spec.cropToContent
             ? ContentBoundsSpec(
                 paddingPx: spec.contentPaddingPx,
-                policy:
-                    spec.contentBoundsPolicy ??
-                    const ContentBoundsPolicy(),
+                policy: spec.contentBoundsPolicy ?? const ContentBoundsPolicy(),
               )
             : null,
       );
@@ -197,10 +158,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
   }
 }
 
-void _validateScene(
-  CanvasSceneDocument scene, {
-  required String stage,
-}) {
+void _validateScene(CanvasSceneDocument scene, {required String stage}) {
   final issues = validateCanvasSceneDocument(scene);
 
   if (issues.isEmpty) {
@@ -208,20 +166,13 @@ void _validateScene(
   }
 
   final details = issues
-      .map(
-        (issue) =>
-            '${issue.code.name} at ${issue.path}: ${issue.message}',
-      )
+      .map((issue) => '${issue.code.name} at ${issue.path}: ${issue.message}')
       .join('\n');
 
-  throw StateError(
-    'Invalid $stage canvas scene:\n$details',
-  );
+  throw StateError('Invalid $stage canvas scene:\n$details');
 }
 
-Set<String> _collectIconRefs(
-  CanvasSceneDocument scene,
-) {
+Set<String> _collectIconRefs(CanvasSceneDocument scene) {
   final refs = <String>{};
 
   visitSceneNodes(
@@ -237,9 +188,7 @@ Set<String> _collectIconRefs(
   return Set<String>.unmodifiable(refs);
 }
 
-Set<String> _collectImageSourceRefs(
-  CanvasSceneDocument scene,
-) {
+Set<String> _collectImageSourceRefs(CanvasSceneDocument scene) {
   final refs = <String>{};
 
   visitSceneNodes(
@@ -294,9 +243,7 @@ void _ensureIconsResolvable(
 
   for (final iconRef in ordered) {
     if (iconRef.trim().isEmpty) {
-      throw StateError(
-        'The $stage scene contains a blank icon reference.',
-      );
+      throw StateError('The $stage scene contains a blank icon reference.');
     }
 
     final resolved = icons.resolve(iconRef);
@@ -307,8 +254,7 @@ void _ensureIconsResolvable(
       );
     }
 
-    if (resolved is ResolvedIconText &&
-        resolved.fontFamily.trim().isEmpty) {
+    if (resolved is ResolvedIconText && resolved.fontFamily.trim().isEmpty) {
       throw StateError(
         'Icon reference "$iconRef" resolved to a blank font family.',
       );
@@ -434,37 +380,23 @@ Future<Uint8List> _encodePng({
     ),
   );
 
-  canvas.scale(
-    pixelRatio,
-    pixelRatio,
-  );
+  canvas.scale(pixelRatio, pixelRatio);
 
   // Preserve the previous exporter behavior: transparent output has no backing
   // fill; opaque output receives a white backing surface before scene paint
   // operations are replayed.
   if (!spec.transparent) {
     canvas.drawRect(
-      ui.Rect.fromLTWH(
-        0,
-        0,
-        viewport.recordingW,
-        viewport.recordingH,
-      ),
+      ui.Rect.fromLTWH(0, 0, viewport.recordingW, viewport.recordingH),
       ui.Paint()..color = const ui.Color(0xFFFFFFFF),
     );
   }
 
   canvas.save();
 
-  canvas.translate(
-    viewport.translateX,
-    viewport.translateY,
-  );
+  canvas.translate(viewport.translateX, viewport.translateY);
 
-  canvas.scale(
-    viewport.scaleX,
-    viewport.scaleY,
-  );
+  canvas.scale(viewport.scaleX, viewport.scaleY);
 
   CanvasRenderer(
     images: imagePool.images,
@@ -477,10 +409,7 @@ Future<Uint8List> _encodePng({
     options: const CanvasRendererOptions(
       missingImageBehavior: MissingImageBehavior.skip,
     ),
-  ).replay(
-    canvas,
-    built.ops,
-  );
+  ).replay(canvas, built.ops);
 
   canvas.restore();
 
@@ -498,18 +427,13 @@ Future<Uint8List> _encodePng({
   }
 
   try {
-    final data = await image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
 
     if (data == null) {
       throw StateError('PNG encoding failed.');
     }
 
-    return data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   } finally {
     image.dispose();
   }

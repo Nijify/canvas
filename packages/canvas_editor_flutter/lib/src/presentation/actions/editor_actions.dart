@@ -123,8 +123,10 @@ class EditorActionContext {
   /// Selection capability used by action helpers such as add-and-select.
   final EditorSelectionHost selection;
 
-  /// Prepared/effective scene used by visual-output paths:
-  /// canvas paint, hit testing, snapping, and PNG export.
+  /// Prepared/effective scene used by interactive visual paths.
+  ///
+  /// Authoritative final PNG output must use
+  /// [EditorController.resolveSceneForOutput] instead.
   CanvasSceneDocument get renderScene => controller.render.value.scene;
 
   /// Canonical editable/base scene used by persistence, scene JSON export,
