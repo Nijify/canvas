@@ -10,17 +10,6 @@ import 'package:flutter/foundation.dart'
     show ValueListenable, ValueNotifier, debugPrint, kDebugMode;
 import 'package:flutter/widgets.dart' show ImageProvider, ResizeImage;
 
-typedef AssetUrlResolver = Future<String?> Function(String sourceRef);
-
-typedef AssetUrlsResolver =
-    Future<Map<String, String>> Function(List<String> sourceRefs);
-
-/// Resolves stable, layout-affecting intrinsic metadata without decoding.
-typedef AssetMetaResolver = Future<Size2D?> Function(String sourceRef);
-
-typedef AssetMetasResolver =
-    Future<Map<String, Size2D>> Function(List<String> sourceRefs);
-
 /// Decodes an [ImageProvider] into an independently owned image handle.
 ///
 /// A non-null image returned by this function transfers ownership of that
@@ -52,19 +41,10 @@ class _DecodeDims {
 /// One pool must not be shared between unrelated documents because its state is
 /// keyed by document-local [ElementId] values.
 class FlutterImagePool implements ImageIntrinsics {
-  FlutterImagePool({
-    this.assetUrlResolver,
-    this.assetUrlsResolver,
-    this.assetMetaResolver,
-    this.assetMetasResolver,
-    FlutterImageDecoder decoder = toUiImage,
-  }) : _decoder = decoder;
+  FlutterImagePool({this.resolver, FlutterImageDecoder decoder = toUiImage})
+    : _decoder = decoder;
 
-  final AssetUrlResolver? assetUrlResolver;
-  final AssetUrlsResolver? assetUrlsResolver;
-
-  final AssetMetaResolver? assetMetaResolver;
-  final AssetMetasResolver? assetMetasResolver;
+  final CanvasImageAssetResolver? resolver;
 
   final FlutterImageDecoder _decoder;
 
@@ -94,8 +74,8 @@ class FlutterImagePool implements ImageIntrinsics {
   /// Intrinsic metadata changes use [onIntrinsicUpdated] instead.
   ValueListenable<int> get revision => _revision;
 
-  // Cache: opaque source ref -> resolved renderable source.
-  final Map<String, String> _urlCache = <String, String>{};
+  // Cache: opaque source ref -> source reference renderable by this Flutter host.
+  final Map<String, String> _sourceCache = <String, String>{};
 
   // Cache: opaque source ref -> stable intrinsic size.
   final Map<String, Size2D> _metaCache = <String, Size2D>{};
@@ -109,8 +89,7 @@ class FlutterImagePool implements ImageIntrinsics {
 
   bool _disposed = false;
 
-  bool get _hasUrlResolver =>
-      assetUrlResolver != null || assetUrlsResolver != null;
+  bool get _hasResolver => resolver != null;
 
   bool _isCurrentIntrinsicsRequest(int generation) {
     return !_disposed && generation == _intrinsicsGeneration;
@@ -123,7 +102,10 @@ class FlutterImagePool implements ImageIntrinsics {
   @override
   Size2D? intrinsicSize(ElementId id) => _intrinsicById[id];
 
-  @override
+  /// Reports layout-affecting intrinsic metadata changes.
+  ///
+  /// This is a Flutter runtime lifecycle signal and is intentionally separate
+  /// from the synchronous core [ImageIntrinsics] contract.
   Stream<ElementId> get onIntrinsicUpdated =>
       _intrinsicUpdatedController.stream;
 
@@ -230,61 +212,49 @@ class FlutterImagePool implements ImageIntrinsics {
     return _DecodeDims(width, height);
   }
 
-  Future<void> _primeUrlCache(Set<String> sourceRefs) async {
-    if (_disposed || sourceRefs.isEmpty || !_hasUrlResolver) {
+  Future<void> _primeSourceCache(Set<String> sourceRefs) async {
+    final imageResolver = resolver;
+
+    if (_disposed || sourceRefs.isEmpty || imageResolver == null) {
       return;
     }
 
     final missing = <String>[
       for (final ref in sourceRefs)
-        if (!_urlCache.containsKey(ref)) ref,
+        if (!_sourceCache.containsKey(ref)) ref,
     ];
 
     if (missing.isEmpty) return;
 
-    if (assetUrlsResolver != null) {
-      final resolvedByRef = await assetUrlsResolver!(missing);
+    try {
+      final resolvedByRef = await imageResolver.resolveSources(missing);
+
       if (_disposed) return;
 
       for (final ref in missing) {
         final resolved = resolvedByRef[ref]?.trim();
 
         if (resolved != null && resolved.isNotEmpty) {
-          _urlCache[ref] = resolved;
+          _sourceCache[ref] = resolved;
         } else {
-          _urlCache.remove(ref);
+          _sourceCache.remove(ref);
         }
       }
+    } catch (error, stackTrace) {
+      if (_disposed) return;
 
-      return;
+      for (final ref in missing) {
+        _sourceCache.remove(ref);
+      }
+
+      _dlog('POOL_SOURCE', 'resolver exception=$error\n$stackTrace');
     }
-
-    final resolver = assetUrlResolver;
-    if (resolver == null) return;
-
-    await Future.wait(
-      missing.map((ref) async {
-        try {
-          final resolved = (await resolver(ref))?.trim();
-          if (_disposed) return;
-
-          if (resolved != null && resolved.isNotEmpty) {
-            _urlCache[ref] = resolved;
-          } else {
-            _urlCache.remove(ref);
-          }
-        } catch (_) {
-          if (_disposed) return;
-          _urlCache.remove(ref);
-        }
-      }),
-    );
   }
 
   Future<void> _primeMetaCache(Set<String> sourceRefs) async {
-    if (_disposed ||
-        sourceRefs.isEmpty ||
-        (assetMetaResolver == null && assetMetasResolver == null)) {
+    final imageResolver = resolver;
+
+    if (_disposed || sourceRefs.isEmpty || imageResolver == null) {
       return;
     }
 
@@ -295,65 +265,47 @@ class FlutterImagePool implements ImageIntrinsics {
 
     if (missing.isEmpty) return;
 
-    if (assetMetasResolver != null) {
-      try {
-        final resolvedByRef = await assetMetasResolver!(missing);
-        if (_disposed) return;
+    try {
+      final resolvedByRef = await imageResolver.resolveIntrinsicSizes(missing);
 
-        for (final ref in missing) {
-          final size = resolvedByRef[ref];
+      if (_disposed) return;
 
-          if (size == null) {
-            _metaCache.remove(ref);
-          } else {
-            _metaCache[ref] = size;
-          }
-        }
+      for (final ref in missing) {
+        final size = _usableIntrinsicSize(resolvedByRef[ref]);
 
-        return;
-      } catch (error, stackTrace) {
-        if (_disposed) return;
-
-        _dlog('POOL_META', 'bulk resolver exception=$error\n$stackTrace');
-      }
-    }
-
-    final resolver = assetMetaResolver;
-    if (resolver == null) return;
-
-    await Future.wait(
-      missing.map((ref) async {
-        try {
-          final size = await resolver(ref);
-          if (_disposed) return;
-
-          if (size == null) {
-            _metaCache.remove(ref);
-          } else {
-            _metaCache[ref] = size;
-          }
-        } catch (_) {
-          if (_disposed) return;
+        if (size != null) {
+          _metaCache[ref] = size;
+        } else {
           _metaCache.remove(ref);
         }
-      }),
-    );
+      }
+    } catch (error, stackTrace) {
+      if (_disposed) return;
+
+      for (final ref in missing) {
+        _metaCache.remove(ref);
+      }
+
+      _dlog('POOL_META', 'resolver exception=$error\n$stackTrace');
+    }
   }
 
   String? _normalizedSourceSync(String raw) {
     final sourceRef = _sourceKeyFromRaw(raw);
     if (sourceRef == null) return null;
 
-    final resolved = _urlCache[sourceRef]?.trim();
+    final resolved = _sourceCache[sourceRef]?.trim();
 
     if (resolved != null && resolved.isNotEmpty) {
       return resolved;
     }
 
-    // When a host resolver exists, unresolved opaque refs must not be guessed.
-    if (_hasUrlResolver) return null;
+    // An installed host resolver is authoritative. If it did not resolve this
+    // logical source reference, do not guess that the persisted value itself is
+    // renderable.
+    if (_hasResolver) return null;
 
-    // Direct renderable-ref fallback for standalone renderer usage.
+    // Standalone renderer usage may store an already-renderable sourceRef.
     return sourceRef;
   }
 
@@ -519,7 +471,7 @@ class FlutterImagePool implements ImageIntrinsics {
 
     final sourceRefs = sourceByElement.values.whereType<String>().toSet();
 
-    await _primeUrlCache(sourceRefs);
+    await _primeSourceCache(sourceRefs);
 
     if (!_isCurrentPreloadRequest(generation)) {
       return;
@@ -639,7 +591,7 @@ class FlutterImagePool implements ImageIntrinsics {
     _intrinsicSourceById.clear();
     _rasterSourceById.clear();
     _loadedKey.clear();
-    _urlCache.clear();
+    _sourceCache.clear();
     _metaCache.clear();
 
     _intrinsicUpdatedController.close();

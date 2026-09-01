@@ -270,11 +270,4 @@ class _StableMapIntrinsics implements ImageIntrinsics {
 
   @override
   Size2D? intrinsicSize(ElementId id) => _sizes[id];
-
-  @override
-  Stream<ElementId> get onIntrinsicUpdated => _emptyStream;
 }
-
-// A single reusable empty broadcast stream.
-final Stream<ElementId> _emptyStream = Stream<ElementId>.empty()
-    .asBroadcastStream();

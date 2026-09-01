@@ -32,6 +32,13 @@ export 'src/canvas_document_exporter.dart'
     show CanvasDocumentExporter, CanvasExportSpec;
 
 // ============================================================================
+// 2) Font loading
+//    Mental model: make logical canvas font families available to Flutter.
+// ============================================================================
+export 'src/fonts/flutter_font_loader.dart'
+    show BundledCanvasFont, BundledFlutterFontLoader, FlutterFontLoader;
+
+// ============================================================================
 // 2) Text pipeline (measurement + painting)
 //    Mental model: one host-provided text engine for core and Flutter rendering.
 // ============================================================================
@@ -44,13 +51,7 @@ export 'src/flutter_text_pipeline.dart'
 //    repaint notifications, and resource disposal.
 // ============================================================================
 export 'src/images/flutter_image_pool.dart'
-    show
-        AssetMetaResolver,
-        AssetMetasResolver,
-        AssetUrlResolver,
-        AssetUrlsResolver,
-        FlutterImageDecoder,
-        FlutterImagePool;
+    show FlutterImageDecoder, FlutterImagePool;
 
 // ============================================================================
 // 4) Gradients (adapter)
