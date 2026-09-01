@@ -36,14 +36,12 @@ final class NodeGeometry {
         return Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
 
       case IconNode(id: final id, data: final d):
-        // IMPORTANT:
-        // For layout stability (esp. LogoLayoutPolicy), icon bounds must be
-        // deterministic across different icon implementations (font glyph vs svg/path).
+        // Icon bounds must remain deterministic across different icon
+        // implementations such as font glyphs and vector paths.
         //
-        // Glyph metrics and path bounds vary per icon, which shifts `r.left/r.top`,
-        // causing layout jitter and pill-shape drift. We still resolve the icon so
-        // renderer can draw it (and caches can be filled), but we return a stable
-        // centered square based on sizePx for layout/picking bounds.
+        // Glyph metrics and path bounds vary per icon, which would otherwise shift
+        // layout and picking geometry. We still resolve the icon for rendering and
+        // caching, but layout uses a stable centered square based on sizePx.
         final resolved = s.icons?.resolve(d.iconRef);
         switch (resolved) {
           case ResolvedIconText():

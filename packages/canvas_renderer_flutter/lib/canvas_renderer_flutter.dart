@@ -36,7 +36,7 @@ export 'src/canvas_document_exporter.dart'
 //    Mental model: make logical canvas font families available to Flutter.
 // ============================================================================
 export 'src/fonts/flutter_font_loader.dart'
-    show BundledCanvasFont, BundledFlutterFontLoader, FlutterFontLoader;
+    show BundledFlutterFont, BundledFlutterFontLoader, FlutterFontLoader;
 
 // ============================================================================
 // 2) Text pipeline (measurement + painting)

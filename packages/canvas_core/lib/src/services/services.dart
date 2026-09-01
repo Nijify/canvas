@@ -24,18 +24,25 @@ abstract interface class ImageIntrinsics {
   Size2D? intrinsicSize(ElementId id);
 }
 
-/// Resolves durable canvas image source references for the current host.
+/// Resolves logical canvas image source references for the current host.
 ///
-/// Canvas documents store opaque logical `sourceRef` values. Implementations
-/// translate those values into source references that the current rendering
-/// host can load.
+/// Each input is an opaque logical `sourceRef` stored by the canvas document.
 ///
-/// A resolved source is not necessarily a URL. Depending on the host it may be
-/// an `https:`, `data:`, `blob:`, `asset:`, `file:`, or another renderable
+/// Result maps are keyed by the exact `sourceRef` values supplied to the
+/// corresponding method. Returned maps may be partial; a missing key means
+/// that source or intrinsic metadata could not be resolved.
+///
+/// [resolveSources] returns source references that the current rendering host
+/// can load. These outputs are runtime values, not persistent resource
+/// identities. They may be temporary or rotating values such as signed URLs or
+/// blob URLs.
+///
+/// A renderable source is not necessarily a URL. Depending on the host it may
+/// be an `https:`, `data:`, `blob:`, `asset:`, `file:`, or another supported
 /// source reference.
 ///
-/// Returned maps may be partial. A missing entry means the source or metadata
-/// could not be resolved.
+/// [resolveIntrinsicSizes] returns stable layout-affecting metadata associated
+/// with the logical image content.
 abstract interface class CanvasImageAssetResolver {
   Future<Map<String, String>> resolveSources(List<String> sourceRefs);
 

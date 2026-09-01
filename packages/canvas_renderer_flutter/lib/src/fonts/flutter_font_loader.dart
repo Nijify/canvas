@@ -2,19 +2,14 @@
 
 import 'package:flutter/services.dart' show AssetBundle, FontLoader, rootBundle;
 
-/// One font family bundled with a Flutter application.
+/// One Flutter font family backed by bundled application assets.
 ///
-/// [label] is presentation metadata that editor/font-picker consumers may use.
-/// Rendering only depends on [family] and [assetPaths].
-final class BundledCanvasFont {
-  const BundledCanvasFont({
-    required this.family,
-    required this.label,
-    required this.assetPaths,
-  });
+/// This type contains only renderer/runtime configuration. Presentation
+/// metadata such as font-picker labels belongs to the editor or host layer.
+final class BundledFlutterFont {
+  const BundledFlutterFont({required this.family, required this.assetPaths});
 
   final String family;
-  final String label;
   final List<String> assetPaths;
 }
 
@@ -42,7 +37,7 @@ abstract interface class FlutterFontLoader {
 /// retried by a later call.
 final class BundledFlutterFontLoader implements FlutterFontLoader {
   BundledFlutterFontLoader({
-    required Iterable<BundledCanvasFont> fonts,
+    required Iterable<BundledFlutterFont> fonts,
     Iterable<String> fallbackFontFamilies = const <String>[],
     AssetBundle? assetBundle,
   }) : _assetBundle = assetBundle ?? rootBundle,
@@ -143,7 +138,7 @@ List<String> _normalizeFamilies(Iterable<String> families) {
 }
 
 Map<String, List<String>> _buildAssetPathsByFamily(
-  Iterable<BundledCanvasFont> fonts,
+  Iterable<BundledFlutterFont> fonts,
 ) {
   final result = <String, List<String>>{};
 
