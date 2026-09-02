@@ -1,22 +1,22 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
+    show CanvasPngSpec;
 import 'package:flutter_test/flutter_test.dart';
 
 final class _FakePngExportPort implements PngExportPort {
   @override
   Future<String> sharePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
     String? text,
   }) async => 'shared';
 
   @override
   Future<String> savePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
   }) async => 'saved';
 }

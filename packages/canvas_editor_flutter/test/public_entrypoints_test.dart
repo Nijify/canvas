@@ -2,8 +2,7 @@
 
 import 'dart:io';
 
-import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFit, CanvasSceneDocument;
+import 'package:canvas_core/canvas_core_runtime.dart' show CanvasSceneDocument;
 import 'package:canvas_editor_flutter/asset_library.dart' as assets;
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart' as turnkey;
 import 'package:canvas_editor_flutter/extensions.dart' as composable;
@@ -17,27 +16,16 @@ void main() {
       final supportedTypes = <Type>[
         turnkey.CanvasSceneEditor,
         turnkey.CanvasRuntimeResources,
-        turnkey.CanvasFontAssets,
-        turnkey.CanvasMediaResolver,
+        turnkey.FontPickerItem,
+        turnkey.IconCatalogItem,
         turnkey.IconCatalogPort,
         turnkey.PngExportCapability,
         turnkey.PngExportPort,
         turnkey.JsonExportCapability,
         turnkey.JsonOutputPort,
-        turnkey.EditorExportSpec,
       ];
 
-      expect(supportedTypes, hasLength(10));
-    });
-
-    test('export specification uses the shared CanvasFit type', () {
-      const spec = turnkey.EditorExportSpec(
-        widthPx: 1080,
-        heightPx: 1080,
-        fit: CanvasFit.cover,
-      );
-
-      expect(spec.fit, CanvasFit.cover);
+      expect(supportedTypes, hasLength(9));
     });
 
     test('turnkey entrypoint exports only turnkey modules', () {

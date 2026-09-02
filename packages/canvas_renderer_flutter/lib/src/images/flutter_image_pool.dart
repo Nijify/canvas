@@ -10,17 +10,6 @@ import 'package:flutter/foundation.dart'
     show ValueListenable, ValueNotifier, debugPrint, kDebugMode;
 import 'package:flutter/widgets.dart' show ImageProvider, ResizeImage;
 
-typedef AssetUrlResolver = Future<String?> Function(String sourceRef);
-
-typedef AssetUrlsResolver =
-    Future<Map<String, String>> Function(List<String> sourceRefs);
-
-/// Resolves stable, layout-affecting intrinsic metadata without decoding.
-typedef AssetMetaResolver = Future<Size2D?> Function(String sourceRef);
-
-typedef AssetMetasResolver =
-    Future<Map<String, Size2D>> Function(List<String> sourceRefs);
-
 /// Decodes an [ImageProvider] into an independently owned image handle.
 ///
 /// A non-null image returned by this function transfers ownership of that
@@ -52,19 +41,10 @@ class _DecodeDims {
 /// One pool must not be shared between unrelated documents because its state is
 /// keyed by document-local [ElementId] values.
 class FlutterImagePool implements ImageIntrinsics {
-  FlutterImagePool({
-    this.assetUrlResolver,
-    this.assetUrlsResolver,
-    this.assetMetaResolver,
-    this.assetMetasResolver,
-    FlutterImageDecoder decoder = toUiImage,
-  }) : _decoder = decoder;
+  FlutterImagePool({this.resolver, FlutterImageDecoder decoder = toUiImage})
+    : _decoder = decoder;
 
-  final AssetUrlResolver? assetUrlResolver;
-  final AssetUrlsResolver? assetUrlsResolver;
-
-  final AssetMetaResolver? assetMetaResolver;
-  final AssetMetasResolver? assetMetasResolver;
+  final CanvasImageAssetResolver? resolver;
 
   final FlutterImageDecoder _decoder;
 
@@ -94,9 +74,6 @@ class FlutterImagePool implements ImageIntrinsics {
   /// Intrinsic metadata changes use [onIntrinsicUpdated] instead.
   ValueListenable<int> get revision => _revision;
 
-  // Cache: opaque source ref -> resolved renderable source.
-  final Map<String, String> _urlCache = <String, String>{};
-
   // Cache: opaque source ref -> stable intrinsic size.
   final Map<String, Size2D> _metaCache = <String, Size2D>{};
 
@@ -109,9 +86,6 @@ class FlutterImagePool implements ImageIntrinsics {
 
   bool _disposed = false;
 
-  bool get _hasUrlResolver =>
-      assetUrlResolver != null || assetUrlsResolver != null;
-
   bool _isCurrentIntrinsicsRequest(int generation) {
     return !_disposed && generation == _intrinsicsGeneration;
   }
@@ -123,7 +97,10 @@ class FlutterImagePool implements ImageIntrinsics {
   @override
   Size2D? intrinsicSize(ElementId id) => _intrinsicById[id];
 
-  @override
+  /// Reports layout-affecting intrinsic metadata changes.
+  ///
+  /// This is a Flutter runtime lifecycle signal and is intentionally separate
+  /// from the synchronous core [ImageIntrinsics] contract.
   Stream<ElementId> get onIntrinsicUpdated =>
       _intrinsicUpdatedController.stream;
 
@@ -230,61 +207,56 @@ class FlutterImagePool implements ImageIntrinsics {
     return _DecodeDims(width, height);
   }
 
-  Future<void> _primeUrlCache(Set<String> sourceRefs) async {
-    if (_disposed || sourceRefs.isEmpty || !_hasUrlResolver) {
-      return;
+  Future<Map<String, String>> _resolveRenderableSources(
+    Set<String> sourceRefs,
+  ) async {
+    if (_disposed || sourceRefs.isEmpty) {
+      return const <String, String>{};
     }
 
-    final missing = <String>[
-      for (final ref in sourceRefs)
-        if (!_urlCache.containsKey(ref)) ref,
-    ];
+    final imageResolver = resolver;
 
-    if (missing.isEmpty) return;
+    // Without a host resolver, logical source refs are assumed to already be
+    // renderable by this Flutter host.
+    if (imageResolver == null) {
+      return Map<String, String>.unmodifiable(<String, String>{
+        for (final sourceRef in sourceRefs) sourceRef: sourceRef,
+      });
+    }
 
-    if (assetUrlsResolver != null) {
-      final resolvedByRef = await assetUrlsResolver!(missing);
-      if (_disposed) return;
+    try {
+      final resolvedByRef = await imageResolver.resolveSources(
+        sourceRefs.toList(growable: false),
+      );
 
-      for (final ref in missing) {
-        final resolved = resolvedByRef[ref]?.trim();
+      if (_disposed) {
+        return const <String, String>{};
+      }
+
+      final result = <String, String>{};
+
+      for (final sourceRef in sourceRefs) {
+        final resolved = resolvedByRef[sourceRef]?.trim();
 
         if (resolved != null && resolved.isNotEmpty) {
-          _urlCache[ref] = resolved;
-        } else {
-          _urlCache.remove(ref);
+          result[sourceRef] = resolved;
         }
       }
 
-      return;
+      return Map<String, String>.unmodifiable(result);
+    } catch (error, stackTrace) {
+      if (!_disposed) {
+        _dlog('POOL_SOURCE', 'resolver exception=$error\n$stackTrace');
+      }
+
+      return const <String, String>{};
     }
-
-    final resolver = assetUrlResolver;
-    if (resolver == null) return;
-
-    await Future.wait(
-      missing.map((ref) async {
-        try {
-          final resolved = (await resolver(ref))?.trim();
-          if (_disposed) return;
-
-          if (resolved != null && resolved.isNotEmpty) {
-            _urlCache[ref] = resolved;
-          } else {
-            _urlCache.remove(ref);
-          }
-        } catch (_) {
-          if (_disposed) return;
-          _urlCache.remove(ref);
-        }
-      }),
-    );
   }
 
   Future<void> _primeMetaCache(Set<String> sourceRefs) async {
-    if (_disposed ||
-        sourceRefs.isEmpty ||
-        (assetMetaResolver == null && assetMetasResolver == null)) {
+    final imageResolver = resolver;
+
+    if (_disposed || sourceRefs.isEmpty || imageResolver == null) {
       return;
     }
 
@@ -295,66 +267,29 @@ class FlutterImagePool implements ImageIntrinsics {
 
     if (missing.isEmpty) return;
 
-    if (assetMetasResolver != null) {
-      try {
-        final resolvedByRef = await assetMetasResolver!(missing);
-        if (_disposed) return;
+    try {
+      final resolvedByRef = await imageResolver.resolveIntrinsicSizes(missing);
 
-        for (final ref in missing) {
-          final size = resolvedByRef[ref];
+      if (_disposed) return;
 
-          if (size == null) {
-            _metaCache.remove(ref);
-          } else {
-            _metaCache[ref] = size;
-          }
-        }
+      for (final ref in missing) {
+        final size = _usableIntrinsicSize(resolvedByRef[ref]);
 
-        return;
-      } catch (error, stackTrace) {
-        if (_disposed) return;
-
-        _dlog('POOL_META', 'bulk resolver exception=$error\n$stackTrace');
-      }
-    }
-
-    final resolver = assetMetaResolver;
-    if (resolver == null) return;
-
-    await Future.wait(
-      missing.map((ref) async {
-        try {
-          final size = await resolver(ref);
-          if (_disposed) return;
-
-          if (size == null) {
-            _metaCache.remove(ref);
-          } else {
-            _metaCache[ref] = size;
-          }
-        } catch (_) {
-          if (_disposed) return;
+        if (size != null) {
+          _metaCache[ref] = size;
+        } else {
           _metaCache.remove(ref);
         }
-      }),
-    );
-  }
+      }
+    } catch (error, stackTrace) {
+      if (_disposed) return;
 
-  String? _normalizedSourceSync(String raw) {
-    final sourceRef = _sourceKeyFromRaw(raw);
-    if (sourceRef == null) return null;
+      for (final ref in missing) {
+        _metaCache.remove(ref);
+      }
 
-    final resolved = _urlCache[sourceRef]?.trim();
-
-    if (resolved != null && resolved.isNotEmpty) {
-      return resolved;
+      _dlog('POOL_META', 'resolver exception=$error\n$stackTrace');
     }
-
-    // When a host resolver exists, unresolved opaque refs must not be guessed.
-    if (_hasUrlResolver) return null;
-
-    // Direct renderable-ref fallback for standalone renderer usage.
-    return sourceRef;
   }
 
   void _reconcileIntrinsicSources(Map<ElementId, String?> sourceByElement) {
@@ -519,7 +454,7 @@ class FlutterImagePool implements ImageIntrinsics {
 
     final sourceRefs = sourceByElement.values.whereType<String>().toSet();
 
-    await _primeUrlCache(sourceRefs);
+    final renderableSourceByRef = await _resolveRenderableSources(sourceRefs);
 
     if (!_isCurrentPreloadRequest(generation)) {
       return;
@@ -537,6 +472,9 @@ class FlutterImagePool implements ImageIntrinsics {
           generation: generation,
           side: side,
           sourceRef: sourceByElement[image.id],
+          renderableSource: sourceByElement[image.id] == null
+              ? null
+              : renderableSourceByRef[sourceByElement[image.id]!],
           persistedIntrinsic: persistedIntrinsicByElement[image.id],
         ),
     ]);
@@ -547,21 +485,22 @@ class FlutterImagePool implements ImageIntrinsics {
     required int generation,
     required int? side,
     required String? sourceRef,
+    required String? renderableSource,
     required Size2D? persistedIntrinsic,
   }) async {
     if (!_isCurrentPreloadRequest(generation)) {
       return;
     }
 
-    final source = sourceRef == null ? null : _normalizedSourceSync(sourceRef);
-
     _dlog(
       'POOL_PRELOAD',
       'el=${image.id} assetId=${image.data.assetId} sourceRef=$sourceRef '
-          'normalized="$source"',
+          'renderable="$renderableSource"',
     );
 
-    if (source == null || source.isEmpty) {
+    // When a host resolver is installed, a missing result is authoritative.
+    // Without a resolver, _resolveRenderableSources maps sourceRef to itself.
+    if (renderableSource == null || renderableSource.isEmpty) {
       _clearDecodedImage(image.id);
       return;
     }
@@ -569,15 +508,18 @@ class FlutterImagePool implements ImageIntrinsics {
     final meta =
         persistedIntrinsic ??
         (sourceRef == null ? null : _metaCache[sourceRef]);
+
     final dimensions = _decodeDimsFromMeta(side, meta);
-    final loadedKey = '$source@${dimensions.w ?? 0}x${dimensions.h ?? 0}';
+
+    final loadedKey =
+        '$renderableSource@${dimensions.w ?? 0}x${dimensions.h ?? 0}';
 
     if (_loadedKey[image.id] == loadedKey && _images[image.id] != null) {
       return;
     }
 
     try {
-      final baseProvider = sourceToProvider(source);
+      final baseProvider = sourceToProvider(renderableSource);
 
       final provider = dimensions.w != null && dimensions.h != null
           ? ResizeImage(
@@ -639,7 +581,6 @@ class FlutterImagePool implements ImageIntrinsics {
     _intrinsicSourceById.clear();
     _rasterSourceById.clear();
     _loadedKey.clear();
-    _urlCache.clear();
     _metaCache.clear();
 
     _intrinsicUpdatedController.close();

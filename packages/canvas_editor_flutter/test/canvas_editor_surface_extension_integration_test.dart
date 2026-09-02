@@ -140,7 +140,6 @@ void main() {
         initial: canonicalScene,
         adapter: const _ResolvingAdapter(),
         renderPipeline: pipeline,
-        imageIntrinsics: null,
         scenePreparer: (scene, services) {
           preparerCalls += 1;
           receivedScene = scene;
@@ -159,6 +158,16 @@ void main() {
       expect(identical(runtime.document.value, canonicalScene), isTrue);
       expect(runtime.document.value.backgroundOpacity, 1.0);
       expect(runtime.render.value.scene.backgroundOpacity, 0.8);
+
+      final outputScene = runtime.resolveSceneForOutput();
+
+      expect(outputScene.backgroundOpacity, 0.4);
+      expect(
+        preparerCalls,
+        1,
+        reason:
+            'Resolving the final-output scene must not invoke ScenePreparer.',
+      );
     },
   );
 

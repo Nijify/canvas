@@ -161,17 +161,19 @@ class _ImageImportExtension<TSourceDocument>
     final Size2D? intrinsic;
 
     try {
-      intrinsic = await context.resources.media
-          .resolveIntrinsicSize(sourceRef)
+      final resolved = await context.resources.images
+          .resolveIntrinsicSizes(<String>[sourceRef])
           .timeout(
             _initialImageMetadataTimeout,
             onTimeout: () {
               debugPrint(
                 'Canvas image import timed out while resolving intrinsic metadata.',
               );
-              return null;
+              return const <String, Size2D>{};
             },
           );
+
+      intrinsic = resolved[sourceRef];
     } catch (error, stackTrace) {
       debugPrint(
         'Canvas image import could not resolve intrinsic metadata: '

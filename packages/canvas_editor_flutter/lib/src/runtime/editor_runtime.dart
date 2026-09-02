@@ -8,8 +8,6 @@
 // - Field codecs translate typed field commits into EditorEdit values.
 // - Custom document behavior is injected through a canonical adapter.
 // - Ephemeral transform updates remain runtime-owned for gesture batching.
-import 'dart:async';
-
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/src/runtime/history/txn_history_manager.dart';
 import 'package:canvas_editor_flutter/src/runtime/pipeline/render_pipeline_driver.dart';
@@ -24,7 +22,6 @@ final class EditorRuntime<TSourceDocument>
     required TSourceDocument initial,
     required EditorDocumentAdapter<TSourceDocument> adapter,
     required this.renderPipeline,
-    required this.imageIntrinsics,
     Object? initialContext,
     rt.ContentBoundsSpec? contentBounds,
 
@@ -84,10 +81,6 @@ final class EditorRuntime<TSourceDocument>
         }
       },
     );
-
-    _imgSub = imageIntrinsics?.onIntrinsicUpdated.listen((_) {
-      _pipeline.scheduleLayoutInvalidation();
-    });
   }
 
   // --------------------------------------------------------------------------
@@ -95,12 +88,9 @@ final class EditorRuntime<TSourceDocument>
   // --------------------------------------------------------------------------
 
   final rt.CanvasRenderPipeline renderPipeline;
-  final rt.ImageIntrinsics? imageIntrinsics;
   final EditorDocumentAdapter<TSourceDocument> _adapter;
 
   final rt.ScenePreparer? scenePreparer;
-
-  StreamSubscription<rt.ElementId>? _imgSub;
 
   Object? _ctx;
 
@@ -141,6 +131,11 @@ final class EditorRuntime<TSourceDocument>
   /// Latest canonical state, including in-flight ephemeral gesture updates.
   TSourceDocument get _presentSourceDocument => _history.present;
 
+  @override
+  rt.CanvasSceneDocument resolveSceneForOutput() {
+    return _adapter.resolve(_presentSourceDocument, _ctx);
+  }
+
   // --------------------------------------------------------------------------
   // Undo/redo surface
   // --------------------------------------------------------------------------
@@ -166,10 +161,6 @@ final class EditorRuntime<TSourceDocument>
     _disposed = true;
 
     _endActiveSession?.call();
-
-    final imageSubscription = _imgSub;
-    _imgSub = null;
-    unawaited(imageSubscription?.cancel());
 
     _pipeline.dispose();
     _canUndoListenable.dispose();

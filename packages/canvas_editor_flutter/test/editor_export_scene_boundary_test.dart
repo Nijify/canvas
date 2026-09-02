@@ -5,13 +5,17 @@ import 'dart:convert';
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart';
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
-import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart';
 import 'package:canvas_editor_flutter/src/interaction/selection_controllers.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_action_sets.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
+import 'package:canvas_editor_flutter/src/runtime/editor_runtime.dart';
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
+    show CanvasPngSpec;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'editor_runtime_fakes.dart';
 
 class _FakeTextMeasurer implements TextMeasurer {
   @override
@@ -41,11 +45,14 @@ class _FakeEditorController implements EditorController {
   _FakeEditorController({
     required RenderSnapshot renderSnapshot,
     required CanvasSceneDocument document,
+    CanvasSceneDocument? outputScene,
   }) : _render = ValueNotifier<RenderSnapshot>(renderSnapshot),
-       _document = ValueNotifier<CanvasSceneDocument>(document);
+       _document = ValueNotifier<CanvasSceneDocument>(document),
+       _outputScene = outputScene ?? document;
 
   final ValueNotifier<RenderSnapshot> _render;
   final ValueNotifier<CanvasSceneDocument> _document;
+  final CanvasSceneDocument _outputScene;
   final ValueNotifier<bool> _canUndo = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _canRedo = ValueNotifier<bool>(false);
 
@@ -54,6 +61,9 @@ class _FakeEditorController implements EditorController {
 
   @override
   ValueListenable<CanvasSceneDocument> get document => _document;
+
+  @override
+  CanvasSceneDocument resolveSceneForOutput() => _outputScene;
 
   @override
   ValueListenable<bool> get canUndo => _canUndo;
@@ -97,87 +107,38 @@ class _RecordingPngExportPort implements PngExportPort {
   int shareCalls = 0;
   int saveCalls = 0;
 
-  CanvasSceneDocument? editableScene;
-  CanvasSceneDocument? preparedScene;
-  EditorExportSpec? spec;
+  CanvasSceneDocument? scene;
+  CanvasPngSpec? spec;
   String? filename;
   String? text;
 
   @override
   Future<String> sharePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
     String? text,
   }) async {
     shareCalls++;
-    this.editableScene = editableScene;
-    this.preparedScene = preparedScene;
+    this.scene = scene;
     this.spec = spec;
     this.filename = filename;
     this.text = text;
-
     return 'shared';
   }
 
   @override
   Future<String> savePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
   }) async {
     saveCalls++;
-    this.editableScene = editableScene;
-    this.preparedScene = preparedScene;
+    this.scene = scene;
     this.spec = spec;
     this.filename = filename;
-
     return 'saved';
   }
-}
-
-class _FakeMediaResolver implements CanvasMediaResolver {
-  @override
-  Future<String?> resolveUrl(String assetId) async => null;
-
-  @override
-  Future<Map<String, String>> resolveUrls(List<String> assetIds) async =>
-      const <String, String>{};
-
-  @override
-  Future<Size2D?> resolveIntrinsicSize(String refOrId) async => null;
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(
-    List<String> refsOrIds,
-  ) async => const <String, Size2D>{};
-}
-
-class _FakeFontAssets implements CanvasFontAssets {
-  @override
-  List<FontDef> get pickerFonts => const <FontDef>[];
-
-  @override
-  List<FontDef> get loadableFonts => const <FontDef>[];
-
-  @override
-  Iterable<String> get fallbackFontFamilies => const <String>[];
-
-  @override
-  Future<void> ensureLoaded(Iterable<String> families) async {}
-}
-
-class _FakeIconCatalogPort implements IconCatalogPort {
-  @override
-  List<IconCatalogItem> get items => const <IconCatalogItem>[];
-
-  @override
-  Map<String, ResolvedIcon> get resolveMap => const <String, ResolvedIcon>{};
-
-  @override
-  ResolvedIcon? resolve(String iconRef) => null;
 }
 
 RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
@@ -194,22 +155,14 @@ CanvasSceneDocument _scene(double backgroundOpacity) {
   );
 }
 
-CanvasRuntimeResources _resources() {
-  return CanvasRuntimeResources(
-    fonts: _FakeFontAssets(),
-    icons: _FakeIconCatalogPort(),
-    media: _FakeMediaResolver(),
-  );
-}
-
 EditorActionContext _actionContext({
   required BuildContext context,
-  required _FakeEditorController controller,
+  required EditorController controller,
   required SelectionController selection,
 }) {
   return EditorActionContext(
     buildContext: context,
-    resources: _resources(),
+    resources: canvasRuntimeResourcesForTest(),
     ui: _NoopUiFeedback(),
     controller: controller,
     selection: selection,
@@ -231,6 +184,36 @@ Future<BuildContext> _pumpContext(WidgetTester tester) async {
   );
 
   return captured;
+}
+
+final class _SourceDocument {
+  const _SourceDocument(this.base);
+
+  final CanvasSceneDocument base;
+}
+
+final class _ResolvingAdapter extends EditorDocumentAdapter<_SourceDocument> {
+  const _ResolvingAdapter();
+
+  @override
+  CanvasSceneDocument getBase(_SourceDocument doc) => doc.base;
+
+  @override
+  _SourceDocument replaceBase(_SourceDocument doc, CanvasSceneDocument base) {
+    return _SourceDocument(base);
+  }
+
+  @override
+  CanvasSceneDocument resolve(_SourceDocument doc, Object? context) {
+    final isCurrentContext = context == 'current';
+
+    return doc.base.copyWith(
+      artboardSize: isCurrentContext
+          ? const Size2D(400, 200)
+          : const Size2D(320, 160),
+      backgroundOpacity: isCurrentContext ? 0.4 : 0.3,
+    );
+  }
 }
 
 void main() {
@@ -274,34 +257,51 @@ void main() {
   });
 
   testWidgets(
-    'PNG share delegates canonical and prepared scenes to host port',
+    'PNG share exports adapter-resolved scene without interactive preparation',
     (tester) async {
-      final editableScene = _scene(0.1);
-      final renderScene = _scene(0.9);
-
+      final baseScene = _scene(0.1);
       final port = _RecordingPngExportPort();
 
-      final actions = pngExportActions(PngExportCapability(port: port));
+      var preparerCalls = 0;
 
+      final runtime = EditorRuntime<_SourceDocument>(
+        initial: _SourceDocument(baseScene),
+        adapter: const _ResolvingAdapter(),
+        renderPipeline: CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+        initialContext: 'initial',
+        scenePreparer: (scene, services) {
+          preparerCalls++;
+          return scene.copyWith(
+            artboardSize: const Size2D(100, 400),
+            backgroundOpacity: 0.9,
+          );
+        },
+      );
+
+      addTearDown(runtime.dispose);
+
+      runtime.setResolveContext('current');
+      await tester.pump();
+
+      expect(runtime.document.value.artboardSize, const Size2D(300, 200));
+      expect(runtime.document.value.backgroundOpacity, 0.1);
+      expect(runtime.render.value.scene.artboardSize, const Size2D(100, 400));
+      expect(runtime.render.value.scene.backgroundOpacity, 0.9);
+
+      final preparerCallsBeforeExport = preparerCalls;
+
+      final actions = pngExportActions(PngExportCapability(port: port));
       final shareAction = actions.singleWhere(
         (action) => action.id == EditorActionIds.sharePng,
       );
 
       final context = await _pumpContext(tester);
-
-      final controller = _FakeEditorController(
-        renderSnapshot: _snapshotFor(renderScene),
-        document: editableScene,
-      );
-
       final selection = SelectionController();
-
       addTearDown(selection.dispose);
-      addTearDown(controller.dispose);
 
       final ctx = _actionContext(
         context: context,
-        controller: controller,
+        controller: runtime,
         selection: selection,
       );
 
@@ -309,28 +309,32 @@ void main() {
 
       expect(port.shareCalls, 1);
       expect(port.saveCalls, 0);
-      expect(identical(port.editableScene, editableScene), isTrue);
-      expect(identical(port.preparedScene, renderScene), isTrue);
-      expect(port.editableScene?.backgroundOpacity, 0.1);
-      expect(port.preparedScene?.backgroundOpacity, 0.9);
-      expect(port.spec?.fit, CanvasFit.contain);
+      expect(port.scene?.artboardSize, const Size2D(400, 200));
+      expect(port.scene?.backgroundOpacity, 0.4);
+      expect(
+        preparerCalls,
+        preparerCallsBeforeExport,
+        reason: 'Editor PNG export must not invoke ScenePreparer.',
+      );
       expect(port.spec?.widthPx, 2048);
-      expect(port.spec?.heightPx, 1365);
+      expect(port.spec?.heightPx, 1024);
+      expect(port.spec?.fit, CanvasFit.contain);
       expect(port.spec?.pixelRatio, 2.0);
       expect(port.filename, 'canvas_export.png');
     },
   );
 
-  testWidgets('PNG save delegates canonical and prepared scenes to host port', (
-    tester,
-  ) async {
+  testWidgets('PNG save delegates resolved scene to host port', (tester) async {
     final editableScene = _scene(0.1);
     final renderScene = _scene(0.9);
+    final outputScene = CanvasSceneDocument(
+      artboardSize: const Size2D(600, 300),
+      backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 0.4,
+    );
 
     final port = _RecordingPngExportPort();
-
     final actions = pngExportActions(PngExportCapability(port: port));
-
     final saveAction = actions.singleWhere(
       (action) => action.id == EditorActionIds.savePng,
     );
@@ -340,10 +344,10 @@ void main() {
     final controller = _FakeEditorController(
       renderSnapshot: _snapshotFor(renderScene),
       document: editableScene,
+      outputScene: outputScene,
     );
 
     final selection = SelectionController();
-
     addTearDown(selection.dispose);
     addTearDown(controller.dispose);
 
@@ -357,8 +361,9 @@ void main() {
 
     expect(port.shareCalls, 0);
     expect(port.saveCalls, 1);
-    expect(identical(port.editableScene, editableScene), isTrue);
-    expect(identical(port.preparedScene, renderScene), isTrue);
+    expect(identical(port.scene, outputScene), isTrue);
+    expect(port.spec?.widthPx, 2048);
+    expect(port.spec?.heightPx, 1024);
     expect(port.spec?.fit, CanvasFit.contain);
     expect(port.filename, 'canvas_export.png');
   });

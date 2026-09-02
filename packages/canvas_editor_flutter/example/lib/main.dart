@@ -79,7 +79,7 @@ class _ExampleEditorPageState extends State<_ExampleEditorPage> {
             onSceneChanged: _handleSceneChanged,
             pngExport: PngExportCapability(
               port: _ExamplePngExportPort(
-                resources: _demoResources,
+                renderer: _demoPngRenderer,
                 navigatorKey: _navigatorKey,
               ),
               canShare: true,
@@ -190,10 +190,38 @@ bool _sameCredits(
 
 final _demoImageImport = _ExampleImageImportPort();
 
+const _demoFontFamily = 'Noto Sans Symbols';
+
+const _demoFontAssetPath =
+    'assets/fonts/noto_sans_symbols/NotoSansSymbols-Regular.ttf';
+
+final _demoFontLoader = BundledFlutterFontLoader(
+  fonts: const <BundledFlutterFont>[
+    BundledFlutterFont(
+      family: _demoFontFamily,
+      assetPaths: <String>[_demoFontAssetPath],
+    ),
+  ],
+  fallbackFontFamilies: const <String>[_demoFontFamily],
+);
+
+const _demoPickerFonts = <FontPickerItem>[
+  FontPickerItem(family: _demoFontFamily, label: 'Noto Sans Symbols'),
+];
+
+final _demoImages = _ExampleCanvasImageAssetResolver();
+
 final _demoResources = CanvasRuntimeResources(
-  fonts: _DemoFontAssets(),
-  icons: _DemoIconCatalog(),
-  media: _ExampleCanvasMediaResolver(),
+  fonts: _demoFontLoader,
+  pickerFonts: _demoPickerFonts,
+  icons: const _DemoIconCatalog(),
+  images: _demoImages,
+);
+
+final CanvasPngRenderer _demoPngRenderer = FlutterCanvasPngRenderer(
+  fonts: _demoFontLoader,
+  icons: _demoResources.icons,
+  images: _demoImages,
 );
 
 final CanvasAssetLibrary _demoAssetLibrary = LocalCanvasAssetLibrary(
@@ -277,7 +305,7 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
       xf: Transform2D(position: Vec2(370, 180)),
       data: TextData(
         text: 'CanvasSceneEditor',
-        fontFamily: 'Roboto',
+        fontFamily: _demoFontFamily,
         fontWeight: 700,
         fontSize: 42,
         letterSpacing: 0,
@@ -292,7 +320,7 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
         text:
             'Try Add → Assets → Background removal demo, then use '
             'Image tools in the inspector.',
-        fontFamily: 'Roboto',
+        fontFamily: _demoFontFamily,
         fontWeight: 400,
         fontSize: 18,
         letterSpacing: 0,
@@ -304,32 +332,29 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
 
 final class _ExamplePngExportPort implements PngExportPort {
   const _ExamplePngExportPort({
-    required this.resources,
+    required this.renderer,
     required this.navigatorKey,
   });
 
-  final CanvasRuntimeResources resources;
+  final CanvasPngRenderer renderer;
   final GlobalKey<NavigatorState> navigatorKey;
 
   @override
   Future<String> sharePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
     String? text,
   }) async {
-    // This generic example has no document-level export policy, so it does not
-    // need to inspect editableScene. Product hosts can use that canonical scene
-    // for policy or compatibility checks before doing any rendering work.
     final context = navigatorKey.currentContext;
+
     if (context == null) {
       throw StateError('Unable to locate the app context for PNG sharing.');
     }
 
     final sharePositionOrigin = Offset.zero & MediaQuery.sizeOf(context);
 
-    final bytes = await _renderPng(preparedScene: preparedScene, spec: spec);
+    final bytes = await renderer.renderPng(scene: scene, spec: spec);
 
     await sharing.SharePlus.instance.share(
       sharing.ShareParams(
@@ -347,63 +372,11 @@ final class _ExamplePngExportPort implements PngExportPort {
 
   @override
   Future<String> savePng({
-    required CanvasSceneDocument editableScene,
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
+    required CanvasSceneDocument scene,
+    required CanvasPngSpec spec,
     required String filename,
   }) {
     throw UnsupportedError('PNG saving is not available in this example.');
-  }
-
-  Future<Uint8List> _renderPng({
-    required CanvasSceneDocument preparedScene,
-    required EditorExportSpec spec,
-  }) async {
-    await resources.ensureFontsForScene(preparedScene);
-
-    final textPipeline = FlutterTextPipeline(
-      fallbackFontFamilies: resources.fallbackFontFamilies,
-    );
-
-    final imagePool = FlutterImagePool(
-      assetUrlsResolver: resources.media.resolveUrls,
-      assetMetasResolver: resources.media.resolveIntrinsicSizes,
-    );
-
-    try {
-      await imagePool.resolveSceneIntrinsics(preparedScene);
-
-      await imagePool.preloadScene(
-        preparedScene,
-        targetW: spec.widthPx,
-        targetH: spec.heightPx,
-      );
-
-      final exporter = CanvasDocumentExporter(
-        textPipeline: textPipeline,
-        icons: resources.icons,
-      );
-
-      return await exporter.exportPng(
-        document: preparedScene,
-        resolveImage: (id) async => imagePool.images[id],
-        resolveIntrinsicSize: (id) async => imagePool.intrinsicSize(id),
-        spec: CanvasExportSpec(
-          widthPx: spec.widthPx,
-          heightPx: spec.heightPx,
-          bleedPx: spec.bleedPx,
-          pixelRatio: spec.pixelRatio,
-          transparent: spec.transparent,
-          fit: spec.fit,
-          cropToContent: spec.cropToContent,
-          contentPaddingPx: spec.contentPaddingPx,
-          tight: spec.tight,
-        ),
-      );
-    } finally {
-      imagePool.dispose();
-      textPipeline.dispose();
-    }
   }
 }
 
@@ -511,31 +484,6 @@ final class _ExampleImageImportPort implements ImageImportPort {
   }
 }
 
-final class _DemoFontAssets implements CanvasFontAssets {
-  const _DemoFontAssets();
-
-  @override
-  Iterable<String> get fallbackFontFamilies => const <String>[
-    'Noto Sans Symbols',
-  ];
-
-  @override
-  List<FontDef> get loadableFonts => const <FontDef>[
-    FontDef(family: 'Roboto', label: 'Roboto'),
-    FontDef(family: 'Noto Sans Symbols', label: 'Noto Sans Symbols'),
-  ];
-
-  @override
-  List<FontDef> get pickerFonts => const <FontDef>[
-    FontDef(family: 'Roboto', label: 'Roboto'),
-  ];
-
-  @override
-  Future<void> ensureLoaded(Iterable<String> families) async {
-    // The example fonts are bundled by Flutter and available at startup.
-  }
-}
-
 final class _DemoIconCatalog implements IconCatalogPort {
   const _DemoIconCatalog();
 
@@ -549,63 +497,43 @@ final class _DemoIconCatalog implements IconCatalogPort {
   ResolvedIcon? resolve(String iconRef) => null;
 }
 
-final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
+final class _ExampleCanvasImageAssetResolver
+    implements CanvasImageAssetResolver {
   final DataUriImageMetadataResolver _dataUriMetadata =
       DataUriImageMetadataResolver();
 
   @override
-  Future<Size2D?> resolveIntrinsicSize(String ref) async {
-    final trimmed = ref.trim();
+  Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
+    final resolved = <String, String>{};
 
-    if (trimmed == _backgroundRemovalDemoForegroundRef) {
-      return const Size2D(320, 180);
+    for (final sourceRef in sourceRefs) {
+      final renderableSource = _resolveSource(sourceRef);
+
+      if (renderableSource != null) {
+        // Resolver maps are always keyed by the exact logical input ref.
+        resolved[sourceRef] = renderableSource;
+      }
     }
 
-    final dataUriSize = await _dataUriMetadata.resolve(trimmed);
-    return dataUriSize ?? _demoAssetLibrary.intrinsicSizeFor(trimmed);
+    return resolved;
   }
 
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
-    final entries = await Future.wait([
-      for (final ref in refs) _resolveIntrinsicSizeEntry(ref),
-    ]);
-
-    return Map<String, Size2D>.fromEntries(
-      entries.whereType<MapEntry<String, Size2D>>(),
-    );
-  }
-
-  Future<MapEntry<String, Size2D>?> _resolveIntrinsicSizeEntry(
-    String ref,
-  ) async {
-    try {
-      final size = await resolveIntrinsicSize(ref);
-      return size == null ? null : MapEntry(ref, size);
-    } catch (error, stackTrace) {
-      debugPrint(
-        'Example image metadata resolution failed: '
-        '$error\n$stackTrace',
-      );
-      return null;
-    }
-  }
-
-  @override
-  Future<String?> resolveUrl(String ref) async {
-    final trimmed = ref.trim();
+  String? _resolveSource(String sourceRef) {
+    final trimmed = sourceRef.trim();
 
     if (trimmed.startsWith('data:')) {
       return trimmed;
     }
 
     final uri = Uri.tryParse(trimmed);
+
     if (uri != null &&
         (uri.scheme == 'https' || uri.scheme == 'http') &&
         uri.host.isNotEmpty) {
-      // Direct remote URLs are already renderable. Preserve the API-returned
-      // URL verbatim, including query parameters required by providers such as
-      // Unsplash.
+      // Direct remote refs are already renderable by this Flutter host.
+      //
+      // Preserve the provider-returned URL, including its complete path and
+      // query parameters. This is important for Unsplash image URLs.
       return trimmed;
     }
 
@@ -614,21 +542,53 @@ final class _ExampleCanvasMediaResolver implements CanvasMediaResolver {
     }
 
     final path = _assetPathFromRef(trimmed);
+
     return path.isEmpty ? null : path;
   }
 
   @override
-  Future<Map<String, String>> resolveUrls(List<String> refs) async {
-    final resolved = <String, String>{};
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(
+    List<String> sourceRefs,
+  ) async {
+    final entries = await Future.wait([
+      for (final sourceRef in sourceRefs) _resolveIntrinsicSizeEntry(sourceRef),
+    ]);
 
-    for (final ref in refs) {
-      final url = await resolveUrl(ref);
+    return Map<String, Size2D>.fromEntries(
+      entries.whereType<MapEntry<String, Size2D>>(),
+    );
+  }
 
-      if (url != null) {
-        resolved[ref] = url;
-      }
+  Future<MapEntry<String, Size2D>?> _resolveIntrinsicSizeEntry(
+    String sourceRef,
+  ) async {
+    try {
+      final size = await _resolveIntrinsicSize(sourceRef);
+
+      return size == null ? null : MapEntry<String, Size2D>(sourceRef, size);
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Example image metadata resolution failed: '
+        '$error\n$stackTrace',
+      );
+
+      return null;
+    }
+  }
+
+  Future<Size2D?> _resolveIntrinsicSize(String sourceRef) async {
+    final trimmed = sourceRef.trim();
+
+    if (trimmed == _backgroundRemovalDemoForegroundRef) {
+      return const Size2D(320, 180);
     }
 
-    return resolved;
+    final dataUriSize = await _dataUriMetadata.resolve(trimmed);
+
+    if (dataUriSize != null) {
+      return dataUriSize;
+    }
+
+    return _demoAssetLibrary.intrinsicSizeFor(trimmed);
   }
 }

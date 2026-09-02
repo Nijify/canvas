@@ -114,7 +114,6 @@ EditorRuntime<rt.CanvasSceneDocument> _buildSceneRuntime(
     initial: initial,
     adapter: adapter,
     renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
-    imageIntrinsics: null,
     extraFieldCodecs: extraFieldCodecs,
   );
 }
@@ -163,7 +162,6 @@ EditorRuntime<_MetadataDocument> _buildMetadataRuntime(
     initial: initial,
     adapter: const _MetadataDocumentAdapter(),
     renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
-    imageIntrinsics: null,
   );
 }
 
@@ -517,9 +515,7 @@ void main() {
     final endSession = runtime.beginEditSession();
 
     runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 0.25);
-
     runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 0.75);
-
     runtime.commitField<double>('t1', rt.CanvasFields.textLetterSpacing, 1.25);
 
     expect(_letterSpacingOf(runtime.sourceDocument), 1.25);
@@ -617,7 +613,6 @@ void main() {
 
     expect(runtime.canUndo.value, isTrue);
     expect(_textOf(runtime.sourceDocument), 'Updated title');
-
     expect(endSession, returnsNormally);
     expect(runtime.canUndo.value, isTrue);
 

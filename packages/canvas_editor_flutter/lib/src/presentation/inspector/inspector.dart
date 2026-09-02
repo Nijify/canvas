@@ -157,7 +157,7 @@ Widget _buildTextInspectorPanel({
   required InspectorContext inspector,
   List<Widget> leadingSections = const <Widget>[],
 }) {
-  final fonts = inspector.resources.fonts.pickerFonts;
+  final fonts = inspector.resources.pickerFonts;
 
   return _buildInspectorPanel(
     title: 'Text',

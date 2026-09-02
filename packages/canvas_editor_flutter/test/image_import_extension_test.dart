@@ -97,64 +97,45 @@ final class _DeferredImageImportPort implements ImageImportPort {
   }
 }
 
-final class _SizedMediaResolver implements CanvasMediaResolver {
-  _SizedMediaResolver(this.sizes);
+final class _SizedImageResolver implements CanvasImageAssetResolver {
+  _SizedImageResolver(this.sizes);
 
   final Map<String, Size2D> sizes;
   final List<String> requestedIntrinsicSizes = <String>[];
 
   @override
-  Future<Size2D?> resolveIntrinsicSize(String ref) async {
-    requestedIntrinsicSizes.add(ref);
-    return sizes[ref];
-  }
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
-    final resolved = <String, Size2D>{};
-
-    for (final ref in refs) {
-      final size = sizes[ref];
-      if (size != null) resolved[ref] = size;
-    }
-
-    return resolved;
-  }
-
-  @override
-  Future<String?> resolveUrl(String ref) async => null;
-
-  @override
-  Future<Map<String, String>> resolveUrls(List<String> refs) async {
+  Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
     return const <String, String>{};
+  }
+
+  @override
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(
+    List<String> sourceRefs,
+  ) async {
+    requestedIntrinsicSizes.addAll(sourceRefs);
+
+    return <String, Size2D>{
+      for (final sourceRef in sourceRefs)
+        if (sizes.containsKey(sourceRef)) sourceRef: sizes[sourceRef]!,
+    };
   }
 }
 
-final class _PendingMediaResolver implements CanvasMediaResolver {
-  final Completer<Size2D?> intrinsicSize = Completer<Size2D?>();
+final class _PendingImageResolver implements CanvasImageAssetResolver {
   final Completer<Map<String, Size2D>> intrinsicSizes =
       Completer<Map<String, Size2D>>();
 
   final List<String> requestedIntrinsicSizes = <String>[];
 
   @override
-  Future<Size2D?> resolveIntrinsicSize(String ref) {
-    requestedIntrinsicSizes.add(ref);
-    return intrinsicSize.future;
-  }
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) {
-    requestedIntrinsicSizes.addAll(refs);
-    return intrinsicSizes.future;
-  }
-
-  @override
-  Future<String?> resolveUrl(String ref) async => null;
-
-  @override
-  Future<Map<String, String>> resolveUrls(List<String> refs) async {
+  Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
     return const <String, String>{};
+  }
+
+  @override
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> sourceRefs) {
+    requestedIntrinsicSizes.addAll(sourceRefs);
+    return intrinsicSizes.future;
   }
 }
 
@@ -533,7 +514,7 @@ void main() {
     final imageImport = _RecordingImageImportPort(
       ImageImportResult.success('media:wide-image'),
     );
-    final media = _SizedMediaResolver(const <String, Size2D>{
+    final images = _SizedImageResolver(const <String, Size2D>{
       'media:wide-image': Size2D(800, 400),
     });
 
@@ -541,11 +522,7 @@ void main() {
       tester,
       scene: _emptyScene(),
       imageImport: imageImport,
-      resources: CanvasRuntimeResources(
-        fonts: TestFontAssets(),
-        icons: TestIconCatalogPort(),
-        media: media,
-      ),
+      resources: canvasRuntimeResourcesForTest(images: images),
     );
 
     editor.actions.invoke(EditorActionIds.addImage);
@@ -556,7 +533,7 @@ void main() {
 
     final image = _singleImage(editor.controller);
 
-    expect(media.requestedIntrinsicSizes, <String>['media:wide-image']);
+    expect(images.requestedIntrinsicSizes, <String>['media:wide-image']);
     expect(image.data.size, const Size2D(200, 100));
     expect(image.xf.position, const Vec2(180, 130));
     expect(
@@ -571,17 +548,13 @@ void main() {
       final imageImport = _RecordingImageImportPort(
         ImageImportResult.success('media:pending-image'),
       );
-      final media = _PendingMediaResolver();
+      final images = _PendingImageResolver();
 
       final editor = await _pumpEditor(
         tester,
         scene: _emptyScene(),
         imageImport: imageImport,
-        resources: CanvasRuntimeResources(
-          fonts: TestFontAssets(),
-          icons: TestIconCatalogPort(),
-          media: media,
-        ),
+        resources: canvasRuntimeResourcesForTest(images: images),
       );
 
       editor.actions.invoke(EditorActionIds.addImage);
@@ -602,8 +575,7 @@ void main() {
       expect(_imageAsset(editor.controller, image.id)?.intrinsicSize, isNull);
       expect(editor.selection.firstId, image.id);
 
-      media.intrinsicSize.complete(null);
-      media.intrinsicSizes.complete(const <String, Size2D>{});
+      images.intrinsicSizes.complete(const <String, Size2D>{});
       await tester.pump();
     },
   );

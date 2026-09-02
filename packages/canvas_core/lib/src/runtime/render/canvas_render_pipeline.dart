@@ -53,7 +53,11 @@ class CanvasRenderPipeline {
     required TextMeasurer textMeasurer,
     ImageIntrinsics? images,
     IconResolver? icons,
-  }) : services = CoreServices(tm: textMeasurer, images: images, icons: icons);
+  }) : services = CoreServices(
+         textMeasurer: textMeasurer,
+         images: images,
+         icons: icons,
+       );
 
   /// Stable service bundle shared by scene preparation and final rendering.
   ///

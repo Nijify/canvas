@@ -1,306 +1,160 @@
 # canvas_editor_flutter architecture
 
-`canvas_editor_flutter` is a complete Flutter editor for `canvas_core` runtime
-scenes. It provides viewport UI, selection overlays, layers, inspector content,
-editing actions, history orchestration, runtime resource integration, and
-composable capability APIs.
+`canvas_editor_flutter` is a complete Flutter editor for `canvas_core` runtime scenes. It provides viewport UI, selection overlays, layers, inspector content, editing actions, history orchestration, runtime resource integration, and composable capability APIs.
 
-The package is product-agnostic. Applications connect persistence, permissions,
-authentication, analytics, network clients, and workflow decisions at the host
-boundary while using the package's public entrypoints for editor composition.
+The package is product-agnostic. Applications connect persistence, permissions, authentication, analytics, network clients, and workflow decisions at host boundaries.
 
 ## Public entrypoints
 
-For the turnkey scene editor:
+Turnkey scene editor:
 
 ```dart
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 ```
 
-For composable editor surfaces, document adapters, extensions, shell
-configuration, inspector content, actions, and interaction policies:
+Composable surfaces, adapters, extensions, shell configuration, actions, inspector content, and interaction policies:
 
 ```dart
 import 'package:canvas_editor_flutter/extensions.dart';
 ```
 
-For curated asset-library integration:
+Focused optional capabilities:
 
 ```dart
 import 'package:canvas_editor_flutter/asset_library.dart';
-```
-
-For Gallery, Camera, or other user-image acquisition flows:
-
-```dart
 import 'package:canvas_editor_flutter/image_import.dart';
-```
-
-For host-owned destructive image transformations such as background removal:
-
-```dart
 import 'package:canvas_editor_flutter/image_tools.dart';
 ```
 
-The capability entrypoints are additive. The turnkey entrypoint remains a
-complete scene editor without them.
-
 Do not import `package:canvas_editor_flutter/src/**` from another package.
 
-## Main APIs
+## Layering
 
-### `CanvasSceneEditor`
+The editor composes three concerns:
 
-Use `CanvasSceneEditor` for turnkey scene editing. It accepts an initial
-`CanvasSceneDocument`, runtime resources, extensions, export capabilities, and a
-document-change callback.
+1. **Presentation/UI** — viewport widgets, inspector widgets, selection overlays, layers, shortcuts, and editor actions.
+2. **Editor runtime/control** — `EditorRuntime`, history, document adapters, scene mutations, and interactive render publication.
+3. **Host integration** — runtime resources, image acquisition/tools, curated assets, output destinations, persistence, networking, and product workflows.
 
-```dart
-Widget build(BuildContext context) {
-  return CanvasSceneEditor(
-    initialScene: scene,
-    resources: resources,
-    onSceneChanged: (updatedScene) {
-      persistScene(updatedScene);
-    },
-  );
-}
-```
+The editor package depends on `canvas_renderer_flutter` for Flutter rendering services and on `canvas_core` for document/runtime contracts. It does not hide renderer ownership by re-exporting renderer APIs from its turnkey barrel.
 
-Capabilities compose through extensions or dedicated constructor inputs:
+## Runtime resources
 
-```dart
-CanvasSceneEditor(
-  initialScene: scene,
-  resources: resources,
-  extensions: [
-    imageImportExtension(imageImport: imageImport),
-    backgroundRemovalExtension(port: backgroundRemoval),
-    canvasAssetLibraryExtension(
-      library: assetLibrary,
-      presentSelection: presentAssetSelection,
-    ),
-  ],
-  pngExport: pngExport,
-  jsonExport: jsonExport,
-)
-```
-
-### `CanvasEditorSurface<TSourceDocument>`
-
-Use `CanvasEditorSurface` when the editor should operate on a custom source
-document or use a custom composition of adapters, extensions, shell
-configuration, and interaction behavior while retaining the same editor
-runtime and UI components.
-
-## Layering model
-
-`canvas_editor_flutter` composes three concerns:
-
-1. **Presentation/UI**: viewport widgets, inspector widgets, selection overlays,
-   editor actions, keyboard shortcuts, layers, and shell presentation.
-2. **Editor runtime/control orchestration**: `EditorRuntime`, history,
-   render/update coordination, document adapters, and scene mutations.
-3. **Application boundary integration**:
-
-   * runtime resources: media/source resolution, font loading, and icon catalogs;
-   * capabilities: asset selection, image acquisition, host-owned image
-     transformations, PNG export, and JSON export;
-   * product workflows: persistence, permissions, networking, and surrounding
-     application UI.
-
-## Rendering and editing flow
+`CanvasRuntimeResources` is a passive capability bundle:
 
 ```text
-Application
-  -> CanvasSceneEditor
-  -> CanvasEditorSurface<CanvasSceneDocument>
-  -> EditorRuntime<CanvasSceneDocument>
+CanvasRuntimeResources
+  -> FlutterFontLoader fonts
+  -> List<FontPickerItem> pickerFonts
+  -> IconCatalogPort icons
+  -> CanvasImageAssetResolver images
+```
+
+`FlutterFontLoader` is renderer-owned because font registration is a Flutter rendering concern. `FontPickerItem` remains editor-owned presentation metadata. `CanvasImageAssetResolver` is core-owned because logical image source identity is renderer-neutral.
+
+`CanvasEditorSurface` owns its long-lived `FlutterTextPipeline` and `FlutterImagePool`. It also owns the pool's intrinsic-update subscription because the notification lifecycle belongs with the concrete pool owner. `EditorRuntime` only consumes `CanvasRenderPipeline` and does not subscribe to image-resource streams.
+
+`EditorAssetCoordinator` discovers required scene font families, asks the shared font loader to ensure them, starts best-effort intrinsic metadata resolution, and preloads visible raster state. Optional intrinsic metadata does not block raster loading for the interactive editor.
+
+## Canonical, resolved, and prepared scenes
+
+The editor distinguishes three useful scene states:
+
+- **canonical/base scene** — editable state used for history, persistence, object-tree UI, and scene JSON export;
+- **resolved scene** — output of `EditorDocumentAdapter.resolve()` using the current source document and resolve context;
+- **prepared scene** — optional runtime transformation of the resolved scene used by interactive rendering.
+
+Prepared state is not canonical persistence state.
+
+### Interactive rendering
+
+```text
+current source document
   -> EditorDocumentAdapter.resolve()
   -> optional ScenePreparer
   -> CanvasRenderPipeline.build()
   -> RenderSnapshot
-  -> canvas_renderer_flutter drawing/export support
+  -> CanvasRenderer
 ```
 
-The editor mutates canonical `CanvasSceneDocument` values directly. It
-delegates source conversion to the document adapter, optional runtime-only
-transformation to the scene preparer, deterministic geometry and paint planning
-to `canvas_core`, and Flutter drawing and image/text helpers to
-`canvas_renderer_flutter`.
+The preparer receives the exact stable `CoreServices` instance retained by the render pipeline. Extension composition permits at most one non-null preparer.
 
-The editor intentionally maintains two scene views:
+### Authoritative PNG output
 
-* `editableScene` is canonical state used for editing, history, persistence, and
-  scene JSON export.
-* `renderScene` is resolved and prepared runtime state used for drawing and PNG
-  export.
+```text
+current source document
+  -> EditorDocumentAdapter.resolve()
+  -> EditorController.resolveSceneForOutput()
+  -> PngExportPort
+  -> CanvasPngRenderer
+  -> optional ScenePreparer exactly once inside final rendering
+```
 
-Prepared runtime state must not be written back to canonical state merely
-because it is available in `RenderSnapshot`.
+`resolveSceneForOutput()` resolves the latest current source state, including the active transaction/history present value, and deliberately stops before preparation.
+
+`PngExportPort` receives one adapter-resolved, unprepared `CanvasSceneDocument`, `CanvasPngSpec`, and output metadata. It does not receive separate editable and prepared scenes.
+
+This boundary prevents three failure modes:
+
+- exporting stale base state when adapter resolution matters;
+- treating interactive prepared state as canonical output input;
+- invoking the same `ScenePreparer` twice.
+
+JSON export remains based on canonical editable/base state.
 
 ## Mutation model
 
-Persistent base-scene changes use one execution seam:
-`EditorController.applyEdit`.
+Persistent base-scene mutations use `EditorController.applyEdit`.
 
-Canonical source-document state outside the base scene is updated through
-`EditorDocumentHost.updateSourceDocument`.
-
-Choose the caller-facing API according to the operation:
+Registered editable properties flow through `commitField` and their `FieldCodec`; structural or multi-node operations build an `EditorEdit` and call `applyEdit`. Source-document state outside the base scene is changed through `EditorDocumentHost.updateSourceDocument`.
 
 ```text
-Registered editable property
+Registered property
   -> commitField
   -> FieldCodec
   -> EditorEdit
   -> applyEdit
 
-Structural, multi-node, or custom base-scene operation
+Structural/custom base-scene operation
   -> EditorEdit
   -> applyEdit
 
-Source-document state outside the base scene
+Source-document state outside base scene
   -> EditorDocumentHost.updateSourceDocument
-
-Pointer transform
-  -> ephemeral transform method
-  -> active edit session
-  -> one committed history entry
 ```
 
-### Registered fields
-
-A property represented by a `CanvasFieldKey` is edited through `commitField`.
-Its `FieldCodec` owns field-specific behavior, including:
-
-* reading the effective rendered value;
-* validating or normalizing literal values;
-* preserving related canonical values;
-* converting the field change into an `EditorEdit`.
-
-Built-in and extension inspector controls must not call `applyEdit` directly for
-a registered field because doing so would bypass codec overrides and
-field-specific policy.
-
-A `CanvasFieldKey` identifies an editable property, and its `FieldCodec` defines
-that property's literal editing behavior.
-
-### Generic base-scene edits
-
-Use `applyEdit` directly for base-scene operations that are not individual
-registered properties, such as adding, deleting, duplicating, reordering, or
-replacing scene nodes, and for operations spanning multiple nodes or
-properties.
-
-Use `EditorDocumentHost.updateSourceDocument` only for canonical source-document
-state that is not represented by the base `CanvasSceneDocument`.
-
-`applyEdit` owns persistent mutation execution: history, canonical base-scene
-replacement, document-adapter hooks, and render publication. It does not expose
-type-specific text, icon, image, path, fill, or background mutation methods.
-
-### Ephemeral transforms
-
-Drag, rotate, and scale updates remain runtime-owned ephemeral operations.
-Repeated pointer updates are rendered immediately inside an edit session and
-committed as one undoable history entry when the session closes.
-
-Field reads may use the effective rendered scene. Field validation and writes
-target the current canonical document.
-
-## Editor session lifecycle
-
-`CanvasSceneEditor` and `CanvasEditorSurface` each create one uncontrolled
-editor session.
-
-The initial document, adapter and resolve context, runtime resources, and
-extension composition are captured when the session is created. Same-key widget
-rebuilds preserve the active document and resource graph.
-
-A new widget key disposes the old editor session—including history, selection,
-camera, renderer/image caches, and extension-owned state—and creates a fresh
-session from the supplied configuration.
-
-Callbacks and shell presentation remain normal widget inputs.
+Drag, rotate, and scale interactions use ephemeral edit sessions so repeated pointer updates render immediately but commit one history entry when the session closes.
 
 ## Extension model
 
-`EditorExtension<TSourceDocument>` is the capability-composition seam for custom
-editor behavior.
+`EditorExtension<TSourceDocument>` is the composition seam for custom editor behavior.
 
-Construction-time contributions are read once before `attach`:
+Construction-time contributions include:
 
-* `scenePreparer`
-* `fieldCodecs`
-* `surfaceFeatures`
+- `scenePreparer`
+- `fieldCodecs`
+- `surfaceFeatures`
 
-`EditorSurfaceFeatures` aggregates live editor-surface configuration:
+After attachment, extensions may contribute action specs and providers. Inspector/build hooks may depend on state initialized during `attach`.
 
-* inspector composition;
-* viewport framing and behavior;
-* interaction policy;
-* selection chrome;
-* scene-object presentation policy.
-
-The standard scene-editing actions and inspector are intrinsic to
-`CanvasEditorSurface`. Ordered extensions then contribute custom runtime
-configuration, providers, inspector rows, actions, and capabilities.
-
-Extension `actionSpecs` are read after `attach`, appended to the intrinsic
-actions, validated for duplicate IDs, and frozen for the editor session.
-
-`buildProviders` and `inspectorFieldRowBuilder` are build-time hooks. They may
-depend on state created in `attach` and may be read again after an extension
-requests a rebuild.
-
-`EditorRuntime` does not depend on extensions. It receives an optional
-`ScenePreparer` and field codecs as plain constructor inputs. The preparer
-receives the scene produced by the document adapter and the same stable
-`CoreServices` instance used by `CanvasRenderPipeline.build()`. Extension
-composition accepts at most one preparer.
+`EditorRuntime` remains independent of extension composition; `CanvasEditorSurface` resolves extension contributions and passes plain runtime inputs into it.
 
 ## Capability model
 
-Capability entrypoints provide focused integrations without changing the core
-editor model:
+- `asset_library.dart` provides curated catalog contracts and insertion behavior.
+- `image_import.dart` provides host-owned image acquisition and replacement.
+- `image_tools.dart` provides host-owned destructive transformations such as background removal.
+- `PngExportCapability` and `JsonExportCapability` add host-owned output actions.
 
-* `asset_library.dart` provides curated catalog contracts and asset insertion;
-* `image_import.dart` provides image acquisition and replacement;
-* `image_tools.dart` provides host-owned destructive image transformations,
-  beginning with background removal;
-* PNG and JSON export capabilities add editor export actions.
+Image tools operate on logical source references. Applications own image access, remote processing, encoding, storage, provider lifecycle, and cleanup. Canvas owns target validation, stale-result rejection, registered-field semantics, and undoable adoption of accepted results.
 
-Background removal follows a source-reference boundary. Canvas supplies the
-canonical image source only when it agrees with the effective rendered field and
-the registered field remains editable. The host performs any required image
-access, processing, encoding, persistence, or remote work and returns a new
-durable source reference. Canvas revalidates the target after the asynchronous
-operation and commits an accepted replacement through
-`CanvasFields.imageSource`.
+## Session lifecycle
 
-A successful host result is not guaranteed to be adopted. The image may be
-replaced, deleted, rebound, or otherwise become stale before the result returns.
-Hosts must tolerate temporarily unreferenced outputs. Canvas does not own media
-cleanup, rollback, provider lifecycle, or garbage collection.
-
-Applications provide environment-specific implementations such as picker UI,
-file access, image processing, durable media storage, and output destinations.
-The editor owns shared document safety and mutation behavior after those
-integrations return a result.
-
-PNG export receives the prepared runtime scene. JSON export receives canonical
-editable state. Export infrastructure must not prepare an editor-provided
-render scene again.
+`CanvasSceneEditor` and `CanvasEditorSurface` each create one uncontrolled editor session. Initial document/source configuration, runtime resources, and extension composition are captured when the session is created. Same-key rebuilds preserve the active document and resource graph; use a new key to intentionally replace the session.
 
 ## Package boundaries
 
-* `canvas_editor_flutter` owns the reusable Flutter editor experience and its
-  composition APIs.
-* `canvas_core` owns the runtime document model, geometry, scene computation,
-  and renderer-agnostic paint operations.
-* `canvas_renderer_flutter` owns Flutter drawing, image helpers, text
-  measurement, and render/export support.
-* Applications own product-specific persistence, permissions, authentication,
-  analytics, networking, image processing, media lifecycle, and workflow
-  decisions.
+- `canvas_editor_flutter` owns reusable editor UI, editor orchestration, and editor-specific presentation contracts.
+- `canvas_core` owns runtime documents, geometry, scene computation, logical resource contracts, and renderer-neutral paint operations.
+- `canvas_renderer_flutter` owns Flutter drawing, font/text implementations, decoded raster ownership, and canonical final PNG rendering.
+- Applications own product-specific storage, authentication, networking, permissions, analytics, media/font lifecycle, processing, and workflow decisions.

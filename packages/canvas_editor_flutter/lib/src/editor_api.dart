@@ -176,6 +176,15 @@ abstract class EditorController {
   /// this value rather than [render].
   ValueListenable<rt.CanvasSceneDocument> get document;
 
+  /// Resolves the current source document for authoritative output.
+  ///
+  /// This applies the current [EditorDocumentAdapter.resolve] semantics using the
+  /// editor's current resolve context.
+  ///
+  /// The returned scene is resolved but deliberately unprepared. Final-output
+  /// renderers own any [rt.ScenePreparer] invocation.
+  rt.CanvasSceneDocument resolveSceneForOutput();
+
   // ---- Undo-redo ----
   ValueListenable<bool> get canUndo;
   ValueListenable<bool> get canRedo;

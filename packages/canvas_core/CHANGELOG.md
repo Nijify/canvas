@@ -1,3 +1,12 @@
+## 0.10.0
+
+- **Breaking:** replace the `NodeId` alias with the shared `ElementId` identity type.
+- **Breaking:** make `TextMeasurer` and `ImageIntrinsics` interface-only runtime contracts and remove image-intrinsic change notifications from core.
+- **Breaking:** rename `CoreServices.tm` to `textMeasurer` and remove the forwarding text-measurement extension.
+- Add `CanvasImageAssetResolver` for batch resolution of logical image `sourceRef` values into host-renderable sources and stable intrinsic metadata.
+- Add `collectSceneFontFamilies` for renderer/resource preflight across nested and hidden text and font-backed icon nodes.
+- Keep renderer-neutral scene preparation outside `CanvasRenderPipeline`; the pipeline continues to own deterministic scene computation and paint-op construction only.
+
 ## 0.9.0
 
 - **Breaking:** normalize image backing sources into the document-local

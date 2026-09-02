@@ -98,12 +98,8 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   late final CanvasRuntimeResources _sessionResources;
   CanvasRuntimeResources get _assets => _sessionResources;
 
-  // Includes stable meta resolvers for intrinsic sizing.
   late final FlutterImagePool _pool = FlutterImagePool(
-    assetUrlResolver: _assets.media.resolveUrl,
-    assetUrlsResolver: _assets.media.resolveUrls,
-    assetMetaResolver: _assets.media.resolveIntrinsicSize,
-    assetMetasResolver: _assets.media.resolveIntrinsicSizes,
+    resolver: _assets.images,
   );
 
   late final EditorRuntime<TSourceDocument> _runtime;
@@ -124,6 +120,8 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
   late final VoidCallback _renderListener;
   late final VoidCallback _documentListener;
+
+  StreamSubscription<ElementId>? _intrinsicSubscription;
 
   CanvasSceneDocument? _lastAssetScene;
   bool _isDisposing = false;
@@ -147,7 +145,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   // Editor is long-lived; give text cache room but keep it bounded.
   late final _textPipeline = FlutterTextPipeline(
     maxEntries: 8192,
-    fallbackFontFamilies: _assets.fallbackFontFamilies,
+    fallbackFontFamilies: _assets.fonts.fallbackFontFamilies,
   );
 
   late final EditorAssetCoordinator _assetCoordinator = EditorAssetCoordinator(
@@ -187,7 +185,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
     _lastAssetScene = scene;
 
     unawaited(() async {
-      final result = await _assetCoordinator.ensureForScene(scene);
+      final fontsChanged = await _assetCoordinator.ensureForScene(scene);
 
       if (_isDisposing) {
         return;
@@ -195,7 +193,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
       // Font registration changes Flutter text layout globally, even when the
       // asset request that loaded the fonts is no longer the latest request.
-      if (result.fontsLoaded) {
+      if (fontsChanged) {
         _invalidateFontLayouts();
       }
     }());
@@ -276,13 +274,18 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       initial: widget.initialDocument,
       adapter: widget.adapter,
       renderPipeline: renderPipeline,
-      imageIntrinsics: _pool,
       initialContext: widget.initialResolveContext,
       scenePreparer: scenePreparer,
       maxHistory: 100,
       contentBounds: viewportFraming.contentBoundsSpec,
       extraFieldCodecs: fieldCodecs,
     );
+
+    _intrinsicSubscription = _pool.onIntrinsicUpdated.listen((_) {
+      if (_isDisposing) return;
+
+      _runtime.scheduleLayoutInvalidation();
+    });
 
     PaintingBinding.instance.systemFonts.addListener(_invalidateFontLayouts);
 
@@ -365,6 +368,10 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   @override
   void dispose() {
     _isDisposing = true;
+
+    final intrinsicSubscription = _intrinsicSubscription;
+    _intrinsicSubscription = null;
+    unawaited(intrinsicSubscription?.cancel());
 
     PaintingBinding.instance.systemFonts.removeListener(_invalidateFontLayouts);
 

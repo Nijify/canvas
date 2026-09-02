@@ -29,15 +29,12 @@ class _FakeTextMeasurer implements TextMeasurer {
 class _FakeImages implements ImageIntrinsics {
   @override
   Size2D? intrinsicSize(String id) => null;
-
-  @override
-  Stream<String> get onIntrinsicUpdated => const Stream.empty();
 }
 
 void main() {
   test('builds DrawTextOp with solid color from scene text data', () {
     final services = CoreServices(
-      tm: _FakeTextMeasurer(),
+      textMeasurer: _FakeTextMeasurer(),
       images: _FakeImages(),
     );
 
@@ -73,7 +70,7 @@ void main() {
 
   test('builds DrawTextOp with gradient shader when text fill is gradient', () {
     final services = CoreServices(
-      tm: _FakeTextMeasurer(),
+      textMeasurer: _FakeTextMeasurer(),
       images: _FakeImages(),
     );
 

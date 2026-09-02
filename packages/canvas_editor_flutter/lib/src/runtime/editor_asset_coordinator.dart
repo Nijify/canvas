@@ -1,4 +1,4 @@
-// Path: packages/canvas_editor_flutter/lib/src/runtime/editor_asset_coordinator.dart
+// Path: lib/src/runtime/editor_asset_coordinator.dart
 
 import 'dart:async';
 
@@ -7,12 +7,6 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 
 import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart';
-
-class AssetPipelineResult {
-  const AssetPipelineResult({required this.fontsLoaded});
-
-  final bool fontsLoaded;
-}
 
 class EditorAssetCoordinator {
   EditorAssetCoordinator({
@@ -28,8 +22,6 @@ class EditorAssetCoordinator {
   final int targetW;
   final int targetH;
 
-  final Set<String> _ensuredFontFamilies = <String>{};
-
   int _revision = 0;
   bool _disposed = false;
 
@@ -40,11 +32,13 @@ class EditorAssetCoordinator {
     _revision++;
   }
 
-  Future<AssetPipelineResult> ensureForScene(
-    rt.CanvasSceneDocument scene,
-  ) async {
+  /// Ensures runtime resources needed by [scene].
+  ///
+  /// Returns true when at least one requested font family became available
+  /// during this call.
+  Future<bool> ensureForScene(rt.CanvasSceneDocument scene) async {
     if (_disposed) {
-      return const AssetPipelineResult(fontsLoaded: false);
+      return false;
     }
 
     final localRevision = ++_revision;
@@ -53,28 +47,27 @@ class EditorAssetCoordinator {
       return !_disposed && localRevision == _revision;
     }
 
-    final families = assets.fontFamiliesForScene(scene);
-    final newFamilies = families.difference(_ensuredFontFamilies);
+    final families = rt.collectSceneFontFamilies(
+      scene,
+      fallbackFontFamilies: assets.fonts.fallbackFontFamilies,
+      icons: assets.icons,
+    );
 
-    var fontsLoaded = false;
+    final fontsChanged = await assets.fonts.ensureLoaded(families);
 
-    if (newFamilies.isNotEmpty) {
-      await assets.fonts.ensureLoaded(newFamilies);
-
-      if (!stillValid()) {
-        return const AssetPipelineResult(fontsLoaded: false);
-      }
-
-      _ensuredFontFamilies.addAll(newFamilies);
-      fontsLoaded = true;
+    // Font registration is global Flutter state. Preserve the result even when
+    // this scene request became stale so the editor can clear cached layouts.
+    if (!stillValid()) {
+      return fontsChanged;
     }
 
-    // Intrinsic metadata is best effort and must not gate raster loading.
+    // Intrinsic metadata is best effort for interactive editing and must not
+    // gate raster loading.
     unawaited(_resolveSceneIntrinsicsBestEffort(scene));
 
     await pool.preloadScene(scene, targetW: targetW, targetH: targetH);
 
-    return AssetPipelineResult(fontsLoaded: fontsLoaded);
+    return fontsChanged;
   }
 
   Future<void> _resolveSceneIntrinsicsBestEffort(

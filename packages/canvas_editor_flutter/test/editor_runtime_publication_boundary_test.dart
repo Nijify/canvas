@@ -50,7 +50,6 @@ EditorRuntime<CanvasSceneDocument> _buildRuntime(
     initial: initialScene,
     adapter: const CanvasSceneDocumentAdapter(),
     renderPipeline: renderPipeline,
-    imageIntrinsics: null,
   );
 }
 

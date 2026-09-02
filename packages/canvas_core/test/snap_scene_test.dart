@@ -24,7 +24,7 @@ void main() {
       backgroundFill: CanvasFill.none(),
       backgroundOpacity: 1.0,
     );
-    final services = CoreServices(tm: _FakeTextMeasurer());
+    final services = CoreServices(textMeasurer: _FakeTextMeasurer());
     final computed = computeScene(doc, services);
     const options = SnapOptions(
       snapToKeylines: false,

@@ -137,7 +137,6 @@ EditorRuntime<_PolicyDocument> _buildPolicyRuntime(
     initial: initial,
     adapter: const _PolicyAdapter(),
     renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
-    imageIntrinsics: null,
     extraFieldCodecs: extraFieldCodecs,
   );
 }
@@ -147,7 +146,6 @@ EditorRuntime<rt.CanvasSceneDocument> _buildSceneRuntime() {
     initial: _scene(),
     adapter: const CanvasSceneDocumentAdapter(),
     renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
-    imageIntrinsics: null,
   );
 }
 
