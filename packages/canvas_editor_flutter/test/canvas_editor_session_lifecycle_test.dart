@@ -9,10 +9,8 @@ import 'package:provider/provider.dart';
 import 'editor_runtime_fakes.dart';
 
 CanvasRuntimeResources _resources(String tag) {
-  return CanvasRuntimeResources(
-    fonts: TestFontAssets(),
+  return canvasRuntimeResourcesForTest(
     icons: _TaggedIconCatalog(tag),
-    media: TestMediaResolver(),
   );
 }
 

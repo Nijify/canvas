@@ -9,21 +9,24 @@ import 'package:canvas_editor_flutter/src/runtime/editor_asset_coordinator.dart'
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final class _FakeFonts implements CanvasFontAssets {
+final class _FakeFonts implements FlutterFontLoader {
+  _FakeFonts({
+    this.fallback = const <String>[],
+    this.changed = false,
+  });
+
+  final List<String> fallback;
+  final bool changed;
+
   final List<Set<String>> loadedRequests = <Set<String>>[];
 
   @override
-  List<FontDef> get pickerFonts => const <FontDef>[];
+  Iterable<String> get fallbackFontFamilies => fallback;
 
   @override
-  List<FontDef> get loadableFonts => const <FontDef>[];
-
-  @override
-  Iterable<String> get fallbackFontFamilies => const <String>[];
-
-  @override
-  Future<void> ensureLoaded(Iterable<String> families) async {
+  Future<bool> ensureLoaded(Iterable<String> families) async {
     loadedRequests.add(families.toSet());
+    return changed;
   }
 }
 
@@ -38,59 +41,48 @@ final class _FakeIcons implements IconCatalogPort {
   ResolvedIcon? resolve(String iconRef) => null;
 }
 
-final class _FakeMedia implements CanvasMediaResolver {
-  _FakeMedia({required this.urls, required this.intrinsicSizes});
+final class _FakeImages implements CanvasImageAssetResolver {
+  _FakeImages({
+    required this.sources,
+    required this.intrinsicSizes,
+    this.resolveIntrinsicSizesCallback,
+  });
 
-  final Map<String, String> urls;
+  final Map<String, String> sources;
   final Map<String, Size2D> intrinsicSizes;
 
-  final List<String> requestedUrls = <String>[];
+  final Future<Map<String, Size2D>> Function(List<String> sourceRefs)?
+  resolveIntrinsicSizesCallback;
+
+  final List<String> requestedSources = <String>[];
   final List<String> requestedIntrinsicSizes = <String>[];
 
   @override
-  Future<String?> resolveUrl(String ref) async {
-    requestedUrls.add(ref);
-    return urls[ref];
+  Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
+    requestedSources.addAll(sourceRefs);
+
+    return <String, String>{
+      for (final sourceRef in sourceRefs)
+        if (sources.containsKey(sourceRef)) sourceRef: sources[sourceRef]!,
+    };
   }
 
   @override
-  Future<Map<String, String>> resolveUrls(List<String> refs) async {
-    requestedUrls.addAll(refs);
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(
+    List<String> sourceRefs,
+  ) async {
+    requestedIntrinsicSizes.addAll(sourceRefs);
 
-    final result = <String, String>{};
-
-    for (final ref in refs) {
-      final value = urls[ref];
-
-      if (value != null) {
-        result[ref] = value;
-      }
+    final callback = resolveIntrinsicSizesCallback;
+    if (callback != null) {
+      return callback(sourceRefs);
     }
 
-    return result;
-  }
-
-  @override
-  Future<Size2D?> resolveIntrinsicSize(String ref) async {
-    requestedIntrinsicSizes.add(ref);
-    return intrinsicSizes[ref];
-  }
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
-    requestedIntrinsicSizes.addAll(refs);
-
-    final result = <String, Size2D>{};
-
-    for (final ref in refs) {
-      final value = intrinsicSizes[ref];
-
-      if (value != null) {
-        result[ref] = value;
-      }
-    }
-
-    return result;
+    return <String, Size2D>{
+      for (final sourceRef in sourceRefs)
+        if (intrinsicSizes.containsKey(sourceRef))
+          sourceRef: intrinsicSizes[sourceRef]!,
+    };
   }
 }
 
@@ -138,18 +130,19 @@ void main() {
     final fonts = _FakeFonts();
     final icons = _FakeIcons();
 
-    final media = _FakeMedia(
-      urls: const <String, String>{'media:one': 'asset:assets/resolved.png'},
-      intrinsicSizes: const <String, Size2D>{'media:one': Size2D(640, 480)},
+    final images = _FakeImages(
+      sources: const <String, String>{
+        'media:one': 'asset:assets/resolved.png',
+      },
+      intrinsicSizes: const <String, Size2D>{
+        'media:one': Size2D(640, 480),
+      },
     );
 
     var decoderCalls = 0;
 
     final pool = FlutterImagePool(
-      assetUrlResolver: media.resolveUrl,
-      assetUrlsResolver: media.resolveUrls,
-      assetMetaResolver: media.resolveIntrinsicSize,
-      assetMetasResolver: media.resolveIntrinsicSizes,
+      resolver: images,
       decoder: (_) async {
         decoderCalls++;
         return decoded;
@@ -158,8 +151,9 @@ void main() {
 
     final resources = CanvasRuntimeResources(
       fonts: fonts,
+      pickerFonts: const <FontPickerItem>[],
       icons: icons,
-      media: media,
+      images: images,
     );
 
     final coordinator = EditorAssetCoordinator(
@@ -172,15 +166,18 @@ void main() {
     final intrinsicEvents = <ElementId>[];
     final subscription = pool.onIntrinsicUpdated.listen(intrinsicEvents.add);
 
-    final result = await coordinator.ensureForScene(_imageScene('media:one'));
+    final fontsChanged = await coordinator.ensureForScene(
+      _imageScene('media:one'),
+    );
 
     await pumpEventQueue();
 
-    expect(result.fontsLoaded, isFalse);
-    expect(fonts.loadedRequests, isEmpty);
+    expect(fontsChanged, isFalse);
+    expect(fonts.loadedRequests, hasLength(1));
+    expect(fonts.loadedRequests.single, isEmpty);
 
-    expect(media.requestedUrls, ['media:one']);
-    expect(media.requestedIntrinsicSizes, ['media:one']);
+    expect(images.requestedSources, ['media:one']);
+    expect(images.requestedIntrinsicSizes, ['media:one']);
 
     expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
 
@@ -202,21 +199,18 @@ void main() {
   });
 
   test('coordinator disposal invalidates blocked font preparation', () async {
-    final fontLoad = Completer<void>();
+    final fontLoad = Completer<bool>();
 
     final fonts = _BlockingFonts(fontLoad.future);
     final icons = _FakeIcons();
 
-    final media = _FakeMedia(
-      urls: const <String, String>{},
+    final images = _FakeImages(
+      sources: const <String, String>{},
       intrinsicSizes: const <String, Size2D>{},
     );
 
     final pool = FlutterImagePool(
-      assetUrlResolver: media.resolveUrl,
-      assetUrlsResolver: media.resolveUrls,
-      assetMetaResolver: media.resolveIntrinsicSize,
-      assetMetasResolver: media.resolveIntrinsicSizes,
+      resolver: images,
       decoder: (_) {
         throw StateError('Decoder must not be reached.');
       },
@@ -224,8 +218,9 @@ void main() {
 
     final resources = CanvasRuntimeResources(
       fonts: fonts,
+      pickerFonts: const <FontPickerItem>[],
       icons: icons,
-      media: media,
+      images: images,
     );
 
     final coordinator = EditorAssetCoordinator(assets: resources, pool: pool);
@@ -235,13 +230,13 @@ void main() {
     await fonts.started.future;
 
     coordinator.dispose();
-    fontLoad.complete();
+    fontLoad.complete(false);
 
     final result = await future;
 
-    expect(result.fontsLoaded, isFalse);
-    expect(media.requestedUrls, isEmpty);
-    expect(media.requestedIntrinsicSizes, isEmpty);
+    expect(result, isFalse);
+    expect(images.requestedSources, isEmpty);
+    expect(images.requestedIntrinsicSizes, isEmpty);
     expect(pool.images, isEmpty);
 
     pool.dispose();
@@ -257,17 +252,19 @@ void main() {
 
       final fonts = _FakeFonts();
       final icons = _FakeIcons();
-      final media = _FakeMedia(
-        urls: const <String, String>{'media:one': 'asset:assets/resolved.png'},
+      final images = _FakeImages(
+        sources: const <String, String>{
+          'media:one': 'asset:assets/resolved.png',
+        },
         intrinsicSizes: const <String, Size2D>{},
-      );
-
-      final pool = FlutterImagePool(
-        assetUrlsResolver: media.resolveUrls,
-        assetMetasResolver: (refs) {
+        resolveIntrinsicSizesCallback: (_) {
           metadataStarted.complete();
           return metadata.future;
         },
+      );
+
+      final pool = FlutterImagePool(
+        resolver: images,
         decoder: (_) async {
           decoderStarted.complete();
           return decoded;
@@ -277,8 +274,9 @@ void main() {
       final coordinator = EditorAssetCoordinator(
         assets: CanvasRuntimeResources(
           fonts: fonts,
+          pickerFonts: const <FontPickerItem>[],
           icons: icons,
-          media: media,
+          images: images,
         ),
         pool: pool,
       );
@@ -292,7 +290,7 @@ void main() {
 
       final result = await resultFuture;
 
-      expect(result.fontsLoaded, isFalse);
+      expect(result, isFalse);
       expect(identical(pool.images['image-0'], decoded), isTrue);
 
       metadata.complete(const <String, Size2D>{});
@@ -305,24 +303,17 @@ void main() {
   );
 }
 
-final class _BlockingFonts implements CanvasFontAssets {
+final class _BlockingFonts implements FlutterFontLoader {
   _BlockingFonts(this.completion);
 
-  final Future<void> completion;
+  final Future<bool> completion;
   final Completer<void> started = Completer<void>();
 
-  @override
-  List<FontDef> get pickerFonts => const <FontDef>[];
-
-  @override
-  List<FontDef> get loadableFonts => const <FontDef>[];
-
-  // This forces the coordinator to enter ensureLoaded().
   @override
   Iterable<String> get fallbackFontFamilies => const <String>['TestFont'];
 
   @override
-  Future<void> ensureLoaded(Iterable<String> families) {
+  Future<bool> ensureLoaded(Iterable<String> families) {
     if (!started.isCompleted) {
       started.complete();
     }

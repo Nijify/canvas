@@ -1,49 +1,59 @@
-// Path: oss_packages/canvas_editor_flutter/test/editor_runtime_fakes.dart
+// Path: test/editor_runtime_fakes.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
+    show FlutterFontLoader;
 
-CanvasRuntimeResources canvasRuntimeResourcesForTest() {
+CanvasRuntimeResources canvasRuntimeResourcesForTest({
+  FlutterFontLoader fonts = const TestFontLoader(),
+  List<FontPickerItem> pickerFonts = const <FontPickerItem>[
+    FontPickerItem(family: 'TestFont', label: 'Test Font'),
+  ],
+  IconCatalogPort icons = const TestIconCatalogPort(),
+  CanvasImageAssetResolver images = const TestImageResolver(),
+}) {
   return CanvasRuntimeResources(
-    fonts: TestFontAssets(),
-    icons: TestIconCatalogPort(),
-    media: TestMediaResolver(),
+    fonts: fonts,
+    pickerFonts: pickerFonts,
+    icons: icons,
+    images: images,
   );
 }
 
-final class TestMediaResolver implements CanvasMediaResolver {
-  @override
-  Future<String?> resolveUrl(String ref) async => null;
+final class TestFontLoader implements FlutterFontLoader {
+  const TestFontLoader({
+    this.fallbackFontFamilies = const <String>['TestFont'],
+  });
 
   @override
-  Future<Map<String, String>> resolveUrls(List<String> refs) async {
+  final List<String> fallbackFontFamilies;
+
+  @override
+  Future<bool> ensureLoaded(Iterable<String> families) async {
+    return false;
+  }
+}
+
+final class TestImageResolver implements CanvasImageAssetResolver {
+  const TestImageResolver();
+
+  @override
+  Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
     return const <String, String>{};
   }
 
   @override
-  Future<Size2D?> resolveIntrinsicSize(String ref) async => null;
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(
+    List<String> sourceRefs,
+  ) async {
     return const <String, Size2D>{};
   }
 }
 
-final class TestFontAssets implements CanvasFontAssets {
-  @override
-  List<FontDef> get pickerFonts => const <FontDef>[];
-
-  @override
-  List<FontDef> get loadableFonts => const <FontDef>[];
-
-  @override
-  Iterable<String> get fallbackFontFamilies => const <String>[];
-
-  @override
-  Future<void> ensureLoaded(Iterable<String> families) async {}
-}
-
 final class TestIconCatalogPort implements IconCatalogPort {
+  const TestIconCatalogPort();
+
   @override
   List<IconCatalogItem> get items => const <IconCatalogItem>[];
 

@@ -8,7 +8,6 @@ import 'package:canvas_editor_flutter/src/editor_api.dart';
 import 'package:canvas_editor_flutter/src/editor_edits.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-// Tiny fake measurer so layout/ops can be computed deterministically.
 class _FakeTextMeasurer implements TextMeasurer {
   @override
   Size2D measure({
@@ -46,7 +45,6 @@ EditorRuntime<CanvasSceneDocument> _buildRuntime(
     initial: initialScene,
     adapter: const CanvasSceneDocumentAdapter(),
     renderPipeline: renderPipeline,
-    imageIntrinsics: null,
   );
 }
 

@@ -34,7 +34,6 @@ EditorRuntime<CanvasSceneDocument> _buildRuntime(CanvasSceneDocument scene) {
     initial: scene,
     adapter: const CanvasSceneDocumentAdapter(),
     renderPipeline: CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
-    imageIntrinsics: null,
   );
 }
 

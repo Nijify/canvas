@@ -8,6 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'editor_runtime_fakes.dart';
+
 final class _NoopUiFeedback implements UiFeedback {
   @override
   void hideSpinner() {}
@@ -80,49 +82,6 @@ final class _FakeEditorController implements EditorController {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-final class _FakeMediaResolver implements CanvasMediaResolver {
-  @override
-  Future<Size2D?> resolveIntrinsicSize(String ref) async => null;
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> refs) async {
-    return const <String, Size2D>{};
-  }
-
-  @override
-  Future<String?> resolveUrl(String ref) async => null;
-
-  @override
-  Future<Map<String, String>> resolveUrls(List<String> refs) async {
-    return const <String, String>{};
-  }
-}
-
-final class _FakeFontAssets implements CanvasFontAssets {
-  @override
-  Iterable<String> get fallbackFontFamilies => const <String>[];
-
-  @override
-  List<FontDef> get loadableFonts => const <FontDef>[];
-
-  @override
-  List<FontDef> get pickerFonts => const <FontDef>[];
-
-  @override
-  Future<void> ensureLoaded(Iterable<String> families) async {}
-}
-
-final class _FakeIconCatalogPort implements IconCatalogPort {
-  @override
-  List<IconCatalogItem> get items => const <IconCatalogItem>[];
-
-  @override
-  Map<String, ResolvedIcon> get resolveMap => const <String, ResolvedIcon>{};
-
-  @override
-  ResolvedIcon? resolve(String iconRef) => null;
-}
-
 final class _Harness {
   const _Harness({
     required this.context,
@@ -144,7 +103,7 @@ Future<_Harness> _createHarness(WidgetTester tester) async {
 
   final context = EditorActionContext(
     buildContext: await _pumpBuildContext(tester),
-    resources: _resources(),
+    resources: canvasRuntimeResourcesForTest(),
     ui: _NoopUiFeedback(),
     controller: controller,
     selection: selection,
@@ -172,14 +131,6 @@ Future<BuildContext> _pumpBuildContext(WidgetTester tester) async {
   );
 
   return captured;
-}
-
-CanvasRuntimeResources _resources() {
-  return CanvasRuntimeResources(
-    fonts: _FakeFontAssets(),
-    icons: _FakeIconCatalogPort(),
-    media: _FakeMediaResolver(),
-  );
 }
 
 CanvasSceneDocument _emptyScene() {

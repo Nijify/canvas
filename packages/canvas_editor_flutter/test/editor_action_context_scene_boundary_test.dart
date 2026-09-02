@@ -2,12 +2,13 @@
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart';
-import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart';
 import 'package:canvas_editor_flutter/src/interaction/selection_controllers.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'editor_runtime_fakes.dart';
 
 class _FakeTextMeasurer implements TextMeasurer {
   @override
@@ -69,48 +70,6 @@ class _FakeEditorController implements EditorController {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class _FakeMediaResolver implements CanvasMediaResolver {
-  @override
-  Future<String?> resolveUrl(String assetId) async => null;
-
-  @override
-  Future<Map<String, String>> resolveUrls(List<String> assetIds) async =>
-      const <String, String>{};
-
-  @override
-  Future<Size2D?> resolveIntrinsicSize(String refOrId) async => null;
-
-  @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(
-    List<String> refsOrIds,
-  ) async => const <String, Size2D>{};
-}
-
-class _FakeFontAssets implements CanvasFontAssets {
-  @override
-  List<FontDef> get pickerFonts => const <FontDef>[];
-
-  @override
-  List<FontDef> get loadableFonts => const <FontDef>[];
-
-  @override
-  Iterable<String> get fallbackFontFamilies => const <String>[];
-
-  @override
-  Future<void> ensureLoaded(Iterable<String> families) async {}
-}
-
-class _FakeIconCatalogPort implements IconCatalogPort {
-  @override
-  List<IconCatalogItem> get items => const <IconCatalogItem>[];
-
-  @override
-  Map<String, ResolvedIcon> get resolveMap => const <String, ResolvedIcon>{};
-
-  @override
-  ResolvedIcon? resolve(String iconRef) => null;
-}
-
 RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
   final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
   return pipeline.build(scene);
@@ -122,14 +81,6 @@ CanvasSceneDocument _scene(double backgroundOpacity) {
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: backgroundOpacity,
     children: const <Node>[],
-  );
-}
-
-CanvasRuntimeResources _resources() {
-  return CanvasRuntimeResources(
-    fonts: _FakeFontAssets(),
-    icons: _FakeIconCatalogPort(),
-    media: _FakeMediaResolver(),
   );
 }
 
@@ -171,7 +122,7 @@ void main() {
 
       final actionContext = EditorActionContext(
         buildContext: context,
-        resources: _resources(),
+        resources: canvasRuntimeResourcesForTest(),
         ui: _NoopUiFeedback(),
         controller: controller,
         selection: selection,
