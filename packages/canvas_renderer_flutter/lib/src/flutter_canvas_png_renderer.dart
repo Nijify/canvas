@@ -126,12 +126,13 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
 
       // Raster decoding is required only for nodes that can actually paint in
       // the final prepared scene.
-      await imagePool.preloadScene(
-        prepared,
-        targetW: spec.widthPx,
-        targetH: spec.heightPx,
-        includeHidden: false,
-      );
+      //
+      // Final output deliberately avoids decode-size hints. targetW/targetH are
+      // an interactive/memory optimization that may downsample source rasters
+      // before painting. Authoritative PNG rendering keeps the source raster at
+      // its native decoded resolution so pixelRatio, crop/cover behavior, and
+      // scene transforms cannot magnify an already-downsampled image.
+      await imagePool.preloadScene(prepared, includeHidden: false);
 
       _ensureVisibleImagesDecoded(prepared, imagePool);
 
