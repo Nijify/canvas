@@ -1,22 +1,28 @@
 # canvas_core architecture
 
-`canvas_core` is a pure-Dart canvas document engine. It owns the runtime scene model, geometry primitives, deterministic scene computation, hit testing, snapping, viewport math, and renderer-agnostic paint operations.
+`canvas_core` is a pure-Dart canvas document engine. It owns the runtime scene model, geometry primitives, deterministic scene computation, hit testing, snapping, viewport math, serialization, logical resource contracts, and renderer-agnostic paint operations.
 
 The package is complete on its own: apps can create `CanvasSceneDocument` values, serialize them, compute scene geometry, build paint operations, and layer editor interactions over the same runtime data without any product-specific package.
 
 ## Public entrypoints
 
-Use the public barrels from `lib/`:
-
-### Runtime API
+Runtime API:
 
 ```dart
 import 'package:canvas_core/canvas_core_runtime.dart';
 ```
 
-Use this for document creation, serialization, scene computation, paint operation generation, geometry, content bounds, viewport math, and host service contracts.
+Headless editor helpers:
 
-The canonical runtime flow is:
+```dart
+import 'package:canvas_core/canvas_core_editor.dart';
+```
+
+Public consumers should not import `package:canvas_core/src/**`.
+
+## Runtime pipeline
+
+`CanvasRenderPipeline` owns deterministic scene computation, paint-op generation, optional content bounds, and `RenderSnapshot` construction.
 
 ```text
 CanvasSceneDocument
@@ -26,42 +32,58 @@ CanvasSceneDocument
   -> renderer-specific PaintOp replay
 ```
 
-`CanvasRenderPipeline.services` is constructed once with the pipeline and
-remains stable for its lifetime. Hosts should pass this exact service bundle to
-a `ScenePreparer` before calling `build()`.
+`CanvasRenderPipeline.services` is constructed once with the pipeline and remains stable for its lifetime. Hosts may pass this exact service bundle to a `ScenePreparer` before `build()`.
 
-Preparers transform runtime scenes. They do not construct `RenderSnapshot`
-values or replace pipeline rendering.
+The generic pipeline does not invoke preparation itself. High-level renderer/editor layers decide where preparation belongs. In particular, an authoritative final-output renderer may own the preparation call so callers cannot accidentally render an already-prepared scene twice.
 
-External and persisted document JSON crosses the runtime boundary through
-`decodeCanvasScene` and `encodeCanvasScene`:
+## Host services and logical resources
+
+Core stays platform-neutral. `CoreServices` exposes synchronous capabilities needed during scene computation:
+
+- `TextMeasurer textMeasurer`
+- optional `ImageIntrinsics images`
+- optional `IconResolver icons`
+
+`ImageIntrinsics` is synchronous lookup only. Resource loading, retries, caches, and notifications belong outside core.
+
+`CanvasImageAssetResolver` is a separate asynchronous host boundary for logical canvas image resources:
+
+```text
+logical sourceRef
+  -> CanvasImageAssetResolver
+  -> host-renderable runtime source
+```
+
+Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. `resolveIntrinsicSizes()` provides stable layout-affecting metadata keyed by the logical ref. Both result maps may be partial.
+
+`collectSceneFontFamilies()` discovers logical font-family dependencies from nested and hidden text plus resolved font-backed icons. Discovery does not load or validate fonts.
+
+## Serialization boundary
+
+External and persisted document JSON crosses the runtime boundary through:
 
 ```text
 external JSON -> decodeCanvasScene -> CanvasSceneDocument
 CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
 
-Generated model serializers remain implementation-level primitives. Semantic
-document validation stays explicit and follows decoding when a caller requires
-it.
+Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
 
-### Headless editor utilities
+## Headless interaction utilities
 
-```dart
-import 'package:canvas_core/canvas_core_editor.dart';
-```
-
-Use this when you need interaction mechanics over runtime scenes, including history, hit testing, picking, and snapping. These helpers consume `ComputedScene` so interactive behavior matches rendered output.
+`canvas_core_editor.dart` exposes interaction mechanics over runtime scenes, including history, hit testing, picking, and snapping. These helpers consume the same computed scene data used for rendering so interactive behavior stays aligned with visual output.
 
 ## Package boundaries
 
 - `canvas_core` is Dart-only and does not import Flutter, `dart:ui`, widgets, files, HTTP, or renderer-specific APIs.
-- Runtime APIs operate on `CanvasSceneDocument` and `Node` values.
-- Host apps provide text measurement, image intrinsic sizes, and icon resolution through service interfaces.
+- Runtime APIs operate on `CanvasSceneDocument`, `Node`, and renderer-neutral value types.
+- Core owns logical resource contracts but does not load platform resources.
 - Renderers consume `PaintOp` values instead of reimplementing scene traversal, transforms, layout, or z-order.
-- Public consumers should import only `canvas_core_runtime.dart` and, when needed, `canvas_core_editor.dart`; do not import `package:canvas_core/src/**`.
+- Apps/editors own when to resolve host data, prepare scenes, and invoke final rendering.
 
-## Runtime data flow
+## Data flows
+
+General rendering:
 
 ```text
 Host/app data
@@ -72,7 +94,7 @@ Host/app data
   -> renderer
 ```
 
-## Interaction data flow
+Interaction:
 
 ```text
 CanvasSceneDocument + ComputedScene
@@ -81,4 +103,4 @@ CanvasSceneDocument + ComputedScene
   -> computeScene(...)
 ```
 
-Keeping rendering and interaction on the same computed snapshot prevents drift between what users see and what the editor can select, snap, or export.
+Keeping rendering and interaction on the same computed scene prevents drift between what users see and what the editor can select, snap, or manipulate.

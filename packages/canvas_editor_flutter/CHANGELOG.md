@@ -1,3 +1,14 @@
+# 0.13.0
+
+- **Breaking:** require `canvas_core 0.10.x` and `canvas_renderer_flutter 0.9.x`.
+- **Breaking:** replace `CanvasFontAssets`, `CanvasMediaResolver`, and `FontDef` with passive runtime resources: `FlutterFontLoader`, `FontPickerItem`, `IconCatalogPort`, and `CanvasImageAssetResolver`.
+- **Breaking:** change `PngExportPort` to receive one adapter-resolved, unprepared `CanvasSceneDocument` plus `CanvasPngSpec`; remove editable/prepared dual-scene PNG arguments and `EditorExportSpec`.
+- Add `EditorController.resolveSceneForOutput()` as the canonical final-output seam. Interactive rendering still resolves and prepares scenes, while final PNG preparation belongs to the authoritative renderer.
+- Move intrinsic-image update subscription ownership from `EditorRuntime` to `CanvasEditorSurface`, which owns the `FlutterImagePool` lifecycle.
+- Make `EditorAssetCoordinator.ensureForScene()` return whether requested fonts became available and delegate font discovery/loading to the shared core/renderer resource contracts.
+- Use configured picker/fallback fonts when creating text instead of persisting a hardcoded `Inter` dependency.
+- Migrate image import and the public example to the batch `CanvasImageAssetResolver` boundary and canonical `FlutterCanvasPngRenderer` flow.
+
 # 0.12.1
 
 - Bound best-effort intrinsic metadata lookup during image import and retain the

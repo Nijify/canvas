@@ -1,3 +1,14 @@
+## 0.9.0
+
+- **Breaking:** require `canvas_core 0.10.x`.
+- **Breaking:** replace `CanvasDocumentExporter` and `CanvasExportSpec` with the canonical `CanvasPngRenderer` / `CanvasPngSpec` boundary.
+- Add `FlutterCanvasPngRenderer`, which owns strict final-output validation, resource preflight, optional scene preparation, layout, paint replay, PNG encoding, and operation-scoped resource disposal.
+- Add `FlutterFontLoader`, `BundledFlutterFont`, and `BundledFlutterFontLoader` for explicit renderer-owned font availability.
+- **Breaking:** replace the four image resolver callbacks on `FlutterImagePool` with `CanvasImageAssetResolver` from `canvas_core`.
+- Resolve renderable image sources per preload operation so temporary or rotating URLs are never treated as persistent identity.
+- Keep stable intrinsic metadata cached by logical source reference while preserving stale-request and decoded-image ownership guarantees.
+- Enforce final-output resource preservation across preparation: prepared font families, icon refs, and active logical image source refs must be subsets of canonical dependencies.
+
 ## 0.8.1
 
 - Start raster decoding without waiting for optional intrinsic metadata.

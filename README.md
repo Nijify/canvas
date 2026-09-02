@@ -12,8 +12,8 @@ Use the complete stack or depend only on the packages your application needs.
 
 | Package | Purpose | Runtime |
 |---|---|---|
-| [`canvas_core`](packages/canvas_core) | Scene documents, geometry, layout, serialization, paint operations, hit testing, snapping, and history | Pure Dart |
-| [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text measurement, image management, and PNG export | Flutter |
+| [`canvas_core`](packages/canvas_core) | Scene documents, geometry, layout, serialization, paint operations, hit testing, snapping, history, and logical resource contracts | Pure Dart |
+| [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text/font resources, image management, and canonical PNG output | Flutter |
 | [`canvas_editor_flutter`](packages/canvas_editor_flutter) | Turnkey and composable visual editor UI | Flutter |
 
 The dependency direction is one-way:
@@ -25,7 +25,7 @@ canvas_editor_flutter
   -> canvas_core
 ```
 
-`canvas_core` is independent of Flutter. The renderer implements Flutter-specific drawing, while the editor uses both packages to provide a complete editing experience.
+`canvas_core` is independent of Flutter. The renderer implements Flutter-specific drawing/resource behavior, while the editor uses both packages to provide a complete editing experience.
 
 ## Installation
 
@@ -80,11 +80,11 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, paint operations, serialization, and interaction utilities.
+See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, paint operations, serialization, resource discovery, and interaction utilities.
 
 ## Render with Flutter
 
-Use the same `FlutterTextPipeline` for core text measurement and Flutter painting:
+Use the same `FlutterTextPipeline` for core text measurement and low-level Flutter painting:
 
 ```dart
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -99,19 +99,19 @@ try {
 
   final snapshot = renderPipeline.build(document);
 
-  final renderer = CanvasRenderer(
+  CanvasRenderer(
     text: textPipeline,
-  );
-
-  renderer.replay(canvas, snapshot.ops);
+  ).replay(canvas, snapshot.ops);
 } finally {
   textPipeline.dispose();
 }
 ```
 
-The creator owns and disposes `FlutterTextPipeline`. Renderers and exporters only borrow supplied pipelines.
+The creator owns and disposes `FlutterTextPipeline` for low-level/interactive rendering surfaces.
 
-See the [`canvas_renderer_flutter` README](packages/canvas_renderer_flutter/README.md) for image loading, resource ownership, and PNG export.
+For authoritative PNG output, use `FlutterCanvasPngRenderer`. It accepts an adapter/host-resolved but unprepared `CanvasSceneDocument`, performs strict resource preflight, invokes an optional `ScenePreparer` exactly once, and owns operation-scoped text/image resources through PNG encoding.
+
+See the [`canvas_renderer_flutter` README](packages/canvas_renderer_flutter/README.md) for image loading, font/resource ownership, low-level painting, and canonical PNG rendering.
 
 ## Use the Flutter editor
 
@@ -131,6 +131,8 @@ CanvasSceneEditor(
 ```
 
 The editor includes selection, transforms, viewport controls, layers, inspector UI, history, shortcuts, and extensible asset and export capabilities.
+
+Interactive editor rendering may use a prepared runtime scene. Final PNG actions instead resolve the current source document without preparation and pass that canonical output scene to the host `PngExportPort`, where an authoritative PNG renderer owns final preparation/rendering.
 
 See the [`canvas_editor_flutter` README](packages/canvas_editor_flutter/README.md) for runtime resources, editor lifecycle, extensions, image import, asset libraries, and export configuration.
 
