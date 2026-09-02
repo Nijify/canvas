@@ -10,23 +10,15 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final class _FakeFonts implements FlutterFontLoader {
-  _FakeFonts({
-    this.fallback = const <String>[],
-    this.changed = false,
-  });
-
-  final List<String> fallback;
-  final bool changed;
-
   final List<Set<String>> loadedRequests = <Set<String>>[];
 
   @override
-  Iterable<String> get fallbackFontFamilies => fallback;
+  Iterable<String> get fallbackFontFamilies => const <String>[];
 
   @override
   Future<bool> ensureLoaded(Iterable<String> families) async {
     loadedRequests.add(families.toSet());
-    return changed;
+    return false;
   }
 }
 
@@ -131,12 +123,8 @@ void main() {
     final icons = _FakeIcons();
 
     final images = _FakeImages(
-      sources: const <String, String>{
-        'media:one': 'asset:assets/resolved.png',
-      },
-      intrinsicSizes: const <String, Size2D>{
-        'media:one': Size2D(640, 480),
-      },
+      sources: const <String, String>{'media:one': 'asset:assets/resolved.png'},
+      intrinsicSizes: const <String, Size2D>{'media:one': Size2D(640, 480)},
     );
 
     var decoderCalls = 0;

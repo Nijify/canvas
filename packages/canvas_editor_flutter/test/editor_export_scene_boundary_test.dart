@@ -199,10 +199,7 @@ final class _ResolvingAdapter extends EditorDocumentAdapter<_SourceDocument> {
   CanvasSceneDocument getBase(_SourceDocument doc) => doc.base;
 
   @override
-  _SourceDocument replaceBase(
-    _SourceDocument doc,
-    CanvasSceneDocument base,
-  ) {
+  _SourceDocument replaceBase(_SourceDocument doc, CanvasSceneDocument base) {
     return _SourceDocument(base);
   }
 
@@ -270,9 +267,7 @@ void main() {
       final runtime = EditorRuntime<_SourceDocument>(
         initial: _SourceDocument(baseScene),
         adapter: const _ResolvingAdapter(),
-        renderPipeline: CanvasRenderPipeline(
-          textMeasurer: _FakeTextMeasurer(),
-        ),
+        renderPipeline: CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
         initialContext: 'initial',
         scenePreparer: (scene, services) {
           preparerCalls++;

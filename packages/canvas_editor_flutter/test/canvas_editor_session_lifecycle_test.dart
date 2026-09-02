@@ -9,9 +9,7 @@ import 'package:provider/provider.dart';
 import 'editor_runtime_fakes.dart';
 
 CanvasRuntimeResources _resources(String tag) {
-  return canvasRuntimeResourcesForTest(
-    icons: _TaggedIconCatalog(tag),
-  );
+  return canvasRuntimeResourcesForTest(icons: _TaggedIconCatalog(tag));
 }
 
 final class _TaggedIconCatalog implements IconCatalogPort {

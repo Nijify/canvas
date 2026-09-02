@@ -165,7 +165,8 @@ void main() {
       expect(
         preparerCalls,
         1,
-        reason: 'Resolving the final-output scene must not invoke ScenePreparer.',
+        reason:
+            'Resolving the final-output scene must not invoke ScenePreparer.',
       );
     },
   );

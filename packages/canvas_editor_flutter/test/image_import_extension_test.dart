@@ -73,7 +73,9 @@ final class _RecordingImageImportPort implements ImageImportPort {
   final List<ImageImportSource> requestedSources = <ImageImportSource>[];
 
   @override
-  Future<ImageImportResult> importImage({required ImageImportSource source}) async {
+  Future<ImageImportResult> importImage({
+    required ImageImportSource source,
+  }) async {
     requestedSources.add(source);
     return result;
   }
@@ -131,9 +133,7 @@ final class _PendingImageResolver implements CanvasImageAssetResolver {
   }
 
   @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(
-    List<String> sourceRefs,
-  ) {
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> sourceRefs) {
     requestedIntrinsicSizes.addAll(sourceRefs);
     return intrinsicSizes.future;
   }
