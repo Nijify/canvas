@@ -145,7 +145,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
             : null,
       );
 
-      return _encodePng(
+      return await _encodePng(
         built: built,
         spec: spec,
         imagePool: imagePool,

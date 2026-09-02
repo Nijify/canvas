@@ -48,18 +48,10 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
   _RecordingImageResolver({
     this.sources = const <String, String>{},
     this.intrinsics = const <String, Size2D>{},
-    this.resolveSourcesCallback,
-    this.resolveIntrinsicSizesCallback,
   });
 
   final Map<String, String> sources;
   final Map<String, Size2D> intrinsics;
-
-  final Future<Map<String, String>> Function(List<String> sourceRefs)?
-  resolveSourcesCallback;
-
-  final Future<Map<String, Size2D>> Function(List<String> sourceRefs)?
-  resolveIntrinsicSizesCallback;
 
   final List<List<String>> sourceRequests = <List<String>>[];
 
@@ -68,12 +60,6 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
   @override
   Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
     sourceRequests.add(List<String>.unmodifiable(sourceRefs));
-
-    final callback = resolveSourcesCallback;
-
-    if (callback != null) {
-      return callback(sourceRefs);
-    }
 
     return <String, String>{
       for (final sourceRef in sourceRefs)
@@ -86,12 +72,6 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
     List<String> sourceRefs,
   ) async {
     intrinsicRequests.add(List<String>.unmodifiable(sourceRefs));
-
-    final callback = resolveIntrinsicSizesCallback;
-
-    if (callback != null) {
-      return callback(sourceRefs);
-    }
 
     return <String, Size2D>{
       for (final sourceRef in sourceRefs)
