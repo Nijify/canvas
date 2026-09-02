@@ -270,7 +270,7 @@ void main() {
       expect(pool.intrinsicSize('image-0'), isNull);
     });
 
-    test('metadata resolver failures are isolated and retryable', () async {
+    test('batch metadata resolver failure is retryable', () async {
       var calls = 0;
 
       final pool = FlutterImagePool(
@@ -358,16 +358,19 @@ void main() {
       var metadataCalls = 0;
 
       final pool = FlutterImagePool(
-        assetMetasResolver: (_) {
-          metadataCalls++;
-          metadataStarted.complete();
-          return metadata.future;
-        },
+        resolver: _TestImageAssetResolver(
+          resolveIntrinsicSizesCallback: (_) {
+            metadataCalls++;
+            metadataStarted.complete();
+            return metadata.future;
+          },
+        ),
         decoder: (_) async {
           decoderStarted.complete();
           return decoded;
         },
       );
+
       final scene = _sceneWithImages(['asset:assets/test.png']);
 
       final intrinsicFuture = pool.resolveSceneIntrinsics(scene);
@@ -451,7 +454,7 @@ void main() {
         _sceneWithImages(['asset:assets/second.png']),
       );
 
-      // Reconciliation happens before URL or decoder awaits.
+      // Reconciliation happens before source resolution or decoder awaits.
       expect(pool.images['image-0'], isNull);
       expect(first.debugDisposed, isTrue);
 
@@ -610,54 +613,38 @@ void main() {
   });
 
   group('FlutterImagePool resolver boundaries', () {
-    test(
-      'passes original source refs to bulk URL resolver unchanged',
-      () async {
-        final requestedBatches = <List<String>>[];
+    test('passes original logical source refs to resolver unchanged', () async {
+      final requestedBatches = <List<String>>[];
 
-        final pool = FlutterImagePool(
-          assetUrlsResolver: (sourceRefs) async {
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (sourceRefs) async {
             requestedBatches.add(List<String>.from(sourceRefs));
 
             return const <String, String>{};
           },
-          decoder: (_) {
-            throw StateError(
-              'Decoder must not run for unresolved opaque refs.',
-            );
-          },
-        );
-
-        await pool.preloadScene(
-          _sceneWithImages([
-            'media:abc123',
-            'asset:assets/samples/sample_image.png',
-          ]),
-        );
-
-        expect(requestedBatches, hasLength(1));
-        expect(
-          requestedBatches.single,
-          unorderedEquals([
-            'media:abc123',
-            'asset:assets/samples/sample_image.png',
-          ]),
-        );
-        expect(pool.images, isEmpty);
-
-        pool.dispose();
-      },
-    );
-
-    test('does not guess unresolved refs when a URL resolver exists', () async {
-      final pool = FlutterImagePool(
-        assetUrlResolver: (_) async => null,
+        ),
         decoder: (_) {
           throw StateError('Decoder must not run for unresolved opaque refs.');
         },
       );
 
-      await pool.preloadScene(_sceneWithImages(['media:missing']));
+      await pool.preloadScene(
+        _sceneWithImages([
+          'media:abc123',
+          'asset:assets/samples/sample_image.png',
+        ]),
+      );
+
+      expect(requestedBatches, hasLength(1));
+
+      expect(
+        requestedBatches.single,
+        unorderedEquals(<String>[
+          'media:abc123',
+          'asset:assets/samples/sample_image.png',
+        ]),
+      );
 
       expect(pool.images, isEmpty);
 
@@ -665,12 +652,257 @@ void main() {
     });
 
     test(
-      'late unresolved URL completion cannot write after disposal',
+      'authoritative resolver never falls back to unresolved logical ref',
+      () async {
+        var decoderCalls = 0;
+
+        final pool = FlutterImagePool(
+          resolver: _TestImageAssetResolver(
+            resolveSourcesCallback: (_) async {
+              return const <String, String>{};
+            },
+          ),
+          decoder: (_) async {
+            decoderCalls++;
+            return null;
+          },
+        );
+
+        await pool.preloadScene(_sceneWithImages(['media:missing']));
+
+        expect(decoderCalls, 0);
+        expect(pool.images, isEmpty);
+
+        pool.dispose();
+      },
+    );
+
+    test('resolves active logical refs again on every preload', () async {
+      final decoded = await _createImage();
+
+      var sourceCalls = 0;
+      var decoderCalls = 0;
+
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (sourceRefs) async {
+            sourceCalls++;
+
+            return <String, String>{
+              sourceRefs.single: 'https://example.com/image.png?token=same',
+            };
+          },
+        ),
+        decoder: (_) async {
+          decoderCalls++;
+          return decoded;
+        },
+      );
+
+      final scene = _sceneWithImages(['media:rotating']);
+
+      await pool.preloadScene(scene);
+      await pool.preloadScene(scene);
+
+      expect(
+        sourceCalls,
+        2,
+        reason:
+            'Renderable source freshness belongs to the resolver, so each '
+            'preload must resolve the active logical source refs again.',
+      );
+
+      expect(
+        decoderCalls,
+        1,
+        reason:
+            'An unchanged resolved source and decode size should reuse the '
+            'existing decoded raster.',
+      );
+
+      expect(identical(pool.images['image-0'], decoded), isTrue);
+
+      pool.dispose();
+
+      expect(decoded.debugDisposed, isTrue);
+    });
+
+    test('rotating renderable source triggers a new decode', () async {
+      final first = await _createImage(color: 0xFFFF0000);
+
+      final second = await _createImage(color: 0xFF00FF00);
+
+      var sourceCalls = 0;
+      var decoderCalls = 0;
+
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (sourceRefs) async {
+            sourceCalls++;
+
+            final source = sourceCalls == 1
+                ? 'https://example.com/image.png?token=one'
+                : 'https://example.com/image.png?token=two';
+
+            return <String, String>{sourceRefs.single: source};
+          },
+        ),
+        decoder: (_) async {
+          decoderCalls++;
+
+          return decoderCalls == 1 ? first : second;
+        },
+      );
+
+      final scene = _sceneWithImages(['media:rotating']);
+
+      await pool.preloadScene(scene);
+
+      expect(identical(pool.images['image-0'], first), isTrue);
+
+      await pool.preloadScene(scene);
+
+      expect(sourceCalls, 2);
+      expect(decoderCalls, 2);
+
+      expect(first.debugDisposed, isTrue);
+
+      expect(identical(pool.images['image-0'], second), isTrue);
+
+      expect(second.debugDisposed, isFalse);
+
+      pool.dispose();
+
+      expect(second.debugDisposed, isTrue);
+    });
+
+    test(
+      'older concurrent source resolution cannot overwrite latest preload',
+      () async {
+        final firstResult = Completer<Map<String, String>>();
+
+        final secondResult = Completer<Map<String, String>>();
+
+        final firstStarted = Completer<void>();
+        final secondStarted = Completer<void>();
+
+        final latestImage = await _createImage(color: 0xFF00FF00);
+
+        var resolverCall = 0;
+        var decoderCalls = 0;
+
+        final pool = FlutterImagePool(
+          resolver: _TestImageAssetResolver(
+            resolveSourcesCallback: (_) {
+              switch (resolverCall++) {
+                case 0:
+                  firstStarted.complete();
+                  return firstResult.future;
+
+                case 1:
+                  secondStarted.complete();
+                  return secondResult.future;
+
+                default:
+                  throw StateError('Unexpected source resolver invocation.');
+              }
+            },
+          ),
+          decoder: (_) async {
+            decoderCalls++;
+            return latestImage;
+          },
+        );
+
+        final scene = _sceneWithImages(['media:rotating']);
+
+        final firstFuture = pool.preloadScene(scene);
+
+        await firstStarted.future;
+
+        final secondFuture = pool.preloadScene(scene);
+
+        await secondStarted.future;
+
+        secondResult.complete(const <String, String>{
+          'media:rotating': 'https://example.com/image.png?token=latest',
+        });
+
+        await secondFuture;
+
+        expect(decoderCalls, 1);
+
+        expect(identical(pool.images['image-0'], latestImage), isTrue);
+
+        firstResult.complete(const <String, String>{
+          'media:rotating': 'https://example.com/image.png?token=stale',
+        });
+
+        await firstFuture;
+
+        expect(
+          decoderCalls,
+          1,
+          reason:
+              'The stale source-resolution completion must be rejected before '
+              'it reaches decoding.',
+        );
+
+        expect(identical(pool.images['image-0'], latestImage), isTrue);
+
+        pool.dispose();
+
+        expect(latestImage.debugDisposed, isTrue);
+      },
+    );
+
+    test('preserves exact HTTPS source including query parameters', () async {
+      const sourceRef =
+          'https://images.unsplash.com/photo-123'
+          '?ixid=test-value&auto=format&fit=crop&w=1200&q=80';
+
+      final requestedRefs = <String>[];
+
+      final decoded = await _createImage();
+
+      String? providerDescription;
+
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (sourceRefs) async {
+            requestedRefs.addAll(sourceRefs);
+
+            return const <String, String>{sourceRef: sourceRef};
+          },
+        ),
+        decoder: (provider) async {
+          providerDescription = provider.toString();
+          return decoded;
+        },
+      );
+
+      await pool.preloadScene(_sceneWithImages([sourceRef]));
+
+      expect(requestedRefs, <String>[sourceRef]);
+
+      expect(providerDescription, contains(sourceRef));
+
+      expect(identical(pool.images['image-0'], decoded), isTrue);
+
+      pool.dispose();
+
+      expect(decoded.debugDisposed, isTrue);
+    });
+
+    test(
+      'late source resolution completion cannot write after disposal',
       () async {
         final resolver = Completer<Map<String, String>>();
 
         final pool = FlutterImagePool(
-          assetUrlsResolver: (_) => resolver.future,
+          resolver: _TestImageAssetResolver(
+            resolveSourcesCallback: (_) => resolver.future,
+          ),
         );
 
         final images = pool.images;
@@ -682,7 +914,11 @@ void main() {
         resolver.complete(const <String, String>{});
 
         await expectLater(future, completes);
+
         expect(images, isEmpty);
+
+        // Disposal remains idempotent.
+        pool.dispose();
       },
     );
   });

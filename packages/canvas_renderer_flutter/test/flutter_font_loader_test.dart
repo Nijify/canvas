@@ -38,15 +38,11 @@ final class _TestAssetBundle extends CachingAssetBundle {
   Future<ByteData> load(String key) => onLoad(key);
 }
 
-BundledCanvasFont _font(
+BundledFlutterFont _font(
   String family, {
   List<String> assetPaths = const <String>['fonts/test.ttf'],
 }) {
-  return BundledCanvasFont(
-    family: family,
-    label: family,
-    assetPaths: assetPaths,
-  );
+  return BundledFlutterFont(family: family, assetPaths: assetPaths);
 }
 
 void main() {
@@ -55,7 +51,7 @@ void main() {
   group('BundledFlutterFontLoader configuration', () {
     test('normalizes and validates configured fallback families', () {
       final loader = BundledFlutterFontLoader(
-        fonts: <BundledCanvasFont>[_font('Primary'), _font(' Fallback ')],
+        fonts: <BundledFlutterFont>[_font('Primary'), _font(' Fallback ')],
         fallbackFontFamilies: const <String>[' Fallback ', '', 'Fallback'],
         assetBundle: _TestAssetBundle((_) async => _testFontBytes()),
       );
@@ -66,7 +62,7 @@ void main() {
     test('rejects an unknown fallback family', () {
       expect(
         () => BundledFlutterFontLoader(
-          fonts: <BundledCanvasFont>[_font('Primary')],
+          fonts: <BundledFlutterFont>[_font('Primary')],
           fallbackFontFamilies: const <String>['Missing'],
           assetBundle: _TestAssetBundle((_) async => _testFontBytes()),
         ),
@@ -77,7 +73,7 @@ void main() {
     test('rejects duplicate normalized family definitions', () {
       expect(
         () => BundledFlutterFontLoader(
-          fonts: <BundledCanvasFont>[_font('Inter'), _font(' Inter ')],
+          fonts: <BundledFlutterFont>[_font('Inter'), _font(' Inter ')],
           assetBundle: _TestAssetBundle((_) async => _testFontBytes()),
         ),
         throwsArgumentError,
@@ -87,7 +83,7 @@ void main() {
     test('rejects blank asset paths', () {
       expect(
         () => BundledFlutterFontLoader(
-          fonts: <BundledCanvasFont>[
+          fonts: <BundledFlutterFont>[
             _font('Inter', assetPaths: const <String>['   ']),
           ],
           assetBundle: _TestAssetBundle((_) async => _testFontBytes()),
@@ -102,7 +98,7 @@ void main() {
       final loadedPaths = <String>[];
 
       final loader = BundledFlutterFontLoader(
-        fonts: <BundledCanvasFont>[_font('LoaderSuccessFont')],
+        fonts: <BundledFlutterFont>[_font('LoaderSuccessFont')],
         assetBundle: _TestAssetBundle((key) async {
           loadedPaths.add(key);
           return _testFontBytes();
@@ -130,7 +126,7 @@ void main() {
       var assetLoads = 0;
 
       final loader = BundledFlutterFontLoader(
-        fonts: <BundledCanvasFont>[_font('KnownFont')],
+        fonts: <BundledFlutterFont>[_font('KnownFont')],
         assetBundle: _TestAssetBundle((_) async {
           assetLoads++;
           return _testFontBytes();
@@ -145,12 +141,39 @@ void main() {
       expect(assetLoads, 0);
     });
 
+    test('loads every asset path configured for a family', () async {
+      final loadedPaths = <String>[];
+
+      final loader = BundledFlutterFontLoader(
+        fonts: <BundledFlutterFont>[
+          _font(
+            'MultiAssetFont',
+            assetPaths: const <String>['fonts/regular.ttf', 'fonts/bold.ttf'],
+          ),
+        ],
+        assetBundle: _TestAssetBundle((key) async {
+          loadedPaths.add(key);
+          return _testFontBytes();
+        }),
+      );
+
+      expect(
+        await loader.ensureLoaded(const <String>['MultiAssetFont']),
+        isTrue,
+      );
+
+      expect(
+        loadedPaths,
+        unorderedEquals(<String>['fonts/regular.ttf', 'fonts/bold.ttf']),
+      );
+    });
+
     test('concurrent callers share an in-flight load', () async {
       final assetResult = Completer<ByteData>();
       var assetLoads = 0;
 
       final loader = BundledFlutterFontLoader(
-        fonts: <BundledCanvasFont>[_font('ConcurrentFont')],
+        fonts: <BundledFlutterFont>[_font('ConcurrentFont')],
         assetBundle: _TestAssetBundle((_) {
           assetLoads++;
           return assetResult.future;
@@ -180,7 +203,7 @@ void main() {
       var assetLoads = 0;
 
       final loader = BundledFlutterFontLoader(
-        fonts: <BundledCanvasFont>[_font('RetryFont')],
+        fonts: <BundledFlutterFont>[_font('RetryFont')],
         assetBundle: _TestAssetBundle((_) async {
           assetLoads++;
 
