@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'node_model.dart';
@@ -9,6 +9,7 @@ part of 'node_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $Transform2DCopyWith<Transform2D> get copyWith => _$Transform2DCopyWithImpl<Tran
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transform2D&&(identical(other.position, position) || other.position == position)&&(identical(other.rotationRad, rotationRad) || other.rotationRad == rotationRad)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.customPivotPx, customPivotPx) || other.customPivotPx == customPivotPx));
+  final _this = this as Transform2D;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transform2D&&(identical(other.position, _this.position) || other.position == _this.position)&&(identical(other.rotationRad, _this.rotationRad) || other.rotationRad == _this.rotationRad)&&(identical(other.scale, _this.scale) || other.scale == _this.scale)&&(identical(other.origin, _this.origin) || other.origin == _this.origin)&&(identical(other.customPivotPx, _this.customPivotPx) || other.customPivotPx == _this.customPivotPx));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,position,rotationRad,scale,origin,customPivotPx);
+int get hashCode {
+  final _this = this as Transform2D;
+  return Object.hash(runtimeType,_this.position,_this.rotationRad,_this.scale,_this.origin,_this.customPivotPx);
+}
 
 @override
 String toString() {
-  return 'Transform2D(position: $position, rotationRad: $rotationRad, scale: $scale, origin: $origin, customPivotPx: $customPivotPx)';
+  final _this = this as Transform2D;
+  return 'Transform2D(position: ${_this.position}, rotationRad: ${_this.rotationRad}, scale: ${_this.scale}, origin: ${_this.origin}, customPivotPx: ${_this.customPivotPx})';
 }
 
 
@@ -66,7 +72,7 @@ class _$Transform2DCopyWithImpl<$Res>
 /// Create a copy of Transform2D
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? position = null,Object? rotationRad = null,Object? scale = null,Object? origin = null,Object? customPivotPx = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Transform2D(
 position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
 as Vec2,rotationRad: null == rotationRad ? _self.rotationRad : rotationRad // ignore: cast_nullable_to_non_nullable
 as double,scale: null == scale ? _self.scale : scale // ignore: cast_nullable_to_non_nullable
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transform2D&&(identical(other.position, position) || other.position == position)&&(identical(other.rotationRad, rotationRad) || other.rotationRad == rotationRad)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.customPivotPx, customPivotPx) || other.customPivotPx == customPivotPx));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transform2D&&(identical(other.position, position) || other.position == position)&&(identical(other.rotationRad, rotationRad) || other.rotationRad == rotationRad)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.customPivotPx, customPivotPx) || other.customPivotPx == customPivotPx));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,position,rotationRad,scale,origin,customPivotPx);
+int get hashCode {
+    return Object.hash(runtimeType,position,rotationRad,scale,origin,customPivotPx);
+}
 
 @override
 String toString() {
-  return 'Transform2D(position: $position, rotationRad: $rotationRad, scale: $scale, origin: $origin, customPivotPx: $customPivotPx)';
+    return 'Transform2D(position: $position, rotationRad: $rotationRad, scale: $scale, origin: $origin, customPivotPx: $customPivotPx)';
 }
 
 
@@ -307,16 +315,21 @@ $TextDataCopyWith<TextData> get copyWith => _$TextDataCopyWithImpl<TextData>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TextData&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
+  final _this = this as TextData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TextData&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.fontFamily, _this.fontFamily) || other.fontFamily == _this.fontFamily)&&(identical(other.fontWeight, _this.fontWeight) || other.fontWeight == _this.fontWeight)&&(identical(other.fontSize, _this.fontSize) || other.fontSize == _this.fontSize)&&(identical(other.letterSpacing, _this.letterSpacing) || other.letterSpacing == _this.letterSpacing)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&(identical(other.shadowOffset, _this.shadowOffset) || other.shadowOffset == _this.shadowOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,text,fontFamily,fontWeight,fontSize,letterSpacing,fill,shadowOffset);
+int get hashCode {
+  final _this = this as TextData;
+  return Object.hash(runtimeType,_this.text,_this.fontFamily,_this.fontWeight,_this.fontSize,_this.letterSpacing,_this.fill,_this.shadowOffset);
+}
 
 @override
 String toString() {
-  return 'TextData(text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, fill: $fill, shadowOffset: $shadowOffset)';
+  final _this = this as TextData;
+  return 'TextData(text: ${_this.text}, fontFamily: ${_this.fontFamily}, fontWeight: ${_this.fontWeight}, fontSize: ${_this.fontSize}, letterSpacing: ${_this.letterSpacing}, fill: ${_this.fill}, shadowOffset: ${_this.shadowOffset})';
 }
 
 
@@ -345,7 +358,7 @@ class _$TextDataCopyWithImpl<$Res>
 /// Create a copy of TextData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? fill = null,Object? shadowOffset = null,}) {
-  return _then(_self.copyWith(
+  return _then(TextData(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
 as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // ignore: cast_nullable_to_non_nullable
@@ -522,16 +535,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TextData&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TextData&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,text,fontFamily,fontWeight,fontSize,letterSpacing,fill,shadowOffset);
+int get hashCode {
+    return Object.hash(runtimeType,text,fontFamily,fontWeight,fontSize,letterSpacing,fill,shadowOffset);
+}
 
 @override
 String toString() {
-  return 'TextData(text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, fill: $fill, shadowOffset: $shadowOffset)';
+    return 'TextData(text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, fill: $fill, shadowOffset: $shadowOffset)';
 }
 
 
@@ -594,16 +609,21 @@ $ImageDataCopyWith<ImageData> get copyWith => _$ImageDataCopyWithImpl<ImageData>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
+  final _this = this as ImageData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageData&&(identical(other.assetId, _this.assetId) || other.assetId == _this.assetId)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.fit, _this.fit) || other.fit == _this.fit)&&(identical(other.align, _this.align) || other.align == _this.align));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,assetId,size,fit,align);
+int get hashCode {
+  final _this = this as ImageData;
+  return Object.hash(runtimeType,_this.assetId,_this.size,_this.fit,_this.align);
+}
 
 @override
 String toString() {
-  return 'ImageData(assetId: $assetId, size: $size, fit: $fit, align: $align)';
+  final _this = this as ImageData;
+  return 'ImageData(assetId: ${_this.assetId}, size: ${_this.size}, fit: ${_this.fit}, align: ${_this.align})';
 }
 
 
@@ -632,7 +652,7 @@ class _$ImageDataCopyWithImpl<$Res>
 /// Create a copy of ImageData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? assetId = freezed,Object? size = null,Object? fit = null,Object? align = null,}) {
-  return _then(_self.copyWith(
+  return _then(ImageData(
 assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
 as CanvasAssetId?,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
 as Size2D,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
@@ -801,16 +821,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,assetId,size,fit,align);
+int get hashCode {
+    return Object.hash(runtimeType,assetId,size,fit,align);
+}
 
 @override
 String toString() {
-  return 'ImageData(assetId: $assetId, size: $size, fit: $fit, align: $align)';
+    return 'ImageData(assetId: $assetId, size: $size, fit: $fit, align: $align)';
 }
 
 
@@ -868,16 +890,21 @@ $PathDataCopyWith<PathData> get copyWith => _$PathDataCopyWithImpl<PathData>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PathData&&const DeepCollectionEquality().equals(other.points, points)&&(identical(other.source, source) || other.source == source)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.strokeColor, strokeColor) || other.strokeColor == strokeColor)&&(identical(other.strokeWidth, strokeWidth) || other.strokeWidth == strokeWidth)&&(identical(other.strokeCap, strokeCap) || other.strokeCap == strokeCap)&&(identical(other.strokeJoin, strokeJoin) || other.strokeJoin == strokeJoin)&&(identical(other.miterLimit, miterLimit) || other.miterLimit == miterLimit)&&const DeepCollectionEquality().equals(other.dash, dash));
+  final _this = this as PathData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PathData&&const DeepCollectionEquality().equals(other.points, _this.points)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&(identical(other.fillRule, _this.fillRule) || other.fillRule == _this.fillRule)&&(identical(other.strokeColor, _this.strokeColor) || other.strokeColor == _this.strokeColor)&&(identical(other.strokeWidth, _this.strokeWidth) || other.strokeWidth == _this.strokeWidth)&&(identical(other.strokeCap, _this.strokeCap) || other.strokeCap == _this.strokeCap)&&(identical(other.strokeJoin, _this.strokeJoin) || other.strokeJoin == _this.strokeJoin)&&(identical(other.miterLimit, _this.miterLimit) || other.miterLimit == _this.miterLimit)&&const DeepCollectionEquality().equals(other.dash, _this.dash));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(points),source,fill,fillRule,strokeColor,strokeWidth,strokeCap,strokeJoin,miterLimit,const DeepCollectionEquality().hash(dash));
+int get hashCode {
+  final _this = this as PathData;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.points),_this.source,_this.fill,_this.fillRule,_this.strokeColor,_this.strokeWidth,_this.strokeCap,_this.strokeJoin,_this.miterLimit,const DeepCollectionEquality().hash(_this.dash));
+}
 
 @override
 String toString() {
-  return 'PathData(points: $points, source: $source, fill: $fill, fillRule: $fillRule, strokeColor: $strokeColor, strokeWidth: $strokeWidth, strokeCap: $strokeCap, strokeJoin: $strokeJoin, miterLimit: $miterLimit, dash: $dash)';
+  final _this = this as PathData;
+  return 'PathData(points: ${_this.points}, source: ${_this.source}, fill: ${_this.fill}, fillRule: ${_this.fillRule}, strokeColor: ${_this.strokeColor}, strokeWidth: ${_this.strokeWidth}, strokeCap: ${_this.strokeCap}, strokeJoin: ${_this.strokeJoin}, miterLimit: ${_this.miterLimit}, dash: ${_this.dash})';
 }
 
 
@@ -906,7 +933,7 @@ class _$PathDataCopyWithImpl<$Res>
 /// Create a copy of PathData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? points = null,Object? source = freezed,Object? fill = null,Object? fillRule = null,Object? strokeColor = null,Object? strokeWidth = null,Object? strokeCap = null,Object? strokeJoin = null,Object? miterLimit = null,Object? dash = null,}) {
-  return _then(_self.copyWith(
+  return _then(PathData(
 points: null == points ? _self.points : points // ignore: cast_nullable_to_non_nullable
 as List<Vec2?>,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as PathSource?,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
@@ -1058,7 +1085,7 @@ return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.stroke
 @JsonSerializable()
 
 class _PathData implements PathData {
-  const _PathData({@Vec2ListNullableConverter() final  List<Vec2?> points = const <Vec2?>[], @PathSourceConverter() this.source, @CanvasFillConverter() this.fill = const CanvasFillNone(), this.fillRule = FillRule.nonZero, this.strokeColor = 0x00000000, this.strokeWidth = 4.0, this.strokeCap = StrokeCap.butt, this.strokeJoin = StrokeJoin.miter, this.miterLimit = 4.0, final  List<double> dash = const <double>[]}): _points = points,_dash = dash;
+  const _PathData({@Vec2ListNullableConverter()  List<Vec2?> points = const <Vec2?>[], @PathSourceConverter() this.source, @CanvasFillConverter() this.fill = const CanvasFillNone(), this.fillRule = FillRule.nonZero, this.strokeColor = 0x00000000, this.strokeWidth = 4.0, this.strokeCap = StrokeCap.butt, this.strokeJoin = StrokeJoin.miter, this.miterLimit = 4.0,  List<double> dash = const <double>[]}): _points = points,_dash = dash;
   factory _PathData.fromJson(Map<String, dynamic> json) => _$PathDataFromJson(json);
 
  final  List<Vec2?> _points;
@@ -1097,16 +1124,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PathData&&const DeepCollectionEquality().equals(other._points, _points)&&(identical(other.source, source) || other.source == source)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.strokeColor, strokeColor) || other.strokeColor == strokeColor)&&(identical(other.strokeWidth, strokeWidth) || other.strokeWidth == strokeWidth)&&(identical(other.strokeCap, strokeCap) || other.strokeCap == strokeCap)&&(identical(other.strokeJoin, strokeJoin) || other.strokeJoin == strokeJoin)&&(identical(other.miterLimit, miterLimit) || other.miterLimit == miterLimit)&&const DeepCollectionEquality().equals(other._dash, _dash));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PathData&&const DeepCollectionEquality().equals(other.points, _points)&&(identical(other.source, source) || other.source == source)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.strokeColor, strokeColor) || other.strokeColor == strokeColor)&&(identical(other.strokeWidth, strokeWidth) || other.strokeWidth == strokeWidth)&&(identical(other.strokeCap, strokeCap) || other.strokeCap == strokeCap)&&(identical(other.strokeJoin, strokeJoin) || other.strokeJoin == strokeJoin)&&(identical(other.miterLimit, miterLimit) || other.miterLimit == miterLimit)&&const DeepCollectionEquality().equals(other.dash, _dash));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_points),source,fill,fillRule,strokeColor,strokeWidth,strokeCap,strokeJoin,miterLimit,const DeepCollectionEquality().hash(_dash));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_points),source,fill,fillRule,strokeColor,strokeWidth,strokeCap,strokeJoin,miterLimit,const DeepCollectionEquality().hash(_dash));
+}
 
 @override
 String toString() {
-  return 'PathData(points: $points, source: $source, fill: $fill, fillRule: $fillRule, strokeColor: $strokeColor, strokeWidth: $strokeWidth, strokeCap: $strokeCap, strokeJoin: $strokeJoin, miterLimit: $miterLimit, dash: $dash)';
+    return 'PathData(points: $points, source: $source, fill: $fill, fillRule: $fillRule, strokeColor: $strokeColor, strokeWidth: $strokeWidth, strokeCap: $strokeCap, strokeJoin: $strokeJoin, miterLimit: $miterLimit, dash: $dash)';
 }
 
 
@@ -1170,16 +1199,21 @@ $CanvasIconDataCopyWith<CanvasIconData> get copyWith => _$CanvasIconDataCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasIconData&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
+  final _this = this as CanvasIconData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasIconData&&(identical(other.iconRef, _this.iconRef) || other.iconRef == _this.iconRef)&&(identical(other.sizePx, _this.sizePx) || other.sizePx == _this.sizePx)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&(identical(other.shadowOffset, _this.shadowOffset) || other.shadowOffset == _this.shadowOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,iconRef,sizePx,fill,shadowOffset);
+int get hashCode {
+  final _this = this as CanvasIconData;
+  return Object.hash(runtimeType,_this.iconRef,_this.sizePx,_this.fill,_this.shadowOffset);
+}
 
 @override
 String toString() {
-  return 'CanvasIconData(iconRef: $iconRef, sizePx: $sizePx, fill: $fill, shadowOffset: $shadowOffset)';
+  final _this = this as CanvasIconData;
+  return 'CanvasIconData(iconRef: ${_this.iconRef}, sizePx: ${_this.sizePx}, fill: ${_this.fill}, shadowOffset: ${_this.shadowOffset})';
 }
 
 
@@ -1208,7 +1242,7 @@ class _$CanvasIconDataCopyWithImpl<$Res>
 /// Create a copy of CanvasIconData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? iconRef = null,Object? sizePx = null,Object? fill = null,Object? shadowOffset = null,}) {
-  return _then(_self.copyWith(
+  return _then(CanvasIconData(
 iconRef: null == iconRef ? _self.iconRef : iconRef // ignore: cast_nullable_to_non_nullable
 as String,sizePx: null == sizePx ? _self.sizePx : sizePx // ignore: cast_nullable_to_non_nullable
 as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
@@ -1375,16 +1409,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasIconData&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasIconData&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,iconRef,sizePx,fill,shadowOffset);
+int get hashCode {
+    return Object.hash(runtimeType,iconRef,sizePx,fill,shadowOffset);
+}
 
 @override
 String toString() {
-  return 'CanvasIconData(iconRef: $iconRef, sizePx: $sizePx, fill: $fill, shadowOffset: $shadowOffset)';
+    return 'CanvasIconData(iconRef: $iconRef, sizePx: $sizePx, fill: $fill, shadowOffset: $shadowOffset)';
 }
 
 
@@ -1442,16 +1478,21 @@ $GroupBehaviorRefCopyWith<GroupBehaviorRef> get copyWith => _$GroupBehaviorRefCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupBehaviorRef&&(identical(other.type, type) || other.type == type)&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.data, data));
+  final _this = this as GroupBehaviorRef;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupBehaviorRef&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.version, _this.version) || other.version == _this.version)&&const DeepCollectionEquality().equals(other.data, _this.data));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,version,const DeepCollectionEquality().hash(data));
+int get hashCode {
+  final _this = this as GroupBehaviorRef;
+  return Object.hash(runtimeType,_this.type,_this.version,const DeepCollectionEquality().hash(_this.data));
+}
 
 @override
 String toString() {
-  return 'GroupBehaviorRef(type: $type, version: $version, data: $data)';
+  final _this = this as GroupBehaviorRef;
+  return 'GroupBehaviorRef(type: ${_this.type}, version: ${_this.version}, data: ${_this.data})';
 }
 
 
@@ -1480,7 +1521,7 @@ class _$GroupBehaviorRefCopyWithImpl<$Res>
 /// Create a copy of GroupBehaviorRef
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? type = null,Object? version = null,Object? data = null,}) {
-  return _then(_self.copyWith(
+  return _then(GroupBehaviorRef(
 type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as int,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
@@ -1625,7 +1666,7 @@ return $default(_that.type,_that.version,_that.data);case _:
 @JsonSerializable()
 
 class _GroupBehaviorRef implements GroupBehaviorRef {
-  const _GroupBehaviorRef({required this.type, required this.version, required final  Map<String, dynamic> data}): _data = data;
+  const _GroupBehaviorRef({required this.type, required this.version, required  Map<String, dynamic> data}): _data = data;
   factory _GroupBehaviorRef.fromJson(Map<String, dynamic> json) => _$GroupBehaviorRefFromJson(json);
 
 @override final  String type;
@@ -1651,16 +1692,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupBehaviorRef&&(identical(other.type, type) || other.type == type)&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other._data, _data));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupBehaviorRef&&(identical(other.type, type) || other.type == type)&&(identical(other.version, version) || other.version == version)&&const DeepCollectionEquality().equals(other.data, _data));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,version,const DeepCollectionEquality().hash(_data));
+int get hashCode {
+    return Object.hash(runtimeType,type,version,const DeepCollectionEquality().hash(_data));
+}
 
 @override
 String toString() {
-  return 'GroupBehaviorRef(type: $type, version: $version, data: $data)';
+    return 'GroupBehaviorRef(type: $type, version: $version, data: $data)';
 }
 
 
@@ -1739,10 +1782,7 @@ Node _$NodeFromJson(
 /// @nodoc
 mixin _$Node {
 
- ElementId get id; String? get name;// TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
-// Candidate for removal from the persisted scene model after layer
-// visibility UX is intentionally redesigned or removed.
- bool get hidden; bool get locked; Transform2D get xf;
+ ElementId get id; String? get name; bool get hidden; bool get locked; Transform2D get xf;
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1755,16 +1795,21 @@ $NodeCopyWith<Node> get copyWith => _$NodeCopyWithImpl<Node>(this as Node, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Node&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf));
+  final _this = this as Node;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Node&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.locked, _this.locked) || other.locked == _this.locked)&&(identical(other.xf, _this.xf) || other.xf == _this.xf));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,hidden,locked,xf);
+int get hashCode {
+  final _this = this as Node;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.hidden,_this.locked,_this.xf);
+}
 
 @override
 String toString() {
-  return 'Node(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf)';
+  final _this = this as Node;
+  return 'Node(id: ${_this.id}, name: ${_this.name}, hidden: ${_this.hidden}, locked: ${_this.locked}, xf: ${_this.xf})';
 }
 
 
@@ -1775,7 +1820,7 @@ abstract mixin class $NodeCopyWith<$Res>  {
   factory $NodeCopyWith(Node value, $Res Function(Node) _then) = _$NodeCopyWithImpl;
 @useResult
 $Res call({
- String id, String? name, bool hidden, bool locked, Transform2D xf
+ ElementId id, String? name, bool hidden, bool locked, Transform2D xf
 });
 
 
@@ -1795,7 +1840,7 @@ class _$NodeCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
@@ -1967,14 +2012,11 @@ return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavi
 @JsonSerializable()
 
 class TextNode extends Node {
-  const TextNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'text',super._();
+  const TextNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'text',super._();
   factory TextNode.fromJson(Map<String, dynamic> json) => _$TextNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
-// TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
-// Candidate for removal from the persisted scene model after layer
-// visibility UX is intentionally redesigned or removed.
 @override@JsonKey() final  bool hidden;
 @override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;
@@ -1998,16 +2040,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TextNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is TextNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+}
 
 @override
 String toString() {
-  return 'Node.text(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.text(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2073,7 +2117,7 @@ $TextDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class ImageNode extends Node {
-  const ImageNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'image',super._();
+  const ImageNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'image',super._();
   factory ImageNode.fromJson(Map<String, dynamic> json) => _$ImageNodeFromJson(json);
 
 @override final  ElementId id;
@@ -2101,16 +2145,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+}
 
 @override
 String toString() {
-  return 'Node.image(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.image(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2176,7 +2222,7 @@ $ImageDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class PathNode extends Node {
-  const PathNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'path',super._();
+  const PathNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'path',super._();
   factory PathNode.fromJson(Map<String, dynamic> json) => _$PathNodeFromJson(json);
 
 @override final  ElementId id;
@@ -2204,16 +2250,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PathNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is PathNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+}
 
 @override
 String toString() {
-  return 'Node.path(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.path(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2279,7 +2327,7 @@ $PathDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class IconNode extends Node {
-  const IconNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role, final  String? $type}): $type = $type ?? 'icon',super._();
+  const IconNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'icon',super._();
   factory IconNode.fromJson(Map<String, dynamic> json) => _$IconNodeFromJson(json);
 
 @override final  ElementId id;
@@ -2307,16 +2355,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IconNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is IconNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+}
 
 @override
 String toString() {
-  return 'Node.icon(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.icon(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2382,7 +2432,7 @@ $CanvasIconDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class GroupNode extends Node {
-  const GroupNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), this.behavior, final  List<Node> children = const <Node>[], final  String? $type}): _children = children,$type = $type ?? 'group',super._();
+  const GroupNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
   factory GroupNode.fromJson(Map<String, dynamic> json) => _$GroupNodeFromJson(json);
 
 @override final  ElementId id;
@@ -2416,16 +2466,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.behavior, behavior) || other.behavior == behavior)&&const DeepCollectionEquality().equals(other._children, _children));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.behavior, behavior) || other.behavior == behavior)&&const DeepCollectionEquality().equals(other.children, _children));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,hidden,locked,xf,behavior,const DeepCollectionEquality().hash(_children));
+int get hashCode {
+    return Object.hash(runtimeType,id,name,hidden,locked,xf,behavior,const DeepCollectionEquality().hash(_children));
+}
 
 @override
 String toString() {
-  return 'Node.group(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, behavior: $behavior, children: $children)';
+    return 'Node.group(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, behavior: $behavior, children: $children)';
 }
 
 

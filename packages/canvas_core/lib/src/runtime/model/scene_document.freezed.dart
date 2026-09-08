@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'scene_document.dart';
@@ -9,6 +9,7 @@ part of 'scene_document.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $CanvasImageAssetCopyWith<CanvasImageAsset> get copyWith => _$CanvasImageAssetCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasImageAsset&&(identical(other.sourceRef, sourceRef) || other.sourceRef == sourceRef)&&(identical(other.intrinsicSize, intrinsicSize) || other.intrinsicSize == intrinsicSize));
+  final _this = this as CanvasImageAsset;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasImageAsset&&(identical(other.sourceRef, _this.sourceRef) || other.sourceRef == _this.sourceRef)&&(identical(other.intrinsicSize, _this.intrinsicSize) || other.intrinsicSize == _this.intrinsicSize));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sourceRef,intrinsicSize);
+int get hashCode {
+  final _this = this as CanvasImageAsset;
+  return Object.hash(runtimeType,_this.sourceRef,_this.intrinsicSize);
+}
 
 @override
 String toString() {
-  return 'CanvasImageAsset(sourceRef: $sourceRef, intrinsicSize: $intrinsicSize)';
+  final _this = this as CanvasImageAsset;
+  return 'CanvasImageAsset(sourceRef: ${_this.sourceRef}, intrinsicSize: ${_this.intrinsicSize})';
 }
 
 
@@ -66,7 +72,7 @@ class _$CanvasImageAssetCopyWithImpl<$Res>
 /// Create a copy of CanvasImageAsset
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? sourceRef = null,Object? intrinsicSize = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CanvasImageAsset(
 sourceRef: null == sourceRef ? _self.sourceRef : sourceRef // ignore: cast_nullable_to_non_nullable
 as String,intrinsicSize: freezed == intrinsicSize ? _self.intrinsicSize : intrinsicSize // ignore: cast_nullable_to_non_nullable
 as Size2D?,
@@ -229,16 +235,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasImageAsset&&(identical(other.sourceRef, sourceRef) || other.sourceRef == sourceRef)&&(identical(other.intrinsicSize, intrinsicSize) || other.intrinsicSize == intrinsicSize));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasImageAsset&&(identical(other.sourceRef, sourceRef) || other.sourceRef == sourceRef)&&(identical(other.intrinsicSize, intrinsicSize) || other.intrinsicSize == intrinsicSize));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sourceRef,intrinsicSize);
+int get hashCode {
+    return Object.hash(runtimeType,sourceRef,intrinsicSize);
+}
 
 @override
 String toString() {
-  return 'CanvasImageAsset(sourceRef: $sourceRef, intrinsicSize: $intrinsicSize)';
+    return 'CanvasImageAsset(sourceRef: $sourceRef, intrinsicSize: $intrinsicSize)';
 }
 
 
@@ -294,16 +302,21 @@ $CanvasSceneDocumentCopyWith<CanvasSceneDocument> get copyWith => _$CanvasSceneD
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.backgroundFill, backgroundFill) || other.backgroundFill == backgroundFill)&&(identical(other.backgroundOpacity, backgroundOpacity) || other.backgroundOpacity == backgroundOpacity)&&const DeepCollectionEquality().equals(other.assets, assets)&&const DeepCollectionEquality().equals(other.children, children));
+  final _this = this as CanvasSceneDocument;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasSceneDocument&&(identical(other.artboardSize, _this.artboardSize) || other.artboardSize == _this.artboardSize)&&(identical(other.backgroundFill, _this.backgroundFill) || other.backgroundFill == _this.backgroundFill)&&(identical(other.backgroundOpacity, _this.backgroundOpacity) || other.backgroundOpacity == _this.backgroundOpacity)&&const DeepCollectionEquality().equals(other.assets, _this.assets)&&const DeepCollectionEquality().equals(other.children, _this.children));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,artboardSize,backgroundFill,backgroundOpacity,const DeepCollectionEquality().hash(assets),const DeepCollectionEquality().hash(children));
+int get hashCode {
+  final _this = this as CanvasSceneDocument;
+  return Object.hash(runtimeType,_this.artboardSize,_this.backgroundFill,_this.backgroundOpacity,const DeepCollectionEquality().hash(_this.assets),const DeepCollectionEquality().hash(_this.children));
+}
 
 @override
 String toString() {
-  return 'CanvasSceneDocument(artboardSize: $artboardSize, backgroundFill: $backgroundFill, backgroundOpacity: $backgroundOpacity, assets: $assets, children: $children)';
+  final _this = this as CanvasSceneDocument;
+  return 'CanvasSceneDocument(artboardSize: ${_this.artboardSize}, backgroundFill: ${_this.backgroundFill}, backgroundOpacity: ${_this.backgroundOpacity}, assets: ${_this.assets}, children: ${_this.children})';
 }
 
 
@@ -332,7 +345,7 @@ class _$CanvasSceneDocumentCopyWithImpl<$Res>
 /// Create a copy of CanvasSceneDocument
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? artboardSize = null,Object? backgroundFill = null,Object? backgroundOpacity = null,Object? assets = null,Object? children = null,}) {
-  return _then(_self.copyWith(
+  return _then(CanvasSceneDocument(
 artboardSize: null == artboardSize ? _self.artboardSize : artboardSize // ignore: cast_nullable_to_non_nullable
 as Size2D,backgroundFill: null == backgroundFill ? _self.backgroundFill : backgroundFill // ignore: cast_nullable_to_non_nullable
 as CanvasFill,backgroundOpacity: null == backgroundOpacity ? _self.backgroundOpacity : backgroundOpacity // ignore: cast_nullable_to_non_nullable
@@ -479,7 +492,7 @@ return $default(_that.artboardSize,_that.backgroundFill,_that.backgroundOpacity,
 @JsonSerializable()
 
 class _CanvasSceneDocument extends CanvasSceneDocument {
-  const _CanvasSceneDocument({@Size2DConverter() this.artboardSize = const Size2D(740, 360), @CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) required this.backgroundFill, @JsonKey(required: true, disallowNullValue: true) required this.backgroundOpacity, final  Map<CanvasAssetId, CanvasImageAsset> assets = const <CanvasAssetId, CanvasImageAsset>{}, final  List<Node> children = const <Node>[]}): _assets = assets,_children = children,super._();
+  const _CanvasSceneDocument({@Size2DConverter() this.artboardSize = const Size2D(740, 360), @CanvasFillConverter()@JsonKey(required: true, disallowNullValue: true) required this.backgroundFill, @JsonKey(required: true, disallowNullValue: true) required this.backgroundOpacity,  Map<CanvasAssetId, CanvasImageAsset> assets = const <CanvasAssetId, CanvasImageAsset>{},  List<Node> children = const <Node>[]}): _assets = assets,_children = children,super._();
   factory _CanvasSceneDocument.fromJson(Map<String, dynamic> json) => _$CanvasSceneDocumentFromJson(json);
 
 @override@JsonKey()@Size2DConverter() final  Size2D artboardSize;
@@ -513,16 +526,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.backgroundFill, backgroundFill) || other.backgroundFill == backgroundFill)&&(identical(other.backgroundOpacity, backgroundOpacity) || other.backgroundOpacity == backgroundOpacity)&&const DeepCollectionEquality().equals(other._assets, _assets)&&const DeepCollectionEquality().equals(other._children, _children));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasSceneDocument&&(identical(other.artboardSize, artboardSize) || other.artboardSize == artboardSize)&&(identical(other.backgroundFill, backgroundFill) || other.backgroundFill == backgroundFill)&&(identical(other.backgroundOpacity, backgroundOpacity) || other.backgroundOpacity == backgroundOpacity)&&const DeepCollectionEquality().equals(other.assets, _assets)&&const DeepCollectionEquality().equals(other.children, _children));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,artboardSize,backgroundFill,backgroundOpacity,const DeepCollectionEquality().hash(_assets),const DeepCollectionEquality().hash(_children));
+int get hashCode {
+    return Object.hash(runtimeType,artboardSize,backgroundFill,backgroundOpacity,const DeepCollectionEquality().hash(_assets),const DeepCollectionEquality().hash(_children));
+}
 
 @override
 String toString() {
-  return 'CanvasSceneDocument(artboardSize: $artboardSize, backgroundFill: $backgroundFill, backgroundOpacity: $backgroundOpacity, assets: $assets, children: $children)';
+    return 'CanvasSceneDocument(artboardSize: $artboardSize, backgroundFill: $backgroundFill, backgroundOpacity: $backgroundOpacity, assets: $assets, children: $children)';
 }
 
 
