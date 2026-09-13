@@ -71,8 +71,15 @@ void main() {
           );
           final ops = buildPaintOpsFromScene(scene, computed);
           final renderer = CanvasRenderer(text: text);
+
+          const rasterSafetyPadding = 2.0;
+
           final crop = _pixelRect(
-            computePaddedContentBounds(scene: scene, computed: computed)!,
+            computePaddedContentBounds(
+              scene: scene,
+              computed: computed,
+              paddingPx: rasterSafetyPadding,
+            )!,
           );
 
           // The reference extent is independent of the proposed paint-bound map.
