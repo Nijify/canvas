@@ -1,49 +1,54 @@
-// Path: lib/src/algorithms/layout/computed_scene.dart
-
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement;
 import 'package:canvas_core/src/algorithms/layout/node_geometry.dart';
-import 'package:canvas_core/src/runtime/traversal/stack_order.dart';
-import 'package:vector_math/vector_math_64.dart' as vm;
-
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
     show Rect2DX;
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/foundation/math/affine2d.dart' show matFromTRS;
-
-import 'package:canvas_core/src/services/services_context.dart'
-    show CoreServices;
-import 'package:canvas_core/src/services/icon_resolver.dart'
-    show ResolvedIconText;
-import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/runtime/model/scene_document.dart';
+import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
     show aabbOfTransformedRect;
-import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
+import 'package:canvas_core/src/runtime/model/node_model.dart';
+import 'package:canvas_core/src/runtime/model/scene_document.dart';
+import 'package:canvas_core/src/runtime/traversal/stack_order.dart';
+import 'package:canvas_core/src/services/icon_resolver.dart'
+    show ResolvedIconText;
+import 'package:canvas_core/src/services/services_context.dart'
+    show CoreServices;
+import 'package:vector_math/vector_math_64.dart' as vm;
 
 final class DrawItem {
   final ElementId leafId;
-  final List<ElementId> groupStack; // root..parent group ids
+  final List<ElementId> groupStack;
+
   const DrawItem({required this.leafId, required this.groupStack});
 }
 
+/// Computed geometry in document units; these maps are not serialized.
+///
+/// Local layout bounds determine pivots and oriented selection geometry.
+/// World layout bounds support multi-selection, snapping and manipulation.
+/// Paint bounds estimate rendered content for fitting and cropping; they must
+/// not affect transforms. Text metrics and the existing path-stroke estimate
+/// are not guaranteed pixel enclosures, so these are not hard clip bounds.
+///
+/// Groups union child bounds independently in each coordinate space. A group's
+/// world union can be tighter than transforming its local aggregate rectangle.
 final class ComputedScene {
   final List<DrawItem> drawList;
-
   final Map<ElementId, Node> nodeById;
-
   final Map<ElementId, vm.Matrix4> worldById;
   final Map<ElementId, vm.Matrix4> inverseWorldById;
 
-  final Map<ElementId, Rect2D> localBoundsById;
-  final Map<ElementId, Rect2D> visualBoundsWorldById;
+  final Map<ElementId, Rect2D> layoutBoundsLocalById;
+  final Map<ElementId, Rect2D> layoutBoundsWorldById;
+  final Map<ElementId, Rect2D> paintBoundsLocalById;
+  final Map<ElementId, Rect2D> paintBoundsWorldById;
 
   final Map<ElementId, PathIR> pathIRById;
   final Map<ElementId, ImagePlacement> imagePlacementById;
-
-  // icon pre-resolution (so paint is pure)
   final Map<ElementId, ResolvedIconText> iconTextById;
   final Map<ElementId, PathIR> iconPathIRById;
 
@@ -52,8 +57,10 @@ final class ComputedScene {
     required this.nodeById,
     required this.worldById,
     required this.inverseWorldById,
-    required this.localBoundsById,
-    required this.visualBoundsWorldById,
+    required this.layoutBoundsLocalById,
+    required this.layoutBoundsWorldById,
+    required this.paintBoundsLocalById,
+    required this.paintBoundsWorldById,
     required this.pathIRById,
     required this.imagePlacementById,
     required this.iconTextById,
@@ -61,13 +68,16 @@ final class ComputedScene {
   });
 }
 
-Vec2 _pivotFromOrigin(OriginKind origin, Rect2D? b, Vec2? custom) {
+Vec2 _pivotFromOrigin(OriginKind origin, Rect2D? bounds, Vec2? custom) {
   switch (origin) {
     case OriginKind.custom:
       return custom ?? const Vec2(0, 0);
     case OriginKind.center:
-      if (b == null) return const Vec2(0, 0);
-      return Vec2((b.left + b.right) * 0.5, (b.top + b.bottom) * 0.5);
+      if (bounds == null) return const Vec2(0, 0);
+      return Vec2(
+        (bounds.left + bounds.right) * 0.5,
+        (bounds.top + bounds.bottom) * 0.5,
+      );
   }
 }
 
@@ -75,27 +85,26 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   final geom = NodeGeometry(services);
   final drawList = <DrawItem>[];
   final nodeById = <ElementId, Node>{};
-
   final worldById = <ElementId, vm.Matrix4>{};
   final inverseWorldById = <ElementId, vm.Matrix4>{};
 
-  final localBoundsById = <ElementId, Rect2D>{};
-  final visualBoundsWorldById = <ElementId, Rect2D>{};
+  final layoutBoundsLocalById = <ElementId, Rect2D>{};
+  final layoutBoundsWorldById = <ElementId, Rect2D>{};
+  final paintBoundsLocalById = <ElementId, Rect2D>{};
+  final paintBoundsWorldById = <ElementId, Rect2D>{};
 
   final pathIRById = <ElementId, PathIR>{};
   final imagePlacementById = <ElementId, ImagePlacement>{};
   final iconTextById = <ElementId, ResolvedIconText>{};
   final iconPathIRById = <ElementId, PathIR>{};
 
-  // -----------------------------
-  // Helpers
-  // -----------------------------
-
-  vm.Matrix4 localMatrixFromKnownBounds(Node n) {
+  vm.Matrix4 localMatrixFromLayout(Node n) {
     final xf = n.xf;
-    final b = localBoundsById[n.id];
-    final pivot = _pivotFromOrigin(xf.origin, b, xf.customPivotPx);
-
+    final pivot = _pivotFromOrigin(
+      xf.origin,
+      layoutBoundsLocalById[n.id],
+      xf.customPivotPx,
+    );
     return matFromTRS(
       position: xf.position,
       rotationRad: xf.rotationRad,
@@ -104,113 +113,105 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
     );
   }
 
-  // -----------------------------
-  // PASS A: compute localBounds for ALL nodes (leaves + groups)
-  // - Leaves: measure/compile + cache
-  // - Groups: union(children bounds transformed into this node's local space)
-  // -----------------------------
-  Rect2D? computeLocalBounds(Node n, bool ancestorHidden) {
-    final hidden = ancestorHidden || n.hidden;
-    if (hidden) return null;
+  // Post-order: resolve each leaf once, then aggregate both local bounds.
+  // A child's layout is settled before its transform is used by its parent.
+  void computeLocalBounds(Node n) {
+    if (n.hidden) return;
 
-    final leafBounds = geom.leafLocalBounds(
+    final leaf = geom.leafBounds(
       n,
       pathIRById: pathIRById,
       imagePlacementById: imagePlacementById,
       iconTextById: iconTextById,
       iconPathIRById: iconPathIRById,
     );
-
-    if (leafBounds != null) {
-      localBoundsById[n.id] = leafBounds;
-      return leafBounds;
+    if (leaf != null) {
+      layoutBoundsLocalById[n.id] = leaf.layout;
+      final paint = leaf.paint;
+      if (paint != null) paintBoundsLocalById[n.id] = paint;
+      return;
     }
+    if (n is! GroupNode) return;
 
-    // Group/logo bounds: union child AABBs in *this node's local space*.
-    if (n is GroupNode) {
-      Rect2D? u;
+    Rect2D? layoutUnion;
+    Rect2D? paintUnion;
+    for (final child in nodesInPaintOrder(n.children)) {
+      computeLocalBounds(child);
+      final layout = layoutBoundsLocalById[child.id];
+      final paint = paintBoundsLocalById[child.id];
+      if (layout == null && paint == null) continue;
 
-      final kids = nodesInPaintOrder(n.childrenOrEmpty);
-      for (final c in kids) {
-        final cb = computeLocalBounds(c, hidden);
-        if (cb == null) continue;
-
-        // Child local matrix uses child's own pivot rules, which rely on its bounds
-        // (already computed because this is post-order).
-        final childLocalMat = localMatrixFromKnownBounds(c);
-        final childAabbInParentLocal = aabbOfTransformedRect(cb, childLocalMat);
-
-        u = (u == null)
-            ? childAabbInParentLocal
-            : Rect2DX.union(u, childAabbInParentLocal);
+      final childLocal = localMatrixFromLayout(child);
+      if (layout != null) {
+        final transformed = aabbOfTransformedRect(layout, childLocal);
+        layoutUnion = layoutUnion == null
+            ? transformed
+            : Rect2DX.union(layoutUnion, transformed);
       }
-
-      if (u != null) localBoundsById[n.id] = u;
-      return u;
+      if (paint != null) {
+        final transformed = aabbOfTransformedRect(paint, childLocal);
+        paintUnion = paintUnion == null
+            ? transformed
+            : Rect2DX.union(paintUnion, transformed);
+      }
     }
-
-    return null;
+    if (layoutUnion != null) layoutBoundsLocalById[n.id] = layoutUnion;
+    if (paintUnion != null) paintBoundsLocalById[n.id] = paintUnion;
   }
 
-  // Run pass A for all roots
-  for (final n in nodesInPaintOrder(doc.children)) {
-    computeLocalBounds(n, false);
+  for (final root in nodesInPaintOrder(doc.children)) {
+    computeLocalBounds(root);
   }
 
-  // -----------------------------
-  // PASS B: compute world matrices + drawList + visual world bounds
-  // -----------------------------
-  Rect2D? walk(
-    Node n,
-    vm.Matrix4 parentWorld,
-    List<ElementId> groupStack,
-    bool ancestorHidden,
-  ) {
-    final hidden = ancestorHidden || n.hidden;
-    if (hidden) return null;
+  // Pre-order transforms, followed by child-world unions for groups.
+  // Do not transform a group's already-aggregated local AABB again.
+  void walk(Node n, vm.Matrix4 parentWorld, List<ElementId> groupStack) {
+    if (n.hidden) return;
 
     nodeById[n.id] = n;
-
-    final localMat = localMatrixFromKnownBounds(n);
-    final world = vm.Matrix4.copy(parentWorld)..multiply(localMat);
-
+    final world = vm.Matrix4.copy(parentWorld)
+      ..multiply(localMatrixFromLayout(n));
     worldById[n.id] = world;
-
-    final inv = vm.Matrix4.copy(world)..invert();
-    inverseWorldById[n.id] = inv;
+    final inverse = vm.Matrix4.copy(world)..invert();
+    inverseWorldById[n.id] = inverse;
 
     if (n is GroupNode) {
-      final kids = nodesInPaintOrder(n.childrenOrEmpty);
       final nextStack = [...groupStack, n.id];
-
-      Rect2D? groupWorld;
-      for (final c in kids) {
-        final cb = walk(c, world, nextStack, hidden);
-        if (cb == null) continue;
-        groupWorld = (groupWorld == null) ? cb : Rect2DX.union(groupWorld, cb);
+      Rect2D? layoutUnion;
+      Rect2D? paintUnion;
+      for (final child in nodesInPaintOrder(n.children)) {
+        walk(child, world, nextStack);
+        final layout = layoutBoundsWorldById[child.id];
+        final paint = paintBoundsWorldById[child.id];
+        if (layout != null) {
+          layoutUnion = layoutUnion == null
+              ? layout
+              : Rect2DX.union(layoutUnion, layout);
+        }
+        if (paint != null) {
+          paintUnion = paintUnion == null
+              ? paint
+              : Rect2DX.union(paintUnion, paint);
+        }
       }
-
-      if (groupWorld != null) {
-        visualBoundsWorldById[n.id] = groupWorld;
-      }
-      return groupWorld;
+      if (layoutUnion != null) layoutBoundsWorldById[n.id] = layoutUnion;
+      if (paintUnion != null) paintBoundsWorldById[n.id] = paintUnion;
+      return;
     }
 
-    // Leaf: add draw item
     drawList.add(DrawItem(leafId: n.id, groupStack: groupStack));
-
-    final lb = localBoundsById[n.id];
-    if (lb != null) {
-      final aabb = aabbOfTransformedRect(lb, world);
-      visualBoundsWorldById[n.id] = aabb;
-      return aabb;
+    final layout = layoutBoundsLocalById[n.id];
+    final paint = paintBoundsLocalById[n.id];
+    if (layout != null) {
+      layoutBoundsWorldById[n.id] = aabbOfTransformedRect(layout, world);
     }
-
-    return null;
+    if (paint != null) {
+      paintBoundsWorldById[n.id] = aabbOfTransformedRect(paint, world);
+    }
   }
 
-  for (final n in nodesInPaintOrder(doc.children)) {
-    walk(n, vm.Matrix4.identity(), const <ElementId>[], false);
+  for (final root in nodesInPaintOrder(doc.children)) {
+    walk(root, vm.Matrix4.identity(), const <ElementId>[]);
   }
 
   return ComputedScene(
@@ -218,8 +219,10 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
     nodeById: nodeById,
     worldById: worldById,
     inverseWorldById: inverseWorldById,
-    localBoundsById: localBoundsById,
-    visualBoundsWorldById: visualBoundsWorldById,
+    layoutBoundsLocalById: layoutBoundsLocalById,
+    layoutBoundsWorldById: layoutBoundsWorldById,
+    paintBoundsLocalById: paintBoundsLocalById,
+    paintBoundsWorldById: paintBoundsWorldById,
     pathIRById: pathIRById,
     imagePlacementById: imagePlacementById,
     iconTextById: iconTextById,

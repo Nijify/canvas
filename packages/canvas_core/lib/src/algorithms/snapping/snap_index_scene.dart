@@ -66,7 +66,7 @@ List<SnapCandidate> sceneObjectKeylines(
     // Snap candidates exclude locked nodes (matches old includeLocked:false)
     if (leaf.locked) continue;
 
-    final rect = computed.visualBoundsWorldById[leafId];
+    final rect = computed.layoutBoundsWorldById[leafId];
     if (rect == null) continue;
 
     if (includeLeaves) {

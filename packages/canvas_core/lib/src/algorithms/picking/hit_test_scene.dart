@@ -178,7 +178,7 @@ bool _hitLeafAt(
   inv.transform3(p3);
   final local = Vec2(p3.x, p3.y);
 
-  final localRect = computed.localBoundsById[leafId];
+  final localRect = computed.layoutBoundsLocalById[leafId];
   if (localRect == null) return false;
 
   final bool isVectorLeaf =

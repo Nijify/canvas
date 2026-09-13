@@ -154,9 +154,7 @@ void main() {
 
     final renderer = FlutterCanvasPngRenderer(
       fonts: const _NoopFontLoader(),
-      images: _MapImageResolver(
-        sources: <String, String>{sourceRef: dataUri},
-      ),
+      images: _MapImageResolver(sources: <String, String>{sourceRef: dataUri}),
     );
 
     final bytes = await renderer.renderPng(

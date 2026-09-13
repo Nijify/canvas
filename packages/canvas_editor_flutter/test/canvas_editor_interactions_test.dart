@@ -94,7 +94,7 @@ void main() {
         .render
         .value
         .computed
-        .visualBoundsWorldById['shape-1']!;
+        .layoutBoundsWorldById['shape-1']!;
 
     final center = Vec2(
       (bounds.left + bounds.right) / 2,
@@ -168,7 +168,7 @@ void main() {
         .render
         .value
         .computed
-        .visualBoundsWorldById['shape-1']!;
+        .layoutBoundsWorldById['shape-1']!;
 
     final nodeBefore = findById(editor.controller.document.value, 'shape-1')!;
     final endSession = editor.controller.beginEditSession();
@@ -190,7 +190,7 @@ void main() {
         .render
         .value
         .computed
-        .visualBoundsWorldById['shape-1']!;
+        .layoutBoundsWorldById['shape-1']!;
 
     expect(boundsAfter.width, greaterThan(boundsBefore.width));
   });
