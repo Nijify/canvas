@@ -167,7 +167,7 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
       final id = editableIds.first;
       final node = rt.findById(scene, id);
       final world = computed.worldById[id];
-      final lb = computed.localBoundsById[id];
+      final lb = computed.layoutBoundsLocalById[id];
 
       if (node == null || world == null || lb == null) {
         return const SizedBox.shrink();
@@ -195,7 +195,7 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
 
       pivotWorld = _transformPoint(world, pivotLocal);
     } else {
-      rt.Rect2D? boundsFor(String id) => computed.visualBoundsWorldById[id];
+      rt.Rect2D? boundsFor(String id) => computed.layoutBoundsWorldById[id];
 
       final geom = rt.selectionGeometry(ids, getBounds: boundsFor);
       if (geom == null) return const SizedBox.shrink();

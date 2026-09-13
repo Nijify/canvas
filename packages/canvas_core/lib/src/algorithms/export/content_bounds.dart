@@ -1,5 +1,3 @@
-// Path: lib/src/algorithms/export/content_bounds.dart
-
 import 'package:canvas_core/src/algorithms/export/content_bounds_policy.dart'
     show ContentBoundsPolicy;
 import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
@@ -14,25 +12,22 @@ Rect2D? computePaddedContentBounds({
   ContentBoundsPolicy policy = const ContentBoundsPolicy(),
   double paddingPx = 0,
 }) {
-  Rect2D? b;
-
+  Rect2D? bounds;
   final preferredId = policy.preferredIdFor(scene);
   if (preferredId != null) {
-    b = computed.visualBoundsWorldById[preferredId];
+    bounds = computed.paintBoundsWorldById[preferredId];
   }
 
-  b ??= selectionUnionBounds(
+  bounds ??= selectionUnionBounds(
     policy.fallbackIdsFor(scene),
-    getBounds: (id) => computed.visualBoundsWorldById[id],
+    getBounds: (id) => computed.paintBoundsWorldById[id],
   );
+  if (bounds == null || bounds.width <= 0 || bounds.height <= 0) return null;
 
-  if (b == null || b.width <= 0 || b.height <= 0) return null;
-
-  final p = paddingPx;
   return Rect2D.fromLTWH(
-    b.left - p,
-    b.top - p,
-    b.width + p * 2,
-    b.height + p * 2,
+    bounds.left - paddingPx,
+    bounds.top - paddingPx,
+    bounds.width + paddingPx * 2,
+    bounds.height + paddingPx * 2,
   );
 }

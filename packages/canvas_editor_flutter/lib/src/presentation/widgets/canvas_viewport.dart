@@ -354,7 +354,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
               final aabb = selectionUnionBounds(
                 movableIds,
-                getBounds: (sid) => computed.visualBoundsWorldById[sid],
+                getBounds: (sid) => computed.layoutBoundsWorldById[sid],
               );
 
               if (aabb == null) {

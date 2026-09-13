@@ -10,8 +10,9 @@ import 'package:canvas_core/src/foundation/ids.dart';
 /// Axis-aligned union of the provided ids' bounds.
 ///
 /// [getBounds] should return world-space AABBs for individual elements.
-/// In runtime/editor, [getBounds] is typically backed by
-/// `ComputedScene.visualBoundsWorldById` (computed once in the compute stage).
+/// For interaction, use `ComputedScene.layoutBoundsWorldById`.
+/// For content fitting or cropping, use `ComputedScene.paintBoundsWorldById`.
+/// This helper only unions the bounds supplied by its caller.
 ///
 /// Returns `null` when there are no ids or no available bounds.
 

@@ -1,13 +1,14 @@
-// Path: lib/src/algorithms/layout/node_geometry.dart
-
+import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement, imageSrcDst;
+import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
+import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
+    show Rect2DX;
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/services/icon_resolver.dart';
-import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:canvas_core/src/services/services_context.dart';
 
 final class NodeGeometry {
@@ -15,7 +16,10 @@ final class NodeGeometry {
 
   final CoreServices services;
 
-  Rect2D? leafLocalBounds(
+  /// Layout preserves existing pivot and interaction geometry.
+  /// Paint is an estimate; null means no resolved source will be drawn.
+  /// Text estimates use layout metrics, not guaranteed glyph-pixel bounds.
+  ({Rect2D layout, Rect2D? paint})? leafBounds(
     Node n, {
     Map<ElementId, PathIR>? pathIRById,
     Map<ElementId, ImagePlacement>? imagePlacementById,
@@ -33,61 +37,85 @@ final class NodeGeometry {
           fontSize: data.fontSize,
           letterSpacing: data.letterSpacing,
         );
-        return Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
+        final layout = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
+        final basePaint = data.text.isEmpty ? null : layout;
+        return (
+          layout: layout,
+          paint: _withTranslatedShadow(basePaint, data.shadowOffset),
+        );
 
       case IconNode(id: final id, data: final d):
-        // Icon bounds must remain deterministic across different icon
-        // implementations such as font glyphs and vector paths.
-        //
-        // Glyph metrics and path bounds vary per icon, which would otherwise shift
-        // layout and picking geometry. We still resolve the icon for rendering and
-        // caching, but layout uses a stable centered square based on sizePx.
+        final size = d.sizePx;
+        final layout = Rect2D.fromLTWH(-size / 2, -size / 2, size, size);
         final resolved = s.icons?.resolve(d.iconRef);
+
         switch (resolved) {
           case ResolvedIconText():
             iconTextById?[id] = resolved;
-            // Return stable bounds (do NOT use measured glyph bounds for layout).
-            final sz = d.sizePx;
-            return Rect2D.fromLTWH(-sz / 2, -sz / 2, sz, sz);
+            if (resolved.glyph.isEmpty) {
+              return (layout: layout, paint: null);
+            }
+
+            // Match DrawTextOp's glyph metrics and center-origin painting.
+            // The stable icon square remains the layout/pivot geometry.
+            final m = s.textMeasurer.measure(
+              text: resolved.glyph,
+              fontFamily: resolved.fontFamily,
+              fontWeight: resolved.fontWeight,
+              fontSize: size,
+              letterSpacing: 0,
+            );
+            final basePaint = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
+            return (
+              layout: layout,
+              paint: _withTranslatedShadow(basePaint, d.shadowOffset),
+            );
 
           case ResolvedIconPath(:final path):
-            // Keep the compiled path for rendering/caching, but still return stable bounds.
             final ir = compilePath(path);
             iconPathIRById?[id] = ir;
-            final sz = d.sizePx;
-            return Rect2D.fromLTWH(-sz / 2, -sz / 2, sz, sz);
+            // Path icons currently paint their compiled coordinates directly.
+            // They do not render shadowOffset; do not expand for it here.
+            return (
+              layout: layout,
+              paint: ir.cmds.isEmpty
+                  ? null
+                  : ir.localBounds(includeStroke: true),
+            );
 
           default:
-            final sz = d.sizePx;
-            return Rect2D.fromLTWH(-sz / 2, -sz / 2, sz, sz);
+            return (layout: layout, paint: null);
         }
 
       case ImageNode(id: final id, data: final d):
         final intrinsic = s.images?.intrinsicSize(id);
-        final layout = d.size;
-
-        if (layout.w <= 0 || layout.h <= 0) {
-          // Not measurable yet (prevents degenerate bounds affecting snap/pick/fit)
-          return null;
-        }
+        final size = d.size;
+        if (size.w <= 0 || size.h <= 0) return null;
 
         final placement = imageSrcDst(
-          intrinsic: intrinsic ?? layout,
-          layout: layout,
+          intrinsic: intrinsic ?? size,
+          layout: size,
           fit: d.fit,
           align: d.align,
         );
-
         imagePlacementById?[id] = placement;
-        return placement.dst;
+        // Preserve contain-fit destination geometry, including its offset.
+        return (layout: placement.dst, paint: placement.dst);
 
       case PathNode(id: final id, data: final d):
         final ir = compilePath(d);
         pathIRById?[id] = ir;
-        return ir.localBounds(includeStroke: true);
+        final layout = ir.localBounds(includeStroke: true);
+        // Retain the existing path/stroke estimate in this PR.
+        return (layout: layout, paint: ir.cmds.isEmpty ? null : layout);
 
       default:
         return null;
     }
   }
+}
+
+Rect2D? _withTranslatedShadow(Rect2D? basePaint, double offset) {
+  if (basePaint == null || offset == 0) return basePaint;
+  return Rect2DX.union(basePaint, basePaint.translate(Vec2(offset, offset)));
 }
