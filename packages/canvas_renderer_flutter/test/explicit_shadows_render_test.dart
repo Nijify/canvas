@@ -80,10 +80,13 @@ void main() {
             List<ShadowEffect> shadows,
             CanvasFill fill,
           ) {
-            final scene = CanvasSceneDocument(
-              backgroundFill: const CanvasFill.none(),
-              children: [_node(target, shadows, fill)],
-            );
+
+          final scene = CanvasSceneDocument(
+            backgroundFill: const CanvasFill.none(),
+            backgroundOpacity: 1.0,
+            children: [_node(target, shadows, fill)],
+          );
+
             final computed = computeScene(
               scene,
               CoreServices(textMeasurer: text, icons: _Icons()),

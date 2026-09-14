@@ -12,6 +12,7 @@ const _shadow = ShadowEffect(
 
 CanvasSceneDocument _scene(List<ShadowEffect> shadows) => CanvasSceneDocument(
   backgroundFill: const CanvasFill.none(),
+  backgroundOpacity: 1.0,
   children: [
     Node.text(
       id: 'text',
