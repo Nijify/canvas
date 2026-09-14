@@ -26,7 +26,6 @@ const _baseTextData = rt.TextData(
   fontSize: 24,
   letterSpacing: 0.0,
   fill: rt.CanvasFill.solid(0xFF111111),
-  shadowOffset: 0,
 );
 
 rt.CanvasSceneDocument _sceneWithText(String text) {

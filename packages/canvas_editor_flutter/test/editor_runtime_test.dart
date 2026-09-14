@@ -101,7 +101,6 @@ void main() {
           fontSize: 24,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF111111),
-          shadowOffset: 0,
         ),
       );
 
@@ -131,7 +130,6 @@ void main() {
           fontSize: 24,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF111111),
-          shadowOffset: 0,
         ),
       ),
     ]);
@@ -159,7 +157,6 @@ void main() {
           fontSize: 24,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF111111),
-          shadowOffset: 0,
         ),
       ),
       const Node.text(
@@ -172,7 +169,6 @@ void main() {
           fontSize: 24,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF111111),
-          shadowOffset: 0,
         ),
       ),
     ]);
@@ -201,7 +197,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       );
 
@@ -215,7 +210,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       );
 
@@ -246,7 +240,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       ),
       Node.text(
@@ -259,7 +252,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       ),
     ]);
@@ -289,7 +281,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       ),
       Node.text(
@@ -302,7 +293,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       ),
       Node.text(
@@ -315,7 +305,6 @@ void main() {
           fontSize: 16,
           letterSpacing: 0,
           fill: CanvasFill.solid(0xFF000000),
-          shadowOffset: 0,
         ),
       ),
     ]);
@@ -351,7 +340,6 @@ void main() {
             fontSize: 24,
             letterSpacing: 0,
             fill: CanvasFill.solid(0xFF111111),
-            shadowOffset: 0,
           ),
         ),
       ),

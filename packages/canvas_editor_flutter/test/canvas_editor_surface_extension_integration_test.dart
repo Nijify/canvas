@@ -29,7 +29,6 @@ rt.CanvasSceneDocument _fixtureScene() {
           fontSize: 24,
           letterSpacing: 0,
           fill: rt.CanvasFill.solid(0xFF111111),
-          shadowOffset: 0,
         ),
       ),
     ],

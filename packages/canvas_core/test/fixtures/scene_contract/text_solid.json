@@ -16,7 +16,7 @@
           "type": "solid",
           "color": 4279308561
         },
-        "shadowOffset": 0.0
+        "shadows": []
       }
     }
   ]

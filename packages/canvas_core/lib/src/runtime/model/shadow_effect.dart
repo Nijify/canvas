@@ -6,7 +6,11 @@ import 'package:canvas_core/src/serialization/converters.dart';
 part 'shadow_effect.freezed.dart';
 part 'shadow_effect.g.dart';
 
-/// A shadow of the original source silhouette, independent of foreground fill.
+/// A shadow derived from the original source silhouette.
+///
+/// Shadow coverage, color, and opacity are independent of the authored
+/// foreground fill's color and alpha. Text and icon nodes still require a
+/// non-`none` foreground fill in the current document model.
 ///
 /// Lists are painted back-to-front, then the foreground is painted.
 /// Offsets and Gaussian sigma are in object-local document units.
