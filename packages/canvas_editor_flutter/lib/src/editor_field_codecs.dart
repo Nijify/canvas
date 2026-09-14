@@ -198,23 +198,6 @@ class FieldCatalog {
       },
     ),
 
-    rt.CanvasFields.textShadowOffset: FieldCodec(
-      fallback: 0.0,
-      readNode: (_, node) => (node as rt.TextNode).data.shadowOffset,
-      commit: (controller, nodeId, value) {
-        final shadowOffset = value as double;
-
-        _commitNodeUpdate(controller, nodeId, (node) {
-          if (node is! rt.TextNode) return node;
-          if (node.data.shadowOffset == shadowOffset) return node;
-
-          return node.copyWith(
-            data: node.data.copyWith(shadowOffset: shadowOffset),
-          );
-        });
-      },
-    ),
-
     // -------------------------------------------------------------------------
     // Icon
     // -------------------------------------------------------------------------
@@ -252,23 +235,6 @@ class FieldCatalog {
           if (node.data.sizePx == sizePx) return node;
 
           return node.copyWith(data: node.data.copyWith(sizePx: sizePx));
-        });
-      },
-    ),
-
-    rt.CanvasFields.iconShadowOffset: FieldCodec(
-      fallback: 0.0,
-      readNode: (_, node) => (node as rt.IconNode).data.shadowOffset,
-      commit: (controller, nodeId, value) {
-        final shadowOffset = value as double;
-
-        _commitNodeUpdate(controller, nodeId, (node) {
-          if (node is! rt.IconNode) return node;
-          if (node.data.shadowOffset == shadowOffset) return node;
-
-          return node.copyWith(
-            data: node.data.copyWith(shadowOffset: shadowOffset),
-          );
         });
       },
     ),

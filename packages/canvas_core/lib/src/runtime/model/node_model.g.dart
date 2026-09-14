@@ -50,7 +50,11 @@ _TextData _$TextDataFromJson(Map<String, dynamic> json) => _TextData(
       : const CanvasFillConverter().fromJson(
           json['fill'] as Map<String, dynamic>,
         ),
-  shadowOffset: (json['shadowOffset'] as num?)?.toDouble() ?? 0,
+  shadows:
+      (json['shadows'] as List<dynamic>?)
+          ?.map((e) => ShadowEffect.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <ShadowEffect>[],
 );
 
 Map<String, dynamic> _$TextDataToJson(_TextData instance) => <String, dynamic>{
@@ -60,7 +64,7 @@ Map<String, dynamic> _$TextDataToJson(_TextData instance) => <String, dynamic>{
   'fontSize': instance.fontSize,
   'letterSpacing': instance.letterSpacing,
   'fill': const CanvasFillConverter().toJson(instance.fill),
-  'shadowOffset': instance.shadowOffset,
+  'shadows': instance.shadows.map((e) => e.toJson()).toList(),
 };
 
 _ImageData _$ImageDataFromJson(Map<String, dynamic> json) => _ImageData(
@@ -154,7 +158,11 @@ _CanvasIconData _$CanvasIconDataFromJson(Map<String, dynamic> json) =>
           : const CanvasFillConverter().fromJson(
               json['fill'] as Map<String, dynamic>,
             ),
-      shadowOffset: (json['shadowOffset'] as num?)?.toDouble() ?? 0,
+      shadows:
+          (json['shadows'] as List<dynamic>?)
+              ?.map((e) => ShadowEffect.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <ShadowEffect>[],
     );
 
 Map<String, dynamic> _$CanvasIconDataToJson(_CanvasIconData instance) =>
@@ -162,7 +170,7 @@ Map<String, dynamic> _$CanvasIconDataToJson(_CanvasIconData instance) =>
       'iconRef': instance.iconRef,
       'sizePx': instance.sizePx,
       'fill': const CanvasFillConverter().toJson(instance.fill),
-      'shadowOffset': instance.shadowOffset,
+      'shadows': instance.shadows.map((e) => e.toJson()).toList(),
     };
 
 _GroupBehaviorRef _$GroupBehaviorRefFromJson(Map<String, dynamic> json) =>

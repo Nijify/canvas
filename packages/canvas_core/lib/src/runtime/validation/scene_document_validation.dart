@@ -6,6 +6,7 @@ import 'package:canvas_core/src/foundation/ids.dart' show CanvasAssetId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
+import 'package:canvas_core/src/runtime/model/shadow_effect.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 /// Stable machine-readable categories returned by scene validation.
@@ -18,6 +19,8 @@ enum CanvasSceneValidationCode {
   missingImageAsset,
   blankNodeId,
   duplicateNodeId,
+  blankShadowId,
+  duplicateShadowId,
   nameTooLong,
   invalidTextFill,
   invalidIconFill,
@@ -221,7 +224,7 @@ final class _SceneValidator {
       _validateFill(data.fill, '$path/fill');
     }
 
-    _validateFinite(data.shadowOffset, '$path/shadowOffset');
+    _validateShadows(data.shadows, '$path/shadows');
   }
 
   void _validateIconData(CanvasIconData data, String path) {
@@ -237,7 +240,40 @@ final class _SceneValidator {
       _validateFill(data.fill, '$path/fill');
     }
 
-    _validateFinite(data.shadowOffset, '$path/shadowOffset');
+    _validateShadows(data.shadows, '$path/shadows');
+  }
+
+  void _validateShadows(List<ShadowEffect> shadows, String path) {
+    final firstIdPath = <String, String>{};
+    for (var index = 0; index < shadows.length; index++) {
+      final shadow = shadows[index];
+      final itemPath = '$path/$index';
+      final idPath = '$itemPath/id';
+      if (shadow.id.trim().isEmpty) {
+        _add(
+          CanvasSceneValidationCode.blankShadowId,
+          idPath,
+          'Shadow ID must be nonblank.',
+        );
+      } else {
+        final previous = firstIdPath[shadow.id];
+        if (previous == null) {
+          firstIdPath[shadow.id] = idPath;
+        } else {
+          _add(
+            CanvasSceneValidationCode.duplicateShadowId,
+            idPath,
+            'Shadow ID must be unique within its owning node.',
+            relatedPath: previous,
+          );
+        }
+      }
+      // Disabled entries still have to be valid authored data.
+      _validateFinite(shadow.offset.x, '$itemPath/offset/x');
+      _validateFinite(shadow.offset.y, '$itemPath/offset/y');
+      _validateNonNegative(shadow.blurSigma, '$itemPath/blurSigma');
+      _validateColor(shadow.color, '$itemPath/color');
+    }
   }
 
   void _validateImageData(ImageData data, String path) {

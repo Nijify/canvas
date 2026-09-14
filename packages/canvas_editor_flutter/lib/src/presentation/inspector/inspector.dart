@@ -177,8 +177,6 @@ Widget _buildTextInspectorPanel({
         ids: FillFieldIds.text,
         header: 'Fill',
       ),
-      const Gap(12),
-      inspector.fieldRow<double>(nodeId, textShadowOffsetSpec()),
     ],
   );
 }
@@ -306,17 +304,6 @@ Widget _buildIconInspectorPanel({
         inspector: inspector,
         ids: FillFieldIds.icon,
         header: 'Fill',
-      ),
-      const Gap(12),
-      inspector.fieldRow<double>(
-        nodeId,
-        doubleSliderSpec(
-          fieldKey: CanvasFields.iconShadowOffset,
-          title: 'Shadow Offset',
-          uiLabel: 'Shadow Offset',
-          min: 0,
-          max: 20,
-        ),
       ),
     ],
   );

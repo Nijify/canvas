@@ -18,7 +18,6 @@ class _CapturingTextPipeline extends FlutterTextPipeline {
     TextSpec s, {
     ui.Color? solid,
     ui.Shader? shader,
-    double shadowOffset = 0,
     TextOriginKind originKind = TextOriginKind.baseline,
   }) {
     lastSpec = s;
@@ -52,7 +51,9 @@ void main() {
       originBaselineCenter: const Vec2(10, 10),
       gradient: gradient,
       solid: solid,
-      shadowOffset: 1,
+      shadows: const [
+        ShadowEffect(id: 's', offset: Vec2(1, 1), color: 0xFF000000),
+      ],
     );
 
     final recorder = ui.PictureRecorder();

@@ -1,10 +1,8 @@
 import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement, imageSrcDst;
-import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
-import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
-    show Rect2DX;
+import 'package:canvas_core/src/algorithms/layout/shadow_bounds.dart';
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
@@ -41,7 +39,7 @@ final class NodeGeometry {
         final basePaint = data.text.isEmpty ? null : layout;
         return (
           layout: layout,
-          paint: _withTranslatedShadow(basePaint, data.shadowOffset),
+          paint: estimateShadowPaintBounds(basePaint, data.shadows),
         );
 
       case IconNode(id: final id, data: final d):
@@ -68,19 +66,19 @@ final class NodeGeometry {
             final basePaint = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
             return (
               layout: layout,
-              paint: _withTranslatedShadow(basePaint, d.shadowOffset),
+              paint: estimateShadowPaintBounds(basePaint, d.shadows),
             );
 
           case ResolvedIconPath(:final path):
             final ir = compilePath(path);
             iconPathIRById?[id] = ir;
-            // Path icons currently paint their compiled coordinates directly.
-            // They do not render shadowOffset; do not expand for it here.
+            // Keep the resolved path coordinates and stable icon layout square.
+            final basePaint = ir.cmds.isEmpty
+                ? null
+                : ir.localBounds(includeStroke: true);
             return (
               layout: layout,
-              paint: ir.cmds.isEmpty
-                  ? null
-                  : ir.localBounds(includeStroke: true),
+              paint: estimateShadowPaintBounds(basePaint, d.shadows),
             );
 
           default:
@@ -113,9 +111,4 @@ final class NodeGeometry {
         return null;
     }
   }
-}
-
-Rect2D? _withTranslatedShadow(Rect2D? basePaint, double offset) {
-  if (basePaint == null || offset == 0) return basePaint;
-  return Rect2DX.union(basePaint, basePaint.translate(Vec2(offset, offset)));
 }
