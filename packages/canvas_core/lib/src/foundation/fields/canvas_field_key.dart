@@ -39,13 +39,11 @@ abstract final class CanvasFields {
   static const textFontSize = CanvasFieldKey('text.fontSize');
   static const textFontWeight = CanvasFieldKey('text.fontWeight');
   static const textLetterSpacing = CanvasFieldKey('text.letterSpacing');
-  static const textShadowOffset = CanvasFieldKey('text.shadowOffset');
 
   // Icon
   static const iconRef = CanvasFieldKey('icon.ref');
   static const iconFill = CanvasFieldKey('icon.fill');
   static const iconSizePx = CanvasFieldKey('icon.sizePx');
-  static const iconShadowOffset = CanvasFieldKey('icon.shadowOffset');
 
   // Image
   static const imageSource = CanvasFieldKey('image.source');

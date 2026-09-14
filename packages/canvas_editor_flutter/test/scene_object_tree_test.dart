@@ -11,7 +11,6 @@ const _textData = TextData(
   fontSize: 24,
   letterSpacing: 0,
   fill: CanvasFill.solid(0xFF111111),
-  shadowOffset: 0,
 );
 
 const _imageData = ImageData(assetId: 'asset-1', size: Size2D(100, 100));
@@ -58,7 +57,6 @@ Node _icon(String id, {String? name}) {
       iconRef: 'icon:test',
       sizePx: 32,
       fill: CanvasFill.solid(0xFF111111),
-      shadowOffset: 0,
     ),
   );
 }

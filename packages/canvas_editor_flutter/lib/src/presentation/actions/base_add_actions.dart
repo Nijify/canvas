@@ -90,7 +90,6 @@ void _addBaseText(EditorActionContext ctx) {
         fontSize: 32,
         letterSpacing: 0,
         fill: CanvasFill.solid(_baseFill),
-        shadowOffset: 0,
       ),
       xf: const Transform2D(position: _textPos),
     ),

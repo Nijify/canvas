@@ -11,6 +11,7 @@ import 'package:canvas_core/src/foundation/style/style_types.dart'
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/serialization/converters.dart';
 import 'package:canvas_core/src/serialization/path_converters.dart';
+import 'package:canvas_core/src/runtime/model/shadow_effect.dart';
 
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';
@@ -50,7 +51,7 @@ abstract class TextData with _$TextData {
     @CanvasFillConverter()
     @Default(CanvasFill.solid(0xFF111111))
     CanvasFill fill,
-    @Default(0) double shadowOffset,
+    @Default(<ShadowEffect>[]) List<ShadowEffect> shadows,
   }) = _TextData;
 
   factory TextData.fromJson(Map<String, dynamic> json) =>
@@ -105,7 +106,7 @@ abstract class CanvasIconData with _$CanvasIconData {
     @CanvasFillConverter()
     @Default(CanvasFill.solid(0xFF111111))
     CanvasFill fill,
-    @Default(0) double shadowOffset,
+    @Default(<ShadowEffect>[]) List<ShadowEffect> shadows,
   }) = _CanvasIconData;
 
   factory CanvasIconData.fromJson(Map<String, dynamic> json) =>

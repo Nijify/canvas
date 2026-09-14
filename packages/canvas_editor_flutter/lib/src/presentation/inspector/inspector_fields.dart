@@ -364,13 +364,3 @@ InspectorFieldSpec<int> textBoldSpec() {
         },
   );
 }
-
-InspectorFieldSpec<double> textShadowOffsetSpec() {
-  return doubleSliderSpec(
-    fieldKey: CanvasFields.textShadowOffset,
-    title: 'Shadow Offset',
-    uiLabel: 'Shadow Offset',
-    min: 0,
-    max: 8,
-  );
-}

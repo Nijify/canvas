@@ -42,9 +42,15 @@ Future<Uint8List> _render(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  for (final offset in [18.0, -18.0]) {
+  for (final sample in <(double, double)>[
+    (18, 0),
+    (-18, 0),
+    (18, 3),
+    (-18, 3),
+  ]) {
+    final (offset, sigma) = sample;
     test(
-      'content crop retains rendered shadow pixels for offset $offset',
+      'content crop retains shadow pixels for offset $offset sigma $sigma',
       () async {
         final text = FlutterTextPipeline();
         try {
@@ -60,7 +66,14 @@ void main() {
                   fontFamily: 'Ahem',
                   fontWeight: 400,
                   fontSize: 24,
-                  shadowOffset: offset,
+                  shadows: [
+                    ShadowEffect(
+                      id: 's',
+                      offset: Vec2(offset, offset),
+                      blurSigma: sigma,
+                      color: 0xFF111111,
+                    ),
+                  ],
                 ),
               ),
             ],

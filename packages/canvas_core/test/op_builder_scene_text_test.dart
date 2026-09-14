@@ -101,6 +101,9 @@ void main() {
     final textOp = ops.whereType<DrawTextOp>().single;
 
     expect(textOp.gradient, isNotNull); // ✅ gradient fill => shader exists
-    expect(textOp.solid, c1); // ✅ deterministic fallback for shadow color
+    expect(
+      textOp.solid,
+      isNull,
+    ); // Foreground gradient needs no shadow fallback.
   });
 }

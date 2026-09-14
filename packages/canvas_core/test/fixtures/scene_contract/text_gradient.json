@@ -21,7 +21,7 @@
             "width": 20.0
           }
         },
-        "shadowOffset": 0.0
+        "shadows": []
       }
     }
   ]

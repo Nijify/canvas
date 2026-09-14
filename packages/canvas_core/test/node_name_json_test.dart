@@ -10,7 +10,6 @@ const _textData = TextData(
   fontSize: 24,
   letterSpacing: 0,
   fill: CanvasFill.solid(0xFF111111),
-  shadowOffset: 0,
 );
 
 void main() {

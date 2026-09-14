@@ -7,6 +7,7 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_renderer_flutter/src/flutter_linear_shader.dart';
 import 'package:canvas_renderer_flutter/src/flutter_mappers.dart';
 import 'package:canvas_renderer_flutter/src/flutter_text_pipeline.dart';
+import 'package:canvas_renderer_flutter/src/flutter_shadow_renderer.dart';
 
 enum MissingImageBehavior { placeholder, skip }
 
@@ -162,6 +163,9 @@ class CanvasRenderer {
 
           canvas.drawImageRect(img, srcRect, dstRect, paint);
 
+        case DrawPathShadowsOp(:final path, :final shadows):
+          _drawPathShadows(canvas, path, shadows);
+
         case DrawTextOp t:
           _drawText(canvas, t);
 
@@ -239,6 +243,45 @@ class CanvasRenderer {
     StrokeJoin.round => ui.StrokeJoin.round,
   };
 
+  void _drawPathShadows(
+    ui.Canvas canvas,
+    PathIR ir,
+    List<ShadowEffect> shadows,
+  ) {
+    if (ir.cmds.isEmpty) return;
+    paintSourceShadows(
+      canvas,
+      shadows: shadows,
+      paintSource: (sourceCanvas) {
+        final path = _buildUiPath(ir);
+        final style = ir.style;
+        path.fillType = switch (style.fillRule) {
+          FillRule.evenOdd => ui.PathFillType.evenOdd,
+          FillRule.nonZero => ui.PathFillType.nonZero,
+        };
+        // Icon fill coverage is independent of its authored fill alpha.
+        sourceCanvas.drawPath(
+          path,
+          ui.Paint()
+            ..style = ui.PaintingStyle.fill
+            ..color = const ui.Color(0xFF000000),
+        );
+        if (style.stroke != null && style.strokeWidth > 0) {
+          sourceCanvas.drawPath(
+            path,
+            ui.Paint()
+              ..style = ui.PaintingStyle.stroke
+              ..color = const ui.Color(0xFF000000)
+              ..strokeWidth = style.strokeWidth
+              ..strokeCap = _mapCap(style.strokeCap)
+              ..strokeJoin = _mapJoin(style.strokeJoin)
+              ..strokeMiterLimit = style.miterLimit,
+          );
+        }
+      },
+    );
+  }
+
   void _drawText(ui.Canvas canvas, DrawTextOp t) {
     if (t.text.isEmpty) return;
 
@@ -259,13 +302,26 @@ class CanvasRenderer {
         ? ui.Color(t.solid!)
         : const ui.Color(0xFF000000);
 
+    paintSourceShadows(
+      canvas,
+      shadows: t.shadows,
+      paintSource: (sourceCanvas) {
+        // No fill override: reuse the cached text layout's opaque paint.
+        text.paint(
+          sourceCanvas,
+          t.originBaselineCenter.toUi,
+          spec,
+          originKind: TextOriginKind.center,
+        );
+      },
+    );
+
     text.paint(
       canvas,
       t.originBaselineCenter.toUi,
       spec,
       solid: solidColor,
       shader: shader,
-      shadowOffset: t.shadowOffset,
       originKind: TextOriginKind.center,
     );
   }

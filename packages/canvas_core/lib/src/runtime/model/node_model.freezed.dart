@@ -302,7 +302,7 @@ mixin _$TextData {
 ///
 /// The original text must remain unchanged. Platform text implementations
 /// must apply this value through their native text-layout API.
- double get letterSpacing;@CanvasFillConverter() CanvasFill get fill; double get shadowOffset;
+ double get letterSpacing;@CanvasFillConverter() CanvasFill get fill; List<ShadowEffect> get shadows;
 /// Create a copy of TextData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -316,20 +316,20 @@ $TextDataCopyWith<TextData> get copyWith => _$TextDataCopyWithImpl<TextData>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as TextData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TextData&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.fontFamily, _this.fontFamily) || other.fontFamily == _this.fontFamily)&&(identical(other.fontWeight, _this.fontWeight) || other.fontWeight == _this.fontWeight)&&(identical(other.fontSize, _this.fontSize) || other.fontSize == _this.fontSize)&&(identical(other.letterSpacing, _this.letterSpacing) || other.letterSpacing == _this.letterSpacing)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&(identical(other.shadowOffset, _this.shadowOffset) || other.shadowOffset == _this.shadowOffset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TextData&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.fontFamily, _this.fontFamily) || other.fontFamily == _this.fontFamily)&&(identical(other.fontWeight, _this.fontWeight) || other.fontWeight == _this.fontWeight)&&(identical(other.fontSize, _this.fontSize) || other.fontSize == _this.fontSize)&&(identical(other.letterSpacing, _this.letterSpacing) || other.letterSpacing == _this.letterSpacing)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&const DeepCollectionEquality().equals(other.shadows, _this.shadows));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as TextData;
-  return Object.hash(runtimeType,_this.text,_this.fontFamily,_this.fontWeight,_this.fontSize,_this.letterSpacing,_this.fill,_this.shadowOffset);
+  return Object.hash(runtimeType,_this.text,_this.fontFamily,_this.fontWeight,_this.fontSize,_this.letterSpacing,_this.fill,const DeepCollectionEquality().hash(_this.shadows));
 }
 
 @override
 String toString() {
   final _this = this as TextData;
-  return 'TextData(text: ${_this.text}, fontFamily: ${_this.fontFamily}, fontWeight: ${_this.fontWeight}, fontSize: ${_this.fontSize}, letterSpacing: ${_this.letterSpacing}, fill: ${_this.fill}, shadowOffset: ${_this.shadowOffset})';
+  return 'TextData(text: ${_this.text}, fontFamily: ${_this.fontFamily}, fontWeight: ${_this.fontWeight}, fontSize: ${_this.fontSize}, letterSpacing: ${_this.letterSpacing}, fill: ${_this.fill}, shadows: ${_this.shadows})';
 }
 
 
@@ -340,7 +340,7 @@ abstract mixin class $TextDataCopyWith<$Res>  {
   factory $TextDataCopyWith(TextData value, $Res Function(TextData) _then) = _$TextDataCopyWithImpl;
 @useResult
 $Res call({
- String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing,@CanvasFillConverter() CanvasFill fill, double shadowOffset
+ String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing,@CanvasFillConverter() CanvasFill fill, List<ShadowEffect> shadows
 });
 
 
@@ -357,7 +357,7 @@ class _$TextDataCopyWithImpl<$Res>
 
 /// Create a copy of TextData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? fill = null,Object? shadowOffset = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? fill = null,Object? shadows = null,}) {
   return _then(TextData(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
@@ -365,8 +365,8 @@ as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // igno
 as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
 as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
 as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
-as CanvasFill,shadowOffset: null == shadowOffset ? _self.shadowOffset : shadowOffset // ignore: cast_nullable_to_non_nullable
-as double,
+as CanvasFill,shadows: null == shadows ? _self.shadows : shadows // ignore: cast_nullable_to_non_nullable
+as List<ShadowEffect>,
   ));
 }
 
@@ -451,10 +451,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  List<ShadowEffect> shadows)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TextData() when $default != null:
-return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadowOffset);case _:
+return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadows);case _:
   return orElse();
 
 }
@@ -472,10 +472,10 @@ return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  List<ShadowEffect> shadows)  $default,) {final _that = this;
 switch (_that) {
 case _TextData():
-return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadowOffset);case _:
+return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadows);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -492,10 +492,10 @@ return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing, @CanvasFillConverter()  CanvasFill fill,  List<ShadowEffect> shadows)?  $default,) {final _that = this;
 switch (_that) {
 case _TextData() when $default != null:
-return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadowOffset);case _:
+return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.fill,_that.shadows);case _:
   return null;
 
 }
@@ -507,7 +507,7 @@ return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_tha
 @JsonSerializable()
 
 class _TextData extends TextData {
-  const _TextData({required this.text, required this.fontFamily, required this.fontWeight, required this.fontSize, this.letterSpacing = 0.0, @CanvasFillConverter() this.fill = const CanvasFill.solid(0xFF111111), this.shadowOffset = 0}): assert(fill is! CanvasFillNone, 'Text fill cannot be none'),super._();
+  const _TextData({required this.text, required this.fontFamily, required this.fontWeight, required this.fontSize, this.letterSpacing = 0.0, @CanvasFillConverter() this.fill = const CanvasFill.solid(0xFF111111),  List<ShadowEffect> shadows = const <ShadowEffect>[]}): assert(fill is! CanvasFillNone, 'Text fill cannot be none'),_shadows = shadows,super._();
   factory _TextData.fromJson(Map<String, dynamic> json) => _$TextDataFromJson(json);
 
 @override final  String text;
@@ -520,7 +520,13 @@ class _TextData extends TextData {
 /// must apply this value through their native text-layout API.
 @override@JsonKey() final  double letterSpacing;
 @override@JsonKey()@CanvasFillConverter() final  CanvasFill fill;
-@override@JsonKey() final  double shadowOffset;
+ final  List<ShadowEffect> _shadows;
+@override@JsonKey() List<ShadowEffect> get shadows {
+  if (_shadows is EqualUnmodifiableListView) return _shadows;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_shadows);
+}
+
 
 /// Create a copy of TextData
 /// with the given fields replaced by the non-null parameter values.
@@ -535,18 +541,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TextData&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TextData&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.fill, fill) || other.fill == fill)&&const DeepCollectionEquality().equals(other.shadows, _shadows));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,text,fontFamily,fontWeight,fontSize,letterSpacing,fill,shadowOffset);
+    return Object.hash(runtimeType,text,fontFamily,fontWeight,fontSize,letterSpacing,fill,const DeepCollectionEquality().hash(_shadows));
 }
 
 @override
 String toString() {
-    return 'TextData(text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, fill: $fill, shadowOffset: $shadowOffset)';
+    return 'TextData(text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, fill: $fill, shadows: $shadows)';
 }
 
 
@@ -557,7 +563,7 @@ abstract mixin class _$TextDataCopyWith<$Res> implements $TextDataCopyWith<$Res>
   factory _$TextDataCopyWith(_TextData value, $Res Function(_TextData) _then) = __$TextDataCopyWithImpl;
 @override @useResult
 $Res call({
- String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing,@CanvasFillConverter() CanvasFill fill, double shadowOffset
+ String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing,@CanvasFillConverter() CanvasFill fill, List<ShadowEffect> shadows
 });
 
 
@@ -574,7 +580,7 @@ class __$TextDataCopyWithImpl<$Res>
 
 /// Create a copy of TextData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? fill = null,Object? shadowOffset = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? fill = null,Object? shadows = null,}) {
   return _then(_TextData(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
@@ -582,8 +588,8 @@ as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // igno
 as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
 as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
 as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
-as CanvasFill,shadowOffset: null == shadowOffset ? _self.shadowOffset : shadowOffset // ignore: cast_nullable_to_non_nullable
-as double,
+as CanvasFill,shadows: null == shadows ? _self._shadows : shadows // ignore: cast_nullable_to_non_nullable
+as List<ShadowEffect>,
   ));
 }
 
@@ -1186,7 +1192,7 @@ as List<double>,
 /// @nodoc
 mixin _$CanvasIconData {
 
- String get iconRef; double get sizePx;@CanvasFillConverter() CanvasFill get fill; double get shadowOffset;
+ String get iconRef; double get sizePx;@CanvasFillConverter() CanvasFill get fill; List<ShadowEffect> get shadows;
 /// Create a copy of CanvasIconData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1200,20 +1206,20 @@ $CanvasIconDataCopyWith<CanvasIconData> get copyWith => _$CanvasIconDataCopyWith
 @override
 bool operator ==(Object other) {
   final _this = this as CanvasIconData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasIconData&&(identical(other.iconRef, _this.iconRef) || other.iconRef == _this.iconRef)&&(identical(other.sizePx, _this.sizePx) || other.sizePx == _this.sizePx)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&(identical(other.shadowOffset, _this.shadowOffset) || other.shadowOffset == _this.shadowOffset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasIconData&&(identical(other.iconRef, _this.iconRef) || other.iconRef == _this.iconRef)&&(identical(other.sizePx, _this.sizePx) || other.sizePx == _this.sizePx)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&const DeepCollectionEquality().equals(other.shadows, _this.shadows));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as CanvasIconData;
-  return Object.hash(runtimeType,_this.iconRef,_this.sizePx,_this.fill,_this.shadowOffset);
+  return Object.hash(runtimeType,_this.iconRef,_this.sizePx,_this.fill,const DeepCollectionEquality().hash(_this.shadows));
 }
 
 @override
 String toString() {
   final _this = this as CanvasIconData;
-  return 'CanvasIconData(iconRef: ${_this.iconRef}, sizePx: ${_this.sizePx}, fill: ${_this.fill}, shadowOffset: ${_this.shadowOffset})';
+  return 'CanvasIconData(iconRef: ${_this.iconRef}, sizePx: ${_this.sizePx}, fill: ${_this.fill}, shadows: ${_this.shadows})';
 }
 
 
@@ -1224,7 +1230,7 @@ abstract mixin class $CanvasIconDataCopyWith<$Res>  {
   factory $CanvasIconDataCopyWith(CanvasIconData value, $Res Function(CanvasIconData) _then) = _$CanvasIconDataCopyWithImpl;
 @useResult
 $Res call({
- String iconRef, double sizePx,@CanvasFillConverter() CanvasFill fill, double shadowOffset
+ String iconRef, double sizePx,@CanvasFillConverter() CanvasFill fill, List<ShadowEffect> shadows
 });
 
 
@@ -1241,13 +1247,13 @@ class _$CanvasIconDataCopyWithImpl<$Res>
 
 /// Create a copy of CanvasIconData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? iconRef = null,Object? sizePx = null,Object? fill = null,Object? shadowOffset = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? iconRef = null,Object? sizePx = null,Object? fill = null,Object? shadows = null,}) {
   return _then(CanvasIconData(
 iconRef: null == iconRef ? _self.iconRef : iconRef // ignore: cast_nullable_to_non_nullable
 as String,sizePx: null == sizePx ? _self.sizePx : sizePx // ignore: cast_nullable_to_non_nullable
 as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
-as CanvasFill,shadowOffset: null == shadowOffset ? _self.shadowOffset : shadowOffset // ignore: cast_nullable_to_non_nullable
-as double,
+as CanvasFill,shadows: null == shadows ? _self.shadows : shadows // ignore: cast_nullable_to_non_nullable
+as List<ShadowEffect>,
   ));
 }
 
@@ -1332,10 +1338,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String iconRef,  double sizePx, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String iconRef,  double sizePx, @CanvasFillConverter()  CanvasFill fill,  List<ShadowEffect> shadows)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CanvasIconData() when $default != null:
-return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadowOffset);case _:
+return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadows);case _:
   return orElse();
 
 }
@@ -1353,10 +1359,10 @@ return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadowOffset);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String iconRef,  double sizePx, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String iconRef,  double sizePx, @CanvasFillConverter()  CanvasFill fill,  List<ShadowEffect> shadows)  $default,) {final _that = this;
 switch (_that) {
 case _CanvasIconData():
-return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadowOffset);case _:
+return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadows);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1373,10 +1379,10 @@ return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadowOffset);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String iconRef,  double sizePx, @CanvasFillConverter()  CanvasFill fill,  double shadowOffset)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String iconRef,  double sizePx, @CanvasFillConverter()  CanvasFill fill,  List<ShadowEffect> shadows)?  $default,) {final _that = this;
 switch (_that) {
 case _CanvasIconData() when $default != null:
-return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadowOffset);case _:
+return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadows);case _:
   return null;
 
 }
@@ -1388,13 +1394,19 @@ return $default(_that.iconRef,_that.sizePx,_that.fill,_that.shadowOffset);case _
 @JsonSerializable()
 
 class _CanvasIconData extends CanvasIconData {
-  const _CanvasIconData({required this.iconRef, this.sizePx = 96.0, @CanvasFillConverter() this.fill = const CanvasFill.solid(0xFF111111), this.shadowOffset = 0}): assert(fill is! CanvasFillNone, 'Icon fill cannot be none'),super._();
+  const _CanvasIconData({required this.iconRef, this.sizePx = 96.0, @CanvasFillConverter() this.fill = const CanvasFill.solid(0xFF111111),  List<ShadowEffect> shadows = const <ShadowEffect>[]}): assert(fill is! CanvasFillNone, 'Icon fill cannot be none'),_shadows = shadows,super._();
   factory _CanvasIconData.fromJson(Map<String, dynamic> json) => _$CanvasIconDataFromJson(json);
 
 @override final  String iconRef;
 @override@JsonKey() final  double sizePx;
 @override@JsonKey()@CanvasFillConverter() final  CanvasFill fill;
-@override@JsonKey() final  double shadowOffset;
+ final  List<ShadowEffect> _shadows;
+@override@JsonKey() List<ShadowEffect> get shadows {
+  if (_shadows is EqualUnmodifiableListView) return _shadows;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_shadows);
+}
+
 
 /// Create a copy of CanvasIconData
 /// with the given fields replaced by the non-null parameter values.
@@ -1409,18 +1421,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasIconData&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.shadowOffset, shadowOffset) || other.shadowOffset == shadowOffset));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasIconData&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.fill, fill) || other.fill == fill)&&const DeepCollectionEquality().equals(other.shadows, _shadows));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,iconRef,sizePx,fill,shadowOffset);
+    return Object.hash(runtimeType,iconRef,sizePx,fill,const DeepCollectionEquality().hash(_shadows));
 }
 
 @override
 String toString() {
-    return 'CanvasIconData(iconRef: $iconRef, sizePx: $sizePx, fill: $fill, shadowOffset: $shadowOffset)';
+    return 'CanvasIconData(iconRef: $iconRef, sizePx: $sizePx, fill: $fill, shadows: $shadows)';
 }
 
 
@@ -1431,7 +1443,7 @@ abstract mixin class _$CanvasIconDataCopyWith<$Res> implements $CanvasIconDataCo
   factory _$CanvasIconDataCopyWith(_CanvasIconData value, $Res Function(_CanvasIconData) _then) = __$CanvasIconDataCopyWithImpl;
 @override @useResult
 $Res call({
- String iconRef, double sizePx,@CanvasFillConverter() CanvasFill fill, double shadowOffset
+ String iconRef, double sizePx,@CanvasFillConverter() CanvasFill fill, List<ShadowEffect> shadows
 });
 
 
@@ -1448,13 +1460,13 @@ class __$CanvasIconDataCopyWithImpl<$Res>
 
 /// Create a copy of CanvasIconData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? iconRef = null,Object? sizePx = null,Object? fill = null,Object? shadowOffset = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? iconRef = null,Object? sizePx = null,Object? fill = null,Object? shadows = null,}) {
   return _then(_CanvasIconData(
 iconRef: null == iconRef ? _self.iconRef : iconRef // ignore: cast_nullable_to_non_nullable
 as String,sizePx: null == sizePx ? _self.sizePx : sizePx // ignore: cast_nullable_to_non_nullable
 as double,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
-as CanvasFill,shadowOffset: null == shadowOffset ? _self.shadowOffset : shadowOffset // ignore: cast_nullable_to_non_nullable
-as double,
+as CanvasFill,shadows: null == shadows ? _self._shadows : shadows // ignore: cast_nullable_to_non_nullable
+as List<ShadowEffect>,
   ));
 }
 

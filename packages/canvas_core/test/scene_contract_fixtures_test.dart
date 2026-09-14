@@ -13,6 +13,7 @@ const _forbiddenLegacyKeys = {
   'fillGradient',
   'bgGradient',
   'bgOpacity',
+  'shadowOffset',
 };
 
 const _fixtureNames = <String>[

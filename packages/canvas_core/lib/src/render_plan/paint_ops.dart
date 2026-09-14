@@ -7,6 +7,8 @@ import 'package:canvas_core/src/render_plan/gradient_resolver.dart'
     show ResolvedLinearGradient;
 import 'package:canvas_core/src/path/path_ir.dart';
 
+import 'package:canvas_core/src/runtime/model/shadow_effect.dart';
+
 sealed class PaintOp {}
 
 class SaveOp extends PaintOp {}
@@ -37,6 +39,17 @@ class StrokePathOp extends PaintOp {
   StrokePathOp(this.path);
 }
 
+/// Shadows of one resolved path-icon silhouette, before its foreground ops.
+/// Fill is included; a configured positive-width stroke is also included.
+/// This is a semantic operation, not expanded per-shadow drawing passes.
+class DrawPathShadowsOp extends PaintOp {
+  DrawPathShadowsOp(this.path, List<ShadowEffect> shadows)
+    : shadows = List<ShadowEffect>.unmodifiable(shadows);
+
+  final PathIR path;
+  final List<ShadowEffect> shadows;
+}
+
 class DrawImageOp extends PaintOp {
   DrawImageOp(this.id, this.src, this.dst);
   final ElementId id;
@@ -53,8 +66,8 @@ class DrawTextOp extends PaintOp {
     this.letterSpacing = 0.0,
     this.gradient,
     this.solid,
-    this.shadowOffset = 0,
-  });
+    List<ShadowEffect> shadows = const <ShadowEffect>[],
+  }) : shadows = List<ShadowEffect>.unmodifiable(shadows);
 
   final String text;
   final String family;
@@ -66,11 +79,11 @@ class DrawTextOp extends PaintOp {
 
   final Vec2 originBaselineCenter; // already decided by core
   final ResolvedLinearGradient? gradient;
-  final Color32? solid; // used for shadow or solid text
-  final double shadowOffset;
+  final Color32? solid; // foreground only; gradient takes precedence
+  final List<ShadowEffect> shadows;
 }
 
-// NEW: gradient fill for a rectangular area (e.g. whole artboard)
+// gradient fill for a rectangular area (e.g. whole artboard)
 class FillRectGradientOp extends PaintOp {
   final Rect2D r;
   final ResolvedLinearGradient gradient;

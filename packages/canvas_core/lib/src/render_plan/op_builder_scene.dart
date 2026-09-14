@@ -14,22 +14,6 @@ import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
     show ComputedScene;
 import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 
-// -----------------------------------------------------------------------------
-// Fill helpers (single source of truth)
-// -----------------------------------------------------------------------------
-//
-// Text/Icon have invariant: fill ∈ {solid, gradient} (never none).
-// Path may still be none.
-//
-// Shadow color rule:
-// - solid => that color
-// - gradient => grad.color1 (deterministic)
-Color32 _shadowColorFromFill(CanvasFill fill) => switch (fill) {
-  CanvasFillSolid(:final color) => color,
-  CanvasFillGradient(:final grad) => grad.color1,
-  CanvasFillNone() => 0x00000000, // should not happen for text/icon
-};
-
 Color32 _applyOpacityToArgb(Color32 argb, double opacity) {
   final alpha = (argb >> 24) & 0xFF;
   final mergedAlpha = (alpha * opacity).clamp(0, 255).round();
@@ -108,7 +92,7 @@ List<PaintOp> buildPaintOpsFromScene(
                 originBaselineCenter: const Vec2(0, 0),
                 gradient: null,
                 solid: color,
-                shadowOffset: d.shadowOffset,
+                shadows: d.shadows,
               ),
             );
             break;
@@ -125,9 +109,8 @@ List<PaintOp> buildPaintOpsFromScene(
                 letterSpacing: d.letterSpacing,
                 originBaselineCenter: const Vec2(0, 0),
                 gradient: resolved,
-                // Provide a deterministic solid fallback for shadow rendering.
-                solid: _shadowColorFromFill(d.fill),
-                shadowOffset: d.shadowOffset,
+                solid: null,
+                shadows: d.shadows,
               ),
             );
             break;
@@ -154,7 +137,7 @@ List<PaintOp> buildPaintOpsFromScene(
                   originBaselineCenter: const Vec2(0, 0),
                   gradient: null,
                   solid: color,
-                  shadowOffset: d.shadowOffset,
+                  shadows: d.shadows,
                 ),
               );
               break;
@@ -169,9 +152,8 @@ List<PaintOp> buildPaintOpsFromScene(
                   size: d.sizePx,
                   originBaselineCenter: const Vec2(0, 0),
                   gradient: resolved,
-                  // Deterministic shadow color derived from fill.
-                  solid: _shadowColorFromFill(d.fill),
-                  shadowOffset: d.shadowOffset,
+                  solid: null,
+                  shadows: d.shadows,
                 ),
               );
               break;
@@ -181,18 +163,20 @@ List<PaintOp> buildPaintOpsFromScene(
               break;
           }
         } else if (iconPath != null) {
-          // Unified mental model: apply CanvasIconData.fill to *path-based* icons too.
+          if (d.fill is! CanvasFillNone && d.shadows.isNotEmpty) {
+            ops.add(DrawPathShadowsOp(iconPath, d.shadows));
+          }
           switch (d.fill) {
             case CanvasFillNone():
               // Should be impossible; safe no-op.
               break;
 
-            case CanvasFillSolid():
-              // Ensure IR has fill enabled; some renderers treat fill=null as no-op.
-              final c = _shadowColorFromFill(d.fill);
-              final ir = (iconPath.style.fill == null)
-                  ? PathIR(iconPath.cmds, iconPath.style.copyWith(fill: c))
-                  : iconPath;
+            case CanvasFillSolid(:final color):
+              // The authored icon fill owns the foreground color.
+              final ir = PathIR(
+                iconPath.cmds,
+                iconPath.style.copyWith(fill: color),
+              );
               ops.add(FillPathOp(ir));
               break;
 

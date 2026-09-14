@@ -105,7 +105,6 @@ class FlutterTextPipeline implements TextMeasurer {
     TextSpec spec, {
     ui.Color? solid,
     ui.Shader? shader,
-    double shadowOffset = 0,
     TextOriginKind originKind = TextOriginKind.baseline,
   }) {
     _ensureActive();
@@ -113,29 +112,6 @@ class FlutterTextPipeline implements TextMeasurer {
     final foregroundPaint = shader != null
         ? (ui.Paint()..shader = shader)
         : null;
-
-    if (shadowOffset != 0) {
-      final shadowPainter = _buildPainterUncached(
-        spec,
-        color: solid ?? const ui.Color(0xFF000000),
-      );
-
-      try {
-        shadowPainter.layout();
-
-        final shadowOrigin = _resolveOrigin(shadowPainter, origin, originKind);
-
-        shadowPainter.paint(
-          canvas,
-          ui.Offset(
-            shadowOrigin.dx + shadowOffset,
-            shadowOrigin.dy + shadowOffset,
-          ),
-        );
-      } finally {
-        shadowPainter.dispose();
-      }
-    }
 
     // Reuse the cached layout-only painter when no visual override is needed.
     if (foregroundPaint == null && solid == null) {

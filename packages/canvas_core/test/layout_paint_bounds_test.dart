@@ -56,7 +56,15 @@ Node _text({
     fontFamily: 'TestFont',
     fontWeight: 400,
     fontSize: 20,
-    shadowOffset: shadow,
+    shadows: shadow == 0
+        ? const []
+        : [
+            ShadowEffect(
+              id: 's',
+              offset: Vec2(shadow, shadow),
+              color: 0xFF111111,
+            ),
+          ],
   ),
 );
 
@@ -222,7 +230,13 @@ void main() {
       _scene([
         const Node.icon(
           id: 'icon',
-          data: CanvasIconData(iconRef: 'glyph', sizePx: 96, shadowOffset: 8),
+          data: CanvasIconData(
+            iconRef: 'glyph',
+            sizePx: 96,
+            shadows: [
+              ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
+            ],
+          ),
         ),
       ]),
       _services(),
@@ -237,28 +251,45 @@ void main() {
     );
   });
 
-  test('path icon paint uses its path and ignores unrendered shadow', () {
-    ComputedScene build(double offset) => computeScene(
+  test('path icon shadows expand paint without changing layout', () {
+    ComputedScene build(bool withShadow) => computeScene(
       _scene([
         Node.icon(
           id: 'icon',
           data: CanvasIconData(
             iconRef: 'path',
             sizePx: 96,
-            shadowOffset: offset,
+            shadows: withShadow
+                ? const [
+                    ShadowEffect(
+                      id: 's',
+                      offset: Vec2(40, -10),
+                      blurSigma: 2,
+                      color: 0x80000000,
+                    ),
+                  ]
+                : const [],
           ),
         ),
       ]),
       _services(),
     );
-    final before = build(0);
-    final after = build(40);
-    expect(
+    final before = build(false);
+    final after = build(true);
+    final base = before.paintBoundsLocalById['icon']!;
+    // Four sigma = 8. Union source with its (40, -10) translated blur.
+    _expectRect(
       after.paintBoundsLocalById['icon'],
-      before.paintBoundsLocalById['icon'],
+      Rect2D.fromLTRB(base.left, base.top - 18, base.right + 48, base.bottom),
     );
-    expect(after.paintBoundsLocalById['icon']!.width, closeTo(160, 1e-8));
-    expect(after.paintBoundsLocalById['icon']!.height, closeTo(30, 1e-8));
+    expect(
+      after.layoutBoundsLocalById['icon'],
+      before.layoutBoundsLocalById['icon'],
+    );
+    expect(
+      after.worldById['icon']!.storage,
+      orderedEquals(before.worldById['icon']!.storage),
+    );
     expect(after.layoutBoundsLocalById['icon']!.width, 96);
   });
 
