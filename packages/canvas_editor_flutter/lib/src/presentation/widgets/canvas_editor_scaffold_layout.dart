@@ -25,6 +25,10 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+const _wideLayoutBreakpoint = 1100.0;
+const _sideDockWidth = 320.0;
+const _narrowInspectorHeight = 320.0;
+
 /// Presentation layout for the editor surface.
 ///
 /// This file only arranges canvas, inspector, layers, and optional shell chrome.
@@ -107,8 +111,9 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
 
     Widget buildDockedInspectorLayout(
       BuildContext context,
-      RenderSnapshot snap,
-    ) {
+      RenderSnapshot snap, {
+      required double availableWidth,
+    }) {
       final selection = context.read<SelectionController>();
 
       final canvas = CanvasViewportSurface(
@@ -135,7 +140,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
         fieldRowBuilder: inspectorFieldRowBuilder,
       );
 
-      final wide = !shell.hosted && MediaQuery.of(context).size.width >= 900;
+      final wide = !shell.hosted && availableWidth >= _wideLayoutBreakpoint;
 
       if (wide) {
         final showLayers = shell.showLayersPanel;
@@ -143,9 +148,9 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
         return Row(
           children: [
             if (showLayers)
-              SizedBox(width: 260, child: buildLayersPanel(context)),
+              SizedBox(width: _sideDockWidth, child: buildLayersPanel(context)),
             Expanded(child: canvas),
-            SizedBox(width: 320, child: inspector),
+            SizedBox(width: _sideDockWidth, child: inspector),
           ],
         );
       }
@@ -155,7 +160,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
           Expanded(flex: 3, child: canvas),
           const Divider(height: 1),
           SizedBox(
-            height: 320,
+            height: _narrowInspectorHeight,
             child: Column(children: [Expanded(child: inspector)]),
           ),
         ],
@@ -183,70 +188,79 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
       );
     }
 
-    return ValueListenableBuilder<RenderSnapshot>(
-      valueListenable: controller.render,
-      builder: (context, snap, _) {
-        if (shell.hosted) {
-          final header = shell.hostedHeaderBuilder?.call(
-            context,
-            toolbarState,
-            actions,
-            actionSpecs,
-          );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ValueListenableBuilder<RenderSnapshot>(
+          valueListenable: controller.render,
+          builder: (context, snap, _) {
+            if (shell.hosted) {
+              final header = shell.hostedHeaderBuilder?.call(
+                context,
+                toolbarState,
+                actions,
+                actionSpecs,
+              );
 
-          Widget? bottomChild = shell.hostedBottomBuilder?.call(
-            context,
-            toolbarState,
-            actions,
-            actionSpecs,
-          );
+              Widget? bottomChild = shell.hostedBottomBuilder?.call(
+                context,
+                toolbarState,
+                actions,
+                actionSpecs,
+              );
 
-          if (bottomChild == null &&
-              shell.inspectorPresentation ==
-                  InspectorPresentation.inlineCompact) {
-            bottomChild = buildCompactHostedInspectorPanel(context, snap);
-          }
+              if (bottomChild == null &&
+                  shell.inspectorPresentation ==
+                      InspectorPresentation.inlineCompact) {
+                bottomChild = buildCompactHostedInspectorPanel(context, snap);
+              }
 
-          final bottomH =
-              shell.hostedBottomHeight ??
-              (MediaQuery.of(context).size.height * 0.22).clamp(160.0, 220.0);
+              final bottomH =
+                  shell.hostedBottomHeight ??
+                  (constraints.maxHeight * 0.22).clamp(160.0, 220.0).toDouble();
 
-          return Column(
-            children: [
-              ?header,
-              Expanded(child: buildCanvasOnly(context, snap)),
-              if (bottomChild != null) ...[
-                const Divider(height: 1),
-                SizedBox(height: bottomH, child: bottomChild),
-              ],
-            ],
-          );
-        }
+              return Column(
+                children: [
+                  ?header,
+                  Expanded(child: buildCanvasOnly(context, snap)),
+                  if (bottomChild != null) ...[
+                    const Divider(height: 1),
+                    SizedBox(height: bottomH, child: bottomChild),
+                  ],
+                ],
+              );
+            }
 
-        final body = shell.inspectorPresentation == InspectorPresentation.docked
-            ? buildDockedInspectorLayout(context, snap)
-            : buildCanvasOnly(context, snap);
+            final body =
+                shell.inspectorPresentation == InspectorPresentation.docked
+                ? buildDockedInspectorLayout(
+                    context,
+                    snap,
+                    availableWidth: constraints.maxWidth,
+                  )
+                : buildCanvasOnly(context, snap);
 
-        return Scaffold(
-          appBar: shell.showDefaultAppBar
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child:
-                      appBarBuilder?.call(
-                        context,
-                        toolbarState,
-                        actions,
-                        actionSpecs,
-                      ) ??
-                      EditorAppBar(
-                        title: 'Canvas Editor',
-                        state: toolbarState,
-                        actions: actions,
-                        actionSpecs: actionSpecs,
-                      ),
-                )
-              : null,
-          body: body,
+            return Scaffold(
+              appBar: shell.showDefaultAppBar
+                  ? PreferredSize(
+                      preferredSize: const Size.fromHeight(kToolbarHeight),
+                      child:
+                          appBarBuilder?.call(
+                            context,
+                            toolbarState,
+                            actions,
+                            actionSpecs,
+                          ) ??
+                          EditorAppBar(
+                            title: 'Canvas Editor',
+                            state: toolbarState,
+                            actions: actions,
+                            actionSpecs: actionSpecs,
+                          ),
+                    )
+                  : null,
+              body: body,
+            );
+          },
         );
       },
     );
