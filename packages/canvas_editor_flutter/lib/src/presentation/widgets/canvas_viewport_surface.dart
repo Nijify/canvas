@@ -78,6 +78,7 @@ class CanvasViewportSurface extends StatelessWidget {
           valueListenable: camera,
           builder: (context, cameraState, _) {
             return Stack(
+              fit: StackFit.expand,
               children: [
                 CanvasViewport(
                   render: snap,
