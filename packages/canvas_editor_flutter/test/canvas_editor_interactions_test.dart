@@ -269,6 +269,39 @@ void main() {
     expect(boundsAfter.width, greaterThan(boundsBefore.width));
   });
 
+  testWidgets('canvas viewport fills its measured layout slot', (tester) async {
+    final hostSize = ValueNotifier<Size>(const Size(1400, 900));
+    addTearDown(hostSize.dispose);
+
+    final editor = await _pumpResizableEditor(tester, hostSize: hostSize);
+
+    final viewportFinder = find.byType(CanvasViewport).first;
+
+    final viewport = tester.widget<CanvasViewport>(viewportFinder);
+    final renderBox = tester.renderObject<RenderBox>(viewportFinder);
+
+    // Camera planning and the actual interactive viewport must use the same
+    // rectangle.
+    expect(renderBox.size.width, closeTo(viewport.viewportPx.width, 0.001));
+    expect(renderBox.size.height, closeTo(viewport.viewportPx.height, 0.001));
+
+    // Initial fitting must center the artboard within the real viewport.
+    final camera = editor.camera.value;
+    final artboard = editor.controller.render.value.scene.artboardSize;
+
+    final artboardCenterOnScreen = Offset(
+      artboard.w * 0.5 * camera.scale + camera.pan.dx,
+      artboard.h * 0.5 * camera.scale + camera.pan.dy,
+    );
+
+    final actualViewportCenter = Offset(
+      renderBox.size.width * 0.5,
+      renderBox.size.height * 0.5,
+    );
+
+    _expectOffsetCloseTo(artboardCenterOnScreen, actualViewportCenter);
+  });
+
   testWidgets('viewport resize refits before camera interaction', (
     tester,
   ) async {
