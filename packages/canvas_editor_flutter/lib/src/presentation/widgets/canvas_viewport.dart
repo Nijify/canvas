@@ -113,7 +113,7 @@ class _SnapGuidesPainter extends CustomPainter {
 
 class _CanvasViewportState extends State<CanvasViewport> {
   String? _draggingId;
-  Vec2? _dragStartCanvas;
+  Offset? _dragStartScreen;
   List<SnapLine> _guides = const [];
 
   bool _allowPinchZoom = false;
@@ -139,18 +139,21 @@ class _CanvasViewportState extends State<CanvasViewport> {
     setState(() => _guides = List<SnapLine>.from(next));
   }
 
-  void _applyDragStartIntent(CanvasDragStartIntent intent, Vec2 local) {
+  void _applyDragStartIntent(
+    CanvasDragStartIntent intent,
+    Offset screenFocalPoint,
+  ) {
     final dragId = intent.dragId;
 
     if (dragId != null) {
       _beginMoveSession();
       _draggingId = dragId;
-      _dragStartCanvas = local;
+      _dragStartScreen = screenFocalPoint;
       return;
     }
 
     _draggingId = null;
-    _dragStartCanvas = null;
+    _dragStartScreen = null;
     _endMoveSession();
   }
 
@@ -294,7 +297,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 );
 
             if (behaviorIntent != null) {
-              _applyDragStartIntent(behaviorIntent, local);
+              _applyDragStartIntent(behaviorIntent, d.focalPoint);
               if (_guides.isNotEmpty) _setGuides(const []);
               return;
             }
@@ -309,10 +312,10 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 if (_canMoveAny(scene, nextSelectionIds)) {
                   _beginMoveSession();
                   _draggingId = hit.id;
-                  _dragStartCanvas = local;
+                  _dragStartScreen = d.focalPoint;
                 } else {
                   _draggingId = null;
-                  _dragStartCanvas = null;
+                  _dragStartScreen = null;
                   _endMoveSession();
                 }
 
@@ -321,12 +324,12 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 }
               } else {
                 _draggingId = null;
-                _dragStartCanvas = null;
+                _dragStartScreen = null;
                 _endMoveSession();
               }
             } else {
               _draggingId = null;
-              _dragStartCanvas = null;
+              _dragStartScreen = null;
               _endMoveSession();
 
               widget.selection.clearSelection();
@@ -337,9 +340,13 @@ class _CanvasViewportState extends State<CanvasViewport> {
           onScaleUpdate: (d) {
             if (_draggingId != null &&
                 d.pointerCount == 1 &&
-                _dragStartCanvas != null) {
-              final now = toCanvas(d.localFocalPoint);
-              final rawDelta = now - _dragStartCanvas!;
+                _dragStartScreen != null) {
+              final screenDelta = d.focalPoint - _dragStartScreen!;
+
+              final rawDelta = Vec2(
+                screenDelta.dx / displayScale,
+                screenDelta.dy / displayScale,
+              );
 
               final selectedIds = widget.selection.value.hasItems
                   ? widget.selection.value.ids
@@ -348,7 +355,12 @@ class _CanvasViewportState extends State<CanvasViewport> {
               final movableIds = _movableIds(scene, selectedIds);
 
               if (movableIds.isEmpty) {
-                if (_guides.isNotEmpty) _setGuides(const []);
+                _dragStartScreen = d.focalPoint;
+
+                if (_guides.isNotEmpty) {
+                  _setGuides(const []);
+                }
+
                 return;
               }
 
@@ -359,7 +371,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
               if (aabb == null) {
                 widget.controller.updateDragMany(movableIds, rawDelta);
-                _dragStartCanvas = now;
+                _dragStartScreen = d.focalPoint;
                 if (_guides.isNotEmpty) _setGuides(const []);
                 return;
               }
@@ -409,7 +421,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 _setGuides(res.guides);
               }
 
-              _dragStartCanvas = now;
+              _dragStartScreen = d.focalPoint;
               return;
             }
 
@@ -434,7 +446,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
             _endMoveSession();
 
             _draggingId = null;
-            _dragStartCanvas = null;
+            _dragStartScreen = null;
             _allowPinchZoom = false;
 
             if (_guides.isNotEmpty) _setGuides(const []);

@@ -200,9 +200,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   }
 
   void _handleViewportPx(Size vp) {
-    _lastViewportPx = vp;
-
-    if (_didInitialCameraSync) return;
     if (!vp.width.isFinite ||
         !vp.height.isFinite ||
         vp.width <= 0 ||
@@ -210,14 +207,32 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       return;
     }
 
-    final snap = _runtime.render.value;
+    final previousViewport = _lastViewportPx;
+    final initialSync = !_didInitialCameraSync;
 
-    _syncViewportCamera(viewportPx: vp, snap: snap, forceFit: true);
+    final viewportChanged = previousViewport == null || previousViewport != vp;
 
-    if (_didInitialCameraSync) return;
+    _lastViewportPx = vp;
+
+    if (!initialSync && !viewportChanged) {
+      return;
+    }
+
+    _syncViewportCamera(
+      viewportPx: vp,
+      snap: _runtime.render.value,
+      forceFit: initialSync,
+    );
+
+    if (!initialSync) {
+      return;
+    }
+
     _didInitialCameraSync = true;
 
-    if (!_requiresInitialCameraGate) return;
+    if (!_requiresInitialCameraGate) {
+      return;
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -318,20 +333,16 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
       _ensureAssetsForScene(snap.scene);
 
-      // Keep camera sync in CanvasEditorSurface, not CanvasViewport.build().
-      // The viewport should render the camera it receives; syncing here avoids
-      // stale framing when content bounds change.
-      if (_viewportFraming.contentBoundsSpec != null) {
-        final viewportPx = _lastViewportPx;
-
-        if (viewportPx != null) {
-          _syncViewportCamera(
-            viewportPx: viewportPx,
-            snap: snap,
-            forceFit: true,
-          );
-        }
+      final viewportPx = _lastViewportPx;
+      if (viewportPx == null) {
+        return;
       }
+
+      _syncViewportCamera(
+        viewportPx: viewportPx,
+        snap: snap,
+        forceFit: _viewportFraming.contentBoundsSpec != null,
+      );
     };
 
     _runtime.render.addListener(_renderListener);
@@ -422,75 +433,84 @@ class _CanvasEditorSurfaceState<TSourceDocument>
             ScaffoldMessenger.of(ctx),
           );
 
-          return CallbackShortcuts(
-            bindings: buildEditorShortcutBindings(ctx),
-            child: Focus(
-              autofocus: true,
-              child: ValueListenableBuilder<SelectionState>(
-                valueListenable: _selectionController,
-                builder: (context, selectionState, _) {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: controller.canUndo,
-                    builder: (context, canUndo, _) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final compactToolbar = constraints.maxWidth < 500;
+
+              return CallbackShortcuts(
+                bindings: buildEditorShortcutBindings(ctx),
+                child: Focus(
+                  autofocus: true,
+                  child: ValueListenableBuilder<SelectionState>(
+                    valueListenable: _selectionController,
+                    builder: (context, selectionState, _) {
                       return ValueListenableBuilder<bool>(
-                        valueListenable: controller.canRedo,
-                        builder: (context, canRedo, _) {
-                          final toolbarState = EditorToolbarState(
-                            compact: MediaQuery.of(context).size.width < 500,
-                            canUndo: canUndo,
-                            canRedo: canRedo,
-                            hasSelection: selectionState.hasItems,
-                          );
+                        valueListenable: controller.canUndo,
+                        builder: (context, canUndo, _) {
+                          return ValueListenableBuilder<bool>(
+                            valueListenable: controller.canRedo,
+                            builder: (context, canRedo, _) {
+                              final toolbarState = EditorToolbarState(
+                                compact: compactToolbar,
+                                canUndo: canUndo,
+                                canRedo: canRedo,
+                                hasSelection: selectionState.hasItems,
+                              );
 
-                          final actionContext = EditorActionContext(
-                            buildContext: ctx,
-                            resources: _sessionResources,
-                            ui: ui,
-                            controller: controller,
-                            selection: _selectionController,
-                          );
+                              final actionContext = EditorActionContext(
+                                buildContext: ctx,
+                                resources: _sessionResources,
+                                ui: ui,
+                                controller: controller,
+                                selection: _selectionController,
+                              );
 
-                          final actions = EditorActionDispatcher(
-                            context: actionContext,
-                            actions: _actionsById,
-                          );
+                              final actions = EditorActionDispatcher(
+                                context: actionContext,
+                                actions: _actionsById,
+                              );
 
-                          final inspectorFieldRowBuilder =
-                              _extension.inspectorFieldRowBuilder;
+                              final inspectorFieldRowBuilder =
+                                  _extension.inspectorFieldRowBuilder;
 
-                          return CanvasEditorScaffoldLayout(
-                            shell: widget.shell,
-                            camera: _camera,
-                            onViewportPx: _handleViewportPx,
-                            cameraReady: _cameraReady,
-                            selectionChromeMode:
-                                _surfaceFeatures.selectionChromeMode ??
-                                SelectionChromeMode.transformControls,
-                            resources: _sessionResources,
-                            toolbarState: toolbarState,
-                            actions: actions,
-                            actionSpecs: _actionSpecs,
-                            renderer: renderer,
-                            repaint: _pool.revision,
-                            appBarBuilder: widget.appBarBuilder,
-                            inspectorBuilder: _surfaceFeatures.inspectorBuilder,
-                            inspectorSections:
-                                _surfaceFeatures.inspectorSections,
-                            interactionPolicy:
-                                _surfaceFeatures.interactionPolicy,
-                            viewportBehavior: _surfaceFeatures.viewportBehavior,
-                            sceneObjectPolicy:
-                                _surfaceFeatures.sceneObjectPolicy ??
-                                const SceneObjectPresentationPolicy(),
-                            inspectorFieldRowBuilder: inspectorFieldRowBuilder,
+                              return CanvasEditorScaffoldLayout(
+                                shell: widget.shell,
+                                camera: _camera,
+                                onViewportPx: _handleViewportPx,
+                                cameraReady: _cameraReady,
+                                selectionChromeMode:
+                                    _surfaceFeatures.selectionChromeMode ??
+                                    SelectionChromeMode.transformControls,
+                                resources: _sessionResources,
+                                toolbarState: toolbarState,
+                                actions: actions,
+                                actionSpecs: _actionSpecs,
+                                renderer: renderer,
+                                repaint: _pool.revision,
+                                appBarBuilder: widget.appBarBuilder,
+                                inspectorBuilder:
+                                    _surfaceFeatures.inspectorBuilder,
+                                inspectorSections:
+                                    _surfaceFeatures.inspectorSections,
+                                interactionPolicy:
+                                    _surfaceFeatures.interactionPolicy,
+                                viewportBehavior:
+                                    _surfaceFeatures.viewportBehavior,
+                                sceneObjectPolicy:
+                                    _surfaceFeatures.sceneObjectPolicy ??
+                                    const SceneObjectPresentationPolicy(),
+                                inspectorFieldRowBuilder:
+                                    inspectorFieldRowBuilder,
+                              );
+                            },
                           );
                         },
                       );
                     },
-                  );
-                },
-              ),
-            ),
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
