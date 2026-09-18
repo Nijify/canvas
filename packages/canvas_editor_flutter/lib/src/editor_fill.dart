@@ -18,12 +18,12 @@ class FillCapability {
 }
 
 const kTextFillCapability = FillCapability(
-  allowed: {FillVariant.solid, FillVariant.gradient},
+  allowed: {FillVariant.none, FillVariant.solid, FillVariant.gradient},
   fallback: rt.CanvasFill.solid(0xFF111111),
 );
 
 const kIconFillCapability = FillCapability(
-  allowed: {FillVariant.solid, FillVariant.gradient},
+  allowed: {FillVariant.none, FillVariant.solid, FillVariant.gradient},
   fallback: rt.CanvasFill.solid(0xFF111111),
 );
 

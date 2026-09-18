@@ -7,7 +7,7 @@ import 'package:canvas_core/src/render_plan/gradient_resolver.dart'
     show ResolvedLinearGradient;
 import 'package:canvas_core/src/path/path_ir.dart';
 
-import 'package:canvas_core/src/runtime/model/shadow_effect.dart';
+import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
 
 sealed class PaintOp {}
 
@@ -39,15 +39,16 @@ class StrokePathOp extends PaintOp {
   StrokePathOp(this.path);
 }
 
-/// Shadows of one resolved path-icon silhouette, before its foreground ops.
-/// Fill is included; a configured positive-width stroke is also included.
-/// This is a semantic operation, not expanded per-shadow drawing passes.
-class DrawPathShadowsOp extends PaintOp {
-  DrawPathShadowsOp(this.path, List<ShadowEffect> shadows)
-    : shadows = List<ShadowEffect>.unmodifiable(shadows);
+/// Ordered source-derived underlays for one resolved path-icon silhouette.
+///
+/// The renderer derives every underlay independently from [path].
+/// Foreground path operations are emitted separately afterward.
+class DrawPathUnderlaysOp extends PaintOp {
+  DrawPathUnderlaysOp(this.path, List<CanvasSourceUnderlay> underlays)
+    : underlays = List<CanvasSourceUnderlay>.unmodifiable(underlays);
 
   final PathIR path;
-  final List<ShadowEffect> shadows;
+  final List<CanvasSourceUnderlay> underlays;
 }
 
 class DrawImageOp extends PaintOp {
@@ -66,21 +67,28 @@ class DrawTextOp extends PaintOp {
     this.letterSpacing = 0.0,
     this.gradient,
     this.solid,
-    List<ShadowEffect> shadows = const <ShadowEffect>[],
-  }) : shadows = List<ShadowEffect>.unmodifiable(shadows);
+    List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[],
+  }) : underlays = List<CanvasSourceUnderlay>.unmodifiable(underlays);
 
   final String text;
   final String family;
   final int weight;
   final double size;
 
-  /// Additional spacing between characters in logical canvas units.
   final double letterSpacing;
 
-  final Vec2 originBaselineCenter; // already decided by core
+  final Vec2 originBaselineCenter;
+
+  /// Foreground only.
+  ///
+  /// Gradient takes precedence when present.
+  /// When both [gradient] and [solid] are null, no foreground is painted.
   final ResolvedLinearGradient? gradient;
-  final Color32? solid; // foreground only; gradient takes precedence
-  final List<ShadowEffect> shadows;
+  final Color32? solid;
+
+  final List<CanvasSourceUnderlay> underlays;
+
+  bool get hasForeground => gradient != null || solid != null;
 }
 
 // gradient fill for a rectangular area (e.g. whole artboard)

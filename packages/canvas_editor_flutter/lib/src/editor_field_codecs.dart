@@ -63,20 +63,33 @@ void _commitFill(
   _commitNodeUpdate(controller, nodeId, (node) {
     if (node is rt.TextNode) {
       final nextFill = coerceFillForNode(node, requestedFill);
-      if (nextFill == node.data.fill) return node;
+      final current = node.data.appearance.foreground;
 
-      return node.copyWith(data: node.data.copyWith(fill: nextFill));
+      if (nextFill == current) return node;
+
+      return node.copyWith(
+        data: node.data.copyWith(
+          appearance: node.data.appearance.copyWith(foreground: nextFill),
+        ),
+      );
     }
 
     if (node is rt.IconNode) {
       final nextFill = coerceFillForNode(node, requestedFill);
-      if (nextFill == node.data.fill) return node;
+      final current = node.data.appearance.foreground;
 
-      return node.copyWith(data: node.data.copyWith(fill: nextFill));
+      if (nextFill == current) return node;
+
+      return node.copyWith(
+        data: node.data.copyWith(
+          appearance: node.data.appearance.copyWith(foreground: nextFill),
+        ),
+      );
     }
 
     if (node is rt.PathNode) {
       final nextFill = coerceFillForNode(node, requestedFill);
+
       if (nextFill == node.data.fill) return node;
 
       return node.copyWith(data: node.data.copyWith(fill: nextFill));
@@ -143,7 +156,7 @@ class FieldCatalog {
 
     rt.CanvasFields.textFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
-      readNode: (_, node) => (node as rt.TextNode).data.fill,
+      readNode: (_, node) => (node as rt.TextNode).data.appearance.foreground,
       commit: (controller, nodeId, value) {
         _commitFill(controller, nodeId, value as rt.CanvasFill);
       },
@@ -218,7 +231,7 @@ class FieldCatalog {
 
     rt.CanvasFields.iconFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
-      readNode: (_, node) => (node as rt.IconNode).data.fill,
+      readNode: (_, node) => (node as rt.IconNode).data.appearance.foreground,
       commit: (controller, nodeId, value) {
         _commitFill(controller, nodeId, value as rt.CanvasFill);
       },

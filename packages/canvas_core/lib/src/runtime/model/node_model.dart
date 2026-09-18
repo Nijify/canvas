@@ -11,7 +11,7 @@ import 'package:canvas_core/src/foundation/style/style_types.dart'
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/serialization/converters.dart';
 import 'package:canvas_core/src/serialization/path_converters.dart';
-import 'package:canvas_core/src/runtime/model/shadow_effect.dart';
+import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
 
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';
@@ -36,7 +36,6 @@ abstract class Transform2D with _$Transform2D {
 abstract class TextData with _$TextData {
   const TextData._();
 
-  @Assert('fill is! CanvasFillNone', 'Text fill cannot be none')
   const factory TextData({
     required String text,
     required String fontFamily,
@@ -48,10 +47,12 @@ abstract class TextData with _$TextData {
     /// The original text must remain unchanged. Platform text implementations
     /// must apply this value through their native text-layout API.
     @Default(0.0) double letterSpacing,
-    @CanvasFillConverter()
-    @Default(CanvasFill.solid(0xFF111111))
-    CanvasFill fill,
-    @Default(<ShadowEffect>[]) List<ShadowEffect> shadows,
+
+    /// Source-derived visual appearance.
+    ///
+    /// Layout and interaction geometry remain source-derived and do not expand
+    /// for source underlays.
+    @Default(CanvasAppearance()) CanvasAppearance appearance,
   }) = _TextData;
 
   factory TextData.fromJson(Map<String, dynamic> json) =>
@@ -99,14 +100,10 @@ abstract class PathData with _$PathData {
 abstract class CanvasIconData with _$CanvasIconData {
   const CanvasIconData._();
 
-  @Assert('fill is! CanvasFillNone', 'Icon fill cannot be none')
   const factory CanvasIconData({
     required String iconRef,
     @Default(96.0) double sizePx,
-    @CanvasFillConverter()
-    @Default(CanvasFill.solid(0xFF111111))
-    CanvasFill fill,
-    @Default(<ShadowEffect>[]) List<ShadowEffect> shadows,
+    @Default(CanvasAppearance()) CanvasAppearance appearance,
   }) = _CanvasIconData;
 
   factory CanvasIconData.fromJson(Map<String, dynamic> json) =>

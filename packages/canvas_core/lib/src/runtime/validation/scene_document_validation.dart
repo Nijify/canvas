@@ -6,7 +6,7 @@ import 'package:canvas_core/src/foundation/ids.dart' show CanvasAssetId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/runtime/model/shadow_effect.dart';
+import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 /// Stable machine-readable categories returned by scene validation.
@@ -19,11 +19,9 @@ enum CanvasSceneValidationCode {
   missingImageAsset,
   blankNodeId,
   duplicateNodeId,
-  blankShadowId,
-  duplicateShadowId,
+  blankUnderlayId,
+  duplicateUnderlayId,
   nameTooLong,
-  invalidTextFill,
-  invalidIconFill,
   invalidBehaviorType,
   invalidBehaviorVersion,
   nonJsonBehaviorValue,
@@ -213,66 +211,62 @@ final class _SceneValidator {
   void _validateTextData(TextData data, String path) {
     _validateFinite(data.fontSize, '$path/fontSize');
     _validateFinite(data.letterSpacing, '$path/letterSpacing');
-
-    if (data.fill is CanvasFillNone) {
-      _add(
-        CanvasSceneValidationCode.invalidTextFill,
-        '$path/fill',
-        'Text fill cannot be none.',
-      );
-    } else {
-      _validateFill(data.fill, '$path/fill');
-    }
-
-    _validateShadows(data.shadows, '$path/shadows');
+    _validateAppearance(data.appearance, '$path/appearance');
   }
 
   void _validateIconData(CanvasIconData data, String path) {
     _validateFinite(data.sizePx, '$path/sizePx');
-
-    if (data.fill is CanvasFillNone) {
-      _add(
-        CanvasSceneValidationCode.invalidIconFill,
-        '$path/fill',
-        'Icon fill cannot be none.',
-      );
-    } else {
-      _validateFill(data.fill, '$path/fill');
-    }
-
-    _validateShadows(data.shadows, '$path/shadows');
+    _validateAppearance(data.appearance, '$path/appearance');
   }
 
-  void _validateShadows(List<ShadowEffect> shadows, String path) {
+  void _validateAppearance(CanvasAppearance appearance, String path) {
+    _validateFill(appearance.foreground, '$path/foreground');
+    _validateUnderlays(appearance.underlays, '$path/underlays');
+  }
+
+  void _validateUnderlays(List<CanvasSourceUnderlay> underlays, String path) {
     final firstIdPath = <String, String>{};
-    for (var index = 0; index < shadows.length; index++) {
-      final shadow = shadows[index];
+
+    for (var index = 0; index < underlays.length; index++) {
+      final underlay = underlays[index];
       final itemPath = '$path/$index';
-      final idPath = '$itemPath/id';
-      if (shadow.id.trim().isEmpty) {
-        _add(
-          CanvasSceneValidationCode.blankShadowId,
-          idPath,
-          'Shadow ID must be nonblank.',
-        );
-      } else {
-        final previous = firstIdPath[shadow.id];
-        if (previous == null) {
-          firstIdPath[shadow.id] = idPath;
-        } else {
-          _add(
-            CanvasSceneValidationCode.duplicateShadowId,
-            idPath,
-            'Shadow ID must be unique within its owning node.',
-            relatedPath: previous,
-          );
-        }
+
+      switch (underlay) {
+        case ShadowEffect(
+          :final id,
+          :final offset,
+          :final blurSigma,
+          :final color,
+        ):
+          final idPath = '$itemPath/id';
+
+          if (id.trim().isEmpty) {
+            _add(
+              CanvasSceneValidationCode.blankUnderlayId,
+              idPath,
+              'Appearance underlay ID must be nonblank.',
+            );
+          } else {
+            final previous = firstIdPath[id];
+
+            if (previous == null) {
+              firstIdPath[id] = idPath;
+            } else {
+              _add(
+                CanvasSceneValidationCode.duplicateUnderlayId,
+                idPath,
+                'Appearance underlay ID must be unique within its appearance.',
+                relatedPath: previous,
+              );
+            }
+          }
+
+          // Disabled effects remain valid authored data and are still validated.
+          _validateFinite(offset.x, '$itemPath/offset/x');
+          _validateFinite(offset.y, '$itemPath/offset/y');
+          _validateNonNegative(blurSigma, '$itemPath/blurSigma');
+          _validateColor(color, '$itemPath/color');
       }
-      // Disabled entries still have to be valid authored data.
-      _validateFinite(shadow.offset.x, '$itemPath/offset/x');
-      _validateFinite(shadow.offset.y, '$itemPath/offset/y');
-      _validateNonNegative(shadow.blurSigma, '$itemPath/blurSigma');
-      _validateColor(shadow.color, '$itemPath/color');
     }
   }
 

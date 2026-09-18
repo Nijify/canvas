@@ -45,16 +45,9 @@ _TextData _$TextDataFromJson(Map<String, dynamic> json) => _TextData(
   fontWeight: (json['fontWeight'] as num).toInt(),
   fontSize: (json['fontSize'] as num).toDouble(),
   letterSpacing: (json['letterSpacing'] as num?)?.toDouble() ?? 0.0,
-  fill: json['fill'] == null
-      ? const CanvasFill.solid(0xFF111111)
-      : const CanvasFillConverter().fromJson(
-          json['fill'] as Map<String, dynamic>,
-        ),
-  shadows:
-      (json['shadows'] as List<dynamic>?)
-          ?.map((e) => ShadowEffect.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      const <ShadowEffect>[],
+  appearance: json['appearance'] == null
+      ? const CanvasAppearance()
+      : CanvasAppearance.fromJson(json['appearance'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$TextDataToJson(_TextData instance) => <String, dynamic>{
@@ -63,8 +56,7 @@ Map<String, dynamic> _$TextDataToJson(_TextData instance) => <String, dynamic>{
   'fontWeight': instance.fontWeight,
   'fontSize': instance.fontSize,
   'letterSpacing': instance.letterSpacing,
-  'fill': const CanvasFillConverter().toJson(instance.fill),
-  'shadows': instance.shadows.map((e) => e.toJson()).toList(),
+  'appearance': instance.appearance.toJson(),
 };
 
 _ImageData _$ImageDataFromJson(Map<String, dynamic> json) => _ImageData(
@@ -153,24 +145,18 @@ _CanvasIconData _$CanvasIconDataFromJson(Map<String, dynamic> json) =>
     _CanvasIconData(
       iconRef: json['iconRef'] as String,
       sizePx: (json['sizePx'] as num?)?.toDouble() ?? 96.0,
-      fill: json['fill'] == null
-          ? const CanvasFill.solid(0xFF111111)
-          : const CanvasFillConverter().fromJson(
-              json['fill'] as Map<String, dynamic>,
+      appearance: json['appearance'] == null
+          ? const CanvasAppearance()
+          : CanvasAppearance.fromJson(
+              json['appearance'] as Map<String, dynamic>,
             ),
-      shadows:
-          (json['shadows'] as List<dynamic>?)
-              ?.map((e) => ShadowEffect.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const <ShadowEffect>[],
     );
 
 Map<String, dynamic> _$CanvasIconDataToJson(_CanvasIconData instance) =>
     <String, dynamic>{
       'iconRef': instance.iconRef,
       'sizePx': instance.sizePx,
-      'fill': const CanvasFillConverter().toJson(instance.fill),
-      'shadows': instance.shadows.map((e) => e.toJson()).toList(),
+      'appearance': instance.appearance.toJson(),
     };
 
 _GroupBehaviorRef _$GroupBehaviorRefFromJson(Map<String, dynamic> json) =>

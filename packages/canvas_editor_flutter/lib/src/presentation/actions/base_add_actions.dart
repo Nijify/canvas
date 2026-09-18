@@ -89,7 +89,9 @@ void _addBaseText(EditorActionContext ctx) {
         fontWeight: 700,
         fontSize: 32,
         letterSpacing: 0,
-        fill: CanvasFill.solid(_baseFill),
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.solid(_baseFill),
+        ),
       ),
       xf: const Transform2D(position: _textPos),
     ),

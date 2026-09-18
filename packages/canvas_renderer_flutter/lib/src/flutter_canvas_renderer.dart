@@ -7,7 +7,7 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_renderer_flutter/src/flutter_linear_shader.dart';
 import 'package:canvas_renderer_flutter/src/flutter_mappers.dart';
 import 'package:canvas_renderer_flutter/src/flutter_text_pipeline.dart';
-import 'package:canvas_renderer_flutter/src/flutter_shadow_renderer.dart';
+import 'package:canvas_renderer_flutter/src/flutter_source_underlay_renderer.dart';
 
 enum MissingImageBehavior { placeholder, skip }
 
@@ -163,8 +163,8 @@ class CanvasRenderer {
 
           canvas.drawImageRect(img, srcRect, dstRect, paint);
 
-        case DrawPathShadowsOp(:final path, :final shadows):
-          _drawPathShadows(canvas, path, shadows);
+        case DrawPathUnderlaysOp(:final path, :final underlays):
+          _drawPathUnderlays(canvas, path, underlays);
 
         case DrawTextOp t:
           _drawText(canvas, t);
@@ -243,29 +243,34 @@ class CanvasRenderer {
     StrokeJoin.round => ui.StrokeJoin.round,
   };
 
-  void _drawPathShadows(
+  void _drawPathUnderlays(
     ui.Canvas canvas,
     PathIR ir,
-    List<ShadowEffect> shadows,
+    List<CanvasSourceUnderlay> underlays,
   ) {
     if (ir.cmds.isEmpty) return;
-    paintSourceShadows(
+
+    paintSourceUnderlays(
       canvas,
-      shadows: shadows,
+      underlays: underlays,
       paintSource: (sourceCanvas) {
         final path = _buildUiPath(ir);
         final style = ir.style;
+
         path.fillType = switch (style.fillRule) {
           FillRule.evenOdd => ui.PathFillType.evenOdd,
           FillRule.nonZero => ui.PathFillType.nonZero,
         };
-        // Icon fill coverage is independent of its authored fill alpha.
+
+        // Path-icon source coverage is independent of authored foreground
+        // color, alpha, and visibility.
         sourceCanvas.drawPath(
           path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..color = const ui.Color(0xFF000000),
         );
+
         if (style.stroke != null && style.strokeWidth > 0) {
           sourceCanvas.drawPath(
             path,
@@ -293,20 +298,12 @@ class CanvasRenderer {
       letterSpacing: t.letterSpacing,
     );
 
-    ui.Shader? shader;
-    if (t.gradient != null) {
-      shader = buildLinearShaderFromResolved(t.gradient!);
-    }
-
-    final solidColor = t.solid != null
-        ? ui.Color(t.solid!)
-        : const ui.Color(0xFF000000);
-
-    paintSourceShadows(
+    paintSourceUnderlays(
       canvas,
-      shadows: t.shadows,
+      underlays: t.underlays,
       paintSource: (sourceCanvas) {
-        // No fill override: reuse the cached text layout's opaque paint.
+        // No visual override here. The cached opaque text paint represents the
+        // source silhouette independently from foreground appearance.
         text.paint(
           sourceCanvas,
           t.originBaselineCenter.toUi,
@@ -316,11 +313,22 @@ class CanvasRenderer {
       },
     );
 
+    // Most important behavior change in this renderer:
+    // no foreground means DO NOT invoke FlutterTextPipeline's fallback-black
+    // paint path.
+    if (!t.hasForeground) return;
+
+    final shader = t.gradient == null
+        ? null
+        : buildLinearShaderFromResolved(t.gradient!);
+
+    final solid = t.solid == null ? null : ui.Color(t.solid!);
+
     text.paint(
       canvas,
       t.originBaselineCenter.toUi,
       spec,
-      solid: solidColor,
+      solid: solid,
       shader: shader,
       originKind: TextOriginKind.center,
     );

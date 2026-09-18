@@ -34,12 +34,18 @@
 // 2) Runtime models (scene graph)
 // ============================================================================
 export 'src/runtime/model/scene_document.dart';
-export 'src/runtime/model/shadow_effect.dart' show ShadowEffect;
-export 'src/algorithms/layout/shadow_bounds.dart'
+
+export 'src/runtime/model/canvas_appearance.dart'
+    show CanvasAppearance, CanvasSourceUnderlay, ShadowEffect;
+
+export 'src/algorithms/layout/appearance_bounds.dart'
     show
         shadowBlurExtentInSigmas,
         shadowContributesToPaint,
-        estimateShadowPaintBounds;
+        sourceUnderlayContributesToPaint,
+        estimateSourceUnderlayPaintBounds,
+        estimateAppearancePaintBounds;
+
 export 'src/runtime/model/node_model.dart'
     show
         Node,

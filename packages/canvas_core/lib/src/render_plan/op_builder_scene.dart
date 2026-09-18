@@ -80,7 +80,9 @@ List<PaintOp> buildPaintOpsFromScene(
 
     switch (leaf) {
       case TextNode(data: final d):
-        switch (d.fill) {
+        final appearance = d.appearance;
+
+        switch (appearance.foreground) {
           case CanvasFillSolid(:final color):
             ops.add(
               DrawTextOp(
@@ -90,16 +92,12 @@ List<PaintOp> buildPaintOpsFromScene(
                 size: d.fontSize,
                 letterSpacing: d.letterSpacing,
                 originBaselineCenter: const Vec2(0, 0),
-                gradient: null,
                 solid: color,
-                shadows: d.shadows,
+                underlays: appearance.underlays,
               ),
             );
-            break;
 
           case CanvasFillGradient(:final grad):
-            final resolved = resolveLinearGradient(grad, doc.artboardSize);
-
             ops.add(
               DrawTextOp(
                 text: d.text,
@@ -108,16 +106,25 @@ List<PaintOp> buildPaintOpsFromScene(
                 size: d.fontSize,
                 letterSpacing: d.letterSpacing,
                 originBaselineCenter: const Vec2(0, 0),
-                gradient: resolved,
-                solid: null,
-                shadows: d.shadows,
+                gradient: resolveLinearGradient(grad, doc.artboardSize),
+                underlays: appearance.underlays,
               ),
             );
-            break;
 
           case CanvasFillNone():
-            // Should be impossible for TextData; skip defensively.
-            break;
+            if (appearance.underlays.isNotEmpty) {
+              ops.add(
+                DrawTextOp(
+                  text: d.text,
+                  family: d.fontFamily,
+                  weight: d.fontWeight,
+                  size: d.fontSize,
+                  letterSpacing: d.letterSpacing,
+                  originBaselineCenter: const Vec2(0, 0),
+                  underlays: appearance.underlays,
+                ),
+              );
+            }
         }
         break;
 
@@ -126,7 +133,9 @@ List<PaintOp> buildPaintOpsFromScene(
         final iconPath = computed.iconPathIRById[id];
 
         if (iconText != null) {
-          switch (d.fill) {
+          final appearance = d.appearance;
+
+          switch (appearance.foreground) {
             case CanvasFillSolid(:final color):
               ops.add(
                 DrawTextOp(
@@ -135,15 +144,12 @@ List<PaintOp> buildPaintOpsFromScene(
                   weight: iconText.fontWeight,
                   size: d.sizePx,
                   originBaselineCenter: const Vec2(0, 0),
-                  gradient: null,
                   solid: color,
-                  shadows: d.shadows,
+                  underlays: appearance.underlays,
                 ),
               );
-              break;
 
             case CanvasFillGradient(:final grad):
-              final resolved = resolveLinearGradient(grad, doc.artboardSize);
               ops.add(
                 DrawTextOp(
                   text: iconText.glyph,
@@ -151,51 +157,64 @@ List<PaintOp> buildPaintOpsFromScene(
                   weight: iconText.fontWeight,
                   size: d.sizePx,
                   originBaselineCenter: const Vec2(0, 0),
-                  gradient: resolved,
-                  solid: null,
-                  shadows: d.shadows,
+                  gradient: resolveLinearGradient(grad, doc.artboardSize),
+                  underlays: appearance.underlays,
                 ),
               );
-              break;
 
             case CanvasFillNone():
-              // Should be impossible for icons; skip defensively.
-              break;
+              if (appearance.underlays.isNotEmpty) {
+                ops.add(
+                  DrawTextOp(
+                    text: iconText.glyph,
+                    family: iconText.fontFamily,
+                    weight: iconText.fontWeight,
+                    size: d.sizePx,
+                    originBaselineCenter: const Vec2(0, 0),
+                    underlays: appearance.underlays,
+                  ),
+                );
+              }
           }
         } else if (iconPath != null) {
-          if (d.fill is! CanvasFillNone && d.shadows.isNotEmpty) {
-            ops.add(DrawPathShadowsOp(iconPath, d.shadows));
+          final appearance = d.appearance;
+
+          if (appearance.underlays.isNotEmpty) {
+            ops.add(DrawPathUnderlaysOp(iconPath, appearance.underlays));
           }
-          switch (d.fill) {
+
+          switch (appearance.foreground) {
             case CanvasFillNone():
-              // Should be impossible; safe no-op.
+              // Source still exists for underlays, but no foreground path paint.
               break;
 
             case CanvasFillSolid(:final color):
-              // The authored icon fill owns the foreground color.
               final ir = PathIR(
                 iconPath.cmds,
                 iconPath.style.copyWith(fill: color),
               );
               ops.add(FillPathOp(ir));
-              break;
 
             case CanvasFillGradient(:final grad):
               final resolved = resolveLinearGradient(grad, doc.artboardSize);
-              // Ensure IR has fill enabled.
+
               final seed = grad.color1;
-              final ir = (iconPath.style.fill == null)
+              final ir = iconPath.style.fill == null
                   ? PathIR(iconPath.cmds, iconPath.style.copyWith(fill: seed))
                   : iconPath;
+
               ops.add(FillPathGradientOp(ir, resolved));
-              break;
           }
 
-          if (iconPath.style.stroke != null && iconPath.style.strokeWidth > 0) {
+          // Intrinsic path stroke is part of the icon's authored foreground.
+          // CanvasFill.none() suppresses it visually, but it remains part of the
+          // source silhouette used by underlays.
+          if (appearance.foreground is! CanvasFillNone &&
+              iconPath.style.stroke != null &&
+              iconPath.style.strokeWidth > 0) {
             ops.add(StrokePathOp(iconPath));
           }
         }
-        break;
 
       case ImageNode(id: final id):
         final placement = computed.imagePlacementById[id];
