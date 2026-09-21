@@ -245,29 +245,42 @@ void main() {
     });
   }
 
-  test('path fill and stroke receive shadow opacity once', () async {
-    final text = FlutterTextPipeline();
-    try {
-      final path = PathIR([
-        PathCmd.moveTo(const Vec2(-10, -10)),
-        PathCmd.lineTo(const Vec2(10, -10)),
-        PathCmd.lineTo(const Vec2(10, 10)),
-        PathCmd.lineTo(const Vec2(-10, 10)),
-        PathCmd.close(),
-      ], const PathStyle(fill: 0xFFFFFFFF, stroke: 0xFFFFFFFF, strokeWidth: 8));
-      final op = DrawPathUnderlaysOp(path, const [
-        ShadowEffect(id: 's', offset: Vec2(50, 0), color: 0x800000FF),
-      ]);
-      final pixels = await _pixels(
-        (canvas) => CanvasRenderer(text: text).replay(canvas, [op]),
-      );
-      // Local (8, 0) is well inside both the fill and the stroke.
-      expect(_channel(pixels, 58, 0, 3), closeTo(128, 1));
-      expect(_channel(pixels, 50, 0, 3), closeTo(128, 1));
-    } finally {
-      text.dispose();
-    }
-  });
+  test(
+    'path fill and intrinsic stroke contribute to source silhouette',
+    () async {
+      final text = FlutterTextPipeline();
+
+      try {
+        final path = PathIR(
+          [
+            PathCmd.moveTo(const Vec2(-10, -10)),
+            PathCmd.lineTo(const Vec2(10, -10)),
+            PathCmd.lineTo(const Vec2(10, 10)),
+            PathCmd.lineTo(const Vec2(-10, 10)),
+            PathCmd.close(),
+          ],
+          const PathStyle(fill: 0xFFFFFFFF, stroke: 0xFFFFFFFF, strokeWidth: 8),
+        );
+
+        final op = DrawPathUnderlaysOp(path, const [
+          ShadowEffect(id: 's', offset: Vec2(50, 0), color: 0x800000FF),
+        ]);
+
+        final pixels = await _pixels(
+          (canvas) => CanvasRenderer(text: text).replay(canvas, [op]),
+        );
+
+        // Filled interior.
+        expect(_channel(pixels, 50, 0, 3), closeTo(128, 1));
+
+        // Stroke-only coverage:
+        // fill ends at local x=10; 8px stroke extends to x=14.
+        expect(_channel(pixels, 63, 0, 3), closeTo(128, 1));
+      } finally {
+        text.dispose();
+      }
+    },
+  );
 
   test('list order is back-to-front and source is recorded once', () async {
     const red = ShadowEffect(id: 'r', offset: Vec2(50, 0), color: 0x80FF0000);

@@ -51,7 +51,7 @@ void main() {
       originBaselineCenter: const Vec2(10, 10),
       gradient: gradient,
       solid: solid,
-      shadows: const [
+      underlays: const [
         ShadowEffect(id: 's', offset: Vec2(1, 1), color: 0xFF000000),
       ],
     );

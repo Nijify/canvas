@@ -14,6 +14,7 @@ const _forbiddenLegacyKeys = {
   'bgGradient',
   'bgOpacity',
   'shadowOffset',
+  'shadows',
 };
 
 const _fixtureNames = <String>[
@@ -104,9 +105,9 @@ void main() {
         for (final node in nodes) {
           switch (node) {
             case TextNode(:final data):
-              expect(data.fill, isNot(isA<CanvasFillNone>()));
+              expect(data.appearance.foreground, isNot(isA<CanvasFillNone>()));
             case IconNode(:final data):
-              expect(data.fill, isNot(isA<CanvasFillNone>()));
+              expect(data.appearance.foreground, isNot(isA<CanvasFillNone>()));
             case PathNode():
             case ImageNode():
             case GroupNode():

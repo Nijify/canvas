@@ -12,11 +12,13 @@
         "fontWeight": 700,
         "fontSize": 64.0,
         "letterSpacing": 0.0,
-        "fill": {
-          "type": "solid",
-          "color": 4279308561
-        },
-        "shadows": []
+        "appearance": {
+          "foreground": {
+            "type": "solid",
+            "color": 4279308561
+          },
+          "underlays": []
+        }
       }
     }
   ]
