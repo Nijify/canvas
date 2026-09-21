@@ -282,6 +282,85 @@ void main() {
     },
   );
 
+  test(
+    'path icon none foreground suppresses intrinsic fill and stroke',
+    () async {
+      final text = FlutterTextPipeline();
+
+      try {
+        final scene = CanvasSceneDocument(
+          backgroundFill: const CanvasFill.none(),
+          backgroundOpacity: 1,
+          children: const [
+            Node.icon(
+              id: 'source',
+              data: CanvasIconData(
+                iconRef: 'path-stroke',
+                sizePx: 24,
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.none(),
+                  underlays: [
+                    ShadowEffect(
+                      id: 'shadow',
+                      offset: Vec2(70, 0),
+                      color: 0xFF0000FF,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+
+        final computed = computeScene(
+          scene,
+          CoreServices(textMeasurer: text, icons: _Icons()),
+        );
+
+        final ops = buildPaintOpsFromScene(scene, computed);
+
+        expect(ops.whereType<DrawPathUnderlaysOp>(), hasLength(1));
+
+        expect(ops.whereType<FillPathOp>(), isEmpty);
+        expect(ops.whereType<FillPathGradientOp>(), isEmpty);
+        expect(ops.whereType<StrokePathOp>(), isEmpty);
+
+        final pixels = await _pixels(
+          (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
+        );
+
+        // Nothing from the authored foreground may remain around the source.
+        var sourcePixels = 0;
+
+        for (var y = -30; y <= 30; y++) {
+          for (var x = -30; x <= 30; x++) {
+            if (_channel(pixels, x, y, 3) != 0) {
+              sourcePixels++;
+            }
+          }
+        }
+
+        expect(sourcePixels, 0);
+
+        // But the displaced shadow, including intrinsic-stroke coverage,
+        // must still exist.
+        var shadowPixels = 0;
+
+        for (var y = -40; y <= 40; y++) {
+          for (var x = 45; x <= 110; x++) {
+            if (_channel(pixels, x, y, 3) != 0) {
+              shadowPixels++;
+            }
+          }
+        }
+
+        expect(shadowPixels, greaterThan(0));
+      } finally {
+        text.dispose();
+      }
+    },
+  );
+
   test('list order is back-to-front and source is recorded once', () async {
     const red = ShadowEffect(id: 'r', offset: Vec2(50, 0), color: 0x80FF0000);
     const blue = ShadowEffect(id: 'b', offset: Vec2(50, 0), color: 0x800000FF);
