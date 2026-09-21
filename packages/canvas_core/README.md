@@ -10,7 +10,7 @@ Use it when you want to model or transform canvas-style documents without depend
 - Stable JSON serialization for storing, syncing, and round-tripping scene documents.
 - `computeScene` for deterministic transforms, draw order, bounds, and cached geometry.
 - `buildPaintOpsFromScene` for a renderer-neutral draw plan.
-- Headless editor helpers for hit testing, snapping, history, and viewport calculation.
+- Headless geometry helpers for hit testing, snapping, and viewport calculation.
 - Host-service contracts for text measurement, image intrinsics, image source resolution, and icon resolution.
 - Generic scene font-family discovery for renderer/resource preflight.
 
@@ -36,7 +36,7 @@ Import the runtime API for documents, geometry, services, scene computation, and
 import 'package:canvas_core/canvas_core_runtime.dart';
 ```
 
-Import the editor utilities only when you need headless interaction helpers such as hit testing, snapping, or undo history:
+Import the editor utilities only when you need the currently exposed headless interaction helpers such as hit testing or snapping:
 
 ```dart
 import 'package:canvas_core/canvas_core_editor.dart';
@@ -163,7 +163,7 @@ See [VERSIONING.md](VERSIONING.md) for the full policy.
 
 - `canvas_core` is Dart-only and must stay independent of Flutter and `dart:ui`.
 - Text measurement, image intrinsic sizes, and icon lookup are host services.
-- Paint, hit testing, snapping, selection, and export should reuse `ComputedScene` so they agree on transforms and bounds.
+- Paint and geometry consumers should reuse `ComputedScene` so they agree on transforms and bounds.
 - Public consumers should import only `canvas_core_runtime.dart` and, when needed, `canvas_core_editor.dart`.
 
 ## License

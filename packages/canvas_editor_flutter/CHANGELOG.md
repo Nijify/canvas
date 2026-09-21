@@ -1,3 +1,7 @@
+## Unreleased
+
+- Own the editor's immutable `History<T>` reducer directly instead of importing history from `canvas_core`.
+
 # 0.13.0
 
 - **Breaking:** require `canvas_core 0.10.x` and `canvas_renderer_flutter 0.9.x`.

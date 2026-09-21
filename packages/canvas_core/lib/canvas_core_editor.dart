@@ -3,8 +3,8 @@
 // canvas_core_editor – Public EDITOR utilities (interaction mechanics)
 //
 // Mental model:
-// Editor utilities are “how you interact with a runtime scene” (undo/redo,
-// picking, snapping). They operate on *resolved runtime data*
+// Editor utilities are “how you interact with a runtime scene” (picking,
+// snapping). They operate on *resolved runtime data*
 // (CanvasSceneDocument / Node), and do not define a second scene system.
 //
 // Dependency direction:
@@ -39,8 +39,3 @@ export 'src/algorithms/snapping/snap_types.dart'
         SnapCandidate,
         SnapConfig;
 export 'src/algorithms/snapping/snap_scene.dart' show snapScene;
-
-// ============================================================================
-// 3) History (editor-facing, headless)
-// ============================================================================
-export 'src/editor/history.dart' show History;

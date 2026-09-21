@@ -1,3 +1,7 @@
+## Unreleased
+
+- **Breaking:** remove `History` from `canvas_core_editor.dart`; undo/redo history is now owned by `canvas_editor_flutter`.
+
 ## 0.10.0
 
 - **Breaking:** replace the `NodeId` alias with the shared `ElementId` identity type.

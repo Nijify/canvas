@@ -71,7 +71,7 @@ Generated model serializers remain implementation-level primitives. Semantic doc
 
 ## Headless interaction utilities
 
-`canvas_core_editor.dart` exposes interaction mechanics over runtime scenes, including history, hit testing, picking, and snapping. These helpers consume the same computed scene data used for rendering so interactive behavior stays aligned with visual output.
+`canvas_core_editor.dart` currently exposes headless hit-testing, picking, and snapping helpers over runtime scenes. These helpers consume the same computed scene data used for rendering so interactive behavior stays aligned with visual output.
 
 ## Package boundaries
 
@@ -98,7 +98,8 @@ Interaction:
 
 ```text
 CanvasSceneDocument + ComputedScene
-  -> pickTopAtScene / snapScene / History
+  -> pickTopAtScene / snapScene
+  -> editor-owned mutation/history
   -> updated CanvasSceneDocument
   -> computeScene(...)
 ```

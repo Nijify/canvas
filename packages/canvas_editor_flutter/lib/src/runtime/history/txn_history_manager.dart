@@ -1,7 +1,6 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/runtime/history/txn_history_manager.dart
-// New file: shared/canvas_editor_flutter/lib/src/application/history/txn_history_manager.dart
+// Path: lib/src/runtime/history/txn_history_manager.dart
 
-import 'package:canvas_core/canvas_core_editor.dart' show History;
+import 'package:canvas_editor_flutter/src/runtime/history/history.dart';
 
 /// Shared undo/redo + transaction manager for canonical documents.
 ///
