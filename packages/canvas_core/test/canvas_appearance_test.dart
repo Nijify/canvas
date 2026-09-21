@@ -73,6 +73,34 @@ void main() {
     );
   });
 
+  test('missing source-underlay type discriminator is rejected', () {
+    expect(
+      () => CanvasAppearance.fromJson({
+        'foreground': const CanvasFill.none().toJson(),
+        'underlays': [
+          {
+            'id': 's',
+            'offset': {'x': 0.0, 'y': 0.0},
+            'color': 0xFF000000,
+          },
+        ],
+      }),
+      throwsFormatException,
+    );
+  });
+
+  test('unknown source-underlay type discriminator is rejected', () {
+    expect(
+      () => CanvasAppearance.fromJson({
+        'foreground': const CanvasFill.none().toJson(),
+        'underlays': [
+          {'type': 'outline', 'id': 'future-effect'},
+        ],
+      }),
+      throwsFormatException,
+    );
+  });
+
   test('foreground none with no underlays has no paint bounds', () {
     const source = Rect2D(-10, -5, 10, 5);
 

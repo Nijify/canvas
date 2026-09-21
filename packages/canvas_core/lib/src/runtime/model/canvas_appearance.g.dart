@@ -6,25 +6,6 @@ part of 'canvas_appearance.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-ShadowEffect _$ShadowEffectFromJson(Map<String, dynamic> json) => ShadowEffect(
-  id: json['id'] as String,
-  enabled: json['enabled'] as bool? ?? true,
-  offset: const Vec2Converter().fromJson(
-    json['offset'] as Map<String, dynamic>,
-  ),
-  blurSigma: (json['blurSigma'] as num?)?.toDouble() ?? 0.0,
-  color: (json['color'] as num).toInt(),
-);
-
-Map<String, dynamic> _$ShadowEffectToJson(ShadowEffect instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'enabled': instance.enabled,
-      'offset': const Vec2Converter().toJson(instance.offset),
-      'blurSigma': instance.blurSigma,
-      'color': instance.color,
-    };
-
 _CanvasAppearance _$CanvasAppearanceFromJson(Map<String, dynamic> json) =>
     _CanvasAppearance(
       foreground: json['foreground'] == null
@@ -35,7 +16,9 @@ _CanvasAppearance _$CanvasAppearanceFromJson(Map<String, dynamic> json) =>
       underlays:
           (json['underlays'] as List<dynamic>?)
               ?.map(
-                (e) => CanvasSourceUnderlay.fromJson(e as Map<String, dynamic>),
+                (e) => const _CanvasSourceUnderlayJsonConverter().fromJson(
+                  e as Map<String, dynamic>,
+                ),
               )
               .toList() ??
           const <CanvasSourceUnderlay>[],
@@ -44,5 +27,7 @@ _CanvasAppearance _$CanvasAppearanceFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$CanvasAppearanceToJson(_CanvasAppearance instance) =>
     <String, dynamic>{
       'foreground': const CanvasFillConverter().toJson(instance.foreground),
-      'underlays': instance.underlays.map((e) => e.toJson()).toList(),
+      'underlays': instance.underlays
+          .map(const _CanvasSourceUnderlayJsonConverter().toJson)
+          .toList(),
     };

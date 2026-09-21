@@ -92,7 +92,7 @@ const _textData = TextData(
   fontWeight: 700,
   fontSize: 24,
   letterSpacing: 0,
-  fill: CanvasFill.solid(0xFF111111),
+  appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
 );
 
 CanvasSceneDocument _sceneWithChildren(List<Node> children) {

@@ -59,7 +59,7 @@ void main() {
     expect(node.data.fill, const CanvasFill.none());
   });
 
-  test('text fill cannot be none and is coerced to fallback', () {
+  test('text foreground can be set to none', () {
     final runtime = _buildRuntime(
       _sceneWithChildren([
         const Node.text(
@@ -70,11 +70,14 @@ void main() {
             fontWeight: 700,
             fontSize: 24,
             letterSpacing: 0,
-            fill: CanvasFill.solid(0xFF123456),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xFF123456),
+            ),
           ),
         ),
       ]),
     );
+
     addTearDown(runtime.dispose);
 
     runtime.commitField<CanvasFill>(
@@ -84,10 +87,11 @@ void main() {
     );
 
     final node = findById(runtime.sourceDocument, 't1') as TextNode;
-    expect(node.data.fill, const CanvasFill.solid(0xFF111111));
+
+    expect(node.data.appearance.foreground, const CanvasFill.none());
   });
 
-  test('icon fill cannot be none and is coerced to fallback', () {
+  test('icon foreground can be set to none', () {
     final runtime = _buildRuntime(
       _sceneWithChildren([
         const Node.icon(
@@ -95,11 +99,14 @@ void main() {
           data: CanvasIconData(
             iconRef: 'star',
             sizePx: 48,
-            fill: CanvasFill.solid(0xFF123456),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xFF123456),
+            ),
           ),
         ),
       ]),
     );
+
     addTearDown(runtime.dispose);
 
     runtime.commitField<CanvasFill>(
@@ -109,7 +116,8 @@ void main() {
     );
 
     final node = findById(runtime.sourceDocument, 'i1') as IconNode;
-    expect(node.data.fill, const CanvasFill.solid(0xFF111111));
+
+    expect(node.data.appearance.foreground, const CanvasFill.none());
   });
 
   test('solid to gradient conversion preserves representative color', () {

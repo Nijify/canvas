@@ -309,7 +309,9 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
         fontWeight: 700,
         fontSize: 42,
         letterSpacing: 0,
-        fill: CanvasFill.solid(0xFF312E81),
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.solid(0xFF312E81),
+        ),
       ),
     ),
     Node.text(
@@ -324,7 +326,9 @@ const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
         fontWeight: 400,
         fontSize: 18,
         letterSpacing: 0,
-        fill: CanvasFill.solid(0xFF475569),
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.solid(0xFF475569),
+        ),
       ),
     ),
   ],

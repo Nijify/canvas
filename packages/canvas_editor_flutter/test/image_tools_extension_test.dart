@@ -75,7 +75,9 @@ CanvasSceneDocument _textScene() {
           fontWeight: 400,
           fontSize: 24,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       ),
     ],

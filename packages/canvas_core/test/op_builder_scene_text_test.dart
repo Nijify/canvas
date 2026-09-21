@@ -5,6 +5,7 @@ import 'package:canvas_core/src/render_plan/paint_ops.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/render_plan/op_builder_scene.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
+import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
 import 'package:canvas_core/src/services/services.dart';
 import 'package:canvas_core/src/services/services_context.dart';
 import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
@@ -52,7 +53,9 @@ void main() {
             fontWeight: 400,
             fontSize: 20,
             letterSpacing: 1.25,
-            fill: CanvasFill.solid(solidColor),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(solidColor),
+            ),
           ),
         ),
       ],
@@ -88,8 +91,10 @@ void main() {
             fontFamily: 'Inter',
             fontWeight: 400,
             fontSize: 20,
-            fill: CanvasFill.gradient(
-              LinearGradientSpec(color1: c1, color2: c2, angle: 0, width: 20),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.gradient(
+                LinearGradientSpec(color1: c1, color2: c2, angle: 0, width: 20),
+              ),
             ),
           ),
         ),
@@ -105,5 +110,49 @@ void main() {
       textOp.solid,
       isNull,
     ); // Foreground gradient needs no shadow fallback.
+  });
+
+  test('builds effect-only DrawTextOp without foreground', () {
+    final services = CoreServices(
+      textMeasurer: _FakeTextMeasurer(),
+      images: _FakeImages(),
+    );
+
+    final doc = CanvasSceneDocument(
+      backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 1.0,
+      children: [
+        Node.text(
+          id: 't1',
+          data: const TextData(
+            text: 'Hello',
+            fontFamily: 'Inter',
+            fontWeight: 400,
+            fontSize: 20,
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.none(),
+              underlays: [
+                ShadowEffect(
+                  id: 'shadow',
+                  offset: Vec2(20, 0),
+                  color: 0x80000000,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final computed = computeScene(doc, services);
+    final ops = buildPaintOpsFromScene(doc, computed);
+
+    final textOp = ops.whereType<DrawTextOp>().single;
+
+    expect(textOp.hasForeground, isFalse);
+    expect(textOp.solid, isNull);
+    expect(textOp.gradient, isNull);
+    expect(textOp.underlays, hasLength(1));
+    expect(textOp.underlays.single, isA<ShadowEffect>());
   });
 }

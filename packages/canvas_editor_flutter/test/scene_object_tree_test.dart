@@ -10,7 +10,7 @@ const _textData = TextData(
   fontWeight: 700,
   fontSize: 24,
   letterSpacing: 0,
-  fill: CanvasFill.solid(0xFF111111),
+  appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
 );
 
 const _imageData = ImageData(assetId: 'asset-1', size: Size2D(100, 100));
@@ -56,7 +56,7 @@ Node _icon(String id, {String? name}) {
     data: const CanvasIconData(
       iconRef: 'icon:test',
       sizePx: 32,
-      fill: CanvasFill.solid(0xFF111111),
+      appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
     ),
   );
 }

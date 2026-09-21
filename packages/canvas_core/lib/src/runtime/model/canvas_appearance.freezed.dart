@@ -12,14 +12,6 @@ part of 'canvas_appearance.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
-CanvasSourceUnderlay _$CanvasSourceUnderlayFromJson(
-  Map<String, dynamic> json
-) {
-    return ShadowEffect.fromJson(
-      json
-    );
-}
-
 /// @nodoc
 mixin _$CanvasSourceUnderlay {
 
@@ -30,8 +22,6 @@ mixin _$CanvasSourceUnderlay {
 @pragma('vm:prefer-inline')
 $CanvasSourceUnderlayCopyWith<CanvasSourceUnderlay> get copyWith => _$CanvasSourceUnderlayCopyWithImpl<CanvasSourceUnderlay>(this as CanvasSourceUnderlay, _$identity);
 
-  /// Serializes this CanvasSourceUnderlay to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -40,7 +30,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasSourceUnderlay&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.enabled, _this.enabled) || other.enabled == _this.enabled)&&(identical(other.offset, _this.offset) || other.offset == _this.offset)&&(identical(other.blurSigma, _this.blurSigma) || other.blurSigma == _this.blurSigma)&&(identical(other.color, _this.color) || other.color == _this.color));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode {
   final _this = this as CanvasSourceUnderlay;
@@ -217,11 +207,11 @@ return shadow(_that.id,_that.enabled,_that.offset,_that.blurSigma,_that.color);c
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class ShadowEffect implements CanvasSourceUnderlay {
   const ShadowEffect({required this.id, this.enabled = true, @Vec2Converter() required this.offset, this.blurSigma = 0.0, required this.color});
-  factory ShadowEffect.fromJson(Map<String, dynamic> json) => _$ShadowEffectFromJson(json);
+  
 
 @override final  String id;
 @override@JsonKey() final  bool enabled;
@@ -235,17 +225,14 @@ class ShadowEffect implements CanvasSourceUnderlay {
 @pragma('vm:prefer-inline')
 $ShadowEffectCopyWith<ShadowEffect> get copyWith => _$ShadowEffectCopyWithImpl<ShadowEffect>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$ShadowEffectToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
     return identical(this, other) || (other.runtimeType == runtimeType&&other is ShadowEffect&&(identical(other.id, id) || other.id == id)&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.offset, offset) || other.offset == offset)&&(identical(other.blurSigma, blurSigma) || other.blurSigma == blurSigma)&&(identical(other.color, color) || other.color == color));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode {
     return Object.hash(runtimeType,id,enabled,offset,blurSigma,color);
@@ -299,7 +286,7 @@ as Color32,
 /// @nodoc
 mixin _$CanvasAppearance {
 
-@CanvasFillConverter() CanvasFill get foreground; List<CanvasSourceUnderlay> get underlays;
+@CanvasFillConverter() CanvasFill get foreground;@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays;
 /// Create a copy of CanvasAppearance
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -337,7 +324,7 @@ abstract mixin class $CanvasAppearanceCopyWith<$Res>  {
   factory $CanvasAppearanceCopyWith(CanvasAppearance value, $Res Function(CanvasAppearance) _then) = _$CanvasAppearanceCopyWithImpl;
 @useResult
 $Res call({
-@CanvasFillConverter() CanvasFill foreground, List<CanvasSourceUnderlay> underlays
+@CanvasFillConverter() CanvasFill foreground,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
 });
 
 
@@ -443,7 +430,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground,  List<CanvasSourceUnderlay> underlays)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CanvasAppearance() when $default != null:
 return $default(_that.foreground,_that.underlays);case _:
@@ -464,7 +451,7 @@ return $default(_that.foreground,_that.underlays);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground,  List<CanvasSourceUnderlay> underlays)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)  $default,) {final _that = this;
 switch (_that) {
 case _CanvasAppearance():
 return $default(_that.foreground,_that.underlays);case _:
@@ -484,7 +471,7 @@ return $default(_that.foreground,_that.underlays);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@CanvasFillConverter()  CanvasFill foreground,  List<CanvasSourceUnderlay> underlays)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@CanvasFillConverter()  CanvasFill foreground, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,) {final _that = this;
 switch (_that) {
 case _CanvasAppearance() when $default != null:
 return $default(_that.foreground,_that.underlays);case _:
@@ -499,12 +486,12 @@ return $default(_that.foreground,_that.underlays);case _:
 @JsonSerializable()
 
 class _CanvasAppearance implements CanvasAppearance {
-  const _CanvasAppearance({@CanvasFillConverter() this.foreground = const CanvasFill.solid(0xFF111111),  List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[]}): _underlays = underlays;
+  const _CanvasAppearance({@CanvasFillConverter() this.foreground = const CanvasFill.solid(0xFF111111), @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[]}): _underlays = underlays;
   factory _CanvasAppearance.fromJson(Map<String, dynamic> json) => _$CanvasAppearanceFromJson(json);
 
 @override@JsonKey()@CanvasFillConverter() final  CanvasFill foreground;
  final  List<CanvasSourceUnderlay> _underlays;
-@override@JsonKey() List<CanvasSourceUnderlay> get underlays {
+@override@JsonKey()@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays {
   if (_underlays is EqualUnmodifiableListView) return _underlays;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_underlays);
@@ -546,7 +533,7 @@ abstract mixin class _$CanvasAppearanceCopyWith<$Res> implements $CanvasAppearan
   factory _$CanvasAppearanceCopyWith(_CanvasAppearance value, $Res Function(_CanvasAppearance) _then) = __$CanvasAppearanceCopyWithImpl;
 @override @useResult
 $Res call({
-@CanvasFillConverter() CanvasFill foreground, List<CanvasSourceUnderlay> underlays
+@CanvasFillConverter() CanvasFill foreground,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
 });
 
 
