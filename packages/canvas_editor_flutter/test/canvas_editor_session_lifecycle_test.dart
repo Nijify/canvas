@@ -46,7 +46,9 @@ CanvasSceneDocument _scene(String seedId) {
           fontWeight: 400,
           fontSize: 18,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       ).copyWith(id: seedId),
     ],
@@ -65,7 +67,9 @@ void _addLocalEdit(EditorController controller) {
           fontWeight: 400,
           fontSize: 18,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       ),
     ),

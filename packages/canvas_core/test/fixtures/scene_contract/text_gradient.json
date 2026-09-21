@@ -12,16 +12,18 @@
         "fontWeight": 700,
         "fontSize": 64.0,
         "letterSpacing": 0.0,
-        "fill": {
-          "type": "gradient",
-          "grad": {
-            "color1": 4279308561,
-            "color2": 4281558681,
-            "angle": 45.0,
-            "width": 20.0
-          }
-        },
-        "shadows": []
+        "appearance": {
+          "foreground": {
+            "type": "gradient",
+            "grad": {
+              "color1": 4279308561,
+              "color2": 4281558681,
+              "angle": 45.0,
+              "width": 20.0
+            }
+          },
+          "underlays": []
+        }
       }
     }
   ]

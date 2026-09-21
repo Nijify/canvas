@@ -2,7 +2,8 @@ import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement, imageSrcDst;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
-import 'package:canvas_core/src/algorithms/layout/shadow_bounds.dart';
+import 'package:canvas_core/src/algorithms/layout/appearance_bounds.dart';
+import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
@@ -35,11 +36,18 @@ final class NodeGeometry {
           fontSize: data.fontSize,
           letterSpacing: data.letterSpacing,
         );
+
         final layout = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
-        final basePaint = data.text.isEmpty ? null : layout;
+        final sourceBounds = data.text.isEmpty ? null : layout;
+        final appearance = data.appearance;
+
         return (
           layout: layout,
-          paint: estimateShadowPaintBounds(basePaint, data.shadows),
+          paint: estimateAppearancePaintBounds(
+            sourceBounds: sourceBounds,
+            foregroundPresent: appearance.foreground is! CanvasFillNone,
+            underlays: appearance.underlays,
+          ),
         );
 
       case IconNode(id: final id, data: final d):
@@ -63,22 +71,37 @@ final class NodeGeometry {
               fontSize: size,
               letterSpacing: 0,
             );
-            final basePaint = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
+
+            final sourceBounds = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
+
+            final appearance = d.appearance;
+
             return (
               layout: layout,
-              paint: estimateShadowPaintBounds(basePaint, d.shadows),
+              paint: estimateAppearancePaintBounds(
+                sourceBounds: sourceBounds,
+                foregroundPresent: appearance.foreground is! CanvasFillNone,
+                underlays: appearance.underlays,
+              ),
             );
 
           case ResolvedIconPath(:final path):
             final ir = compilePath(path);
             iconPathIRById?[id] = ir;
-            // Keep the resolved path coordinates and stable icon layout square.
-            final basePaint = ir.cmds.isEmpty
+
+            final sourceBounds = ir.cmds.isEmpty
                 ? null
                 : ir.localBounds(includeStroke: true);
+
+            final appearance = d.appearance;
+
             return (
               layout: layout,
-              paint: estimateShadowPaintBounds(basePaint, d.shadows),
+              paint: estimateAppearancePaintBounds(
+                sourceBounds: sourceBounds,
+                foregroundPresent: appearance.foreground is! CanvasFillNone,
+                underlays: appearance.underlays,
+              ),
             );
 
           default:

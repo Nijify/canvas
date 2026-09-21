@@ -66,14 +66,16 @@ void main() {
                   fontFamily: 'Ahem',
                   fontWeight: 400,
                   fontSize: 24,
-                  shadows: [
-                    ShadowEffect(
-                      id: 's',
-                      offset: Vec2(offset, offset),
-                      blurSigma: sigma,
-                      color: 0xFF111111,
-                    ),
-                  ],
+                  appearance: CanvasAppearance(
+                    underlays: [
+                      ShadowEffect(
+                        id: 's',
+                        offset: Vec2(offset, offset),
+                        blurSigma: sigma,
+                        color: 0xFF111111,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -25,7 +25,7 @@ const _baseTextData = rt.TextData(
   fontWeight: 400,
   fontSize: 24,
   letterSpacing: 0.0,
-  fill: rt.CanvasFill.solid(0xFF111111),
+  appearance: rt.CanvasAppearance(foreground: rt.CanvasFill.solid(0xFF111111)),
 );
 
 rt.CanvasSceneDocument _sceneWithText(String text) {

@@ -3,16 +3,26 @@ import 'dart:ui' as ui;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:canvas_renderer_flutter/src/flutter_shadow_renderer.dart';
+import 'package:canvas_renderer_flutter/src/flutter_source_underlay_renderer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String ref) => switch (ref) {
     'glyph' => const ResolvedIconText(glyph: 'X', fontFamily: 'Ahem'),
+
     'path' => const ResolvedIconPath(
       PathData(source: RectSource(24, 24), strokeWidth: 0),
     ),
+
+    'path-stroke' => const ResolvedIconPath(
+      PathData(
+        source: RectSource(24, 24),
+        strokeColor: 0xFFFFFFFF,
+        strokeWidth: 8,
+      ),
+    ),
+
     _ => null,
   };
 }
@@ -45,7 +55,7 @@ Future<Uint8List> _pixels(void Function(ui.Canvas) paint) async {
 int _channel(Uint8List pixels, int x, int y, int channel) =>
     pixels[((y + _center) * _side + x + _center) * 4 + channel];
 
-Node _node(String target, List<ShadowEffect> shadows, CanvasFill fill) =>
+Node _node(String target, List<ShadowEffect> shadows, CanvasFill foreground) =>
     target == 'text'
     ? Node.text(
         id: 'source',
@@ -54,8 +64,10 @@ Node _node(String target, List<ShadowEffect> shadows, CanvasFill fill) =>
           fontFamily: 'Ahem',
           fontWeight: 400,
           fontSize: 24,
-          fill: fill,
-          shadows: shadows,
+          appearance: CanvasAppearance(
+            foreground: foreground,
+            underlays: shadows,
+          ),
         ),
       )
     : Node.icon(
@@ -63,8 +75,10 @@ Node _node(String target, List<ShadowEffect> shadows, CanvasFill fill) =>
         data: CanvasIconData(
           iconRef: target,
           sizePx: 24,
-          fill: fill,
-          shadows: shadows,
+          appearance: CanvasAppearance(
+            foreground: foreground,
+            underlays: shadows,
+          ),
         ),
       );
 
@@ -92,7 +106,7 @@ void main() {
             );
             final ops = buildPaintOpsFromScene(scene, computed);
             if (target == 'path' && shadows.isNotEmpty) {
-              expect(ops.whereType<DrawPathShadowsOp>(), hasLength(1));
+              expect(ops.whereType<DrawPathUnderlaysOp>(), hasLength(1));
             }
             return _pixels(
               (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
@@ -168,38 +182,193 @@ void main() {
     }
   }
 
-  test('path fill and stroke receive shadow opacity once', () async {
-    final text = FlutterTextPipeline();
-    try {
-      final path = PathIR([
-        PathCmd.moveTo(const Vec2(-10, -10)),
-        PathCmd.lineTo(const Vec2(10, -10)),
-        PathCmd.lineTo(const Vec2(10, 10)),
-        PathCmd.lineTo(const Vec2(-10, 10)),
-        PathCmd.close(),
-      ], const PathStyle(fill: 0xFFFFFFFF, stroke: 0xFFFFFFFF, strokeWidth: 8));
-      final op = DrawPathShadowsOp(path, const [
-        ShadowEffect(id: 's', offset: Vec2(50, 0), color: 0x800000FF),
-      ]);
-      final pixels = await _pixels(
-        (canvas) => CanvasRenderer(text: text).replay(canvas, [op]),
-      );
-      // Local (8, 0) is well inside both the fill and the stroke.
-      expect(_channel(pixels, 58, 0, 3), closeTo(128, 1));
-      expect(_channel(pixels, 50, 0, 3), closeTo(128, 1));
-    } finally {
-      text.dispose();
-    }
-  });
+  for (final target in ['text', 'glyph', 'path']) {
+    test('$target renders shadow-only appearance without foreground', () async {
+      final text = FlutterTextPipeline();
+
+      try {
+        const shadow = ShadowEffect(
+          id: 'shadow-only',
+          offset: Vec2(80, 0),
+          color: 0xFF0000FF,
+        );
+
+        final scene = CanvasSceneDocument(
+          backgroundFill: const CanvasFill.none(),
+          backgroundOpacity: 1,
+          children: [
+            _node(target, const [shadow], const CanvasFill.none()),
+          ],
+        );
+
+        final computed = computeScene(
+          scene,
+          CoreServices(textMeasurer: text, icons: _Icons()),
+        );
+
+        final ops = buildPaintOpsFromScene(scene, computed);
+
+        final pixels = await _pixels(
+          (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
+        );
+
+        var sourcePixels = 0;
+
+        for (var y = -35; y <= 35; y++) {
+          for (var x = -35; x <= 35; x++) {
+            if (_channel(pixels, x, y, 3) != 0) {
+              sourcePixels++;
+            }
+          }
+        }
+
+        expect(
+          sourcePixels,
+          0,
+          reason: 'foreground must not fall back to black',
+        );
+
+        var shadowPixels = 0;
+
+        for (var y = -40; y <= 60; y++) {
+          for (var x = 50; x <= 120; x++) {
+            if (_channel(pixels, x, y, 3) != 0) {
+              shadowPixels++;
+            }
+          }
+        }
+
+        expect(shadowPixels, greaterThan(0));
+      } finally {
+        text.dispose();
+      }
+    });
+  }
+
+  test(
+    'path fill and intrinsic stroke contribute to source silhouette',
+    () async {
+      final text = FlutterTextPipeline();
+
+      try {
+        final path = PathIR(
+          [
+            PathCmd.moveTo(const Vec2(-10, -10)),
+            PathCmd.lineTo(const Vec2(10, -10)),
+            PathCmd.lineTo(const Vec2(10, 10)),
+            PathCmd.lineTo(const Vec2(-10, 10)),
+            PathCmd.close(),
+          ],
+          const PathStyle(fill: 0xFFFFFFFF, stroke: 0xFFFFFFFF, strokeWidth: 8),
+        );
+
+        final op = DrawPathUnderlaysOp(path, const [
+          ShadowEffect(id: 's', offset: Vec2(50, 0), color: 0x800000FF),
+        ]);
+
+        final pixels = await _pixels(
+          (canvas) => CanvasRenderer(text: text).replay(canvas, [op]),
+        );
+
+        // Filled interior.
+        expect(_channel(pixels, 50, 0, 3), closeTo(128, 1));
+
+        // Stroke-only coverage:
+        // fill ends at local x=10; 8px stroke extends to x=14.
+        expect(_channel(pixels, 63, 0, 3), closeTo(128, 1));
+      } finally {
+        text.dispose();
+      }
+    },
+  );
+
+  test(
+    'path icon none foreground suppresses intrinsic fill and stroke',
+    () async {
+      final text = FlutterTextPipeline();
+
+      try {
+        final scene = CanvasSceneDocument(
+          backgroundFill: const CanvasFill.none(),
+          backgroundOpacity: 1,
+          children: const [
+            Node.icon(
+              id: 'source',
+              data: CanvasIconData(
+                iconRef: 'path-stroke',
+                sizePx: 24,
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.none(),
+                  underlays: [
+                    ShadowEffect(
+                      id: 'shadow',
+                      offset: Vec2(70, 0),
+                      color: 0xFF0000FF,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+
+        final computed = computeScene(
+          scene,
+          CoreServices(textMeasurer: text, icons: _Icons()),
+        );
+
+        final ops = buildPaintOpsFromScene(scene, computed);
+
+        expect(ops.whereType<DrawPathUnderlaysOp>(), hasLength(1));
+
+        expect(ops.whereType<FillPathOp>(), isEmpty);
+        expect(ops.whereType<FillPathGradientOp>(), isEmpty);
+        expect(ops.whereType<StrokePathOp>(), isEmpty);
+
+        final pixels = await _pixels(
+          (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
+        );
+
+        // Nothing from the authored foreground may remain around the source.
+        var sourcePixels = 0;
+
+        for (var y = -30; y <= 30; y++) {
+          for (var x = -30; x <= 30; x++) {
+            if (_channel(pixels, x, y, 3) != 0) {
+              sourcePixels++;
+            }
+          }
+        }
+
+        expect(sourcePixels, 0);
+
+        // But the displaced shadow, including intrinsic-stroke coverage,
+        // must still exist.
+        var shadowPixels = 0;
+
+        for (var y = -40; y <= 40; y++) {
+          for (var x = 45; x <= 110; x++) {
+            if (_channel(pixels, x, y, 3) != 0) {
+              shadowPixels++;
+            }
+          }
+        }
+
+        expect(shadowPixels, greaterThan(0));
+      } finally {
+        text.dispose();
+      }
+    },
+  );
 
   test('list order is back-to-front and source is recorded once', () async {
     const red = ShadowEffect(id: 'r', offset: Vec2(50, 0), color: 0x80FF0000);
     const blue = ShadowEffect(id: 'b', offset: Vec2(50, 0), color: 0x800000FF);
     var sourceCalls = 0;
     Future<Uint8List> render(List<ShadowEffect> shadows) => _pixels(
-      (canvas) => paintSourceShadows(
+      (canvas) => paintSourceUnderlays(
         canvas,
-        shadows: shadows,
+        underlays: shadows,
         paintSource: (source) {
           sourceCalls++;
           source.drawRect(

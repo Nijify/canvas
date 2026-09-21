@@ -47,6 +47,7 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 Node _text({
   String id = 'text',
   double shadow = 0,
+  CanvasFill foreground = const CanvasFill.solid(0xFF111111),
   Transform2D xf = const Transform2D(),
 }) => Node.text(
   id: id,
@@ -56,15 +57,18 @@ Node _text({
     fontFamily: 'TestFont',
     fontWeight: 400,
     fontSize: 20,
-    shadows: shadow == 0
-        ? const []
-        : [
-            ShadowEffect(
-              id: 's',
-              offset: Vec2(shadow, shadow),
-              color: 0xFF111111,
-            ),
-          ],
+    appearance: CanvasAppearance(
+      foreground: foreground,
+      underlays: shadow == 0
+          ? const []
+          : [
+              ShadowEffect(
+                id: 's',
+                offset: Vec2(shadow, shadow),
+                color: 0xFF111111,
+              ),
+            ],
+    ),
   ),
 );
 
@@ -233,9 +237,11 @@ void main() {
           data: CanvasIconData(
             iconRef: 'glyph',
             sizePx: 96,
-            shadows: [
-              ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
-            ],
+            appearance: CanvasAppearance(
+              underlays: [
+                ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
+              ],
+            ),
           ),
         ),
       ]),
@@ -259,16 +265,18 @@ void main() {
           data: CanvasIconData(
             iconRef: 'path',
             sizePx: 96,
-            shadows: withShadow
-                ? const [
-                    ShadowEffect(
-                      id: 's',
-                      offset: Vec2(40, -10),
-                      blurSigma: 2,
-                      color: 0x80000000,
-                    ),
-                  ]
-                : const [],
+            appearance: CanvasAppearance(
+              underlays: withShadow
+                  ? const [
+                      ShadowEffect(
+                        id: 's',
+                        offset: Vec2(40, -10),
+                        blurSigma: 2,
+                        color: 0x80000000,
+                      ),
+                    ]
+                  : const [],
+            ),
           ),
         ),
       ]),
@@ -291,6 +299,22 @@ void main() {
       orderedEquals(before.worldById['icon']!.storage),
     );
     expect(after.layoutBoundsLocalById['icon']!.width, 96);
+  });
+
+  test('shadow-only text excludes unpainted foreground from paint bounds', () {
+    final computed = computeScene(
+      _scene([_text(shadow: 40, foreground: const CanvasFill.none())]),
+      _services(),
+    );
+
+    _expectRect(computed.layoutBoundsLocalById['text'], layout);
+
+    // Source is (-50,-10)-(50,10). The only visible paint is the shadow
+    // translated by (+40,+40).
+    _expectRect(
+      computed.paintBoundsLocalById['text'],
+      const Rect2D(-10, 30, 90, 50),
+    );
   });
 
   test('contain-fit image retains its existing destination geometry', () {

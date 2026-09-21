@@ -100,7 +100,9 @@ void main() {
           fontWeight: 700,
           fontSize: 24,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       );
 
@@ -129,7 +131,9 @@ void main() {
           fontWeight: 700,
           fontSize: 24,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       ),
     ]);
@@ -156,7 +160,9 @@ void main() {
           fontWeight: 700,
           fontSize: 24,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       ),
       const Node.text(
@@ -168,7 +174,9 @@ void main() {
           fontWeight: 700,
           fontSize: 24,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF111111),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
+          ),
         ),
       ),
     ]);
@@ -196,7 +204,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       );
 
@@ -209,7 +219,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       );
 
@@ -239,7 +251,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       ),
       Node.text(
@@ -251,7 +265,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       ),
     ]);
@@ -280,7 +296,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       ),
       Node.text(
@@ -292,7 +310,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       ),
       Node.text(
@@ -304,7 +324,9 @@ void main() {
           fontWeight: 700,
           fontSize: 16,
           letterSpacing: 0,
-          fill: CanvasFill.solid(0xFF000000),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
+          ),
         ),
       ),
     ]);
@@ -339,7 +361,9 @@ void main() {
             fontWeight: 700,
             fontSize: 24,
             letterSpacing: 0,
-            fill: CanvasFill.solid(0xFF111111),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xFF111111),
+            ),
           ),
         ),
       ),
