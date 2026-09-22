@@ -1,11 +1,9 @@
-// Path: test/path_hit_test_test.dart
+// Path: packages/canvas_editor_flutter/test/interaction/picking/path_hit_test_test.dart
 
-import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
-import 'package:canvas_core/src/foundation/style/style_types.dart'
-    show FillRule;
-import 'package:canvas_core/src/path/path_hit_test.dart';
-import 'package:canvas_core/src/path/path_ir.dart';
-import 'package:test/test.dart';
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show FillRule, PathCmd, PathIR, PathStyle, Vec2;
+import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('pathContainsClosedArea', () {

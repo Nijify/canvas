@@ -1,7 +1,8 @@
+// Path: packages/canvas_core/test/layout_paint_bounds_test.dart
+
 import 'dart:math' as math;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
-import 'package:canvas_core/src/algorithms/snapping/snap_index_scene.dart';
 import 'package:test/test.dart';
 
 class _TextMeasurer implements TextMeasurer {
@@ -177,13 +178,6 @@ void main() {
       ], getBounds: (id) => after.layoutBoundsWorldById[id])!;
       expect(afterSelection.bounds, beforeSelection.bounds);
       expect(afterSelection.pivotWorld, beforeSelection.pivotWorld);
-
-      final beforeSnaps = sceneObjectKeylines(beforeScene, before);
-      final afterSnaps = sceneObjectKeylines(afterScene, after);
-      expect(
-        afterSnaps.map((c) => (c.kind, c.axis, c.pos)),
-        orderedEquals(beforeSnaps.map((c) => (c.kind, c.axis, c.pos))),
-      );
     });
   }
 
@@ -364,10 +358,6 @@ void main() {
     _expectRect(
       computePaddedContentBounds(scene: scene, computed: computed),
       layout,
-    );
-    expect(
-      sceneObjectKeylines(scene, computed, ignoreIds: {'unresolved'}),
-      isEmpty,
     );
   });
 }

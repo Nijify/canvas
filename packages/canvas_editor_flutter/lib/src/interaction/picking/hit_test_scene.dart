@@ -1,22 +1,26 @@
-// Path: lib/src/algorithms/picking/hit_test_scene.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/picking/hit_test_scene.dart
 
 import 'dart:math' as math;
 
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show
+        CanvasSceneDocument,
+        ComputedScene,
+        DrawItem,
+        ElementId,
+        GroupNode,
+        IconNode,
+        ImageNode,
+        Node,
+        PathIR,
+        PathNode,
+        Rect2D,
+        TextNode,
+        Vec2;
 import 'package:vector_math/vector_math_64.dart' as vm;
 
-import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
-
-import 'package:canvas_core/src/path/path_hit_test.dart'
+import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart'
     show pathContainsClosedArea, pathHitsOutline;
-
-import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/runtime/model/scene_document.dart';
-
-import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
-    show ComputedScene, DrawItem;
-import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 
 typedef NodeHitTest = bool Function(Node leaf);
 
@@ -141,7 +145,7 @@ Node? _choosePickedNode({
     final gid = groupStack[j];
     final g = computed.nodeById[gid];
     if (g == null) continue;
-    if (!g.isGroup) continue;
+    if (g is! GroupNode) continue;
     if (selectable(g)) return g;
   }
 

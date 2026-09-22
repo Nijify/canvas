@@ -1,6 +1,9 @@
 # canvas_core architecture
 
-`canvas_core` is a pure-Dart canvas document engine. It owns the runtime scene model, geometry primitives, deterministic scene computation, hit testing, snapping, viewport math, serialization, logical resource contracts, and renderer-agnostic paint operations.
+`canvas_core` is a pure-Dart canvas document engine. It owns the runtime scene
+model, document/render geometry primitives, deterministic scene computation,
+viewport math, serialization, logical resource contracts, and renderer-agnostic
+paint operations.
 
 The package is complete on its own: apps can create `CanvasSceneDocument` values, serialize them, compute scene geometry, build paint operations, and layer editor interactions over the same runtime data without any product-specific package.
 
@@ -10,12 +13,6 @@ Runtime API:
 
 ```dart
 import 'package:canvas_core/canvas_core_runtime.dart';
-```
-
-Headless editor helpers:
-
-```dart
-import 'package:canvas_core/canvas_core_editor.dart';
 ```
 
 Public consumers should not import `package:canvas_core/src/**`.
@@ -69,9 +66,14 @@ CanvasSceneDocument -> encodeCanvasScene -> external JSON
 
 Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
 
-## Headless interaction utilities
+## Editor boundary
 
-`canvas_core_editor.dart` currently exposes headless hit-testing, picking, and snapping helpers over runtime scenes. These helpers consume the same computed scene data used for rendering so interactive behavior stays aligned with visual output.
+Interactive concerns such as history, picking, path hit testing, snapping,
+selection behavior, and mutation policy belong to `canvas_editor_flutter`.
+
+The editor consumes renderer-neutral runtime data from `canvas_core` so
+interaction remains aligned with the same document geometry used for rendering,
+without making interaction policy part of the core package.
 
 ## Package boundaries
 
@@ -94,14 +96,15 @@ Host/app data
   -> renderer
 ```
 
-Interaction:
+Editor consumption:
 
 ```text
 CanvasSceneDocument + ComputedScene
-  -> pickTopAtScene / snapScene
-  -> editor-owned mutation/history
-  -> updated CanvasSceneDocument
-  -> computeScene(...)
+-> canvas_editor_flutter interaction/runtime
+-> updated CanvasSceneDocument
+-> computeScene(...)
 ```
 
-Keeping rendering and interaction on the same computed scene prevents drift between what users see and what the editor can select, snap, or manipulate.
+The editor consumes core runtime geometry rather than redefining document
+layout/render semantics, keeping interaction aligned with rendered output while
+preserving package ownership.

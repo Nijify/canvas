@@ -1,6 +1,9 @@
 ## Unreleased
 
-- **Breaking:** remove `History` from `canvas_core_editor.dart`; undo/redo history is now owned by `canvas_editor_flutter`.
+- **Breaking:** remove `canvas_core_editor.dart`; editor-owned history, picking,
+  path hit testing, and snapping now live in `canvas_editor_flutter`.
+- Keep `canvas_core` focused on document/runtime semantics, renderer-neutral
+  geometry, scene computation, and paint-plan construction.
 
 ## 0.10.0
 

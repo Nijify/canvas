@@ -1,4 +1,4 @@
-// Path: lib/canvas_core_runtime.dart
+// Path: packages/canvas_core/lib/canvas_core_runtime.dart
 //
 // canvas_core_runtime – Public RUNTIME API (generic core / source of truth)
 //
@@ -26,8 +26,8 @@
 // Prefer consuming ComputedScene (drawList/world matrices/bounds) in higher-level
 // subsystems instead of recomputing transforms/bounds independently.
 //
-// This file intentionally does NOT export editor interaction helpers
-// (undo/pick/snap); use canvas_core_editor.dart for those.
+// Editor interaction concerns such as history, picking, and snapping
+// belong to canvas_editor_flutter and are intentionally not part of canvas_core.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ============================================================================

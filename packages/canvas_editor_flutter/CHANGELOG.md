@@ -1,6 +1,11 @@
 ## Unreleased
 
-- Own the editor's immutable `History<T>` reducer directly instead of importing history from `canvas_core`.
+- Own the editor's immutable `History<T>` reducer directly instead of importing
+  history from `canvas_core`.
+- Own scene picking, path hit testing, snapping types, snap candidate generation,
+  and snap resolution directly in `canvas_editor_flutter`.
+- Remove the editor's dependency on the former `canvas_core_editor.dart`
+  interaction entrypoint.
 
 # 0.13.0
 

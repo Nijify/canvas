@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show HardwareKeyboard, LogicalKeyboardKey;
 
-import 'package:canvas_core/canvas_core_editor.dart'; // Snap types + constants/extensions.
 import 'package:canvas_core/canvas_core_runtime.dart'
     show
         CanvasSceneDocument,
@@ -18,15 +17,21 @@ import 'package:canvas_core/canvas_core_runtime.dart'
         selectionUnionBounds;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
-import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_state.dart'
-    show kEditorCameraMaxScale, kEditorCameraMinScale;
 import 'package:canvas_editor_flutter/src/editor_api.dart'
     show EditorController;
-import 'package:canvas_editor_flutter/src/interaction/canvas_viewport_behavior.dart';
-import 'package:canvas_editor_flutter/src/interaction/editor_interaction_policy.dart';
 import 'package:canvas_editor_flutter/src/editor_hosts.dart'
     show EditorSelectionHost;
 import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_painter.dart';
+import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_state.dart'
+    show kEditorCameraMaxScale, kEditorCameraMinScale;
+import 'package:canvas_editor_flutter/src/interaction/canvas_viewport_behavior.dart';
+import 'package:canvas_editor_flutter/src/interaction/editor_interaction_policy.dart';
+import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dart'
+    show pickTopAtScene;
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_scene.dart'
+    show snapScene;
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
+    show SnapAxis, SnapCandidate, SnapConfig, SnapLine, SnapOptions;
 
 class CanvasViewport extends StatefulWidget {
   const CanvasViewport({

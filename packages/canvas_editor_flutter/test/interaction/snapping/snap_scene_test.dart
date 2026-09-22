@@ -1,9 +1,10 @@
 // Path: test/snap_scene_test.dart
 
-import 'package:test/test.dart';
-
-import 'package:canvas_core/canvas_core_editor.dart';
 import 'package:canvas_core/canvas_core_runtime.dart';
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_scene.dart'
+    show snapScene;
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class _FakeTextMeasurer implements TextMeasurer {
   @override

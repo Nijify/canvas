@@ -1,7 +1,8 @@
-// Path: lib/src/algorithms/snapping/keylines.dart
-import 'package:canvas_core/src/foundation/core_types.dart';
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-import 'package:canvas_core/src/algorithms/snapping/snap_types.dart';
+// Path: packages/canvas_editor_flutter/lib/src/interaction/snapping/keylines.dart
+
+import 'package:canvas_core/canvas_core_runtime.dart' show Rect2D, Size2D;
+
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart';
 
 /// Center (and optionally edges) derived from rect bounds.
 List<SnapCandidate> rectKeylines(
