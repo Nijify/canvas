@@ -12,6 +12,8 @@ import 'package:canvas_editor_flutter/src/interaction/snapping/keylines.dart'
     show rectKeylines;
 import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
     show SnapCandidate, SnapKind;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 
 /// Builds object-based snap candidates in world coordinates.
 ///
@@ -20,9 +22,11 @@ import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
 ///
 /// Eligible leaves contribute center and edge keylines. Eligible groups
 /// contribute keylines derived from the union of their eligible descendants.
+
 List<SnapCandidate> sceneObjectKeylines(
-  CanvasSceneDocument doc, // kept for API symmetry; not used internally
+  CanvasSceneDocument doc,
   ComputedScene computed, {
+  required EditorGeometryIndex geometry,
   Set<ElementId> ignoreIds = const {},
   bool includeLeaves = true,
   bool includeGroups = true,
@@ -59,7 +63,7 @@ List<SnapCandidate> sceneObjectKeylines(
     // Locked nodes are not snap candidates.
     if (leaf.locked) continue;
 
-    final rect = computed.layoutBoundsWorldById[leafId];
+    final rect = geometry.layoutBoundsWorldById[leafId];
     if (rect == null) continue;
 
     if (includeLeaves) {

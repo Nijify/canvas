@@ -1,9 +1,10 @@
-// Path: test/snap_scene_test.dart
+// Path: packages/canvas_editor_flutter/test/interaction/snapping/snap_scene_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/snapping/snap_scene.dart'
     show snapScene;
 import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart';
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeTextMeasurer implements TextMeasurer {
@@ -27,6 +28,7 @@ void main() {
     );
     final services = CoreServices(textMeasurer: _FakeTextMeasurer());
     final computed = computeScene(doc, services);
+    final geometry = EditorGeometryIndex.fromComputed(computed);
     const options = SnapOptions(
       snapToKeylines: false,
       snapToGuides: true,
@@ -49,6 +51,7 @@ void main() {
     final result = snapScene(
       doc: doc,
       computed: computed,
+      geometry: geometry,
       probeWorld: probeWorld,
       config: config,
     );

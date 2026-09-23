@@ -3,6 +3,7 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/snapping/snap_index_scene.dart'
     show sceneObjectKeylines;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _TextMeasurer implements TextMeasurer {
@@ -99,8 +100,21 @@ void main() {
         final before = computeScene(beforeScene, _services());
         final after = computeScene(afterScene, _services());
 
-        final beforeSnaps = sceneObjectKeylines(beforeScene, before);
-        final afterSnaps = sceneObjectKeylines(afterScene, after);
+        final beforeGeometry = EditorGeometryIndex.fromComputed(before);
+
+        final afterGeometry = EditorGeometryIndex.fromComputed(after);
+
+        final beforeSnaps = sceneObjectKeylines(
+          beforeScene,
+          before,
+          geometry: beforeGeometry,
+        );
+
+        final afterSnaps = sceneObjectKeylines(
+          afterScene,
+          after,
+          geometry: afterGeometry,
+        );
 
         expect(
           afterSnaps.map((c) => (c.kind, c.axis, c.pos)),
@@ -126,9 +140,15 @@ void main() {
     ]);
 
     final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
 
     expect(
-      sceneObjectKeylines(scene, computed, ignoreIds: const {'unresolved'}),
+      sceneObjectKeylines(
+        scene,
+        computed,
+        geometry: geometry,
+        ignoreIds: const {'unresolved'},
+      ),
       isEmpty,
     );
   });

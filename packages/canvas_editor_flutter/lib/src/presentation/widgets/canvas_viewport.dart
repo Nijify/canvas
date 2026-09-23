@@ -6,15 +6,8 @@ import 'package:flutter/foundation.dart' show listEquals, Listenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show HardwareKeyboard, LogicalKeyboardKey;
-
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show
-        CanvasSceneDocument,
-        Rect2D,
-        RenderSnapshot,
-        Vec2,
-        findById,
-        selectionUnionBounds;
+    show CanvasSceneDocument, Rect2D, RenderSnapshot, Vec2, findById;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 import 'package:canvas_editor_flutter/src/editor_api.dart'
@@ -32,11 +25,16 @@ import 'package:canvas_editor_flutter/src/interaction/snapping/snap_scene.dart'
     show snapScene;
 import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
     show SnapAxis, SnapCandidate, SnapConfig, SnapLine, SnapOptions;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
+import 'package:canvas_editor_flutter/src/interaction/geometry/selection_geometry.dart'
+    show selectionUnionBounds;
 
 class CanvasViewport extends StatefulWidget {
   const CanvasViewport({
     super.key,
     required this.render,
+    required this.geometry,
     required this.renderer,
     required this.viewportPx,
     required this.scale,
@@ -52,6 +50,7 @@ class CanvasViewport extends StatefulWidget {
   });
 
   final RenderSnapshot render;
+  final EditorGeometryIndex geometry;
   final CanvasRenderer renderer;
   final Listenable repaint;
   final Size viewportPx;
@@ -189,6 +188,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
   Widget build(BuildContext context) {
     final scene = widget.render.scene;
     final computed = widget.render.computed;
+    final geometry = widget.geometry;
     final ops = widget.render.ops;
 
     final vp = widget.viewportPx;
@@ -219,6 +219,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
               scene,
               pos,
               computed: computed,
+              geometry: geometry,
               includeLocked: false,
               selectLeaf: true,
               viewportZoom: displayScale,
@@ -228,6 +229,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
               scene,
               pos,
               computed: computed,
+              geometry: geometry,
               includeLocked: false,
               selectLeaf: false,
               viewportZoom: displayScale,
@@ -279,6 +281,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
               scene,
               local,
               computed: computed,
+              geometry: geometry,
               includeLocked: false,
               selectLeaf: true,
               viewportZoom: displayScale,
@@ -288,6 +291,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
               scene,
               local,
               computed: computed,
+              geometry: geometry,
               includeLocked: false,
               selectLeaf: false,
               viewportZoom: displayScale,
@@ -371,7 +375,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
               final aabb = selectionUnionBounds(
                 movableIds,
-                getBounds: (sid) => computed.layoutBoundsWorldById[sid],
+                getBounds: (sid) => geometry.layoutBoundsWorldById[sid],
               );
 
               if (aabb == null) {
@@ -391,6 +395,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
               final res = snapScene(
                 doc: scene,
                 computed: computed,
+                geometry: geometry,
                 probeWorld: probe,
                 config: SnapConfig(
                   options: SnapOptions(

@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Own selection geometry plus derived world interaction geometry for picking,
+  snapping, multi-selection, and manipulation instead of storing those values
+  in `canvas_core`'s `ComputedScene`.
 - Own the editor's immutable `History<T>` reducer directly instead of importing
   history from `canvas_core`.
 - Own scene picking, path hit testing, snapping types, snap candidate generation,

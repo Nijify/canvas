@@ -18,6 +18,8 @@ import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
         SnapLine,
         SnapOptions,
         SnapResult;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 
 /// Computes snapping for a world-space selection probe.
 ///
@@ -29,10 +31,12 @@ import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
 ///
 /// Tolerances are specified in screen pixels and converted to world space
 /// using the configured zoom.
+
 SnapResult snapScene({
   required CanvasSceneDocument doc,
   required ComputedScene computed,
-  required Rect2D probeWorld, // selection AABB during drag (world coords)
+  required EditorGeometryIndex geometry,
+  required Rect2D probeWorld,
   required SnapConfig config,
 }) {
   final opts = config.options;
@@ -48,7 +52,12 @@ SnapResult snapScene({
   }
   if (opts.snapToObjects) {
     cands.addAll(
-      sceneObjectKeylines(doc, computed, ignoreIds: config.ignoreIds),
+      sceneObjectKeylines(
+        doc,
+        computed,
+        geometry: geometry,
+        ignoreIds: config.ignoreIds,
+      ),
     );
   }
   if (opts.snapToGuides) {

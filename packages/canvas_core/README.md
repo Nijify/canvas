@@ -159,7 +159,7 @@ See [VERSIONING.md](VERSIONING.md) for the full policy.
 
 - `canvas_core` is Dart-only and must stay independent of Flutter and `dart:ui`.
 - Text measurement, image intrinsic sizes, and icon lookup are host services.
-- Render and geometry consumers should reuse `ComputedScene` so they agree on transforms and bounds.
+- Renderers and editors should reuse `ComputedScene` for canonical document transforms, local layout bounds, and paint bounds. Editor-only derived interaction geometry belongs to `canvas_editor_flutter`.
 - Editor-specific interaction concerns such as history, picking, snapping, and selection belong to `canvas_editor_flutter`.
 - Public core consumers should import `canvas_core_runtime.dart`.
 

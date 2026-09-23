@@ -1,3 +1,5 @@
+// Path: packages/canvas_core/lib/src/algorithms/layout/computed_scene.dart
+
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement;
 import 'package:canvas_core/src/algorithms/layout/node_geometry.dart';
@@ -26,24 +28,23 @@ final class DrawItem {
   const DrawItem({required this.leafId, required this.groupStack});
 }
 
-/// Computed geometry in document units; these maps are not serialized.
+/// Computed document/render geometry in document units; these maps are not
+/// serialized.
 ///
-/// Local layout bounds determine pivots and oriented selection geometry.
-/// World layout bounds support multi-selection, snapping and manipulation.
+/// Local layout bounds determine pivots and authored transform semantics.
 /// Paint bounds estimate rendered content for fitting and cropping; they must
 /// not affect transforms. Text metrics and the existing path-stroke estimate
 /// are not guaranteed pixel enclosures, so these are not hard clip bounds.
 ///
-/// Groups union child bounds independently in each coordinate space. A group's
-/// world union can be tighter than transforming its local aggregate rectangle.
+/// Groups union child bounds independently in local layout space and world
+/// paint space. Editor-only world interaction geometry is derived by
+/// `canvas_editor_flutter`.
 final class ComputedScene {
   final List<DrawItem> drawList;
   final Map<ElementId, Node> nodeById;
   final Map<ElementId, vm.Matrix4> worldById;
-  final Map<ElementId, vm.Matrix4> inverseWorldById;
 
   final Map<ElementId, Rect2D> layoutBoundsLocalById;
-  final Map<ElementId, Rect2D> layoutBoundsWorldById;
   final Map<ElementId, Rect2D> paintBoundsLocalById;
   final Map<ElementId, Rect2D> paintBoundsWorldById;
 
@@ -56,9 +57,7 @@ final class ComputedScene {
     required this.drawList,
     required this.nodeById,
     required this.worldById,
-    required this.inverseWorldById,
     required this.layoutBoundsLocalById,
-    required this.layoutBoundsWorldById,
     required this.paintBoundsLocalById,
     required this.paintBoundsWorldById,
     required this.pathIRById,
@@ -86,10 +85,8 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   final drawList = <DrawItem>[];
   final nodeById = <ElementId, Node>{};
   final worldById = <ElementId, vm.Matrix4>{};
-  final inverseWorldById = <ElementId, vm.Matrix4>{};
 
   final layoutBoundsLocalById = <ElementId, Rect2D>{};
-  final layoutBoundsWorldById = <ElementId, Rect2D>{};
   final paintBoundsLocalById = <ElementId, Rect2D>{};
   final paintBoundsWorldById = <ElementId, Rect2D>{};
 
@@ -113,8 +110,9 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
     );
   }
 
-  // Post-order: resolve each leaf once, then aggregate both local bounds.
-  // A child's layout is settled before its transform is used by its parent.
+  // Post-order: resolve each leaf once, then aggregate local layout/paint
+  // bounds. A child's layout is settled before its transform is used by its
+  // parent.
   void computeLocalBounds(Node n) {
     if (n.hidden) return;
 
@@ -135,19 +133,24 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
 
     Rect2D? layoutUnion;
     Rect2D? paintUnion;
+
     for (final child in nodesInPaintOrder(n.children)) {
       computeLocalBounds(child);
+
       final layout = layoutBoundsLocalById[child.id];
       final paint = paintBoundsLocalById[child.id];
+
       if (layout == null && paint == null) continue;
 
       final childLocal = localMatrixFromLayout(child);
+
       if (layout != null) {
         final transformed = aabbOfTransformedRect(layout, childLocal);
         layoutUnion = layoutUnion == null
             ? transformed
             : Rect2DX.union(layoutUnion, transformed);
       }
+
       if (paint != null) {
         final transformed = aabbOfTransformedRect(paint, childLocal);
         paintUnion = paintUnion == null
@@ -155,56 +158,61 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
             : Rect2DX.union(paintUnion, transformed);
       }
     }
-    if (layoutUnion != null) layoutBoundsLocalById[n.id] = layoutUnion;
-    if (paintUnion != null) paintBoundsLocalById[n.id] = paintUnion;
+
+    if (layoutUnion != null) {
+      layoutBoundsLocalById[n.id] = layoutUnion;
+    }
+
+    if (paintUnion != null) {
+      paintBoundsLocalById[n.id] = paintUnion;
+    }
   }
 
   for (final root in nodesInPaintOrder(doc.children)) {
     computeLocalBounds(root);
   }
 
-  // Pre-order transforms, followed by child-world unions for groups.
-  // Do not transform a group's already-aggregated local AABB again.
+  // Pre-order transforms, followed by child-world paint unions for groups.
+  //
+  // Do not transform a group's already-aggregated local paint AABB again:
+  // unioning child world paint bounds remains tighter under nested/counter
+  // rotations.
   void walk(Node n, vm.Matrix4 parentWorld, List<ElementId> groupStack) {
     if (n.hidden) return;
 
     nodeById[n.id] = n;
+
     final world = vm.Matrix4.copy(parentWorld)
       ..multiply(localMatrixFromLayout(n));
+
     worldById[n.id] = world;
-    final inverse = vm.Matrix4.copy(world)..invert();
-    inverseWorldById[n.id] = inverse;
 
     if (n is GroupNode) {
       final nextStack = [...groupStack, n.id];
-      Rect2D? layoutUnion;
       Rect2D? paintUnion;
+
       for (final child in nodesInPaintOrder(n.children)) {
         walk(child, world, nextStack);
-        final layout = layoutBoundsWorldById[child.id];
+
         final paint = paintBoundsWorldById[child.id];
-        if (layout != null) {
-          layoutUnion = layoutUnion == null
-              ? layout
-              : Rect2DX.union(layoutUnion, layout);
-        }
         if (paint != null) {
           paintUnion = paintUnion == null
               ? paint
               : Rect2DX.union(paintUnion, paint);
         }
       }
-      if (layoutUnion != null) layoutBoundsWorldById[n.id] = layoutUnion;
-      if (paintUnion != null) paintBoundsWorldById[n.id] = paintUnion;
+
+      if (paintUnion != null) {
+        paintBoundsWorldById[n.id] = paintUnion;
+      }
+
       return;
     }
 
     drawList.add(DrawItem(leafId: n.id, groupStack: groupStack));
-    final layout = layoutBoundsLocalById[n.id];
+
     final paint = paintBoundsLocalById[n.id];
-    if (layout != null) {
-      layoutBoundsWorldById[n.id] = aabbOfTransformedRect(layout, world);
-    }
+
     if (paint != null) {
       paintBoundsWorldById[n.id] = aabbOfTransformedRect(paint, world);
     }
@@ -218,9 +226,7 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
     drawList: drawList,
     nodeById: nodeById,
     worldById: worldById,
-    inverseWorldById: inverseWorldById,
     layoutBoundsLocalById: layoutBoundsLocalById,
-    layoutBoundsWorldById: layoutBoundsWorldById,
     paintBoundsLocalById: paintBoundsLocalById,
     paintBoundsWorldById: paintBoundsWorldById,
     pathIRById: pathIRById,

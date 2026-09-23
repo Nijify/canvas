@@ -105,6 +105,7 @@ CanvasSceneDocument + ComputedScene
 -> computeScene(...)
 ```
 
-The editor consumes core runtime geometry rather than redefining document
-layout/render semantics, keeping interaction aligned with rendered output while
-preserving package ownership.
+The editor consumes core document/render geometry and derives its own
+interaction geometry from those canonical results. This keeps picking,
+selection, snapping, and manipulation aligned with rendering without making
+editor-only geometry part of the core runtime contract.

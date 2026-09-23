@@ -155,7 +155,7 @@ Image tools operate on logical source references. Applications own image access,
 
 ## Package boundaries
 
-- `canvas_editor_flutter` owns reusable editor interaction, runtime orchestration, and presentation, including history, picking, snapping, selection, and gestures.
-- `canvas_core` owns runtime documents, geometry, scene computation, logical resource contracts, and renderer-neutral paint operations.
+- `canvas_editor_flutter` owns reusable editor interaction, runtime orchestration, and presentation, including history, picking, snapping, selection, gestures, and derived world interaction geometry.
+- `canvas_core` owns runtime documents, document/render geometry, scene computation, logical resource contracts, and renderer-neutral paint operations.
 - `canvas_renderer_flutter` owns Flutter drawing, font/text implementations, decoded raster ownership, and canonical final PNG rendering.
 - Applications own product-specific storage, authentication, networking, permissions, analytics, media/font lifecycle, processing, and workflow decisions.

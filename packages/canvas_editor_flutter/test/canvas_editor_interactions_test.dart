@@ -1,4 +1,5 @@
-// Path: oss_packages/canvas_editor_flutter/test/canvas_editor_interactions_test.dart
+// Path: packages/canvas_editor_flutter/test/canvas_editor_interactions_test.dart
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_controller.dart';
@@ -10,6 +11,8 @@ import 'package:canvas_editor_flutter/src/editor_extensions.dart';
 import 'package:canvas_editor_flutter/src/editor_surface_features.dart';
 import 'package:canvas_editor_flutter/src/interaction/canvas_viewport_behavior.dart';
 import 'package:canvas_editor_flutter/src/interaction/selection_controllers.dart';
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport.dart';
 import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport_surface.dart';
 import 'package:canvas_editor_flutter/src/presentation/widgets/editor_app_bar.dart';
@@ -161,15 +164,16 @@ void main() {
     tester,
   ) async {
     final editor = await _pumpEditor(tester);
+
     editor.camera.setPanZoom(newScale: 1.0, newPan: Offset.zero);
+
     await tester.pumpAndSettle();
 
-    final bounds = editor
-        .controller
-        .render
-        .value
-        .computed
-        .layoutBoundsWorldById['shape-1']!;
+    final render = editor.controller.render.value;
+
+    final geometry = EditorGeometryIndex.fromComputed(render.computed);
+
+    final bounds = geometry.layoutBoundsWorldById['shape-1']!;
 
     final center = Vec2(
       (bounds.left + bounds.right) / 2,
@@ -185,11 +189,13 @@ void main() {
     expect(viewportBox.size.contains(shapeCenterInViewport), isTrue);
 
     await tester.tapAt(viewportBox.localToGlobal(shapeCenterInViewport));
+
     await tester.pump();
 
     expect(editor.selection.value.ids, contains('shape-1'));
 
     await tester.tapAt(viewportBox.localToGlobal(const Offset(280, 180)));
+
     await tester.pump();
 
     expect(editor.selection.value.isEmpty, isTrue);
@@ -239,14 +245,16 @@ void main() {
   testWidgets('resize updates rendered element bounds', (tester) async {
     final editor = await _pumpEditor(tester);
 
-    final boundsBefore = editor
-        .controller
-        .render
-        .value
-        .computed
-        .layoutBoundsWorldById['shape-1']!;
+    final renderBefore = editor.controller.render.value;
+
+    final geometryBefore = EditorGeometryIndex.fromComputed(
+      renderBefore.computed,
+    );
+
+    final boundsBefore = geometryBefore.layoutBoundsWorldById['shape-1']!;
 
     final nodeBefore = findById(editor.controller.document.value, 'shape-1')!;
+
     final endSession = editor.controller.beginEditSession();
 
     try {
@@ -261,12 +269,13 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    final boundsAfter = editor
-        .controller
-        .render
-        .value
-        .computed
-        .layoutBoundsWorldById['shape-1']!;
+    final renderAfter = editor.controller.render.value;
+
+    final geometryAfter = EditorGeometryIndex.fromComputed(
+      renderAfter.computed,
+    );
+
+    final boundsAfter = geometryAfter.layoutBoundsWorldById['shape-1']!;
 
     expect(boundsAfter.width, greaterThan(boundsBefore.width));
   });

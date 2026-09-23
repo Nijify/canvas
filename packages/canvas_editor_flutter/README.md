@@ -200,8 +200,8 @@ See [doc/architecture.md](doc/architecture.md) for package layering, mutation fl
 
 ## Package boundaries
 
-- `canvas_editor_flutter` owns editor interaction and orchestration, including history, picking, snapping, selection behavior, gestures, and editor-specific presentation contracts.
-- `canvas_core` owns the document model, geometry, scene computation, logical image-resource contracts, and renderer-agnostic paint operations.
+- `canvas_editor_flutter` owns editor interaction and orchestration, including history, picking, snapping, selection behavior, gestures, derived interaction geometry, and editor-specific presentation contracts.
+- `canvas_core` owns the document model, document/render geometry, scene computation, logical image-resource contracts, and renderer-agnostic paint operations.
 - `canvas_renderer_flutter` owns Flutter drawing, text/font resource implementations, decoded image ownership, and canonical PNG rendering.
 - Applications own persistence, authentication, analytics, networking, permissions, image processing, media/font lifecycle, and product-specific workflows.
 

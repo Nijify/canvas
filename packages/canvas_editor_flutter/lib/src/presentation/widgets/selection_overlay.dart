@@ -9,9 +9,14 @@ import 'package:vector_math/vector_math_64.dart' as vm;
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/src/editor_api.dart';
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
+import 'package:canvas_editor_flutter/src/interaction/geometry/selection_geometry.dart'
+    show selectionGeometry;
 
 class CanvasSelectionOverlay extends StatefulWidget {
   final rt.RenderSnapshot render;
+  final EditorGeometryIndex geometry;
   final double scale;
   final Offset pan;
   final Set<String> selectedIds;
@@ -19,6 +24,7 @@ class CanvasSelectionOverlay extends StatefulWidget {
   const CanvasSelectionOverlay({
     super.key,
     required this.render,
+    required this.geometry,
     required this.scale,
     required this.pan,
     required this.selectedIds,
@@ -195,10 +201,14 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
 
       pivotWorld = _transformPoint(world, pivotLocal);
     } else {
-      rt.Rect2D? boundsFor(String id) => computed.layoutBoundsWorldById[id];
+      rt.Rect2D? boundsFor(String id) =>
+          widget.geometry.layoutBoundsWorldById[id];
 
-      final geom = rt.selectionGeometry(ids, getBounds: boundsFor);
-      if (geom == null) return const SizedBox.shrink();
+      final geom = selectionGeometry(ids, getBounds: boundsFor);
+
+      if (geom == null) {
+        return const SizedBox.shrink();
+      }
 
       cornersWorld = geom.corners;
       pivotWorld = geom.pivotWorld;

@@ -2,6 +2,10 @@
 
 - **Breaking:** remove `canvas_core_editor.dart`; editor-owned history, picking,
   path hit testing, and snapping now live in `canvas_editor_flutter`.
+- **Breaking:** remove selection geometry and editor-only world interaction
+  geometry from the core runtime API. `ComputedScene` now retains document/render
+  geometry while `canvas_editor_flutter` derives inverse transforms and world
+  layout bounds for picking, snapping, selection, and manipulation.
 - Keep `canvas_core` focused on document/runtime semantics, renderer-neutral
   geometry, scene computation, and paint-plan construction.
 

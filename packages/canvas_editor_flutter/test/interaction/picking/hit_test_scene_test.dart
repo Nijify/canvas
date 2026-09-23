@@ -2,6 +2,7 @@
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dart';
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _TextMeasurer implements TextMeasurer {
@@ -38,11 +39,13 @@ void main() {
   test('picks the topmost overlapping leaf', () {
     final scene = _scene([_text('bottom'), _text('top')]);
     final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
 
     final hit = pickTopAtScene(
       scene,
       Vec2.zero,
       computed: computed,
+      geometry: geometry,
       selectLeaf: true,
     );
 
@@ -54,8 +57,14 @@ void main() {
       Node.group(id: 'group', children: [_text('leaf')]),
     ]);
     final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
 
-    final hit = pickTopAtScene(scene, Vec2.zero, computed: computed);
+    final hit = pickTopAtScene(
+      scene,
+      Vec2.zero,
+      computed: computed,
+      geometry: geometry,
+    );
 
     expect(hit?.id, 'group');
   });
@@ -65,11 +74,13 @@ void main() {
       Node.group(id: 'group', children: [_text('leaf')]),
     ]);
     final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
 
     final hit = pickTopAtScene(
       scene,
       Vec2.zero,
       computed: computed,
+      geometry: geometry,
       selectLeaf: true,
     );
 
@@ -81,11 +92,13 @@ void main() {
       Node.group(id: 'group', children: [_text('leaf')]),
     ]);
     final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
 
     final hit = pickTopAtScene(
       scene,
       Vec2.zero,
       computed: computed,
+      geometry: geometry,
       ignoreIds: const {'group'},
     );
 
@@ -95,9 +108,16 @@ void main() {
   test('locked leaf is excluded unless includeLocked is true', () {
     final scene = _scene([_text('locked', locked: true)]);
     final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
 
     expect(
-      pickTopAtScene(scene, Vec2.zero, computed: computed, selectLeaf: true),
+      pickTopAtScene(
+        scene,
+        Vec2.zero,
+        computed: computed,
+        geometry: geometry,
+        selectLeaf: true,
+      ),
       isNull,
     );
 
@@ -106,6 +126,7 @@ void main() {
         scene,
         Vec2.zero,
         computed: computed,
+        geometry: geometry,
         selectLeaf: true,
         includeLocked: true,
       )?.id,

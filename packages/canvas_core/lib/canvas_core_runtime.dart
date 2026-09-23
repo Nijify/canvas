@@ -23,8 +23,9 @@
 //   • CanvasRenderPipeline renders an already-prepared runtime scene.
 //   • It does not hardcode application-provided behavior.
 //
-// Prefer consuming ComputedScene (drawList/world matrices/bounds) in higher-level
-// subsystems instead of recomputing transforms/bounds independently.
+// Higher-level subsystems should consume ComputedScene as the canonical
+// document/render computation and derive domain-specific geometry from it
+// without reinterpreting document layout or transform semantics.
 //
 // Editor interaction concerns such as history, picking, and snapping
 // belong to canvas_editor_flutter and are intentionally not part of canvas_core.
@@ -121,11 +122,8 @@ export 'src/foundation/fields/canvas_field_key.dart'
     show CanvasFieldKey, CanvasFields, CanvasFieldKeyConverter;
 export 'src/foundation/geometry/geometry.dart' show Rect2D;
 export 'src/foundation/geometry/geometry_ext.dart';
+export 'src/runtime/geometry/scene_math.dart' show aabbOfTransformedRect;
 export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
-
-// Derived geometry helpers (selection bounds, unions)
-export 'src/algorithms/layout/selection_geometry.dart'
-    show selectionGeometry, selectionUnionBounds;
 
 // ============================================================================
 // 7) Serde (JSON I/O boundary) + host service contracts
