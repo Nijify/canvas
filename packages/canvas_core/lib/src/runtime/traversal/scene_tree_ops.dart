@@ -1,4 +1,4 @@
-// Path: lib/src/runtime/traversal/scene_tree_ops.dart
+// Path: packages/canvas_core/lib/src/runtime/traversal/scene_tree_ops.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
@@ -11,12 +11,9 @@ import 'package:canvas_core/src/runtime/traversal/traversal.dart'
 import 'package:canvas_core/src/runtime/traversal/rewrite.dart'
     show replaceById;
 
-typedef IdGenerator = ElementId Function(ElementId oldId);
-
 typedef DuplicateSceneSubtreeResult = ({
   CanvasSceneDocument doc,
   Map<ElementId, ElementId> idMap,
-  List<ElementId> createdIds,
   ElementId? primaryId,
 });
 
@@ -37,6 +34,8 @@ abstract final class SceneTreeOps {
     int? index,
   }) {
     if (parentId == null) {
+      _validateSubtreeIdsForAdd(doc, node);
+
       final out = [...doc.children];
       final i = _clampInsertIndex(index ?? out.length, out.length);
       out.insert(i, node);
@@ -44,7 +43,13 @@ abstract final class SceneTreeOps {
     }
 
     final parent = findById(doc, parentId);
+
+    // Preserve the existing no-op contract for a missing or invalid parent.
+    // In particular, do not validate the incoming subtree when there is nowhere
+    // valid to insert it.
     if (parent == null || !parent.isGroup) return doc;
+
+    _validateSubtreeIdsForAdd(doc, node);
 
     final outKids = [...parent.childrenOrEmpty];
     final i = _clampInsertIndex(index ?? outKids.length, outKids.length);
@@ -126,27 +131,41 @@ abstract final class SceneTreeOps {
     CanvasSceneDocument doc,
     ElementId id, {
     Vec2 shift = const Vec2(16, 16),
-    IdGenerator? idGen,
   }) {
     final node = findById(doc, id);
     if (node == null) {
-      return (doc: doc, idMap: const {}, createdIds: const [], primaryId: null);
+      return (doc: doc, idMap: const <ElementId, ElementId>{}, primaryId: null);
     }
 
     final pr = findParentOf(doc, id);
     if (pr == null) {
-      return (doc: doc, idMap: const {}, createdIds: const [], primaryId: null);
+      return (doc: doc, idMap: const <ElementId, ElementId>{}, primaryId: null);
     }
 
-    final gen = idGen ?? _defaultIdGen();
+    // Seed the reservation set once from the existing document.
+    //
+    // The counter remains operation-global, matching the existing copy-ID
+    // scheme. Each accepted generated ID is immediately reserved so later
+    // cloned nodes cannot collide with it.
+    final reservedIds = collectAllNodeIds(doc: doc);
+    var copyCounter = 0;
 
-    final created = <ElementId>[];
+    ElementId nextCopyId(ElementId oldId) {
+      while (true) {
+        copyCounter++;
+        final candidate = '${oldId}_copy_$copyCounter';
+
+        if (reservedIds.add(candidate)) {
+          return candidate;
+        }
+      }
+    }
+
     final idMap = <ElementId, ElementId>{};
 
     Node clone(Node n) {
-      final newId = gen(n.id);
+      final newId = nextCopyId(n.id);
       idMap[n.id] = newId;
-      created.add(newId);
 
       return switch (n) {
         final TextNode node => node.copyWith(id: newId),
@@ -167,11 +186,13 @@ abstract final class SceneTreeOps {
     final xf0 = cloned.xf;
     cloned = cloned.withXf(xf0.copyWith(position: xf0.position + shift));
 
-    // Insert immediately after original.
-    // Later siblings paint above earlier siblings, so the duplicate appears above.
+    // Insert immediately after the original.
+    // Later siblings paint above earlier siblings, so the duplicate appears
+    // immediately above the original in stack order.
     final insertIndex = pr.index + 1;
 
     CanvasSceneDocument out;
+
     if (pr.parent == null) {
       final kids = [...doc.children];
       kids.insert(_clampInsertIndex(insertIndex, kids.length), cloned);
@@ -182,7 +203,7 @@ abstract final class SceneTreeOps {
       out = _replaceChildren(doc, pr.parent, kids);
     }
 
-    return (doc: out, idMap: idMap, createdIds: created, primaryId: cloned.id);
+    return (doc: out, idMap: idMap, primaryId: cloned.id);
   }
 
   // -------------------------------------------------------------------------
@@ -351,6 +372,35 @@ abstract final class SceneTreeOps {
     return replaceById(doc, parent.id, parent.copyWith(children: children));
   }
 
+  static void _validateSubtreeIdsForAdd(CanvasSceneDocument doc, Node root) {
+    final existingIds = collectAllNodeIds(doc: doc);
+    final subtreeIds = <ElementId>{};
+
+    void walk(Node node) {
+      final id = node.id;
+
+      if (id.trim().isEmpty) {
+        throw ArgumentError.value(id, 'node.id', 'Node IDs must be nonblank.');
+      }
+
+      if (!subtreeIds.add(id)) {
+        throw ArgumentError(
+          'Incoming subtree contains duplicate node ID "$id".',
+        );
+      }
+
+      if (existingIds.contains(id)) {
+        throw ArgumentError('Node ID "$id" already exists in the document.');
+      }
+
+      for (final child in node.childrenOrEmpty) {
+        walk(child);
+      }
+    }
+
+    walk(root);
+  }
+
   static bool _containsId(Node root, ElementId needle) {
     bool walk(Node n) {
       if (n.id == needle) return true;
@@ -370,13 +420,5 @@ abstract final class SceneTreeOps {
   static int _clampExistingIndex(int value, int length) {
     assert(length > 0);
     return value.clamp(0, length - 1).toInt();
-  }
-
-  static IdGenerator _defaultIdGen() {
-    var counter = 0;
-    return (oldId) {
-      counter++;
-      return '${oldId}_copy_$counter';
-    };
   }
 }

@@ -74,14 +74,11 @@ void main() {
     test('duplicate inserts immediately above original', () {
       final doc = _scene(children: [_text('a'), _text('b'), _text('c')]);
 
-      final res = SceneTreeOps.duplicateSubtree(
-        doc,
-        'b',
-        idGen: (oldId) => '${oldId}_copy',
-      );
+      final res = SceneTreeOps.duplicateSubtree(doc, 'b');
 
-      expect(res.primaryId, 'b_copy');
-      expect(_rootIds(res.doc), ['a', 'b', 'b_copy', 'c']);
+      expect(res.primaryId, 'b_copy_1');
+      expect(_rootIds(res.doc), ['a', 'b', 'b_copy_1', 'c']);
+      expect(validateCanvasSceneDocument(res.doc), isEmpty);
     });
 
     test('addNode defaults to frontmost position', () {
@@ -110,7 +107,7 @@ void main() {
       expect(_rootIds(updated), ['a', 'c', 'd', 'b']);
     });
 
-    test('moveSubtree can move root into group at explicit index', () {
+    test('moveSubtree can move root into group without self-ID collision', () {
       final group = Node.group(id: 'g', children: [_text('x'), _text('z')]);
 
       final doc = _scene(children: [_text('a'), group]);
@@ -124,6 +121,7 @@ void main() {
 
       expect(_rootIds(updated), ['g']);
       expect(_groupChildIds(updated, 'g'), ['x', 'a', 'z']);
+      expect(validateCanvasSceneDocument(updated), isEmpty);
     });
   });
 }
