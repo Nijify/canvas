@@ -69,11 +69,11 @@ Generated model serializers remain implementation-level primitives. Semantic doc
 ## Editor boundary
 
 Interactive concerns such as history, picking, path hit testing, snapping,
-selection behavior, and mutation policy belong to `canvas_editor_flutter`.
+and selection behavior belong to `canvas_editor_flutter`.
 
 The editor consumes renderer-neutral runtime data from `canvas_core` so
 interaction remains aligned with the same document geometry used for rendering,
-without making interaction policy part of the core package.
+without making editor-owned interaction geometry part of the core runtime contract.
 
 ## Package boundaries
 

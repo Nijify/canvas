@@ -1,12 +1,20 @@
-## Unreleased
+# Unreleased
 
+- Route text and icon fill editing through `CanvasAppearance.foreground` while
+  preserving existing source underlays.
+- Keep editor camera framing synchronized when the viewport or artboard size
+  changes.
+- Use local editor constraints for responsive shell and toolbar layout.
+- Keep object dragging stable when viewport or camera geometry changes during
+  an active drag.
+- Make the canvas viewport fill the same layout area used for camera planning.
 - Own selection geometry plus derived world interaction geometry for picking,
   snapping, multi-selection, and manipulation instead of storing those values
   in `canvas_core`'s `ComputedScene`.
 - Own the editor's immutable `History<T>` reducer directly instead of importing
   history from `canvas_core`.
-- Own scene picking, path hit testing, snapping types, snap candidate generation,
-  and snap resolution directly in `canvas_editor_flutter`.
+- Own scene picking, path hit testing, snapping types, snap candidate
+  generation, and snap resolution directly in `canvas_editor_flutter`.
 - Remove the editor's dependency on the former `canvas_core_editor.dart`
   interaction entrypoint.
 
