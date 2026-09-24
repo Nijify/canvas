@@ -1820,7 +1820,7 @@ Node _$NodeFromJson(
 /// @nodoc
 mixin _$Node {
 
- ElementId get id; String? get name; bool get hidden; bool get locked; Transform2D get xf;
+ ElementId get id; String? get name; bool get hidden; Transform2D get xf;
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1834,20 +1834,20 @@ $NodeCopyWith<Node> get copyWith => _$NodeCopyWithImpl<Node>(this as Node, _$ide
 @override
 bool operator ==(Object other) {
   final _this = this as Node;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Node&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.locked, _this.locked) || other.locked == _this.locked)&&(identical(other.xf, _this.xf) || other.xf == _this.xf));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Node&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.hidden, _this.hidden) || other.hidden == _this.hidden)&&(identical(other.xf, _this.xf) || other.xf == _this.xf));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Node;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.hidden,_this.locked,_this.xf);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.hidden,_this.xf);
 }
 
 @override
 String toString() {
   final _this = this as Node;
-  return 'Node(id: ${_this.id}, name: ${_this.name}, hidden: ${_this.hidden}, locked: ${_this.locked}, xf: ${_this.xf})';
+  return 'Node(id: ${_this.id}, name: ${_this.name}, hidden: ${_this.hidden}, xf: ${_this.xf})';
 }
 
 
@@ -1858,7 +1858,7 @@ abstract mixin class $NodeCopyWith<$Res>  {
   factory $NodeCopyWith(Node value, $Res Function(Node) _then) = _$NodeCopyWithImpl;
 @useResult
 $Res call({
- ElementId id, String? name, bool hidden, bool locked, Transform2D xf
+ ElementId id, String? name, bool hidden, Transform2D xf
 });
 
 
@@ -1875,12 +1875,11 @@ class _$NodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
-as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
 as Transform2D,
   ));
@@ -1985,14 +1984,14 @@ return group(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)?  text,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)?  image,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)?  path,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  TextData data,  String? role)?  text,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  ImageData data,  String? role)?  image,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  PathData data,  String? role)?  path,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
-return text(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
-return image(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case PathNode() when path != null:
-return path(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case IconNode() when icon != null:
-return icon(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case GroupNode() when group != null:
-return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavior,_that.children);case _:
+return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
+return image(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case PathNode() when path != null:
+return path(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case IconNode() when icon != null:
+return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case GroupNode() when group != null:
+return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.children);case _:
   return orElse();
 
 }
@@ -2010,14 +2009,14 @@ return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)  text,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)  image,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)  path,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  TextData data,  String? role)  text,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  ImageData data,  String? role)  image,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  PathData data,  String? role)  path,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
 switch (_that) {
 case TextNode():
-return text(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case ImageNode():
-return image(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case PathNode():
-return path(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case IconNode():
-return icon(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case GroupNode():
-return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavior,_that.children);}
+return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode():
+return image(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case PathNode():
+return path(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case IconNode():
+return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case GroupNode():
+return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.children);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -2031,14 +2030,14 @@ return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  TextData data,  String? role)?  text,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  ImageData data,  String? role)?  image,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  PathData data,  String? role)?  path,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( ElementId id,  String? name,  bool hidden,  bool locked,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  TextData data,  String? role)?  text,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  ImageData data,  String? role)?  image,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  PathData data,  String? role)?  path,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
-return text(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
-return image(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case PathNode() when path != null:
-return path(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case IconNode() when icon != null:
-return icon(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.data,_that.role);case GroupNode() when group != null:
-return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavior,_that.children);case _:
+return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
+return image(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case PathNode() when path != null:
+return path(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case IconNode() when icon != null:
+return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case GroupNode() when group != null:
+return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.children);case _:
   return null;
 
 }
@@ -2050,13 +2049,12 @@ return group(_that.id,_that.name,_that.hidden,_that.locked,_that.xf,_that.behavi
 @JsonSerializable()
 
 class TextNode extends Node {
-  const TextNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'text',super._();
+  const TextNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'text',super._();
   factory TextNode.fromJson(Map<String, dynamic> json) => _$TextNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
-@override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;
  final  TextData data;
  final  String? role;
@@ -2078,18 +2076,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is TextNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is TextNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
 }
 
 @override
 String toString() {
-    return 'Node.text(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.text(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2100,7 +2098,7 @@ abstract mixin class $TextNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $TextNodeCopyWith(TextNode value, $Res Function(TextNode) _then) = _$TextNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, bool locked, Transform2D xf, TextData data, String? role
+ ElementId id, String? name, bool hidden, Transform2D xf, TextData data, String? role
 });
 
 
@@ -2117,12 +2115,11 @@ class _$TextNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(TextNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
-as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
 as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as TextData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -2155,13 +2152,12 @@ $TextDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class ImageNode extends Node {
-  const ImageNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'image',super._();
+  const ImageNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'image',super._();
   factory ImageNode.fromJson(Map<String, dynamic> json) => _$ImageNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
-@override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;
  final  ImageData data;
  final  String? role;
@@ -2183,18 +2179,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
 }
 
 @override
 String toString() {
-    return 'Node.image(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.image(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2205,7 +2201,7 @@ abstract mixin class $ImageNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $ImageNodeCopyWith(ImageNode value, $Res Function(ImageNode) _then) = _$ImageNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, bool locked, Transform2D xf, ImageData data, String? role
+ ElementId id, String? name, bool hidden, Transform2D xf, ImageData data, String? role
 });
 
 
@@ -2222,12 +2218,11 @@ class _$ImageNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(ImageNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
-as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
 as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as ImageData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -2260,13 +2255,12 @@ $ImageDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class PathNode extends Node {
-  const PathNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'path',super._();
+  const PathNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'path',super._();
   factory PathNode.fromJson(Map<String, dynamic> json) => _$PathNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
-@override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;
  final  PathData data;
  final  String? role;
@@ -2288,18 +2282,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is PathNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is PathNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
 }
 
 @override
 String toString() {
-    return 'Node.path(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.path(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2310,7 +2304,7 @@ abstract mixin class $PathNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $PathNodeCopyWith(PathNode value, $Res Function(PathNode) _then) = _$PathNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, bool locked, Transform2D xf, PathData data, String? role
+ ElementId id, String? name, bool hidden, Transform2D xf, PathData data, String? role
 });
 
 
@@ -2327,12 +2321,11 @@ class _$PathNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(PathNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
-as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
 as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as PathData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -2365,13 +2358,12 @@ $PathDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class IconNode extends Node {
-  const IconNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'icon',super._();
+  const IconNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'icon',super._();
   factory IconNode.fromJson(Map<String, dynamic> json) => _$IconNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
-@override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;
  final  CanvasIconData data;
  final  String? role;
@@ -2393,18 +2385,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is IconNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is IconNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,locked,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
 }
 
 @override
 String toString() {
-    return 'Node.icon(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, data: $data, role: $role)';
+    return 'Node.icon(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
 }
 
 
@@ -2415,7 +2407,7 @@ abstract mixin class $IconNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $IconNodeCopyWith(IconNode value, $Res Function(IconNode) _then) = _$IconNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, bool locked, Transform2D xf, CanvasIconData data, String? role
+ ElementId id, String? name, bool hidden, Transform2D xf, CanvasIconData data, String? role
 });
 
 
@@ -2432,12 +2424,11 @@ class _$IconNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
   return _then(IconNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
-as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
 as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as CanvasIconData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -2470,13 +2461,12 @@ $CanvasIconDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class GroupNode extends Node {
-  const GroupNode({required this.id, this.name, this.hidden = false, this.locked = false, this.xf = const Transform2D(), this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
+  const GroupNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
   factory GroupNode.fromJson(Map<String, dynamic> json) => _$GroupNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
 @override@JsonKey() final  bool hidden;
-@override@JsonKey() final  bool locked;
 @override@JsonKey() final  Transform2D xf;
  final  GroupBehaviorRef? behavior;
  final  List<Node> _children;
@@ -2504,18 +2494,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.locked, locked) || other.locked == locked)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.behavior, behavior) || other.behavior == behavior)&&const DeepCollectionEquality().equals(other.children, _children));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.behavior, behavior) || other.behavior == behavior)&&const DeepCollectionEquality().equals(other.children, _children));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,locked,xf,behavior,const DeepCollectionEquality().hash(_children));
+    return Object.hash(runtimeType,id,name,hidden,xf,behavior,const DeepCollectionEquality().hash(_children));
 }
 
 @override
 String toString() {
-    return 'Node.group(id: $id, name: $name, hidden: $hidden, locked: $locked, xf: $xf, behavior: $behavior, children: $children)';
+    return 'Node.group(id: $id, name: $name, hidden: $hidden, xf: $xf, behavior: $behavior, children: $children)';
 }
 
 
@@ -2526,7 +2516,7 @@ abstract mixin class $GroupNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $GroupNodeCopyWith(GroupNode value, $Res Function(GroupNode) _then) = _$GroupNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, bool locked, Transform2D xf, GroupBehaviorRef? behavior, List<Node> children
+ ElementId id, String? name, bool hidden, Transform2D xf, GroupBehaviorRef? behavior, List<Node> children
 });
 
 
@@ -2543,12 +2533,11 @@ class _$GroupNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? locked = null,Object? xf = null,Object? behavior = freezed,Object? children = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? behavior = freezed,Object? children = null,}) {
   return _then(GroupNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
-as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
 as Transform2D,behavior: freezed == behavior ? _self.behavior : behavior // ignore: cast_nullable_to_non_nullable
 as GroupBehaviorRef?,children: null == children ? _self._children : children // ignore: cast_nullable_to_non_nullable

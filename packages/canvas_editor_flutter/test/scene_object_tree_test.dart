@@ -30,13 +30,11 @@ Node _text(
   String text = 'Hello world',
   String? name,
   bool hidden = false,
-  bool locked = false,
 }) {
   return Node.text(
     id: id,
     name: name,
     hidden: hidden,
-    locked: locked,
     data: _textData.copyWith(text: text),
   );
 }
@@ -177,14 +175,13 @@ void main() {
       expect(rows.single.label, endsWith('…'));
     });
 
-    test('copies hidden and locked flags into rows', () {
-      final doc = _scene([_text('a', hidden: true, locked: true)]);
+    test('copies hidden flag into rows', () {
+      final doc = _scene([_text('a', hidden: true)]);
 
       final rows = const SceneObjectTreeBuilder().build(scene: doc);
       final row = rows.single;
 
       expect(row.hidden, true);
-      expect(row.locked, true);
     });
 
     test('policy can override labels', () {

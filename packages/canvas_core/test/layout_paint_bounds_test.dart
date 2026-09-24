@@ -325,7 +325,7 @@ void main() {
         id: 'unresolved',
         data: CanvasIconData(iconRef: 'missing'),
       ),
-      _text().copyWith(locked: true),
+      _text(),
     ]);
     final computed = computeScene(scene, _services());
     expect(computed.nodeById.containsKey('hidden-text'), isFalse);

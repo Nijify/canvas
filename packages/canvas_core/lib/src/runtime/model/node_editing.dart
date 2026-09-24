@@ -46,12 +46,4 @@ extension NodeEditingX on Node {
     final IconNode node => node.copyWith(hidden: hidden),
     final GroupNode node => node.copyWith(hidden: hidden),
   };
-
-  Node withLocked(bool locked) => switch (this) {
-    final TextNode node => node.copyWith(locked: locked),
-    final ImageNode node => node.copyWith(locked: locked),
-    final PathNode node => node.copyWith(locked: locked),
-    final IconNode node => node.copyWith(locked: locked),
-    final GroupNode node => node.copyWith(locked: locked),
-  };
 }

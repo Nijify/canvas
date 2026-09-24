@@ -66,7 +66,7 @@ class CanvasViewport extends StatefulWidget {
 
   /// Interaction policy for movement and transform chrome.
   ///
-  /// The default policy allows normal interaction with unlocked nodes.
+  /// The default policy allows normal interaction with nodes.
   /// Applications can provide restrictions for selected nodes.
   final EditorInteractionPolicy interactionPolicy;
 
@@ -220,7 +220,6 @@ class _CanvasViewportState extends State<CanvasViewport> {
               pos,
               computed: computed,
               geometry: geometry,
-              includeLocked: false,
               selectLeaf: true,
               viewportZoom: displayScale,
             );
@@ -230,7 +229,6 @@ class _CanvasViewportState extends State<CanvasViewport> {
               pos,
               computed: computed,
               geometry: geometry,
-              includeLocked: false,
               selectLeaf: false,
               viewportZoom: displayScale,
             );
@@ -282,7 +280,6 @@ class _CanvasViewportState extends State<CanvasViewport> {
               local,
               computed: computed,
               geometry: geometry,
-              includeLocked: false,
               selectLeaf: true,
               viewportZoom: displayScale,
             );
@@ -292,7 +289,6 @@ class _CanvasViewportState extends State<CanvasViewport> {
               local,
               computed: computed,
               geometry: geometry,
-              includeLocked: false,
               selectLeaf: false,
               viewportZoom: displayScale,
             );

@@ -23,10 +23,8 @@ Node _text({
   String id = 'text',
   double shadow = 0,
   Transform2D xf = const Transform2D(),
-  bool locked = false,
 }) => Node.text(
   id: id,
-  locked: locked,
   xf: xf,
   data: TextData(
     text: 'TEXT',
@@ -124,7 +122,18 @@ void main() {
     );
   }
 
-  test('excludes hidden, locked, empty, and ignored unresolved content', () {
+  test('visible content contributes object snap candidates', () {
+    final scene = _scene([_text(id: 'visible')]);
+
+    final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
+
+    final candidates = sceneObjectKeylines(scene, computed, geometry: geometry);
+
+    expect(candidates, isNotEmpty);
+  });
+
+  test('excludes hidden, empty, and ignored content', () {
     final scene = _scene([
       Node.group(
         id: 'hidden',
@@ -136,20 +145,22 @@ void main() {
         id: 'unresolved',
         data: CanvasIconData(iconRef: 'missing'),
       ),
-      _text(id: 'locked', locked: true),
+      Node.group(
+        id: 'ignored-group',
+        children: [_text(id: 'ignored-text')],
+      ),
     ]);
 
     final computed = computeScene(scene, _services());
     final geometry = EditorGeometryIndex.fromComputed(computed);
 
-    expect(
-      sceneObjectKeylines(
-        scene,
-        computed,
-        geometry: geometry,
-        ignoreIds: const {'unresolved'},
-      ),
-      isEmpty,
+    final candidates = sceneObjectKeylines(
+      scene,
+      computed,
+      geometry: geometry,
+      ignoreIds: const {'unresolved', 'ignored-group'},
     );
+
+    expect(candidates, isEmpty);
   });
 }

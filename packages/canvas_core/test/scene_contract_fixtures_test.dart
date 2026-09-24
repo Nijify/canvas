@@ -15,6 +15,7 @@ const _forbiddenLegacyKeys = {
   'bgOpacity',
   'shadowOffset',
   'shadows',
+  'locked',
 };
 
 const _fixtureNames = <String>[

@@ -98,7 +98,6 @@ identity and tree structure:
 final renamed = node.withName('Headline');
 final moved = renamed.withXf(nextTransform);
 final hidden = moved.withHidden(true);
-final locked = hidden.withLocked(true);
 ```
 
 Use `SceneTreeOps` for structural operations such as adding, deleting, moving,

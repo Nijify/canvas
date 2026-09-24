@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/document_object_edits_test.dart
+// Path: packages/canvas_editor_flutter/test/document_object_edits_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/runtime/editor_runtime.dart';
@@ -113,23 +113,6 @@ void main() {
 
       runtime.redo();
       expect(_onlyNode(runtime).hidden, true);
-    });
-
-    test('locked edit updates locked and is undoable/redoable', () {
-      final runtime = _buildRuntime(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-      );
-      addTearDown(runtime.dispose);
-
-      runtime.applyEdit(EditorEdits.setElementLocked('t1', true));
-
-      expect(_onlyNode(runtime).locked, true);
-
-      runtime.undo();
-      expect(_onlyNode(runtime).locked, false);
-
-      runtime.redo();
-      expect(_onlyNode(runtime).locked, true);
     });
 
     test('duplicate edit preserves node name on copy', () {

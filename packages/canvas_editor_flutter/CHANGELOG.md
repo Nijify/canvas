@@ -1,5 +1,12 @@
 # Unreleased
 
+- **Breaking:** remove canvas-object locking from editor interaction and Layers.
+  Picking and snapping no longer filter locked nodes, `EditorEdits` no longer
+  exposes `setElementLocked()`, and Layers no longer stores or renders lock
+  state.
+- Remove the built-in object-lock veto from `EditorInteractionPolicy.canMove()`.
+  Application-provided `canMoveNode` policies continue to control movement
+  restrictions.
 - Route text and icon fill editing through `CanvasAppearance.foreground` while
   preserving existing source underlays.
 - Keep editor camera framing synchronized when the viewport or artboard size

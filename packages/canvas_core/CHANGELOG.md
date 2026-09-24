@@ -1,5 +1,11 @@
 ## Unreleased
 
+- **Breaking:** remove persisted canvas-object locking from all `Node` variants
+  and remove `NodeEditingX.withLocked()`. Encoded scenes no longer emit a
+  `locked` field.
+- **Breaking:** remove the built-in lock veto from scene-tree transform
+  operations. Replace-transform, translate, rotate, and uniform scale now
+  operate on any existing node.
 - **Breaking:** replace `ComputedScene.localBoundsById` and
   `ComputedScene.visualBoundsWorldById` with explicit
   `layoutBoundsLocalById`, `paintBoundsLocalById`, and

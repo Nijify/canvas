@@ -22,7 +22,6 @@ class SceneObjectRow {
     required this.label,
     required this.kind,
     required this.hidden,
-    required this.locked,
   });
 
   final String id;
@@ -31,7 +30,6 @@ class SceneObjectRow {
   final String label;
   final SceneObjectKind kind;
   final bool hidden;
-  final bool locked;
 }
 
 /// Presentation policy for deriving layer/object rows from the canonical scene.
@@ -83,7 +81,6 @@ class SceneObjectTreeBuilder {
           label: policy.labelForNode(scene, node),
           kind: kindForNode(node),
           hidden: node.hidden,
-          locked: node.locked,
         ),
       );
 

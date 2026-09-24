@@ -1,4 +1,4 @@
-// Path: test/scene_json_test.dart
+// Path: packages/canvas_core/test/scene_json_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';

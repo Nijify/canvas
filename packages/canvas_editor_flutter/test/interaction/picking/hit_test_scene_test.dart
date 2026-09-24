@@ -18,9 +18,9 @@ class _TextMeasurer implements TextMeasurer {
 
 CoreServices _services() => CoreServices(textMeasurer: _TextMeasurer());
 
-Node _text(String id, {bool locked = false}) => Node.text(
+Node _text(String id, {bool hidden = false}) => Node.text(
   id: id,
-  locked: locked,
+  hidden: hidden,
   data: const TextData(
     text: 'X',
     fontFamily: 'Test',
@@ -105,32 +105,20 @@ void main() {
     expect(hit, isNull);
   });
 
-  test('locked leaf is excluded unless includeLocked is true', () {
-    final scene = _scene([_text('locked', locked: true)]);
+  test('hidden leaves do not participate in picking', () {
+    final scene = _scene([_text('visible'), _text('hidden', hidden: true)]);
+
     final computed = computeScene(scene, _services());
     final geometry = EditorGeometryIndex.fromComputed(computed);
 
-    expect(
-      pickTopAtScene(
-        scene,
-        Vec2.zero,
-        computed: computed,
-        geometry: geometry,
-        selectLeaf: true,
-      ),
-      isNull,
+    final hit = pickTopAtScene(
+      scene,
+      Vec2.zero,
+      computed: computed,
+      geometry: geometry,
+      selectLeaf: true,
     );
 
-    expect(
-      pickTopAtScene(
-        scene,
-        Vec2.zero,
-        computed: computed,
-        geometry: geometry,
-        selectLeaf: true,
-        includeLocked: true,
-      )?.id,
-      'locked',
-    );
+    expect(hit?.id, 'visible');
   });
 }
