@@ -1,3 +1,5 @@
+// Path: packages/canvas_core/test/node_editing_test.dart
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
@@ -5,14 +7,12 @@ Node _text({
   String id = 'text',
   String? name,
   bool hidden = false,
-  bool locked = false,
   Transform2D xf = const Transform2D(),
 }) {
   return Node.text(
     id: id,
     name: name,
     hidden: hidden,
-    locked: locked,
     xf: xf,
     data: const TextData(
       text: 'Hello',
@@ -57,15 +57,13 @@ void main() {
       final renamed = group.withName('Renamed') as GroupNode;
       final moved = renamed.withXf(nextXf) as GroupNode;
       final hidden = moved.withHidden(true) as GroupNode;
-      final locked = hidden.withLocked(true) as GroupNode;
 
-      expect(locked.id, 'group');
-      expect(locked.name, 'Renamed');
-      expect(locked.xf, nextXf);
-      expect(locked.hidden, isTrue);
-      expect(locked.locked, isTrue);
-      expect(locked.children, hasLength(1));
-      expect(identical(locked.children.single, child), isTrue);
+      expect(hidden.id, 'group');
+      expect(hidden.name, 'Renamed');
+      expect(hidden.xf, nextXf);
+      expect(hidden.hidden, isTrue);
+      expect(hidden.children, hasLength(1));
+      expect(identical(hidden.children.single, child), isTrue);
     });
   });
 }

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/layers_panel_test.dart
+// Path: packages/canvas_editor_flutter/test/layers_panel_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart';
@@ -37,13 +37,11 @@ Node _text(
   String? name,
   String text = 'Hello',
   bool hidden = false,
-  bool locked = false,
 }) {
   return Node.text(
     id: id,
     name: name,
     hidden: hidden,
-    locked: locked,
     data: _textData.copyWith(text: text),
   );
 }
@@ -207,22 +205,6 @@ void main() {
     expect(selection.value.ids, const <String>{'a'});
   });
 
-  testWidgets('locked row does not select', (tester) async {
-    final controller = _RecordingEditorController(
-      _scene([_text('a', name: 'Locked Layer', locked: true)]),
-    );
-
-    final selection = SelectionController();
-    addTearDown(controller.dispose);
-    addTearDown(selection.dispose);
-
-    await _pumpPanel(tester, controller: controller, selection: selection);
-
-    await _tapLayerControl(tester, find.text('Locked Layer'));
-
-    expect(selection.value.isEmpty, isTrue);
-  });
-
   testWidgets('rename dialog applies rename edit with row id', (tester) async {
     final controller = _RecordingEditorController(
       _scene([_text('a', name: 'Old Name')]),
@@ -272,9 +254,9 @@ void main() {
     expect(node?.hidden, true);
   });
 
-  testWidgets('lock toggle applies locked edit', (tester) async {
+  testWidgets('does not render canvas-object lock controls', (tester) async {
     final controller = _RecordingEditorController(
-      _scene([_text('a', name: 'Layer A', locked: false)]),
+      _scene([_text('a', name: 'Layer A')]),
     );
 
     final selection = SelectionController();
@@ -283,11 +265,8 @@ void main() {
 
     await _pumpPanel(tester, controller: controller, selection: selection);
 
-    await _tapLayerControl(tester, find.byIcon(Icons.lock_open_outlined).first);
-
-    final node = findById(controller.document.value, 'a');
-
-    expect(node?.locked, true);
+    expect(find.byTooltip('Lock layer'), findsNothing);
+    expect(find.byTooltip('Unlock layer'), findsNothing);
   });
 
   testWidgets('uses provided scene object policy', (tester) async {
