@@ -1,5 +1,8 @@
 # Unreleased
 
+- **Breaking:** remove `EditorEdits.setElementHidden()` and the Layers
+  visibility control. Layers continue to list canonical scene nodes regardless
+  of their persisted `Node.hidden` value.
 - **Breaking:** remove canvas-object locking from editor interaction and Layers.
   Picking and snapping no longer filter locked nodes, `EditorEdits` no longer
   exposes `setElementLocked()`, and Layers no longer stores or renders lock

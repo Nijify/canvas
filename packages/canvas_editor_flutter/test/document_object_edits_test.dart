@@ -171,23 +171,6 @@ void main() {
       expect(_onlyNode(runtime).name, isNull);
     });
 
-    test('hidden edit updates hidden and is undoable/redoable', () {
-      final runtime = _buildRuntime(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-      );
-      addTearDown(runtime.dispose);
-
-      runtime.applyEdit(EditorEdits.setElementHidden('t1', true));
-
-      expect(_onlyNode(runtime).hidden, true);
-
-      runtime.undo();
-      expect(_onlyNode(runtime).hidden, false);
-
-      runtime.redo();
-      expect(_onlyNode(runtime).hidden, true);
-    });
-
     test('duplicate edit preserves node name on copy', () {
       final runtime = _buildRuntime(
         _sceneWithChildren(const [

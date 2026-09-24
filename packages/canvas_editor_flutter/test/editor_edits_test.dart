@@ -13,8 +13,8 @@ const _textData = TextData(
   appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
 );
 
-Node _text(String id, {String? name, bool hidden = false}) {
-  return Node.text(id: id, name: name, hidden: hidden, data: _textData);
+Node _text(String id, {String? name}) {
+  return Node.text(id: id, name: name, data: _textData);
 }
 
 CanvasSceneDocument _scene(List<Node> children) {
@@ -46,16 +46,6 @@ void main() {
 
     expect(result.primaryId, 'a');
     expect(node?.name, 'New');
-  });
-
-  test('setElementHidden updates hidden flag and returns primaryId', () {
-    final scene = _scene([_text('a', hidden: false)]);
-
-    final result = EditorEdits.setElementHidden('a', true)(scene);
-    final node = findById(result.scene, 'a');
-
-    expect(result.primaryId, 'a');
-    expect(node?.hidden, true);
   });
 
   test('metadata edits are no-op for missing node', () {

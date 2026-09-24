@@ -233,26 +233,53 @@ void main() {
     expect(node?.name, 'New Name');
   });
 
-  testWidgets('visibility toggle applies hidden edit', (tester) async {
-    final controller = _RecordingEditorController(
-      _scene([_text('a', name: 'Layer A', hidden: false)]),
-    );
+  testWidgets(
+    'hidden node remains selectable and renameable without visibility controls',
+    (tester) async {
+      final controller = _RecordingEditorController(
+        _scene([_text('a', name: 'Hidden Layer', hidden: true)]),
+      );
 
-    final selection = SelectionController();
-    addTearDown(controller.dispose);
-    addTearDown(selection.dispose);
+      final selection = SelectionController();
+      addTearDown(controller.dispose);
+      addTearDown(selection.dispose);
 
-    await _pumpPanel(tester, controller: controller, selection: selection);
+      await _pumpPanel(tester, controller: controller, selection: selection);
 
-    await _tapLayerControl(
-      tester,
-      find.byIcon(Icons.visibility_outlined).first,
-    );
+      // Persisted hidden nodes still belong to the canonical object tree.
+      expect(find.text('Hidden Layer'), findsOneWidget);
 
-    final node = findById(controller.document.value, 'a');
+      // Layers no longer exposes generic visibility controls.
+      expect(find.byTooltip('Show layer'), findsNothing);
+      expect(find.byTooltip('Hide layer'), findsNothing);
+      expect(find.byIcon(Icons.visibility_outlined), findsNothing);
+      expect(find.byIcon(Icons.visibility_off_outlined), findsNothing);
 
-    expect(node?.hidden, true);
-  });
+      // Hidden nodes remain selectable from Layers.
+      await _tapLayerControl(tester, find.text('Hidden Layer'));
+
+      expect(selection.value.hasItems, isTrue);
+      expect(selection.value.ids, const <String>{'a'});
+
+      // Hidden nodes also remain renameable from Layers.
+      await _tapLayerControl(
+        tester,
+        find.byIcon(Icons.drive_file_rename_outline).first,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rename layer'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'Renamed Hidden Layer');
+      await tester.tap(find.text('Rename'));
+      await tester.pumpAndSettle();
+
+      final node = findById(controller.document.value, 'a');
+
+      expect(node?.name, 'Renamed Hidden Layer');
+      expect(node?.hidden, true);
+    },
+  );
 
   testWidgets('does not render canvas-object lock controls', (tester) async {
     final controller = _RecordingEditorController(
