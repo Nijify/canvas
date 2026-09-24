@@ -1,5 +1,12 @@
 ## Unreleased
 
+- **Breaking:** remove the optional `idGen` parameter from
+  `SceneTreeOps.duplicateSubtree()` and remove `createdIds` from its result.
+  Subtree duplication now generates deterministic copy-style node IDs while
+  skipping IDs already used by the document or the new copy.
+- Reject blank, duplicate, or colliding node IDs when adding subtrees, and
+  guard structural `replaceById()` operations against invalid replacement IDs
+  while preserving ordinary property updates and subtree moves.
 - **Breaking:** remove persisted canvas-object locking from all `Node` variants
   and remove `NodeEditingX.withLocked()`. Encoded scenes no longer emit a
   `locked` field.
