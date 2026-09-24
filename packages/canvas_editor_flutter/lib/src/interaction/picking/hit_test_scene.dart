@@ -33,7 +33,6 @@ typedef NodeHitTest = bool Function(Node leaf);
 /// - selectLeaf=true: select the leaf if selectable (else fallback to group)
 ///
 /// Filtering:
-/// - locked filtering applies to what you RETURN (unless includeLocked=true)
 /// - ignoreIds is subtree-aware via DrawItem.groupStack
 ///
 /// Picking semantics:
@@ -49,7 +48,6 @@ Node? pickTopAtScene(
   Vec2 worldPos, {
   required ComputedScene computed,
   required EditorGeometryIndex geometry,
-  bool includeLocked = false,
   bool selectLeaf = false,
   Set<ElementId> ignoreIds = const {},
   NodeHitTest? extraFilter,
@@ -70,7 +68,6 @@ Node? pickTopAtScene(
     final leaf = computed.nodeById[leafId];
     if (leaf == null) continue;
 
-    if (!includeLocked && leaf.locked) continue;
     if (extraFilter != null && !extraFilter(leaf)) continue;
 
     if (!_hitLeafAt(
@@ -90,7 +87,6 @@ Node? pickTopAtScene(
       groupStack: item.groupStack,
       computed: computed,
       ignoreIds: ignoreIds,
-      includeLocked: includeLocked,
       preferLeaf: selectLeaf,
     );
 
@@ -107,7 +103,6 @@ Node? pickLeafTopAtScene(
   Vec2 worldPos, {
   required ComputedScene computed,
   required EditorGeometryIndex geometry,
-  bool includeLocked = false,
   Set<ElementId> ignoreIds = const {},
   NodeHitTest? extraFilter,
   double viewportZoom = 1.0,
@@ -118,7 +113,6 @@ Node? pickLeafTopAtScene(
     worldPos,
     computed: computed,
     geometry: geometry,
-    includeLocked: includeLocked,
     selectLeaf: true,
     ignoreIds: ignoreIds,
     extraFilter: extraFilter,
@@ -136,13 +130,10 @@ Node? _choosePickedNode({
   required List<ElementId> groupStack,
   required ComputedScene computed,
   required Set<ElementId> ignoreIds,
-  required bool includeLocked,
   required bool preferLeaf,
 }) {
   bool selectable(Node n) {
-    if (ignoreIds.contains(n.id)) return false;
-    if (!includeLocked && n.locked) return false;
-    return true;
+    return !ignoreIds.contains(n.id);
   }
 
   // Prefer leaf (modifier/double-click)

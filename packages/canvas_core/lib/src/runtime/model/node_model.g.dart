@@ -177,7 +177,6 @@ TextNode _$TextNodeFromJson(Map<String, dynamic> json) => TextNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  locked: json['locked'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Transform2D()
       : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
@@ -190,7 +189,6 @@ Map<String, dynamic> _$TextNodeToJson(TextNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'hidden': instance.hidden,
-  'locked': instance.locked,
   'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
@@ -201,7 +199,6 @@ ImageNode _$ImageNodeFromJson(Map<String, dynamic> json) => ImageNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  locked: json['locked'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Transform2D()
       : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
@@ -214,7 +211,6 @@ Map<String, dynamic> _$ImageNodeToJson(ImageNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'hidden': instance.hidden,
-  'locked': instance.locked,
   'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
@@ -225,7 +221,6 @@ PathNode _$PathNodeFromJson(Map<String, dynamic> json) => PathNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  locked: json['locked'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Transform2D()
       : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
@@ -238,7 +233,6 @@ Map<String, dynamic> _$PathNodeToJson(PathNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'hidden': instance.hidden,
-  'locked': instance.locked,
   'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
@@ -249,7 +243,6 @@ IconNode _$IconNodeFromJson(Map<String, dynamic> json) => IconNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  locked: json['locked'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Transform2D()
       : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
@@ -262,7 +255,6 @@ Map<String, dynamic> _$IconNodeToJson(IconNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'hidden': instance.hidden,
-  'locked': instance.locked,
   'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
@@ -273,7 +265,6 @@ GroupNode _$GroupNodeFromJson(Map<String, dynamic> json) => GroupNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  locked: json['locked'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Transform2D()
       : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
@@ -292,7 +283,6 @@ Map<String, dynamic> _$GroupNodeToJson(GroupNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
   'hidden': instance.hidden,
-  'locked': instance.locked,
   'xf': instance.xf.toJson(),
   'behavior': instance.behavior?.toJson(),
   'children': instance.children.map((e) => e.toJson()).toList(),

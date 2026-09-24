@@ -70,21 +70,14 @@ class LayersPanel extends StatelessWidget {
                         return _LayerRow(
                           row: row,
                           selected: selected,
-                          onTap: row.locked
-                              ? null
-                              : () => selection.selectItems([
-                                  row.selectionId,
-                                ], additive: false),
+                          onTap: () => selection.selectItems([
+                            row.selectionId,
+                          ], additive: false),
                           onRename: () => _showRenameDialog(context, row),
                           // Layer visibility is persisted through Node.hidden.
                           onToggleHidden: () {
                             controller.applyEdit(
                               EditorEdits.setElementHidden(row.id, !row.hidden),
-                            );
-                          },
-                          onToggleLocked: () {
-                            controller.applyEdit(
-                              EditorEdits.setElementLocked(row.id, !row.locked),
                             );
                           },
                         );
@@ -223,15 +216,13 @@ class _LayerRow extends StatelessWidget {
     required this.onTap,
     required this.onRename,
     required this.onToggleHidden,
-    required this.onToggleLocked,
   });
 
   final SceneObjectRow row;
   final bool selected;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
   final VoidCallback onRename;
   final VoidCallback onToggleHidden;
-  final VoidCallback onToggleLocked;
 
   @override
   Widget build(BuildContext context) {
@@ -243,9 +234,7 @@ class _LayerRow extends StatelessWidget {
 
     final labelStyle = theme.textTheme.bodySmall?.copyWith(
       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-      color: row.locked
-          ? theme.colorScheme.onSurfaceVariant
-          : theme.colorScheme.onSurface,
+      color: theme.colorScheme.onSurface,
     );
 
     return Padding(
@@ -285,15 +274,6 @@ class _LayerRow extends StatelessWidget {
                     row.hidden
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                  ),
-                ),
-                IconButton(
-                  tooltip: row.locked ? 'Unlock layer' : 'Lock layer',
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 18,
-                  onPressed: onToggleLocked,
-                  icon: Icon(
-                    row.locked ? Icons.lock_outline : Icons.lock_open_outlined,
                   ),
                 ),
                 IconButton(

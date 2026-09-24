@@ -17,8 +17,8 @@ import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_i
 
 /// Builds object-based snap candidates in world coordinates.
 ///
-/// Hidden content is absent from the computed scene. Locked nodes and ignored
-/// subtrees are excluded from candidates.
+/// Hidden content is absent from the computed scene. Ignored subtrees are
+/// excluded from candidates.
 ///
 /// Eligible leaves contribute center and edge keylines. Eligible groups
 /// contribute keylines derived from the union of their eligible descendants.
@@ -33,7 +33,7 @@ List<SnapCandidate> sceneObjectKeylines(
 }) {
   final out = <SnapCandidate>[];
 
-  // Accumulate group bounds from eligible leaves only (unlocked + not ignored).
+  // Accumulate group bounds from eligible, non-ignored leaves.
   final groupBounds = <ElementId, Rect2D>{};
 
   bool anyGroupIgnored(DrawItem item) {
@@ -43,25 +43,13 @@ List<SnapCandidate> sceneObjectKeylines(
     return false;
   }
 
-  bool groupIsLocked(ElementId gid) {
-    final g = computed.nodeById[gid];
-    if (g == null) return false;
-    return g.locked;
-  }
-
   // Walk leaves in paint order; use their already-computed world AABBs.
   for (final item in computed.drawList) {
     final leafId = item.leafId;
 
-    // Subtree-aware ignore
+    // Subtree-aware ignore.
     if (anyGroupIgnored(item)) continue;
     if (ignoreIds.contains(leafId)) continue;
-
-    final leaf = computed.nodeById[leafId];
-    if (leaf == null) continue;
-
-    // Locked nodes are not snap candidates.
-    if (leaf.locked) continue;
 
     final rect = geometry.layoutBoundsWorldById[leafId];
     if (rect == null) continue;
@@ -72,18 +60,17 @@ List<SnapCandidate> sceneObjectKeylines(
 
     if (!includeGroups) continue;
 
-    // Contribute this leaf rect to each ancestor group’s bounds,
-    // as long as the group itself isn’t ignored/locked.
+    // Contribute this leaf rect to each ancestor group's bounds as long as
+    // that group is not ignored.
     for (final gid in item.groupStack) {
       if (ignoreIds.contains(gid)) continue;
-      if (groupIsLocked(gid)) continue;
 
       final prev = groupBounds[gid];
       groupBounds[gid] = (prev == null) ? rect : Rect2DX.union(prev, rect);
     }
   }
 
-  // Emit group candidates
+  // Emit group candidates.
   if (includeGroups) {
     for (final rect in groupBounds.values) {
       out.addAll(rectKeylines(rect, SnapKind.object));

@@ -148,7 +148,6 @@ sealed class Node with _$Node {
     // Candidate for removal from the persisted scene model after layer
     // visibility UX is intentionally redesigned or removed.
     @Default(false) bool hidden,
-    @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
     required TextData data,
     String? role,
@@ -158,7 +157,6 @@ sealed class Node with _$Node {
     required ElementId id,
     String? name,
     @Default(false) bool hidden,
-    @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
     required ImageData data,
     String? role,
@@ -168,7 +166,6 @@ sealed class Node with _$Node {
     required ElementId id,
     String? name,
     @Default(false) bool hidden,
-    @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
     required PathData data,
     String? role,
@@ -178,7 +175,6 @@ sealed class Node with _$Node {
     required ElementId id,
     String? name,
     @Default(false) bool hidden,
-    @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
     required CanvasIconData data,
     String? role,
@@ -188,7 +184,6 @@ sealed class Node with _$Node {
     required ElementId id,
     String? name,
     @Default(false) bool hidden,
-    @Default(false) bool locked,
     @Default(Transform2D()) Transform2D xf,
     GroupBehaviorRef? behavior,
     @Default(<Node>[]) List<Node> children,
@@ -220,14 +215,6 @@ extension NodeFields on Node {
     PathNode(:final hidden) => hidden,
     IconNode(:final hidden) => hidden,
     GroupNode(:final hidden) => hidden,
-  };
-
-  bool get locked => switch (this) {
-    TextNode(:final locked) => locked,
-    ImageNode(:final locked) => locked,
-    PathNode(:final locked) => locked,
-    IconNode(:final locked) => locked,
-    GroupNode(:final locked) => locked,
   };
 
   Transform2D get xf => switch (this) {

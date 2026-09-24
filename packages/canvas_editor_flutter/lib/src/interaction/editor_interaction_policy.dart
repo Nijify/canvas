@@ -15,7 +15,7 @@ class EditorInteractionPolicy {
 
   /// Custom movement rule.
   ///
-  /// By default, unlocked nodes can be moved.
+  /// By default, nodes can be moved.
   /// Applications can restrict movement through this policy.
   final NodeMovePermission? canMoveNode;
 
@@ -27,7 +27,6 @@ class EditorInteractionPolicy {
   final NodeTransformChromePermission? showTransformChromeNode;
 
   bool canMove(Node node) {
-    if (node.locked) return false;
     return canMoveNode?.call(node) ?? true;
   }
 

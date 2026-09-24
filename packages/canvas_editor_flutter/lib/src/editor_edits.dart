@@ -76,10 +76,6 @@ abstract final class EditorEdits {
     return updateNode(id, (node) => node.withHidden(hidden));
   }
 
-  static EditorEdit setElementLocked(rt.ElementId id, bool locked) {
-    return updateNode(id, (node) => node.withLocked(locked));
-  }
-
   static EditorEdit deleteSubtree(rt.ElementId id) {
     return (scene) {
       final result = rt.SceneTreeOps.deleteSubtree(scene, id);

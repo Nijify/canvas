@@ -195,7 +195,7 @@ abstract final class SceneTreeOps {
     Transform2D xf,
   ) {
     final node = findById(doc, id);
-    if (node == null || node.locked) return doc;
+    if (node == null) return doc;
     return replaceById(doc, id, node.withXf(xf));
   }
 
@@ -205,7 +205,7 @@ abstract final class SceneTreeOps {
     Vec2 delta,
   ) {
     final node = findById(doc, id);
-    if (node == null || node.locked) return doc;
+    if (node == null) return doc;
     final xf = node.xf;
     return replaceNodeXf(doc, id, xf.copyWith(position: xf.position + delta));
   }
@@ -216,7 +216,7 @@ abstract final class SceneTreeOps {
     double deltaRad,
   ) {
     final node = findById(doc, id);
-    if (node == null || node.locked) return doc;
+    if (node == null) return doc;
     final xf = node.xf;
     return replaceNodeXf(
       doc,
@@ -231,7 +231,7 @@ abstract final class SceneTreeOps {
     double mul,
   ) {
     final node = findById(doc, id);
-    if (node == null || node.locked) return doc;
+    if (node == null) return doc;
     final xf = node.xf;
     final s = xf.scale;
     return replaceNodeXf(
