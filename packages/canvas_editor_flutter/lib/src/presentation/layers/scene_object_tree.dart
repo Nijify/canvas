@@ -21,7 +21,6 @@ class SceneObjectRow {
     required this.depth,
     required this.label,
     required this.kind,
-    required this.hidden,
   });
 
   final String id;
@@ -29,7 +28,6 @@ class SceneObjectRow {
   final int depth;
   final String label;
   final SceneObjectKind kind;
-  final bool hidden;
 }
 
 /// Presentation policy for deriving layer/object rows from the canonical scene.
@@ -80,7 +78,6 @@ class SceneObjectTreeBuilder {
           depth: depth,
           label: policy.labelForNode(scene, node),
           kind: kindForNode(node),
-          hidden: node.hidden,
         ),
       );
 

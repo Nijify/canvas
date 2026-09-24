@@ -175,13 +175,21 @@ void main() {
       expect(rows.single.label, endsWith('…'));
     });
 
-    test('copies hidden flag into rows', () {
-      final doc = _scene([_text('a', hidden: true)]);
+    test('includes hidden nodes and their children in the object tree', () {
+      final doc = _scene([
+        Node.group(
+          id: 'hidden-group',
+          hidden: true,
+          children: [_text('hidden-child', hidden: true)],
+        ),
+        _text('visible-root'),
+      ]);
 
       final rows = const SceneObjectTreeBuilder().build(scene: doc);
-      final row = rows.single;
 
-      expect(row.hidden, true);
+      expect(_rowIds(rows), ['visible-root', 'hidden-group', 'hidden-child']);
+
+      expect(rows.map((row) => row.depth), [0, 0, 1]);
     });
 
     test('policy can override labels', () {

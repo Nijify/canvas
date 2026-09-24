@@ -74,12 +74,6 @@ class LayersPanel extends StatelessWidget {
                             row.selectionId,
                           ], additive: false),
                           onRename: () => _showRenameDialog(context, row),
-                          // Layer visibility is persisted through Node.hidden.
-                          onToggleHidden: () {
-                            controller.applyEdit(
-                              EditorEdits.setElementHidden(row.id, !row.hidden),
-                            );
-                          },
                         );
                       },
                     );
@@ -215,14 +209,12 @@ class _LayerRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     required this.onRename,
-    required this.onToggleHidden,
   });
 
   final SceneObjectRow row;
   final bool selected;
   final VoidCallback onTap;
   final VoidCallback onRename;
-  final VoidCallback onToggleHidden;
 
   @override
   Widget build(BuildContext context) {
@@ -263,17 +255,6 @@ class _LayerRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: labelStyle,
-                  ),
-                ),
-                IconButton(
-                  tooltip: row.hidden ? 'Show layer' : 'Hide layer',
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 18,
-                  onPressed: onToggleHidden,
-                  icon: Icon(
-                    row.hidden
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
                   ),
                 ),
                 IconButton(
