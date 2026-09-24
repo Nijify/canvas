@@ -1,7 +1,7 @@
-// Path: lib/src/editor/history.dart
+// Path: lib/src/runtime/history/history.dart
 //
 // History<S> – a tiny, immutable undo/redo reducer.
-// - Pure/headless: no timers, no UI.
+// - Editor-owned and UI-independent.
 // - Each method returns a NEW History instance.
 // - Size-bounded by `limit` (keeps the most recent `limit` past states).
 //

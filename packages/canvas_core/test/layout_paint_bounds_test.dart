@@ -1,7 +1,8 @@
+// Path: packages/canvas_core/test/layout_paint_bounds_test.dart
+
 import 'dart:math' as math;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
-import 'package:canvas_core/src/algorithms/snapping/snap_index_scene.dart';
 import 'package:test/test.dart';
 
 class _TextMeasurer implements TextMeasurer {
@@ -93,7 +94,6 @@ void main() {
       final scene = _scene([_text(shadow: sample.$1)]);
       final computed = computeScene(scene, _services());
       _expectRect(computed.layoutBoundsLocalById['text'], layout);
-      _expectRect(computed.layoutBoundsWorldById['text'], layout);
       _expectRect(computed.paintBoundsLocalById['text'], sample.$2);
       _expectRect(
         computePaddedContentBounds(scene: scene, computed: computed),
@@ -103,7 +103,7 @@ void main() {
   }
 
   for (final origin in OriginKind.values) {
-    test('shadow preserves nested transforms and interaction: $origin', () {
+    test('shadow preserves nested layout and transforms: $origin', () {
       CanvasSceneDocument makeScene(double shadow) => _scene([
         Node.group(
           id: 'outer',
@@ -150,39 +150,13 @@ void main() {
           before.layoutBoundsLocalById[id],
         );
         expect(
-          after.layoutBoundsWorldById[id],
-          before.layoutBoundsWorldById[id],
-        );
-        expect(
           after.worldById[id]!.storage,
           orderedEquals(before.worldById[id]!.storage),
-        );
-        expect(
-          after.inverseWorldById[id]!.storage,
-          orderedEquals(before.inverseWorldById[id]!.storage),
         );
       }
       expect(
         after.paintBoundsWorldById['outer'],
         isNot(before.paintBoundsWorldById['outer']),
-      );
-
-      final beforeSelection = selectionGeometry([
-        'text',
-        'sibling',
-      ], getBounds: (id) => before.layoutBoundsWorldById[id])!;
-      final afterSelection = selectionGeometry([
-        'text',
-        'sibling',
-      ], getBounds: (id) => after.layoutBoundsWorldById[id])!;
-      expect(afterSelection.bounds, beforeSelection.bounds);
-      expect(afterSelection.pivotWorld, beforeSelection.pivotWorld);
-
-      final beforeSnaps = sceneObjectKeylines(beforeScene, before);
-      final afterSnaps = sceneObjectKeylines(afterScene, after);
-      expect(
-        afterSnaps.map((c) => (c.kind, c.axis, c.pos)),
-        orderedEquals(beforeSnaps.map((c) => (c.kind, c.axis, c.pos))),
       );
     });
   }
@@ -202,8 +176,7 @@ void main() {
       const Rect2D(-60, -100, 30, 120),
     );
   });
-
-  test('counter-rotated groups do not inflate child-world unions', () {
+  test('counter-rotated groups do not inflate child-world paint unions', () {
     final computed = computeScene(
       _scene([
         Node.group(
@@ -221,7 +194,6 @@ void main() {
       _services(),
     );
     for (final id in ['text', 'inner', 'outer']) {
-      _expectRect(computed.layoutBoundsWorldById[id], layout);
       _expectRect(
         computed.paintBoundsWorldById[id],
         const Rect2D(-50, -10, 60, 20),
@@ -364,10 +336,6 @@ void main() {
     _expectRect(
       computePaddedContentBounds(scene: scene, computed: computed),
       layout,
-    );
-    expect(
-      sceneObjectKeylines(scene, computed, ignoreIds: {'unresolved'}),
-      isEmpty,
     );
   });
 }

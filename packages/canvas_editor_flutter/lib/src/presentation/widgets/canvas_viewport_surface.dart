@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_viewport_surface.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_viewport_surface.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart'
@@ -9,10 +9,13 @@ import 'package:canvas_editor_flutter/src/editor_surface_features.dart'
     show SelectionChromeMode;
 import 'package:canvas_editor_flutter/src/interaction/canvas_viewport_behavior.dart';
 import 'package:canvas_editor_flutter/src/interaction/editor_interaction_policy.dart';
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_controller.dart';
 import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_state.dart';
 import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport.dart';
 import 'package:canvas_editor_flutter/src/presentation/widgets/selection_overlay.dart';
+
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter/material.dart';
 
@@ -74,6 +77,8 @@ class CanvasViewportSurface extends StatelessWidget {
           );
         }
 
+        final geometry = EditorGeometryIndex.fromComputed(snap.computed);
+
         return ValueListenableBuilder<EditorCameraState>(
           valueListenable: camera,
           builder: (context, cameraState, _) {
@@ -82,6 +87,7 @@ class CanvasViewportSurface extends StatelessWidget {
               children: [
                 CanvasViewport(
                   render: snap,
+                  geometry: geometry,
                   renderer: renderer,
                   viewportPx: viewportPx,
                   scale: cameraState.scale,
@@ -120,6 +126,7 @@ class CanvasViewportSurface extends StatelessWidget {
 
                       return CanvasSelectionOverlay(
                         render: snap,
+                        geometry: geometry,
                         scale: cameraState.scale,
                         pan: cameraState.pan,
                         selectedIds: chromeSelectedIds,

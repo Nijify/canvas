@@ -1,7 +1,7 @@
-// Path: lib/src/algorithms/snapping/snap_types.dart
-import 'package:canvas_core/src/foundation/core_types.dart';
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
+// Path: packages/canvas_editor_flutter/lib/src/interaction/snapping/snap_types.dart
+
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show ElementId, Rect2D, Vec2;
 
 enum SnapKind { keyline, guide, grid, object }
 

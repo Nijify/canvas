@@ -1,3 +1,14 @@
+## Unreleased
+
+- Render ordered `CanvasSourceUnderlay` values for text and icons.
+- Support configurable shadow underlays, including enablement, offset, blur,
+  color, and back-to-front ordering.
+- Support effect-only text and icons whose foreground is `CanvasFill.none()`.
+- Keep source-underlay expansion confined to paint bounds so effects do not
+  change layout geometry or transform pivots.
+- Include expanded effect paint bounds in content fitting and final-output
+  cropping.
+
 ## 0.9.0
 
 - **Breaking:** require `canvas_core 0.10.x`.

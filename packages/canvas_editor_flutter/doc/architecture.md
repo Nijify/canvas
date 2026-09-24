@@ -1,6 +1,7 @@
 # canvas_editor_flutter architecture
 
-`canvas_editor_flutter` is a complete Flutter editor for `canvas_core` runtime scenes. It provides viewport UI, selection overlays, layers, inspector content, editing actions, history orchestration, runtime resource integration, and composable capability APIs.
+`canvas_editor_flutter` is a complete Flutter editor for `canvas_core` runtime scenes.
+It provides viewport UI, picking, snapping, selection overlays, layers, inspector content, editing actions, history orchestration, runtime resource integration, and composable capability APIs.
 
 The package is product-agnostic. Applications connect persistence, permissions, authentication, analytics, network clients, and workflow decisions at host boundaries.
 
@@ -33,7 +34,7 @@ Do not import `package:canvas_editor_flutter/src/**` from another package.
 The editor composes three concerns:
 
 1. **Presentation/UI** — viewport widgets, inspector widgets, selection overlays, layers, shortcuts, and editor actions.
-2. **Editor runtime/control** — `EditorRuntime`, history, document adapters, scene mutations, and interactive render publication.
+2. **Editor runtime/control** — `EditorRuntime`, history, picking, snapping, document adapters, scene mutations, and interactive render publication.
 3. **Host integration** — runtime resources, image acquisition/tools, curated assets, output destinations, persistence, networking, and product workflows.
 
 The editor package depends on `canvas_renderer_flutter` for Flutter rendering services and on `canvas_core` for document/runtime contracts. It does not hide renderer ownership by re-exporting renderer APIs from its turnkey barrel.
@@ -154,7 +155,7 @@ Image tools operate on logical source references. Applications own image access,
 
 ## Package boundaries
 
-- `canvas_editor_flutter` owns reusable editor UI, editor orchestration, and editor-specific presentation contracts.
-- `canvas_core` owns runtime documents, geometry, scene computation, logical resource contracts, and renderer-neutral paint operations.
+- `canvas_editor_flutter` owns reusable editor interaction, runtime orchestration, and presentation, including history, picking, snapping, selection, gestures, and derived world interaction geometry.
+- `canvas_core` owns runtime documents, document/render geometry, scene computation, logical resource contracts, and renderer-neutral paint operations.
 - `canvas_renderer_flutter` owns Flutter drawing, font/text implementations, decoded raster ownership, and canonical final PNG rendering.
 - Applications own product-specific storage, authentication, networking, permissions, analytics, media/font lifecycle, processing, and workflow decisions.

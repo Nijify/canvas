@@ -12,7 +12,7 @@ Use the complete stack or depend only on the packages your application needs.
 
 | Package | Purpose | Runtime |
 |---|---|---|
-| [`canvas_core`](packages/canvas_core) | Scene documents, geometry, layout, serialization, paint operations, hit testing, snapping, history, and logical resource contracts | Pure Dart |
+| [`canvas_core`](packages/canvas_core) | Scene documents, document/render geometry, layout, serialization, logical resource contracts, and renderer-neutral paint operations | Pure Dart |
 | [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text/font resources, image management, and canonical PNG output | Flutter |
 | [`canvas_editor_flutter`](packages/canvas_editor_flutter) | Turnkey and composable visual editor UI | Flutter |
 
@@ -80,7 +80,7 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, paint operations, serialization, resource discovery, and interaction utilities.
+See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, paint operations, serialization, geometry, and resource contracts.
 
 ## Render with Flutter
 

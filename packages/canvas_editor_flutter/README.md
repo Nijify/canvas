@@ -6,7 +6,7 @@
 
 - `CanvasSceneEditor` for a complete turnkey `CanvasSceneDocument` editor.
 - `CanvasEditorSurface` for composing an editor around custom documents, extensions, shell configuration, and interaction behavior.
-- Selection, movement, viewport behavior, inspector UI, layers, history, and editor actions.
+- Selection, picking, snapping, movement, viewport behavior, inspector UI, layers, history, and editor actions.
 - Composable seams for scene preparation, field codecs, live surface configuration, actions, providers, and custom inspector rows.
 - `CanvasRuntimeResources` for font loading, font-picker metadata, icon catalogs, and logical image-source resolution.
 - Asset-library, user-image acquisition, and host-owned image-tool capabilities.
@@ -200,8 +200,8 @@ See [doc/architecture.md](doc/architecture.md) for package layering, mutation fl
 
 ## Package boundaries
 
-- `canvas_editor_flutter` owns the reusable Flutter editor experience and editor-specific presentation contracts.
-- `canvas_core` owns the document model, geometry, scene computation, logical image-resource contracts, and renderer-agnostic paint operations.
+- `canvas_editor_flutter` owns editor interaction and orchestration, including history, picking, snapping, selection behavior, gestures, derived interaction geometry, and editor-specific presentation contracts.
+- `canvas_core` owns the document model, document/render geometry, scene computation, logical image-resource contracts, and renderer-agnostic paint operations.
 - `canvas_renderer_flutter` owns Flutter drawing, text/font resource implementations, decoded image ownership, and canonical PNG rendering.
 - Applications own persistence, authentication, analytics, networking, permissions, image processing, media/font lifecycle, and product-specific workflows.
 

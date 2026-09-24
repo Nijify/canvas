@@ -1,22 +1,28 @@
-// Path: lib/src/algorithms/picking/hit_test_scene.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/picking/hit_test_scene.dart
 
 import 'dart:math' as math;
 
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show
+        CanvasSceneDocument,
+        ComputedScene,
+        DrawItem,
+        ElementId,
+        GroupNode,
+        IconNode,
+        ImageNode,
+        Node,
+        PathIR,
+        PathNode,
+        Rect2D,
+        TextNode,
+        Vec2;
 import 'package:vector_math/vector_math_64.dart' as vm;
 
-import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
-
-import 'package:canvas_core/src/path/path_hit_test.dart'
+import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart'
     show pathContainsClosedArea, pathHitsOutline;
-
-import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/runtime/model/scene_document.dart';
-
-import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
-    show ComputedScene, DrawItem;
-import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 
 typedef NodeHitTest = bool Function(Node leaf);
 
@@ -37,10 +43,12 @@ typedef NodeHitTest = bool Function(Node leaf);
 ///   exact painted output
 /// - paths/icons also use outline proximity
 /// - thin strokes get a minimum screen-space hit slop
+
 Node? pickTopAtScene(
   CanvasSceneDocument doc, // kept for API symmetry; not used internally
   Vec2 worldPos, {
   required ComputedScene computed,
+  required EditorGeometryIndex geometry,
   bool includeLocked = false,
   bool selectLeaf = false,
   Set<ElementId> ignoreIds = const {},
@@ -70,6 +78,7 @@ Node? pickTopAtScene(
       leaf,
       worldPos,
       computed,
+      geometry,
       viewportZoom: viewportZoom,
       minPathHitSlopScreenPx: minPathHitSlopScreenPx,
     )) {
@@ -92,10 +101,12 @@ Node? pickTopAtScene(
 }
 
 /// Convenience: pick the *leaf* only (ignores group-by-default semantics).
+
 Node? pickLeafTopAtScene(
   CanvasSceneDocument doc,
   Vec2 worldPos, {
   required ComputedScene computed,
+  required EditorGeometryIndex geometry,
   bool includeLocked = false,
   Set<ElementId> ignoreIds = const {},
   NodeHitTest? extraFilter,
@@ -106,6 +117,7 @@ Node? pickLeafTopAtScene(
     doc,
     worldPos,
     computed: computed,
+    geometry: geometry,
     includeLocked: includeLocked,
     selectLeaf: true,
     ignoreIds: ignoreIds,
@@ -141,7 +153,7 @@ Node? _choosePickedNode({
     final gid = groupStack[j];
     final g = computed.nodeById[gid];
     if (g == null) continue;
-    if (!g.isGroup) continue;
+    if (g is! GroupNode) continue;
     if (selectable(g)) return g;
   }
 
@@ -166,11 +178,12 @@ bool _hitLeafAt(
   ElementId leafId,
   Node leaf,
   Vec2 worldPos,
-  ComputedScene computed, {
+  ComputedScene computed,
+  EditorGeometryIndex geometry, {
   required double viewportZoom,
   required double minPathHitSlopScreenPx,
 }) {
-  final inv = computed.inverseWorldById[leafId];
+  final inv = geometry.inverseWorldById[leafId];
   if (inv == null) return false;
 
   // world -> local

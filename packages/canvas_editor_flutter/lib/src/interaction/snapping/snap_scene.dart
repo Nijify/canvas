@@ -1,17 +1,15 @@
-// Path: lib/src/algorithms/snapping/snap_scene.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/snapping/snap_scene.dart
 
 import 'dart:math' as math;
 
-import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show CanvasSceneDocument, ComputedScene, Rect2D, Vec2;
 
-import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
-    show ComputedScene;
-import 'package:canvas_core/src/runtime/model/scene_document.dart';
-
-import 'package:canvas_core/src/algorithms/snapping/keylines.dart'
+import 'package:canvas_editor_flutter/src/interaction/snapping/keylines.dart'
     show artboardKeylines;
-import 'package:canvas_core/src/algorithms/snapping/snap_types.dart'
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_index_scene.dart'
+    show sceneObjectKeylines;
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
     show
         SnapAxis,
         SnapCandidate,
@@ -20,21 +18,25 @@ import 'package:canvas_core/src/algorithms/snapping/snap_types.dart'
         SnapLine,
         SnapOptions,
         SnapResult;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 
-import 'package:canvas_core/src/algorithms/snapping/snap_index_scene.dart'
-    show sceneObjectKeylines;
-
-/// Scene-graph snapping (Step 6).
+/// Computes snapping for a world-space selection probe.
 ///
-/// Mirrors the logic of your existing `snap_engine.dart`, but candidates come from:
-/// - artboard keylines
-/// - scene object keylines (bounds-derived)
-/// - transient guide candidates (UI-only)
-/// - optional grid snapping
+/// Candidates may include:
+/// - artboard keylines;
+/// - eligible scene-object keylines;
+/// - transient editor guides;
+/// - grid positions.
+///
+/// Tolerances are specified in screen pixels and converted to world space
+/// using the configured zoom.
+
 SnapResult snapScene({
   required CanvasSceneDocument doc,
-  required ComputedScene computed, // ✅ NEW
-  required Rect2D probeWorld, // selection AABB during drag (world coords)
+  required ComputedScene computed,
+  required EditorGeometryIndex geometry,
+  required Rect2D probeWorld,
   required SnapConfig config,
 }) {
   final opts = config.options;
@@ -50,7 +52,12 @@ SnapResult snapScene({
   }
   if (opts.snapToObjects) {
     cands.addAll(
-      sceneObjectKeylines(doc, computed, ignoreIds: config.ignoreIds),
+      sceneObjectKeylines(
+        doc,
+        computed,
+        geometry: geometry,
+        ignoreIds: config.ignoreIds,
+      ),
     );
   }
   if (opts.snapToGuides) {

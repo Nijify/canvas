@@ -1,35 +1,32 @@
-// Path: lib/src/algorithms/snapping/snap_index_scene.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/snapping/snap_index_scene.dart
 
-import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
-import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart'
-    show Rect2DX;
-import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
-
-import 'package:canvas_core/src/runtime/model/scene_document.dart';
-
-import 'package:canvas_core/src/algorithms/layout/computed_scene.dart'
-    show ComputedScene, DrawItem;
-
-import 'package:canvas_core/src/algorithms/snapping/keylines.dart'
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show
+        CanvasSceneDocument,
+        ComputedScene,
+        DrawItem,
+        ElementId,
+        Rect2D,
+        Rect2DX;
+import 'package:canvas_editor_flutter/src/interaction/snapping/keylines.dart'
     show rectKeylines;
-import 'package:canvas_core/src/algorithms/snapping/snap_types.dart'
+import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
     show SnapCandidate, SnapKind;
+import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
+    show EditorGeometryIndex;
 
-/// Build object-based snap candidates (world coords) from the *computed* scene.
+/// Builds object-based snap candidates in world coordinates.
 ///
-/// Semantics (matches old collectSceneBounds + filteredFlatLeaves):
-/// - Hidden content is excluded (computeScene already skipped hidden).
-/// - Locked nodes are excluded from candidates.
-/// - `ignoreIds` is subtree-aware:
-///   - if it contains a group id, all descendants are skipped
-///   - if it contains a leaf id, that leaf is skipped
+/// Hidden content is absent from the computed scene. Locked nodes and ignored
+/// subtrees are excluded from candidates.
 ///
-/// Candidates emitted:
-/// - For each eligible leaf: center + edges.
-/// - For each eligible group that has at least 1 eligible bounded descendant: center + edges.
+/// Eligible leaves contribute center and edge keylines. Eligible groups
+/// contribute keylines derived from the union of their eligible descendants.
+
 List<SnapCandidate> sceneObjectKeylines(
-  CanvasSceneDocument doc, // kept for API symmetry; not used internally
+  CanvasSceneDocument doc,
   ComputedScene computed, {
+  required EditorGeometryIndex geometry,
   Set<ElementId> ignoreIds = const {},
   bool includeLeaves = true,
   bool includeGroups = true,
@@ -63,10 +60,10 @@ List<SnapCandidate> sceneObjectKeylines(
     final leaf = computed.nodeById[leafId];
     if (leaf == null) continue;
 
-    // Snap candidates exclude locked nodes (matches old includeLocked:false)
+    // Locked nodes are not snap candidates.
     if (leaf.locked) continue;
 
-    final rect = computed.layoutBoundsWorldById[leafId];
+    final rect = geometry.layoutBoundsWorldById[leafId];
     if (rect == null) continue;
 
     if (includeLeaves) {

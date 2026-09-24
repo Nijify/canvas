@@ -1,3 +1,28 @@
+## Unreleased
+
+- **Breaking:** replace `ComputedScene.localBoundsById` and
+  `ComputedScene.visualBoundsWorldById` with explicit
+  `layoutBoundsLocalById`, `paintBoundsLocalById`, and
+  `paintBoundsWorldById` maps.
+- **Breaking:** remove `ComputedScene.inverseWorldById`. Editor-owned inverse
+  transforms and world layout bounds now live in `canvas_editor_flutter`.
+- Separate stable layout geometry from paint-bound estimates so effects and
+  content fitting can expand paint bounds without changing transform pivots,
+  selection, snapping, or manipulation geometry.
+- **Breaking:** replace `TextData.fill`, `TextData.shadowOffset`,
+  `CanvasIconData.fill`, and `CanvasIconData.shadowOffset` with the shared
+  `CanvasAppearance` model.
+- Add ordered `CanvasSourceUnderlay` values with stable serialization and
+  validation, including configurable shadow effects.
+- Allow text and icons to use `CanvasFill.none()` as their foreground while
+  retaining their source silhouette for underlay rendering.
+- **Breaking:** remove `canvas_core_editor.dart`; editor-owned history, picking,
+  path hit testing, and snapping now live in `canvas_editor_flutter`.
+- **Breaking:** remove selection geometry and editor-only world interaction
+  geometry from the core runtime API.
+- Keep `canvas_core` focused on document/runtime semantics, document and render
+  geometry, scene computation, serialization, and paint-plan construction.
+
 ## 0.10.0
 
 - **Breaking:** replace the `NodeId` alias with the shared `ElementId` identity type.
