@@ -1,5 +1,16 @@
 # Unreleased
 
+- **Breaking:** replace `FieldCodec.commit` with explicit canonical field
+  readers and a commit-free `writeCanonical` scene transform. Presentation
+  reads remain separate through `readNode` and `readScene`.
+- Add `EditorController.updateField()` for canonical read-modify-write field
+  updates. Literal `commitField()` and functional `updateField()` now share one
+  runtime-owned canonical mutation path.
+- **Breaking:** replace `EditorDocumentHost.updateSourceDocument()` with
+  `applySourceEdit()`. Source edits must preserve the canonical base scene.
+- **Breaking:** remove `EditorDocumentHost.applyEdit()`. Canonical base-scene
+  edits remain available through `EditorController.applyEdit()` and registered
+  field mutations through `commitField()` / `updateField()`.
 - **Breaking:** replace multi-item editor selection with one nullable
   `ElementId`. Remove `SelectionState`, `EditorSelectionHost.firstId`,
   `selectItems()`, `clearSelection()`, and the corresponding

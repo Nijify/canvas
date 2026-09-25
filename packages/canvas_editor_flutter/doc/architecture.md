@@ -105,26 +105,62 @@ JSON export remains based on canonical editable/base state.
 
 ## Mutation model
 
-Persistent base-scene mutations use `EditorController.applyEdit`.
+Registered fields and structural scene edits both mutate the canonical/base
+scene, but they use different editor-owned paths.
 
-Registered editable properties flow through `commitField` and their `FieldCodec`; structural or multi-node operations build an `EditorEdit` and call `applyEdit`. Source-document state outside the base scene is changed through `EditorDocumentHost.updateSourceDocument`.
+`getField()` is a presentation read and may return a value from the resolved or
+prepared runtime scene. It must not be used as the starting value for a
+canonical read-modify-write operation.
+
+`commitField()` and `updateField()` share one runtime-owned canonical field
+mutation path. `updateField()` reads the current value from the latest
+transaction-present canonical base scene before invoking its updater.
+`FieldCodec` owns field applicability, canonical reads, normalization, and the
+commit-free canonical scene writer.
 
 ```text
-Registered property
+Registered literal field
   -> commitField
-  -> FieldCodec
-  -> EditorEdit
-  -> applyEdit
+  -> runtime canonical field mutation
+  -> FieldCodec canonical writer
+  -> EditorDocumentAdapter.replaceBase
+  -> history/publication
+
+Registered functional field update
+  -> updateField
+  -> FieldCodec canonical reader
+  -> updater
+  -> FieldCodec canonical writer
+  -> EditorDocumentAdapter.replaceBase
+  -> history/publication
 
 Structural/custom base-scene operation
   -> EditorEdit
-  -> applyEdit
+  -> EditorController.applyEdit
+  -> history/publication
 
 Source-document state outside base scene
-  -> EditorDocumentHost.updateSourceDocument
+  -> EditorDocumentHost.applySourceEdit
+  -> base-preservation guard
+  -> history/publication
 ```
+Canonical `FieldCodec` writers return a transformed base scene and do not start
+another editor commit.
 
-Drag, rotate, and scale interactions use ephemeral edit sessions so repeated pointer updates render immediately but commit one history entry when the session closes.
+`EditorDocumentHost.applySourceEdit()` is reserved for host-owned source state
+outside the base scene. Its callback runs inside the runtime commit against the
+latest transaction-present source document. A source edit that meaningfully
+changes the adapter's canonical base scene throws before history or publication
+changes.
+
+Source-only changes still pass through source and render publication so adapter
+resolution, field editability, and other source-derived editor state can
+refresh. The canonical `document` listenable does not publish when the base
+scene remains value-equal.
+
+Drag, rotate, and scale interactions use ephemeral edit sessions so repeated
+pointer updates render immediately but commit one history entry when the
+session closes.
 
 ## Extension model
 
