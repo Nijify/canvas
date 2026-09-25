@@ -1,27 +1,17 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/interaction/selection_controllers.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/selection_controllers.dart
 
+import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:flutter/foundation.dart';
 
-import 'package:canvas_editor_flutter/src/editor_api.dart';
 import 'package:canvas_editor_flutter/src/editor_hosts.dart'
     show EditorSelectionHost;
 
-final class SelectionController extends ValueNotifier<SelectionState>
+final class SelectionController extends ValueNotifier<rt.ElementId?>
     implements EditorSelectionHost {
-  SelectionController() : super(const SelectionState.none());
+  SelectionController() : super(null);
 
   @override
-  String? get firstId => value.ids.isEmpty ? null : value.ids.first;
-
-  @override
-  void clearSelection() {
-    value = const SelectionState.none();
-  }
-
-  @override
-  void selectItems(Iterable<String> ids, {bool additive = false}) {
-    final nextIds = additive ? <String>{...value.ids, ...ids} : ids;
-
-    value = SelectionState.items(nextIds);
+  void selectItem(rt.ElementId? id) {
+    value = id;
   }
 }

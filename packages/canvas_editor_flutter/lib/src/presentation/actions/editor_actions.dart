@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/actions/editor_actions.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/actions/editor_actions.dart
 
 import 'dart:async';
 
@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart'
     show CanvasRuntimeResources;
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasSceneDocument, Node;
+    show CanvasSceneDocument, ElementId, Node;
 import 'package:canvas_editor_flutter/src/editor_api.dart'
     show EditorController;
 import 'package:canvas_editor_flutter/src/editor_edits.dart' show EditorEdits;
@@ -138,48 +138,46 @@ class EditorActionContext {
   void redo() => controller.redo();
 
   void duplicateSelection() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     final newId = controller.applyEdit(EditorEdits.duplicateSubtree(id));
 
     if (newId != null) {
-      selection.selectItems([newId], additive: false);
+      selection.selectItem(newId);
     }
   }
 
   void deleteSelection() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.deleteSubtree(id));
-
-    selection.clearSelection();
   }
 
   void bringToFront() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.bringToFront(id));
   }
 
   void sendToBack() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.sendToBack(id));
   }
 
   void bringForward() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.bringForward(id));
   }
 
   void sendBackward() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.sendBackward(id));
@@ -191,16 +189,12 @@ class EditorActionContext {
 
   String addNodeAndSelect(Node node) {
     final newId = addNode(node);
-    selection.selectItems([newId], additive: false);
+    selection.selectItem(newId);
     return newId;
   }
 
-  void selectItems(Iterable<String> ids, {bool additive = false}) {
-    selection.selectItems(ids, additive: additive);
-  }
-
-  void clearSelection() {
-    selection.clearSelection();
+  void selectItem(ElementId? id) {
+    selection.selectItem(id);
   }
 }
 

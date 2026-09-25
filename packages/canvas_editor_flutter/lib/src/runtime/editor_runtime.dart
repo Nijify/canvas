@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/runtime/editor_runtime.dart
+// Path: packages/canvas_editor_flutter/lib/src/runtime/editor_runtime.dart
 
 //
 // Shared editor document/render state.
@@ -318,15 +318,11 @@ final class EditorRuntime<TSourceDocument>
   // ==========================================================================
 
   @override
-  void updateDragMany(Set<rt.ElementId> ids, rt.Vec2 delta) {
-    if (ids.isEmpty) return;
-
+  void updateDrag(rt.ElementId id, rt.Vec2 delta) {
     final presentSourceDocument = _presentSourceDocument;
-    var base = _adapter.getBase(presentSourceDocument);
+    final presentBase = _adapter.getBase(presentSourceDocument);
 
-    for (final id in ids) {
-      base = rt.SceneTreeOps.translate(base, id, delta);
-    }
+    final base = rt.SceneTreeOps.translate(presentBase, id, delta);
 
     _applyEphemeral(_replaceBase(presentSourceDocument, base));
   }

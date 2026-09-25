@@ -1,13 +1,9 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_viewport.dart
-
-import 'dart:ui';
+// Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_viewport.dart
 
 import 'package:flutter/foundation.dart' show listEquals, Listenable;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'
-    show HardwareKeyboard, LogicalKeyboardKey;
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasSceneDocument, Rect2D, RenderSnapshot, Vec2, findById;
+    show ElementId, Rect2D, RenderSnapshot, Vec2, findById;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 import 'package:canvas_editor_flutter/src/editor_api.dart'
@@ -27,8 +23,6 @@ import 'package:canvas_editor_flutter/src/interaction/snapping/snap_types.dart'
     show SnapAxis, SnapCandidate, SnapConfig, SnapLine, SnapOptions;
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
     show EditorGeometryIndex;
-import 'package:canvas_editor_flutter/src/interaction/geometry/selection_geometry.dart'
-    show selectionUnionBounds;
 
 class CanvasViewport extends StatefulWidget {
   const CanvasViewport({
@@ -99,6 +93,7 @@ class _SnapGuidesPainter extends CustomPainter {
 
     for (final g in guides) {
       final r = g.extentWorld;
+
       if (g.axis == SnapAxis.x) {
         final x = (r.left + r.right) / 2;
         canvas.drawLine(Offset(x, r.top), Offset(x, r.bottom), p);
@@ -116,7 +111,7 @@ class _SnapGuidesPainter extends CustomPainter {
 }
 
 class _CanvasViewportState extends State<CanvasViewport> {
-  String? _draggingId;
+  ElementId? _draggingId;
   Offset? _dragStartScreen;
   List<SnapLine> _guides = const [];
 
@@ -143,39 +138,57 @@ class _CanvasViewportState extends State<CanvasViewport> {
     setState(() => _guides = List<SnapLine>.from(next));
   }
 
+  /// A movement target must still exist in both editor representations:
+  ///
+  /// - canonical presence means there is an editable node to mutate;
+  /// - rendered presence preserves the existing interaction-policy semantics,
+  ///   where [EditorInteractionPolicy.canMove] receives the prepared/rendered
+  ///   node.
+  bool _canMoveTarget(ElementId id) {
+    final canonicalNode = findById(widget.controller.document.value, id);
+    if (canonicalNode == null) {
+      return false;
+    }
+
+    final renderedNode = findById(widget.render.scene, id);
+    if (renderedNode == null) {
+      return false;
+    }
+
+    return widget.interactionPolicy.canMove(renderedNode);
+  }
+
+  void _startMoveTarget(ElementId id, Offset screenFocalPoint) {
+    if (!_canMoveTarget(id)) {
+      _draggingId = null;
+      _dragStartScreen = null;
+      _endMoveSession();
+      return;
+    }
+
+    _beginMoveSession();
+    _draggingId = id;
+    _dragStartScreen = screenFocalPoint;
+  }
+
+  void _stopMoveTarget() {
+    _draggingId = null;
+    _dragStartScreen = null;
+    _endMoveSession();
+  }
+
   void _applyDragStartIntent(
     CanvasDragStartIntent intent,
     Offset screenFocalPoint,
   ) {
     final dragId = intent.dragId;
 
-    if (dragId != null) {
-      _beginMoveSession();
-      _draggingId = dragId;
-      _dragStartScreen = screenFocalPoint;
+    if (dragId == null) {
+      _stopMoveTarget();
       return;
     }
 
-    _draggingId = null;
-    _dragStartScreen = null;
-    _endMoveSession();
-  }
-
-  bool _canMoveAny(CanvasSceneDocument scene, Iterable<String> ids) {
-    for (final id in ids) {
-      final node = findById(scene, id);
-      if (node != null && widget.interactionPolicy.canMove(node)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  Set<String> _movableIds(CanvasSceneDocument scene, Iterable<String> ids) {
-    return ids.where((id) {
-      final node = findById(scene, id);
-      return node != null && widget.interactionPolicy.canMove(node);
-    }).toSet();
+    _startMoveTarget(dragId, screenFocalPoint);
   }
 
   @override
@@ -243,25 +256,17 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
             if (behaviorHandled) return;
 
-            if (hit != null) {
-              final keys = HardwareKeyboard.instance.logicalKeysPressed;
-              final additive =
-                  d.kind == PointerDeviceKind.mouse &&
-                  (keys.contains(LogicalKeyboardKey.metaLeft) ||
-                      keys.contains(LogicalKeyboardKey.metaRight) ||
-                      keys.contains(LogicalKeyboardKey.controlLeft) ||
-                      keys.contains(LogicalKeyboardKey.controlRight));
-
-              widget.selection.selectItems([hit.id], additive: additive);
-            } else {
-              widget.selection.clearSelection();
-            }
+            widget.selection.selectItem(hit?.id);
           },
           onTapUp: (_) {
-            if (_guides.isNotEmpty) _setGuides(const []);
+            if (_guides.isNotEmpty) {
+              _setGuides(const []);
+            }
           },
           onTapCancel: () {
-            if (_guides.isNotEmpty) _setGuides(const []);
+            if (_guides.isNotEmpty) {
+              _setGuides(const []);
+            }
           },
           onScaleStart: (d) {
             _allowPinchZoom = d.pointerCount >= 2;
@@ -303,49 +308,48 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
             if (behaviorIntent != null) {
               _applyDragStartIntent(behaviorIntent, d.focalPoint);
-              if (_guides.isNotEmpty) _setGuides(const []);
+
+              if (_guides.isNotEmpty) {
+                _setGuides(const []);
+              }
+
               return;
             }
 
             if (hit != null) {
               if (d.pointerCount == 1) {
-                final nextSelectionIds =
-                    widget.selection.value.ids.contains(hit.id)
-                    ? widget.selection.value.ids
-                    : <String>{hit.id};
-
-                if (_canMoveAny(scene, nextSelectionIds)) {
-                  _beginMoveSession();
-                  _draggingId = hit.id;
-                  _dragStartScreen = d.focalPoint;
-                } else {
-                  _draggingId = null;
-                  _dragStartScreen = null;
-                  _endMoveSession();
-                }
-
-                if (!widget.selection.value.ids.contains(hit.id)) {
-                  widget.selection.selectItems([hit.id], additive: false);
-                }
+                widget.selection.selectItem(hit.id);
+                _startMoveTarget(hit.id, d.focalPoint);
               } else {
-                _draggingId = null;
-                _dragStartScreen = null;
-                _endMoveSession();
+                _stopMoveTarget();
               }
             } else {
-              _draggingId = null;
-              _dragStartScreen = null;
-              _endMoveSession();
+              _stopMoveTarget();
+              widget.selection.selectItem(null);
 
-              widget.selection.clearSelection();
-
-              if (_guides.isNotEmpty) _setGuides(const []);
+              if (_guides.isNotEmpty) {
+                _setGuides(const []);
+              }
             }
           },
           onScaleUpdate: (d) {
             if (_draggingId != null &&
                 d.pointerCount == 1 &&
                 _dragStartScreen != null) {
+              final dragId = _draggingId!;
+
+              // The explicit drag target remains authoritative for the whole
+              // gesture. Never redirect movement to the current selection.
+              if (!_canMoveTarget(dragId)) {
+                _stopMoveTarget();
+
+                if (_guides.isNotEmpty) {
+                  _setGuides(const []);
+                }
+
+                return;
+              }
+
               final screenDelta = d.focalPoint - _dragStartScreen!;
 
               final rawDelta = Vec2(
@@ -353,13 +357,12 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 screenDelta.dy / displayScale,
               );
 
-              final selectedIds = widget.selection.value.hasItems
-                  ? widget.selection.value.ids
-                  : {_draggingId!};
+              final bounds = geometry.layoutBoundsWorldById[dragId];
 
-              final movableIds = _movableIds(scene, selectedIds);
-
-              if (movableIds.isEmpty) {
+              // Missing interaction geometry must not make us redirect or drop
+              // a valid canonical drag. Preserve movement without snapping.
+              if (bounds == null) {
+                widget.controller.updateDrag(dragId, rawDelta);
                 _dragStartScreen = d.focalPoint;
 
                 if (_guides.isNotEmpty) {
@@ -369,23 +372,11 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 return;
               }
 
-              final aabb = selectionUnionBounds(
-                movableIds,
-                getBounds: (sid) => geometry.layoutBoundsWorldById[sid],
-              );
-
-              if (aabb == null) {
-                widget.controller.updateDragMany(movableIds, rawDelta);
-                _dragStartScreen = d.focalPoint;
-                if (_guides.isNotEmpty) _setGuides(const []);
-                return;
-              }
-
               final probe = Rect2D.fromLTRB(
-                aabb.left + rawDelta.x,
-                aabb.top + rawDelta.y,
-                aabb.right + rawDelta.x,
-                aabb.bottom + rawDelta.y,
+                bounds.left + rawDelta.x,
+                bounds.top + rawDelta.y,
+                bounds.right + rawDelta.x,
+                bounds.bottom + rawDelta.y,
               );
 
               final res = snapScene(
@@ -411,7 +402,9 @@ class _CanvasViewportState extends State<CanvasViewport> {
                     scene.artboardSize.w,
                     scene.artboardSize.h,
                   ),
-                  ignoreIds: movableIds,
+                  // snap_index_scene already treats an ignored group ID as an
+                  // ignored subtree through DrawItem.groupStack.
+                  ignoreIds: <ElementId>{dragId},
                   lockedAxis: null,
                   gridStepWorld: null,
                 ),
@@ -419,10 +412,12 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
               final snappedDelta = rawDelta + res.deltaWorld;
 
-              widget.controller.updateDragMany(movableIds, snappedDelta);
+              widget.controller.updateDrag(dragId, snappedDelta);
 
               if (res.guides.isEmpty) {
-                if (_guides.isNotEmpty) _setGuides(const []);
+                if (_guides.isNotEmpty) {
+                  _setGuides(const []);
+                }
               } else if (!listEquals(_guides, res.guides)) {
                 _setGuides(res.guides);
               }
@@ -432,7 +427,10 @@ class _CanvasViewportState extends State<CanvasViewport> {
             }
 
             if (!_allowPinchZoom) {
-              if (_guides.isNotEmpty) _setGuides(const []);
+              if (_guides.isNotEmpty) {
+                _setGuides(const []);
+              }
+
               return;
             }
 
@@ -446,16 +444,17 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
             widget.onPanZoom(newScale, newPan);
 
-            if (_guides.isNotEmpty) _setGuides(const []);
+            if (_guides.isNotEmpty) {
+              _setGuides(const []);
+            }
           },
           onScaleEnd: (_) {
-            _endMoveSession();
-
-            _draggingId = null;
-            _dragStartScreen = null;
+            _stopMoveTarget();
             _allowPinchZoom = false;
 
-            if (_guides.isNotEmpty) _setGuides(const []);
+            if (_guides.isNotEmpty) {
+              _setGuides(const []);
+            }
           },
           child: Transform(
             transform: Matrix4.identity()

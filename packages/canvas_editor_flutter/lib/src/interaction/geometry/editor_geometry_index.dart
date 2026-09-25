@@ -7,8 +7,7 @@ import 'package:vector_math/vector_math_64.dart' as vm;
 /// Editor-owned geometry derived from core document/render computation.
 ///
 /// These values exist for interaction concerns such as picking, snapping,
-/// multi-selection, and drag probes. They are deliberately not part of
-/// `ComputedScene`.
+/// and drag probes. They are deliberately not part of `ComputedScene`.
 final class EditorGeometryIndex {
   const EditorGeometryIndex({
     required this.inverseWorldById,

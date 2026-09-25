@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/extensions.dart
+// Path: packages/canvas_editor_flutter/lib/extensions.dart
 // canvas_editor_flutter – Composable scene editor API.
 //
 // This entrypoint re-exports the turnkey editor API and adds contracts for
@@ -92,7 +92,6 @@ export 'src/editor_api.dart'
         EditorDocumentAdapter,
         EditorEdit,
         EditorEditResult,
-        SelectionState,
         FieldState,
         kSceneFieldsId;
 

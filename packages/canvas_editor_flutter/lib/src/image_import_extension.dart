@@ -1,4 +1,5 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/image_import_extension.dart
+// Path: packages/canvas_editor_flutter/lib/src/image_import_extension.dart
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_extensions.dart';
 import 'package:canvas_editor_flutter/src/editor_surface_features.dart';
@@ -147,7 +148,7 @@ class _ImageImportExtension<TSourceDocument>
           return SceneTreeOps.addNode(nextScene, node);
         }),
       );
-      context.selectItems([nodeId]);
+      context.selectItem(nodeId);
     } finally {
       _isAdding = false;
       _requestSurfaceRebuild();

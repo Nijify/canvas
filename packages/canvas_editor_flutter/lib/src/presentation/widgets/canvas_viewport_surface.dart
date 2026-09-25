@@ -102,34 +102,28 @@ class CanvasViewportSurface extends StatelessWidget {
                 ),
                 if (selectionChromeMode ==
                     SelectionChromeMode.transformControls)
-                  ValueListenableBuilder(
+                  ValueListenableBuilder<ElementId?>(
                     valueListenable: selection,
-                    builder: (_, selectionState, _) {
-                      final selectedIds = selectionState.hasItems
-                          ? selectionState.ids
-                          : const <String>{};
+                    builder: (_, selectedId, _) {
+                      if (selectedId == null) {
+                        return const SizedBox.shrink();
+                      }
 
                       final sourceScene = controller.document.value;
+                      final node =
+                          findById(sourceScene, selectedId) ??
+                          findById(snap.scene, selectedId);
 
-                      final chromeSelectedIds = selectedIds.where((id) {
-                        final node =
-                            findById(sourceScene, id) ??
-                            findById(snap.scene, id);
-
-                        return node != null &&
-                            interactionPolicy.showTransformChrome(node);
-                      }).toSet();
-
-                      if (chromeSelectedIds.isEmpty) {
+                      if (node == null ||
+                          !interactionPolicy.showTransformChrome(node)) {
                         return const SizedBox.shrink();
                       }
 
                       return CanvasSelectionOverlay(
                         render: snap,
-                        geometry: geometry,
                         scale: cameraState.scale,
                         pan: cameraState.pan,
-                        selectedIds: chromeSelectedIds,
+                        selectedId: selectedId,
                       );
                     },
                   ),

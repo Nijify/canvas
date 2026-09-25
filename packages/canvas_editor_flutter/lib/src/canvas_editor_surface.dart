@@ -1,10 +1,10 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/canvas_editor_surface.dart
+// Path: packages/canvas_editor_flutter/lib/src/canvas_editor_surface.dart
 
 import 'dart:async';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart'
-    show EditorController, EditorDocumentAdapter, SelectionState;
+    show EditorController, EditorDocumentAdapter;
 import 'package:canvas_editor_flutter/src/editor_field_codecs.dart'
     show FieldCodec;
 import 'package:canvas_editor_flutter/src/editor_extensions.dart';
@@ -331,6 +331,13 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
       final snap = _runtime.render.value;
 
+      final selectedId = _selectionController.value;
+      if (selectedId != null &&
+          findById(_runtime.document.value, selectedId) == null &&
+          findById(snap.scene, selectedId) == null) {
+        _selectionController.selectItem(null);
+      }
+
       _ensureAssetsForScene(snap.scene);
 
       final viewportPx = _lastViewportPx;
@@ -441,9 +448,9 @@ class _CanvasEditorSurfaceState<TSourceDocument>
                 bindings: buildEditorShortcutBindings(ctx),
                 child: Focus(
                   autofocus: true,
-                  child: ValueListenableBuilder<SelectionState>(
+                  child: ValueListenableBuilder<ElementId?>(
                     valueListenable: _selectionController,
-                    builder: (context, selectionState, _) {
+                    builder: (context, selectedId, _) {
                       return ValueListenableBuilder<bool>(
                         valueListenable: controller.canUndo,
                         builder: (context, canUndo, _) {
@@ -454,7 +461,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
                                 compact: compactToolbar,
                                 canUndo: canUndo,
                                 canRedo: canRedo,
-                                hasSelection: selectionState.hasItems,
+                                hasSelection: selectedId != null,
                               );
 
                               final actionContext = EditorActionContext(
