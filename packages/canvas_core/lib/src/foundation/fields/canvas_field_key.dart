@@ -1,4 +1,4 @@
-// Path: lib/src/foundation/fields/canvas_field_key.dart
+// Path: packages/canvas_core/lib/src/foundation/fields/canvas_field_key.dart
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -35,6 +35,7 @@ abstract final class CanvasFields {
   // Text
   static const textContent = CanvasFieldKey('text.content');
   static const textFill = CanvasFieldKey('text.fill');
+  static const textUnderlays = CanvasFieldKey('text.underlays');
   static const textFontFamily = CanvasFieldKey('text.fontFamily');
   static const textFontSize = CanvasFieldKey('text.fontSize');
   static const textFontWeight = CanvasFieldKey('text.fontWeight');
@@ -43,6 +44,7 @@ abstract final class CanvasFields {
   // Icon
   static const iconRef = CanvasFieldKey('icon.ref');
   static const iconFill = CanvasFieldKey('icon.fill');
+  static const iconUnderlays = CanvasFieldKey('icon.underlays');
   static const iconSizePx = CanvasFieldKey('icon.sizePx');
 
   // Image
