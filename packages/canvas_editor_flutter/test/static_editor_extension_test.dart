@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/static_editor_extension_test.dart
+// Path: packages/canvas_editor_flutter/test/static_editor_extension_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFieldKey, CanvasSceneDocument, CoreServices, ScenePreparer;
@@ -10,7 +10,7 @@ CanvasSceneDocument _prepareScene(CanvasSceneDocument scene, CoreServices _) {
 }
 
 FieldCodec _codec() {
-  return FieldCodec(fallback: '', commit: (_, _, _) {});
+  return FieldCodec(fallback: '', writeCanonical: (base, _, _) => base);
 }
 
 void main() {

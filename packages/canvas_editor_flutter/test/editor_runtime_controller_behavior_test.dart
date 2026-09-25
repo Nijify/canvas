@@ -92,6 +92,35 @@ rt.CanvasSceneDocument _sceneWithImage({
   );
 }
 
+const _originalImageAssetId = 'asset-original';
+
+rt.CanvasSceneDocument _sceneWithBoundImage(String sourceRef) {
+  return rt.CanvasSceneDocument(
+    artboardSize: const rt.Size2D(300, 200),
+    backgroundFill: const rt.CanvasFill.none(),
+    backgroundOpacity: 1.0,
+    assets: <rt.CanvasAssetId, rt.CanvasImageAsset>{
+      _originalImageAssetId: rt.CanvasImageAsset(sourceRef: sourceRef),
+    },
+    children: const <rt.Node>[
+      rt.Node.image(
+        id: 'img1',
+        data: rt.ImageData(
+          assetId: _originalImageAssetId,
+          size: rt.Size2D(200, 200),
+        ),
+      ),
+    ],
+  );
+}
+
+String _imageSourceOf(rt.CanvasSceneDocument scene) {
+  final image = rt.findById(scene, 'img1') as rt.ImageNode;
+  final assetId = image.data.assetId;
+
+  return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
+}
+
 String _iconRefOf(rt.CanvasSceneDocument scene) {
   final node = rt.findById(scene, 'i1');
   return (node as rt.IconNode).data.iconRef;
@@ -258,18 +287,21 @@ final class _DerivedNodeAdapter
 
 void main() {
   test(
-    'source-only metadata update notifies source without publishing document',
-    () async {
-      final runtime = _buildMetadataRuntime(
-        _MetadataDocument(
-          base: _sceneWithText('Original title'),
-          metadata: 'before',
-        ),
+    'source-only edit publishes source and render without publishing document',
+    () {
+      final initialDocument = _MetadataDocument(
+        base: _sceneWithText('Original title'),
+        metadata: 'before',
       );
+
+      final runtime = _buildMetadataRuntime(initialDocument);
       addTearDown(runtime.dispose);
+
+      final initialBase = initialDocument.base;
 
       var sourceNotifications = 0;
       var documentNotifications = 0;
+      var renderNotifications = 0;
 
       runtime.source.addListener(() {
         sourceNotifications += 1;
@@ -279,16 +311,92 @@ void main() {
         documentNotifications += 1;
       });
 
-      runtime.updateSourceDocument(
+      runtime.render.addListener(() {
+        renderNotifications += 1;
+      });
+
+      runtime.applySourceEdit(
         (document) => document.copyWith(metadata: 'after'),
       );
 
       expect(runtime.sourceDocument.metadata, 'after');
+      expect(runtime.sourceDocument.base, same(initialBase));
       expect(runtime.source.value.metadata, 'after');
+
       expect(sourceNotifications, 1);
+      expect(documentNotifications, 0);
+      expect(renderNotifications, 1);
+
+      expect(runtime.canUndo.value, isTrue);
+
+      runtime.undo();
+
+      expect(runtime.sourceDocument.metadata, 'before');
+      expect(runtime.sourceDocument.base, same(initialBase));
+      expect(documentNotifications, 0);
+
+      runtime.redo();
+
+      expect(runtime.sourceDocument.metadata, 'after');
+      expect(runtime.sourceDocument.base, same(initialBase));
       expect(documentNotifications, 0);
     },
   );
+
+  test('source edit cannot change the canonical base scene', () {
+    final initialDocument = _MetadataDocument(
+      base: _sceneWithText('Original title'),
+      metadata: 'before',
+    );
+
+    final runtime = _buildMetadataRuntime(initialDocument);
+    addTearDown(runtime.dispose);
+
+    final initialRender = runtime.render.value;
+
+    var sourceNotifications = 0;
+    var documentNotifications = 0;
+    var renderNotifications = 0;
+
+    runtime.source.addListener(() {
+      sourceNotifications += 1;
+    });
+
+    runtime.document.addListener(() {
+      documentNotifications += 1;
+    });
+
+    runtime.render.addListener(() {
+      renderNotifications += 1;
+    });
+
+    expect(
+      () => runtime.applySourceEdit(
+        (document) => document.copyWith(
+          base: _sceneWithText('Illegal replacement'),
+          metadata: 'after',
+        ),
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          'Source edits must preserve the base scene.',
+        ),
+      ),
+    );
+
+    expect(runtime.sourceDocument, same(initialDocument));
+    expect(runtime.source.value, same(initialDocument));
+    expect(runtime.render.value, same(initialRender));
+
+    expect(sourceNotifications, 0);
+    expect(documentNotifications, 0);
+    expect(renderNotifications, 0);
+
+    expect(runtime.canUndo.value, isFalse);
+    expect(runtime.canRedo.value, isFalse);
+  });
 
   test('value-equal scene edit is a complete no-op', () {
     final initialDocument = _MetadataDocument(
@@ -507,6 +615,46 @@ void main() {
     expect(runtime.canRedo.value, isTrue);
   });
 
+  test(
+    'functional field updates use the latest transaction-present canonical value',
+    () {
+      final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
+      addTearDown(runtime.dispose);
+
+      final observed = <String>[];
+      final endSession = runtime.beginEditSession();
+
+      runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+        observed.add(current);
+        return '$current / first';
+      });
+
+      runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+        observed.add(current);
+        return '$current / second';
+      });
+
+      expect(observed, <String>['Original title', 'Original title / first']);
+
+      expect(
+        _textOf(runtime.sourceDocument),
+        'Original title / first / second',
+      );
+
+      expect(runtime.canUndo.value, isFalse);
+
+      endSession();
+
+      expect(runtime.canUndo.value, isTrue);
+
+      runtime.undo();
+
+      expect(_textOf(runtime.sourceDocument), 'Original title');
+      expect(runtime.canUndo.value, isFalse);
+      expect(runtime.canRedo.value, isTrue);
+    },
+  );
+
   test('letter spacing edit session creates one undo entry', () {
     final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
     addTearDown(runtime.dispose);
@@ -677,28 +825,49 @@ void main() {
   });
 
   test(
-    'extra field codecs override built-in text codecs for read and commit',
+    'extension codec separates presentation reads from canonical updates',
     () {
-      const originalText = 'Original title';
-      const overrideReadValue = 'Custom codec read value';
-      const commitValue = 'Custom codec commit value';
+      const originalText = 'Canonical title';
+      const presentationValue = 'Presentation title';
 
-      var readCalls = 0;
-      var commitCalls = 0;
-      rt.ElementId? committedNodeId;
-      Object? committedValue;
+      var presentationReadCalls = 0;
+      var canonicalReadCalls = 0;
+      var writerCalls = 0;
+
+      rt.ElementId? writtenNodeId;
+      Object? writtenValue;
 
       final overrideCodec = FieldCodec(
         fallback: 'Custom codec fallback',
         readNode: (_, node) {
-          readCalls += 1;
+          presentationReadCalls += 1;
           expect(node, isA<rt.TextNode>());
-          return overrideReadValue;
+          return presentationValue;
         },
-        commit: (_, nodeId, value) {
-          commitCalls += 1;
-          committedNodeId = nodeId;
-          committedValue = value;
+        canReadCanonicalNode: (_, node) => node is rt.TextNode,
+        readCanonicalNode: (_, node) {
+          canonicalReadCalls += 1;
+          return (node as rt.TextNode).data.text;
+        },
+        writeCanonical: (base, nodeId, value) {
+          writerCalls += 1;
+          writtenNodeId = nodeId;
+          writtenValue = value;
+
+          final node = rt.findById(base, nodeId);
+          if (node is! rt.TextNode) return base;
+
+          final text = value as String;
+
+          if (node.data.text == text) {
+            return base;
+          }
+
+          return rt.replaceById(
+            base,
+            nodeId,
+            node.copyWith(data: node.data.copyWith(text: text)),
+          );
         },
       );
 
@@ -712,27 +881,30 @@ void main() {
 
       final field = runtime.getField<String>('t1', rt.CanvasFields.textContent);
 
-      expect(field.value, overrideReadValue);
+      expect(field.value, presentationValue);
       expect(field.disabledReason, isNull);
-      expect(readCalls, 1);
+      expect(presentationReadCalls, 1);
 
-      runtime.commitField<String>(
-        't1',
-        rt.CanvasFields.textContent,
-        commitValue,
-      );
+      String? updaterInput;
 
-      expect(commitCalls, 1);
-      expect(committedNodeId, 't1');
-      expect(committedValue, commitValue);
+      runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+        updaterInput = current;
+        return '$current / updated';
+      });
 
-      expect(_textOf(runtime.sourceDocument), originalText);
+      expect(updaterInput, originalText);
+      expect(canonicalReadCalls, 1);
+      expect(writerCalls, 1);
+      expect(writtenNodeId, 't1');
+      expect(writtenValue, '$originalText / updated');
+
+      expect(_textOf(runtime.sourceDocument), '$originalText / updated');
     },
   );
 
   test(
-    'fields read the resolved scene and commit the canonical base document',
-    () async {
+    'getField reads resolved state while updateField reads canonical state',
+    () {
       final runtime = _buildSceneRuntime(
         _sceneWithText('Base title'),
         adapter: const _ResolvedTextAdapter(),
@@ -744,23 +916,128 @@ void main() {
       expect(field.value, 'Resolved title');
       expect(field.disabledReason, isNull);
 
-      runtime.commitField<String>(
-        't1',
-        rt.CanvasFields.textContent,
-        'Saved title',
+      String? updaterInput;
+
+      runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+        updaterInput = current;
+        return '$current / saved';
+      });
+
+      expect(
+        updaterInput,
+        'Base title',
+        reason: 'Functional updates must start from canonical state.',
       );
 
-      expect(_textOf(runtime.sourceDocument), 'Saved title');
+      expect(_textOf(runtime.sourceDocument), 'Base title / saved');
 
-      runtime.commitField<String>(
+      var missingUpdaterCalled = false;
+
+      runtime.updateField<String>('missing', rt.CanvasFields.textContent, (
+        current,
+      ) {
+        missingUpdaterCalled = true;
+        return 'Ignored';
+      });
+
+      expect(missingUpdaterCalled, isFalse);
+      expect(_textOf(runtime.sourceDocument), 'Base title / saved');
+    },
+  );
+
+  test('wrong-kind field target does not call updater or writer', () {
+    var updaterCalls = 0;
+    var writerCalls = 0;
+
+    final codec = FieldCodec(
+      fallback: '',
+      readNode: (_, node) => (node as rt.TextNode).data.text,
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).data.text,
+      writeCanonical: (base, nodeId, value) {
+        writerCalls += 1;
+        return base;
+      },
+    );
+
+    final runtime = _buildSceneRuntime(
+      _sceneWithImage(),
+      extraFieldCodecs: <rt.CanvasFieldKey, FieldCodec>{
+        rt.CanvasFields.textContent: codec,
+      },
+    );
+    addTearDown(runtime.dispose);
+
+    runtime.updateField<String>('img1', rt.CanvasFields.textContent, (current) {
+      updaterCalls += 1;
+      return 'Should not run';
+    });
+
+    expect(updaterCalls, 0);
+    expect(writerCalls, 0);
+    expect(runtime.canUndo.value, isFalse);
+  });
+
+  test('missing canonical reader is a codec configuration error', () {
+    final codec = FieldCodec(
+      fallback: '',
+      readNode: (_, node) => (node as rt.TextNode).data.text,
+      writeCanonical: (base, nodeId, value) => base,
+    );
+
+    final runtime = _buildSceneRuntime(
+      _emptyScene(),
+      extraFieldCodecs: <rt.CanvasFieldKey, FieldCodec>{
+        rt.CanvasFields.textContent: codec,
+      },
+    );
+    addTearDown(runtime.dispose);
+
+    expect(
+      () => runtime.commitField<String>(
         'missing',
         rt.CanvasFields.textContent,
         'Ignored',
-      );
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('must define canReadCanonicalNode and readCanonicalNode'),
+        ),
+      ),
+    );
 
-      expect(_textOf(runtime.sourceDocument), 'Saved title');
-    },
-  );
+    expect(runtime.canUndo.value, isFalse);
+  });
+
+  test('scene field supports canonical functional updates and undo', () {
+    final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
+    addTearDown(runtime.dispose);
+
+    double? updaterInput;
+
+    runtime.updateField<double>(
+      kSceneFieldsId,
+      rt.CanvasFields.sceneBackgroundOpacity,
+      (current) {
+        updaterInput = current;
+        return current * 0.5;
+      },
+    );
+
+    expect(updaterInput, 1.0);
+    expect(runtime.sourceDocument.backgroundOpacity, 0.5);
+    expect(runtime.canUndo.value, isTrue);
+
+    runtime.undo();
+
+    expect(runtime.sourceDocument.backgroundOpacity, 1.0);
+
+    runtime.redo();
+
+    expect(runtime.sourceDocument.backgroundOpacity, 0.5);
+  });
 
   test('icon reference is read, committed, undone, and redone as a field', () {
     final runtime = _buildSceneRuntime(_sceneWithIcon('heart'));
@@ -784,6 +1061,67 @@ void main() {
     runtime.redo();
 
     expect(_iconRefOf(runtime.sourceDocument), 'star');
+  });
+
+  test('image source canonical updates preserve existing asset semantics', () {
+    final runtime = _buildSceneRuntime(_sceneWithBoundImage('media:original'));
+    addTearDown(runtime.dispose);
+
+    expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
+
+    runtime.commitField<String>(
+      'img1',
+      rt.CanvasFields.imageSource,
+      'media:original',
+    );
+
+    expect(
+      runtime.canUndo.value,
+      isFalse,
+      reason: 'Committing the current source must remain a no-op.',
+    );
+
+    String? updaterInput;
+
+    runtime.updateField<String>('img1', rt.CanvasFields.imageSource, (current) {
+      updaterInput = current;
+      return 'media:replacement';
+    });
+
+    expect(updaterInput, 'media:original');
+
+    final replaced = runtime.sourceDocument;
+    final replacedImage = rt.findById(replaced, 'img1') as rt.ImageNode;
+    final replacementAssetId = replacedImage.data.assetId!;
+
+    expect(replacementAssetId, isNot(_originalImageAssetId));
+    expect(replaced.assets[_originalImageAssetId]?.sourceRef, 'media:original');
+    expect(replaced.assets[replacementAssetId]?.sourceRef, 'media:replacement');
+    expect(_imageSourceOf(replaced), 'media:replacement');
+
+    runtime.undo();
+
+    expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
+    expect(runtime.sourceDocument.assets, hasLength(1));
+
+    runtime.redo();
+
+    expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
+
+    runtime.commitField<String>('img1', rt.CanvasFields.imageSource, '');
+
+    final cleared = runtime.sourceDocument;
+    final clearedImage = rt.findById(cleared, 'img1') as rt.ImageNode;
+
+    expect(clearedImage.data.assetId, isNull);
+
+    expect(cleared.assets[_originalImageAssetId]?.sourceRef, 'media:original');
+
+    expect(cleared.assets[replacementAssetId]?.sourceRef, 'media:replacement');
+
+    runtime.undo();
+
+    expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
   });
 
   test('image dimension fields preserve the canonical opposite dimension', () {

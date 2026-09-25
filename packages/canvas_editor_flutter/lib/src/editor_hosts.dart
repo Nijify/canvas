@@ -3,38 +3,36 @@
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:flutter/foundation.dart';
 
-import 'package:canvas_editor_flutter/src/editor_api.dart' show EditorEdit;
-
 /// Canonical document capability for hosted/source-document editors.
 ///
-/// Use this when an extension needs to read or update the host application's
-/// source document, rather than only the resolved runtime scene.
+/// Use this when an extension needs to read or update host-owned source state
+/// outside the canonical base canvas scene.
 abstract interface class EditorDocumentHost<TSourceDocument> {
-  /// Current canonical source document.
+  /// Current published canonical source document.
   TSourceDocument get sourceDocument;
 
   /// Listenable canonical source document.
   ///
   /// This updates for source-document changes even when the base scene is
-  /// unchanged, for example token binding changes.
+  /// unchanged, for example token-binding or other source-metadata changes.
   ValueListenable<TSourceDocument> get source;
-
-  /// Applies a generic edit to the canonical base scene.
-  ///
-  /// The edit is routed through the document adapter, history, and render
-  /// pipeline, so host-specific canonical metadata can be preserved, removed,
-  /// or remapped as required.
-  rt.ElementId? applyEdit(EditorEdit edit);
 
   /// Updates resolve context used by the adapter/render pipeline.
   void setResolveContext(Object? context);
 
-  /// Applies a source-document-level mutation.
+  /// Applies a source-document edit that must preserve the canonical base
+  /// canvas scene.
   ///
-  /// Use this for source-document metadata or host-specific canonical state.
-  void updateSourceDocument(
-    TSourceDocument Function(TSourceDocument document) update,
-  );
+  /// The callback receives immutable canonical input and must be synchronous,
+  /// deterministic, and free of side effects.
+  ///
+  /// Use this only for host-owned metadata or canonical state outside the base
+  /// scene. A callback that meaningfully changes the adapter's base scene is
+  /// programmer misuse and throws before history or publication is changed.
+  ///
+  /// Base-scene mutations belong on `EditorController.applyEdit()`,
+  /// `commitField()`, or `updateField()`.
+  void applySourceEdit(TSourceDocument Function(TSourceDocument document) edit);
 }
 
 /// Selection capability exposed to editor extensions.

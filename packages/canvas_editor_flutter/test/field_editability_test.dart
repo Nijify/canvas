@@ -176,8 +176,9 @@ void main() {
     expect(runtime.canUndo.value, isTrue);
   });
 
-  test('denial is exposed and denied commit is a complete no-op', () {
-    var codecCommitCalls = 0;
+  test('denial blocks literal and functional field mutations', () {
+    var codecWriteCalls = 0;
+    var updaterCalls = 0;
 
     final runtime = _buildPolicyRuntime(
       _PolicyDocument(base: _scene(), denyText: true),
@@ -185,8 +186,22 @@ void main() {
         rt.CanvasFields.textContent: FieldCodec(
           fallback: '',
           readNode: (_, node) => (node as rt.TextNode).data.text,
-          commit: (controller, nodeId, value) {
-            codecCommitCalls += 1;
+          canReadCanonicalNode: (_, node) => node is rt.TextNode,
+          readCanonicalNode: (_, node) => (node as rt.TextNode).data.text,
+          writeCanonical: (base, nodeId, value) {
+            codecWriteCalls += 1;
+
+            final node = rt.findById(base, nodeId);
+            if (node is! rt.TextNode) return base;
+
+            final text = value as String;
+            if (node.data.text == text) return base;
+
+            return rt.replaceById(
+              base,
+              nodeId,
+              node.copyWith(data: node.data.copyWith(text: text)),
+            );
           },
         ),
       },
@@ -209,10 +224,16 @@ void main() {
     runtime.commitField<String>(
       't1',
       rt.CanvasFields.textContent,
-      'Rejected title',
+      'Rejected literal title',
     );
 
-    expect(codecCommitCalls, 0);
+    runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+      updaterCalls += 1;
+      return 'Rejected functional title';
+    });
+
+    expect(updaterCalls, 0);
+    expect(codecWriteCalls, 0);
     expect(_textOf(runtime.sourceDocument.base), 'Original title');
     expect(runtime.canUndo.value, isFalse);
     expect(sourceNotifications, 0);
@@ -257,6 +278,18 @@ void main() {
       0.5,
     );
 
+    var updaterCalls = 0;
+
+    runtime.updateField<double>(
+      kSceneFieldsId,
+      rt.CanvasFields.sceneBackgroundOpacity,
+      (current) {
+        updaterCalls += 1;
+        return 0.25;
+      },
+    );
+
+    expect(updaterCalls, 0);
     expect(runtime.sourceDocument.base.backgroundOpacity, 1);
     expect(runtime.canUndo.value, isFalse);
   });
@@ -280,9 +313,7 @@ void main() {
       isNull,
     );
 
-    runtime.updateSourceDocument(
-      (document) => document.copyWith(denyText: true),
-    );
+    runtime.applySourceEdit((document) => document.copyWith(denyText: true));
 
     expect(runtime.sourceDocument.base, same(initialBase));
     expect(documentNotifications, 0);
@@ -405,9 +436,7 @@ void main() {
       expect(_textOf(runtime.sourceDocument.base), 'Edited title');
       expect(runtime.canUndo.value, isFalse);
 
-      runtime.updateSourceDocument(
-        (document) => document.copyWith(denyText: true),
-      );
+      runtime.applySourceEdit((document) => document.copyWith(denyText: true));
 
       await tester.pump();
       await tester.pump();

@@ -100,7 +100,23 @@ final class _SurfaceSeamExtension
           codecReadCalls += 1;
           return _customFieldValue;
         },
-        commit: (_, _, _) {},
+        canReadCanonicalNode: (_, node) => node is rt.TextNode,
+        readCanonicalNode: (_, node) {
+          return (node as rt.TextNode).data.text;
+        },
+        writeCanonical: (base, nodeId, value) {
+          final node = rt.findById(base, nodeId);
+          if (node is! rt.TextNode) return base;
+
+          final text = value as String;
+          if (node.data.text == text) return base;
+
+          return rt.replaceById(
+            base,
+            nodeId,
+            node.copyWith(data: node.data.copyWith(text: text)),
+          );
+        },
       ),
     };
   }

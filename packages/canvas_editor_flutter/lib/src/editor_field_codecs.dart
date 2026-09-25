@@ -1,66 +1,108 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_field_codecs.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_field_codecs.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
-import 'package:canvas_editor_flutter/src/editor_api.dart';
-import 'package:canvas_editor_flutter/src/editor_edits.dart';
 import 'package:canvas_editor_flutter/src/editor_fill.dart'
     show coerceFillForNode;
 
-typedef CommitFn =
-    void Function(
-      EditorController controller,
+typedef ReadNodeFn =
+    Object Function(rt.CanvasSceneDocument scene, rt.Node node);
+
+typedef ReadSceneFn = Object Function(rt.CanvasSceneDocument scene);
+
+typedef CanReadCanonicalNodeFn =
+    bool Function(rt.CanvasSceneDocument scene, rt.Node node);
+
+typedef ReadCanonicalNodeFn =
+    Object Function(rt.CanvasSceneDocument scene, rt.Node node);
+
+typedef ReadCanonicalSceneFn = Object Function(rt.CanvasSceneDocument scene);
+
+typedef WriteCanonicalFn =
+    rt.CanvasSceneDocument Function(
+      rt.CanvasSceneDocument base,
       rt.ElementId nodeId,
       Object value,
     );
 
-typedef ReadNodeFn =
-    Object Function(rt.CanvasSceneDocument scene, rt.Node node);
-typedef ReadSceneFn = Object Function(rt.CanvasSceneDocument scene);
-
-/// Defines read and literal commit behavior for one registered canvas field.
+/// Defines presentation reads and canonical mutation behavior for one
+/// registered canvas field.
 ///
-/// Field-specific normalization and invariants belong here. Persistent changes
-/// produced by a codec should be routed through
-/// [EditorController.applyEdit].
+/// [readNode] and [readScene] are presentation readers. They may read resolved
+/// or otherwise effective runtime state and are used by `getField()`.
+///
+/// Canonical mutation uses [readCanonicalNode] or [readCanonicalScene] together
+/// with [writeCanonical]. Canonical writers transform the supplied base scene
+/// and return the result. They must not start another editor commit.
 class FieldCodec {
   const FieldCodec({
     required this.fallback,
     this.readNode,
     this.readScene,
-    required this.commit,
+    this.canReadCanonicalNode,
+    this.readCanonicalNode,
+    this.readCanonicalScene,
+    required this.writeCanonical,
     this.isSceneOnly = false,
   });
 
   final Object fallback;
 
-  /// Reads from a runtime node with its effective rendered scene context.
+  /// Presentation read from a runtime node and its effective scene context.
   final ReadNodeFn? readNode;
 
-  /// Reads from the scene for the kSceneFieldsId pseudo node.
+  /// Presentation read for a scene-level field.
   final ReadSceneFn? readScene;
 
-  /// Applies field-specific policy and routes the resulting persistent mutation
-  /// through [EditorController.applyEdit].
-  final CommitFn commit;
+  /// Returns whether this node is a valid canonical target for the field.
+  ///
+  /// Node-field codecs must provide this together with [readCanonicalNode].
+  final CanReadCanonicalNodeFn? canReadCanonicalNode;
 
-  /// True when the codec is only valid for kSceneFieldsId.
+  /// Reads the persisted/canonical value from the canonical base scene.
+  ///
+  /// This is intentionally separate from [readNode]; canonical updates must
+  /// never derive their starting value from presentation state.
+  final ReadCanonicalNodeFn? readCanonicalNode;
+
+  /// Reads the persisted/canonical value for a scene-level field.
+  ///
+  /// Scene-only codecs must provide this.
+  final ReadCanonicalSceneFn? readCanonicalScene;
+
+  /// Applies field-specific normalization and canonical storage behavior.
+  ///
+  /// This transforms [base] and returns the resulting canonical scene.
+  /// It must not call `applyEdit()`, `commitField()`, `updateField()`, or
+  /// otherwise initiate another commit.
+  final WriteCanonicalFn writeCanonical;
+
+  /// True when this codec is valid only for the scene-fields pseudo target.
   final bool isSceneOnly;
 }
 
-void _commitNodeUpdate(
-  EditorController controller,
+rt.CanvasSceneDocument _writeNodeUpdate(
+  rt.CanvasSceneDocument base,
   rt.ElementId nodeId,
   rt.Node Function(rt.Node node) update,
 ) {
-  controller.applyEdit(EditorEdits.updateNode(nodeId, update));
+  final node = rt.findById(base, nodeId);
+  if (node == null) return base;
+
+  final nextNode = update(node);
+
+  if (identical(nextNode, node) || nextNode == node) {
+    return base;
+  }
+
+  return rt.replaceById(base, nodeId, nextNode);
 }
 
-void _commitFill(
-  EditorController controller,
+rt.CanvasSceneDocument _writeFill(
+  rt.CanvasSceneDocument base,
   rt.ElementId nodeId,
   rt.CanvasFill requestedFill,
 ) {
-  _commitNodeUpdate(controller, nodeId, (node) {
+  return _writeNodeUpdate(base, nodeId, (node) {
     if (node is rt.TextNode) {
       final nextFill = coerceFillForNode(node, requestedFill);
       final current = node.data.appearance.foreground;
@@ -125,10 +167,12 @@ class FieldCatalog {
     rt.CanvasFields.textContent: FieldCodec(
       fallback: '',
       readNode: (_, node) => (node as rt.TextNode).data.text,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).data.text,
+      writeCanonical: (base, nodeId, value) {
         final text = value as String;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
           if (node.data.text == text) return node;
 
@@ -140,10 +184,12 @@ class FieldCatalog {
     rt.CanvasFields.textFontFamily: FieldCodec(
       fallback: 'Inter',
       readNode: (_, node) => (node as rt.TextNode).data.fontFamily,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).data.fontFamily,
+      writeCanonical: (base, nodeId, value) {
         final fontFamily = value as String;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
           if (node.data.fontFamily == fontFamily) return node;
 
@@ -157,18 +203,23 @@ class FieldCatalog {
     rt.CanvasFields.textFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
       readNode: (_, node) => (node as rt.TextNode).data.appearance.foreground,
-      commit: (controller, nodeId, value) {
-        _commitFill(controller, nodeId, value as rt.CanvasFill);
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.TextNode).data.appearance.foreground,
+      writeCanonical: (base, nodeId, value) {
+        return _writeFill(base, nodeId, value as rt.CanvasFill);
       },
     ),
 
     rt.CanvasFields.textFontSize: FieldCodec(
       fallback: 28.0,
       readNode: (_, node) => (node as rt.TextNode).data.fontSize,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).data.fontSize,
+      writeCanonical: (base, nodeId, value) {
         final fontSize = value as double;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
           if (node.data.fontSize == fontSize) return node;
 
@@ -180,10 +231,12 @@ class FieldCatalog {
     rt.CanvasFields.textFontWeight: FieldCodec(
       fallback: 400,
       readNode: (_, node) => (node as rt.TextNode).data.fontWeight,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).data.fontWeight,
+      writeCanonical: (base, nodeId, value) {
         final fontWeight = value as int;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
           if (node.data.fontWeight == fontWeight) return node;
 
@@ -197,10 +250,12 @@ class FieldCatalog {
     rt.CanvasFields.textLetterSpacing: FieldCodec(
       fallback: 0.0,
       readNode: (_, node) => (node as rt.TextNode).data.letterSpacing,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).data.letterSpacing,
+      writeCanonical: (base, nodeId, value) {
         final letterSpacing = value as double;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
           if (node.data.letterSpacing == letterSpacing) return node;
 
@@ -217,10 +272,12 @@ class FieldCatalog {
     rt.CanvasFields.iconRef: FieldCodec(
       fallback: '',
       readNode: (_, node) => (node as rt.IconNode).data.iconRef,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.IconNode,
+      readCanonicalNode: (_, node) => (node as rt.IconNode).data.iconRef,
+      writeCanonical: (base, nodeId, value) {
         final iconRef = value as String;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.IconNode) return node;
           if (node.data.iconRef == iconRef) return node;
 
@@ -232,18 +289,23 @@ class FieldCatalog {
     rt.CanvasFields.iconFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
       readNode: (_, node) => (node as rt.IconNode).data.appearance.foreground,
-      commit: (controller, nodeId, value) {
-        _commitFill(controller, nodeId, value as rt.CanvasFill);
+      canReadCanonicalNode: (_, node) => node is rt.IconNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.IconNode).data.appearance.foreground,
+      writeCanonical: (base, nodeId, value) {
+        return _writeFill(base, nodeId, value as rt.CanvasFill);
       },
     ),
 
     rt.CanvasFields.iconSizePx: FieldCodec(
       fallback: 48.0,
       readNode: (_, node) => (node as rt.IconNode).data.sizePx,
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.IconNode,
+      readCanonicalNode: (_, node) => (node as rt.IconNode).data.sizePx,
+      writeCanonical: (base, nodeId, value) {
         final sizePx = value as double;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.IconNode) return node;
           if (node.data.sizePx == sizePx) return node;
 
@@ -263,46 +325,52 @@ class FieldCatalog {
 
         return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
       },
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.ImageNode,
+      readCanonicalNode: (scene, node) {
+        final image = node as rt.ImageNode;
+        final assetId = image.data.assetId;
+
+        return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
+      },
+      writeCanonical: (base, nodeId, value) {
         final requested = value as String;
         final sourceRef = requested.trim().isEmpty ? null : requested;
 
-        controller.applyEdit(
-          EditorEdits.updateScene((scene) {
-            final node = rt.findById(scene, nodeId);
-            if (node is! rt.ImageNode) return scene;
+        final node = rt.findById(base, nodeId);
+        if (node is! rt.ImageNode) return base;
 
-            final currentAssetId = node.data.assetId;
-            final currentSourceRef = currentAssetId == null
-                ? null
-                : scene.assets[currentAssetId]?.sourceRef;
+        final currentAssetId = node.data.assetId;
+        final currentSourceRef = currentAssetId == null
+            ? null
+            : base.assets[currentAssetId]?.sourceRef;
 
-            if (sourceRef == null) {
-              if (currentAssetId == null) return scene;
+        if (sourceRef == null) {
+          if (currentAssetId == null) return base;
 
-              return rt.replaceById(
-                scene,
-                nodeId,
-                node.copyWith(data: node.data.copyWith(assetId: null)),
-              );
-            }
+          return rt.replaceById(
+            base,
+            nodeId,
+            node.copyWith(data: node.data.copyWith(assetId: null)),
+          );
+        }
 
-            if (currentSourceRef == sourceRef) return scene;
+        if (currentSourceRef == sourceRef) {
+          return base;
+        }
 
-            final assetId = _nextImageAssetId(scene, nodeId);
-            final nextScene = scene.copyWith(
-              assets: <rt.CanvasAssetId, rt.CanvasImageAsset>{
-                ...scene.assets,
-                assetId: rt.CanvasImageAsset(sourceRef: sourceRef),
-              },
-            );
+        final assetId = _nextImageAssetId(base, nodeId);
 
-            return rt.replaceById(
-              nextScene,
-              nodeId,
-              node.copyWith(data: node.data.copyWith(assetId: assetId)),
-            );
-          }),
+        final nextBase = base.copyWith(
+          assets: <rt.CanvasAssetId, rt.CanvasImageAsset>{
+            ...base.assets,
+            assetId: rt.CanvasImageAsset(sourceRef: sourceRef),
+          },
+        );
+
+        return rt.replaceById(
+          nextBase,
+          nodeId,
+          node.copyWith(data: node.data.copyWith(assetId: assetId)),
         );
       },
     ),
@@ -310,10 +378,13 @@ class FieldCatalog {
     rt.CanvasFields.imageWidthPx: FieldCodec(
       fallback: 200.0,
       readNode: (_, node) => (node as rt.ImageNode).data.size.w.toDouble(),
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.ImageNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.ImageNode).data.size.w.toDouble(),
+      writeCanonical: (base, nodeId, value) {
         final width = value as double;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.ImageNode) return node;
 
           final size = node.data.size;
@@ -329,10 +400,13 @@ class FieldCatalog {
     rt.CanvasFields.imageHeightPx: FieldCodec(
       fallback: 200.0,
       readNode: (_, node) => (node as rt.ImageNode).data.size.h.toDouble(),
-      commit: (controller, nodeId, value) {
+      canReadCanonicalNode: (_, node) => node is rt.ImageNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.ImageNode).data.size.h.toDouble(),
+      writeCanonical: (base, nodeId, value) {
         final height = value as double;
 
-        _commitNodeUpdate(controller, nodeId, (node) {
+        return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.ImageNode) return node;
 
           final size = node.data.size;
@@ -351,8 +425,10 @@ class FieldCatalog {
     rt.CanvasFields.pathFill: FieldCodec(
       fallback: const rt.CanvasFill.none(),
       readNode: (_, node) => (node as rt.PathNode).data.fill,
-      commit: (controller, nodeId, value) {
-        _commitFill(controller, nodeId, value as rt.CanvasFill);
+      canReadCanonicalNode: (_, node) => node is rt.PathNode,
+      readCanonicalNode: (_, node) => (node as rt.PathNode).data.fill,
+      writeCanonical: (base, nodeId, value) {
+        return _writeFill(base, nodeId, value as rt.CanvasFill);
       },
     ),
 
@@ -363,15 +439,15 @@ class FieldCatalog {
       fallback: const rt.CanvasFill.none(),
       isSceneOnly: true,
       readScene: (scene) => scene.backgroundFill,
-      commit: (controller, _, value) {
+      readCanonicalScene: (scene) => scene.backgroundFill,
+      writeCanonical: (base, _, value) {
         final fill = value as rt.CanvasFill;
 
-        controller.applyEdit(
-          EditorEdits.updateScene((scene) {
-            if (scene.backgroundFill == fill) return scene;
-            return scene.copyWith(backgroundFill: fill);
-          }),
-        );
+        if (base.backgroundFill == fill) {
+          return base;
+        }
+
+        return base.copyWith(backgroundFill: fill);
       },
     ),
 
@@ -379,15 +455,15 @@ class FieldCatalog {
       fallback: 1.0,
       isSceneOnly: true,
       readScene: (scene) => scene.backgroundOpacity,
-      commit: (controller, _, value) {
+      readCanonicalScene: (scene) => scene.backgroundOpacity,
+      writeCanonical: (base, _, value) {
         final opacity = value as double;
 
-        controller.applyEdit(
-          EditorEdits.updateScene((scene) {
-            if (scene.backgroundOpacity == opacity) return scene;
-            return scene.copyWith(backgroundOpacity: opacity);
-          }),
-        );
+        if (base.backgroundOpacity == opacity) {
+          return base;
+        }
+
+        return base.copyWith(backgroundOpacity: opacity);
       },
     ),
   };

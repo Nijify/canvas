@@ -22,7 +22,7 @@ CanvasSceneDocument _secondScenePreparer(
 }
 
 FieldCodec _codec(String fallback) {
-  return FieldCodec(fallback: fallback, commit: (_, _, _) {});
+  return FieldCodec(fallback: fallback, writeCanonical: (base, _, _) => base);
 }
 
 Widget _firstRow<T>(
