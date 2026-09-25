@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/interaction/canvas_viewport_behavior.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/canvas_viewport_behavior.dart
 
 import 'package:flutter/widgets.dart';
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
@@ -32,11 +32,11 @@ class CanvasHitTestResult {
 
 @immutable
 final class CanvasDragStartIntent {
-  const CanvasDragStartIntent.move(String this.dragId);
+  const CanvasDragStartIntent.move(rt.ElementId this.dragId);
 
   const CanvasDragStartIntent.noMove() : dragId = null;
 
-  final String? dragId;
+  final rt.ElementId? dragId;
 }
 
 /// Optional viewport behavior extension.

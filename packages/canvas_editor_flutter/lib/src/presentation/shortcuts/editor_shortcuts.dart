@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/shortcuts/editor_shortcuts.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/shortcuts/editor_shortcuts.dart
 
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter/widgets.dart'
@@ -18,28 +18,28 @@ Map<ShortcutActivator, VoidCallback> buildEditorShortcutBindings(
   final selection = context.read<SelectionController>();
 
   void bringForward() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.bringForward(id));
   }
 
   void sendBackward() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.sendBackward(id));
   }
 
   void bringToFront() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.bringToFront(id));
   }
 
   void sendToBack() {
-    final id = selection.firstId;
+    final id = selection.value;
     if (id == null) return;
 
     controller.applyEdit(EditorEdits.sendToBack(id));

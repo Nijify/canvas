@@ -1,3 +1,5 @@
+// Path: packages/canvas_editor_flutter/test/field_editability_test.dart
+
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/extensions.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart'
@@ -321,7 +323,7 @@ void main() {
 
       final endSession = runtime.beginEditSession();
 
-      runtime.updateDragMany({'t1'}, const rt.Vec2(10, 0));
+      runtime.updateDrag('t1', const rt.Vec2(10, 0));
 
       expect(
         _xOf(runtime.sourceDocument.base),

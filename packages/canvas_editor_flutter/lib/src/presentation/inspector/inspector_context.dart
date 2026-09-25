@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_context.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_context.dart
 
 import 'package:flutter/widgets.dart';
 
@@ -47,9 +47,9 @@ class InspectorContext {
     required this.fieldRowBuilder,
   });
 
-  /// Selected item ID when exactly one canvas item is selected.
+  /// Selected canvas item ID.
   ///
-  /// Null means there is no single-item selection.
+  /// Null means there is no selection.
   final ElementId? selectedId;
 
   final EditorSelectionHost selection;

@@ -49,7 +49,7 @@ class LayersPanel extends StatelessWidget {
               builder: (context, scene, _) {
                 return ValueListenableBuilder(
                   valueListenable: selection,
-                  builder: (context, selectionState, _) {
+                  builder: (context, selectedId, _) {
                     final rows = SceneObjectTreeBuilder(
                       policy: policy,
                     ).build(scene: scene);
@@ -63,16 +63,12 @@ class LayersPanel extends StatelessWidget {
                       itemCount: rows.length,
                       itemBuilder: (context, index) {
                         final row = rows[index];
-                        final selected = selectionState.ids.contains(
-                          row.selectionId,
-                        );
+                        final selected = selectedId == row.selectionId;
 
                         return _LayerRow(
                           row: row,
                           selected: selected,
-                          onTap: () => selection.selectItems([
-                            row.selectionId,
-                          ], additive: false),
+                          onTap: () => selection.selectItem(row.selectionId),
                           onRename: () => _showRenameDialog(context, row),
                         );
                       },

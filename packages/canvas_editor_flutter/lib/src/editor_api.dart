@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_api.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_api.dart
 // ignore_for_file: constant_identifier_names
 import 'package:flutter/foundation.dart';
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
@@ -14,35 +14,6 @@ import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 /// - this file must not import presentation-layer code
 /// - higher-level widgets/controllers can depend on this
 /// - application code can also depend on this
-
-@immutable
-final class SelectionState {
-  const SelectionState.none() : ids = const <String>{};
-
-  factory SelectionState.items(Iterable<String> ids) {
-    final normalized = Set<String>.unmodifiable(ids);
-
-    return normalized.isEmpty
-        ? const SelectionState.none()
-        : SelectionState._(normalized);
-  }
-
-  const SelectionState._(this.ids);
-
-  final Set<String> ids;
-
-  bool get isEmpty => ids.isEmpty;
-  bool get hasItems => ids.isNotEmpty;
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is SelectionState && setEquals(ids, other.ids);
-  }
-
-  @override
-  int get hashCode => Object.hashAllUnordered(ids);
-}
 
 /// Pseudo node id used to expose scene-level inspector fields (background, etc)
 /// through the unified Field API.
@@ -199,7 +170,7 @@ abstract class EditorController {
   void redo();
 
   // ---- Ephemeral transforms ----
-  void updateDragMany(Set<rt.ElementId> ids, rt.Vec2 delta);
+  void updateDrag(rt.ElementId id, rt.Vec2 delta);
   void updateRotate(rt.ElementId id, double deltaRad);
 
   /// Scale around an anchor point expressed in the node's parent space.

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector.dart
 
 import 'package:flutter/material.dart';
 
@@ -103,17 +103,8 @@ Widget buildSceneInspector(
   List<InspectorSectionBuilder> sectionBuilders =
       const <InspectorSectionBuilder>[],
 }) {
-  final selectionState = inspector.selection.value;
-
-  if (selectionState.hasItems && selectionState.ids.length > 1) {
-    return const InspectorCard(child: Text('Multiple objects selected'));
-  }
-
-  if (!selectionState.hasItems) {
-    return _buildBackgroundPanel(inspector: inspector);
-  }
-
   final selectedId = inspector.selectedId;
+
   if (selectedId == null) {
     return _buildBackgroundPanel(inspector: inspector);
   }
@@ -371,11 +362,7 @@ class Inspector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectionState = selection.value;
-
-    final selectedId = selectionState.hasItems && selectionState.ids.length == 1
-        ? selectionState.ids.single
-        : null;
+    final selectedId = selection.value;
 
     final inspectorContext = InspectorContext(
       selectedId: selectedId,

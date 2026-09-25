@@ -55,7 +55,7 @@ void main() {
         listen: false,
       );
 
-      selection.selectItems(const <String>[_imageId]);
+      selection.selectItem(_imageId);
       await tester.pumpAndSettle();
 
       expect(find.text('Image'), findsOneWidget);

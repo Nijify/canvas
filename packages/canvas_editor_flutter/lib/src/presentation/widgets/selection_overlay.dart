@@ -9,25 +9,19 @@ import 'package:vector_math/vector_math_64.dart' as vm;
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/src/editor_api.dart';
-import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
-    show EditorGeometryIndex;
-import 'package:canvas_editor_flutter/src/interaction/geometry/selection_geometry.dart'
-    show selectionGeometry;
 
 class CanvasSelectionOverlay extends StatefulWidget {
   final rt.RenderSnapshot render;
-  final EditorGeometryIndex geometry;
   final double scale;
   final Offset pan;
-  final Set<String> selectedIds;
+  final rt.ElementId selectedId;
 
   const CanvasSelectionOverlay({
     super.key,
     required this.render,
-    required this.geometry,
     required this.scale,
     required this.pan,
-    required this.selectedIds,
+    required this.selectedId,
   });
 
   @override
@@ -128,93 +122,38 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final ids = widget.selectedIds;
-    if (ids.isEmpty) return const SizedBox.shrink();
-
+    final id = widget.selectedId;
     final controller = context.read<EditorController>();
     final scene = widget.render.scene;
     final computed = widget.render.computed;
 
-    final isMulti = ids.length > 1;
+    final node = rt.findById(scene, id);
+    final world = computed.worldById[id];
+    final lb = computed.layoutBoundsLocalById[id];
 
-    // ------------------------------------------------------------------
-    // TEMP (UX): Multi-select rotate/scale is disabled.
-    //
-    // Why:
-    // - Current transform ops update only rotation/scale (in-place).
-    // - They do NOT compensate position around a shared pivot/anchor.
-    // - Result: UI implies a group transform, but nodes “spin/scale in place”.
-    //
-    // What still works:
-    // - Multi-select drag remains enabled (handled in CanvasViewport).
-    //
-    // Future:
-    // - Implement group transform math (rotate/scale ABOUT a shared pivot with
-    //   per-node position compensation), then re-enable these handles.
-    // ------------------------------------------------------------------
-    final bool disableMultiTransform = isMulti;
-
-    // Editable if the node exists in the RUNTIME scene.
-    final editableIds = ids
-        .where((id) => rt.findById(scene, id) != null)
-        .toList(growable: false);
-    if (editableIds.isEmpty) return const SizedBox.shrink();
-
-    // ------------------------------------------------------------------
-    // Geometry
-    // - Single-select: oriented quad from local bounds transformed by world matrix
-    //   (so the blue box rotates with the object).
-    // - Multi-select: AABB union (current behavior) for visuals only.
-    // ------------------------------------------------------------------
-    rt.Vec2 pivotWorld;
-    List<rt.Vec2> cornersWorld; // TL, TR, BR, BL in world
-
-    if (!isMulti) {
-      final id = editableIds.first;
-      final node = rt.findById(scene, id);
-      final world = computed.worldById[id];
-      final lb = computed.layoutBoundsLocalById[id];
-
-      if (node == null || world == null || lb == null) {
-        return const SizedBox.shrink();
-      }
-
-      // Local rect corners (TL, TR, BR, BL)
-      final localCorners = <rt.Vec2>[
-        rt.Vec2(lb.left, lb.top),
-        rt.Vec2(lb.right, lb.top),
-        rt.Vec2(lb.right, lb.bottom),
-        rt.Vec2(lb.left, lb.bottom),
-      ];
-      cornersWorld = localCorners
-          .map((p) => _transformPoint(world, p))
-          .toList();
-
-      // Pivot in LOCAL space:
-      // - default center of bounds when origin=center
-      // - customPivotPx when origin=custom
-      final xf = node.xf;
-      final rt.Vec2 pivotLocal =
-          (xf.origin == rt.OriginKind.custom && xf.customPivotPx != null)
-          ? xf.customPivotPx!
-          : rt.Vec2((lb.left + lb.right) * 0.5, (lb.top + lb.bottom) * 0.5);
-
-      pivotWorld = _transformPoint(world, pivotLocal);
-    } else {
-      rt.Rect2D? boundsFor(String id) =>
-          widget.geometry.layoutBoundsWorldById[id];
-
-      final geom = selectionGeometry(ids, getBounds: boundsFor);
-
-      if (geom == null) {
-        return const SizedBox.shrink();
-      }
-
-      cornersWorld = geom.corners;
-      pivotWorld = geom.pivotWorld;
+    if (node == null || world == null || lb == null) {
+      return const SizedBox.shrink();
     }
 
-    // Keep pivot synced unless we are mid-gesture.
+    final localCorners = <rt.Vec2>[
+      rt.Vec2(lb.left, lb.top),
+      rt.Vec2(lb.right, lb.top),
+      rt.Vec2(lb.right, lb.bottom),
+      rt.Vec2(lb.left, lb.bottom),
+    ];
+
+    final cornersWorld = localCorners
+        .map((p) => _transformPoint(world, p))
+        .toList(growable: false);
+
+    final xf = node.xf;
+    final rt.Vec2 pivotLocal =
+        (xf.origin == rt.OriginKind.custom && xf.customPivotPx != null)
+        ? xf.customPivotPx!
+        : rt.Vec2((lb.left + lb.right) * 0.5, (lb.top + lb.bottom) * 0.5);
+
+    final pivotWorld = _transformPoint(world, pivotLocal);
+
     if (_gesturePivotWorld == null) {
       _centerWorld = pivotWorld;
     }
@@ -226,9 +165,6 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
 
     final cornersS = cornersWorld.map(w2s).toList(growable: false);
 
-    // Rotate handle placement:
-    // - For single-select oriented quad: use top edge direction.
-    // - For multi-select AABB: same logic still works.
     const gap = 24.0;
     const knob = 10.0;
 
@@ -236,6 +172,7 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
       (cornersS[0].dx + cornersS[1].dx) / 2,
       (cornersS[0].dy + cornersS[1].dy) / 2,
     );
+
     final topEdge = cornersS[1] - cornersS[0];
     final normal = Offset(topEdge.dy, -topEdge.dx);
     final nUnit = normal.distance == 0
@@ -253,128 +190,108 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
               ),
             ),
 
-            // ----------------------------------------------------------------
-            // Single-select rotate + resize
-            // ----------------------------------------------------------------
-            if (!disableMultiTransform) ...[
-              // ROTATE (single-select)
+            _hitCircle(
+              overlayCtx,
+              rotateCenter,
+              knob,
+              onStartWorld: (w) {
+                _endRotateSession ??= controller.beginEditSession();
+                _gesturePivotWorld = _centerWorld;
+                _lastAngle = _angleFromPivot(_pivotWorld, w);
+              },
+              onDragWorld: (w) {
+                if (_lastAngle == null) return;
+
+                final ang = _angleFromPivot(_pivotWorld, w);
+                final delta = _normalizeDelta(ang - _lastAngle!);
+
+                controller.updateRotate(id, delta);
+
+                _lastAngle = ang;
+              },
+              onEnd: () {
+                _lastAngle = null;
+                _gesturePivotWorld = null;
+                _closeRotateSession();
+              },
+            ),
+
+            for (var i = 0; i < cornersS.length; i++)
               _hitCircle(
                 overlayCtx,
-                rotateCenter,
+                cornersS[i],
                 knob,
                 onStartWorld: (w) {
-                  _endRotateSession ??= controller.beginEditSession();
+                  _endScaleSession ??= controller.beginEditSession();
                   _gesturePivotWorld = _centerWorld;
-                  _lastAngle = _angleFromPivot(_pivotWorld, w);
-                },
-                onDragWorld: (w) {
-                  if (_lastAngle == null) return;
-                  final id = editableIds.first;
 
-                  final ang = _angleFromPivot(_pivotWorld, w);
-                  final delta = _normalizeDelta(ang - _lastAngle!);
+                  final opp = (i + 2) % 4;
+                  final anchorWorld = cornersWorld[opp];
+                  final handleWorld = cornersWorld[i];
 
-                  controller.updateRotate(id, delta);
+                  final axis = handleWorld - anchorWorld;
+                  final len = axis.length;
 
-                  _lastAngle = ang;
-                },
-                onEnd: () {
-                  _lastAngle = null;
-                  _gesturePivotWorld = null;
-                  _closeRotateSession();
-                },
-              ),
-
-              // SCALE (Canva-like “resize from handle”): anchor opposite corner.
-              for (var i = 0; i < cornersS.length; i++)
-                _hitCircle(
-                  overlayCtx,
-                  cornersS[i],
-                  knob,
-                  onStartWorld: (w) {
-                    _endScaleSession ??= controller.beginEditSession();
-                    _gesturePivotWorld = _centerWorld;
-
-                    // Opposite corner index (TL<->BR, TR<->BL)
-                    final opp = (i + 2) % 4;
-                    final anchorWorld = cornersWorld[opp];
-                    final handleWorld = cornersWorld[i];
-
-                    final axis = handleWorld - anchorWorld;
-                    final len = axis.length;
-
-                    if (len <= 1e-6) {
-                      _scaleAnchorWorld = null;
-                      _scaleAxisWorld = null;
-                      _scalePrevT = null;
-                      return;
-                    }
-
-                    _scaleAnchorWorld = anchorWorld;
-                    _scaleAxisWorld = axis / len; // unit
-
-                    // Signed distance along axis at start.
-                    // Clamp away from zero to avoid unstable ratios.
-                    var t0 = _dot(w - anchorWorld, _scaleAxisWorld!);
-                    if (t0.abs() < 1e-3) t0 = t0.isNegative ? -1e-3 : 1e-3;
-
-                    _scalePrevT = t0;
-                  },
-                  onDragWorld: (w) {
-                    final anchorWorld = _scaleAnchorWorld;
-                    final axisUnit = _scaleAxisWorld;
-                    var prevT = _scalePrevT;
-
-                    if (anchorWorld == null ||
-                        axisUnit == null ||
-                        prevT == null) {
-                      return;
-                    }
-
-                    final id = editableIds.first;
-
-                    // Current signed distance along the anchor->handle axis.
-                    var currT = _dot(w - anchorWorld, axisUnit);
-
-                    // Avoid crossing-through-anchor instability.
-                    if (currT.abs() < 1e-3) {
-                      currT = currT.isNegative ? -1e-3 : 1e-3;
-                    }
-
-                    // Incremental mul-step (prevents compounding explosions).
-                    var mul = currT / prevT;
-
-                    // Safety clamp (tune as desired).
-                    mul = mul.clamp(0.02, 50.0);
-
-                    // Convert anchorWorld -> parent space for scaleAround op.
-                    final parentRef = rt.findParentOf(scene, id);
-                    final parentNode = parentRef?.parent;
-                    final parentWorld = (parentNode == null)
-                        ? vm.Matrix4.identity()
-                        : (computed.worldById[parentNode.id] ??
-                              vm.Matrix4.identity());
-                    final invParent = _inverseOrIdentity(parentWorld);
-                    final anchorParent = _transformPoint(
-                      invParent,
-                      anchorWorld,
-                    );
-
-                    controller.updateUniformScaleAround(id, anchorParent, mul);
-
-                    // Update baseline for the next incremental step.
-                    _scalePrevT = currT;
-                  },
-                  onEnd: () {
+                  if (len <= 1e-6) {
                     _scaleAnchorWorld = null;
                     _scaleAxisWorld = null;
                     _scalePrevT = null;
+                    return;
+                  }
 
-                    _gesturePivotWorld = null;
-                    _closeScaleSession();
-                  },
-                ),
-            ],
+                  _scaleAnchorWorld = anchorWorld;
+                  _scaleAxisWorld = axis / len;
+
+                  var t0 = _dot(w - anchorWorld, _scaleAxisWorld!);
+                  if (t0.abs() < 1e-3) {
+                    t0 = t0.isNegative ? -1e-3 : 1e-3;
+                  }
+
+                  _scalePrevT = t0;
+                },
+                onDragWorld: (w) {
+                  final anchorWorld = _scaleAnchorWorld;
+                  final axisUnit = _scaleAxisWorld;
+                  final prevT = _scalePrevT;
+
+                  if (anchorWorld == null ||
+                      axisUnit == null ||
+                      prevT == null) {
+                    return;
+                  }
+
+                  var currT = _dot(w - anchorWorld, axisUnit);
+
+                  if (currT.abs() < 1e-3) {
+                    currT = currT.isNegative ? -1e-3 : 1e-3;
+                  }
+
+                  var mul = currT / prevT;
+                  mul = mul.clamp(0.02, 50.0);
+
+                  final parentRef = rt.findParentOf(scene, id);
+                  final parentNode = parentRef?.parent;
+                  final parentWorld = parentNode == null
+                      ? vm.Matrix4.identity()
+                      : computed.worldById[parentNode.id] ??
+                            vm.Matrix4.identity();
+
+                  final invParent = _inverseOrIdentity(parentWorld);
+                  final anchorParent = _transformPoint(invParent, anchorWorld);
+
+                  controller.updateUniformScaleAround(id, anchorParent, mul);
+
+                  _scalePrevT = currT;
+                },
+                onEnd: () {
+                  _scaleAnchorWorld = null;
+                  _scaleAxisWorld = null;
+                  _scalePrevT = null;
+
+                  _gesturePivotWorld = null;
+                  _closeScaleSession();
+                },
+              ),
           ],
         ),
       ),

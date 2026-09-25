@@ -49,6 +49,40 @@ CanvasSceneDocument _fixtureScene() {
   );
 }
 
+CanvasSceneDocument _twoShapeScene() {
+  final base = _fixtureScene();
+
+  return base.copyWith(
+    children: <Node>[
+      ...base.children,
+      const Node.path(
+        id: 'shape-2',
+        xf: Transform2D(
+          position: Vec2(180, 100),
+          origin: OriginKind.custom,
+          customPivotPx: Vec2(30, 20),
+        ),
+        data: PathData(
+          points: <Vec2?>[],
+          source: RectSource(60, 40),
+          fill: CanvasFill.solid(0xFF3B82F6),
+          strokeColor: 0xFF111111,
+          strokeWidth: 2,
+        ),
+      ),
+    ],
+  );
+}
+
+CanvasSceneDocument _emptyGroupScene() {
+  return const CanvasSceneDocument(
+    artboardSize: Size2D(300, 200),
+    backgroundFill: CanvasFill.none(),
+    backgroundOpacity: 1.0,
+    children: <Node>[Node.group(id: 'group-1', children: <Node>[])],
+  );
+}
+
 final class _ForceShapeMoveBehavior extends CanvasViewportBehavior {
   const _ForceShapeMoveBehavior();
 
@@ -64,6 +98,26 @@ final class _ForceShapeMoveBehavior extends CanvasViewportBehavior {
     }
 
     return const CanvasDragStartIntent.move('shape-1');
+  }
+}
+
+final class _ForceTargetMoveBehavior extends CanvasViewportBehavior {
+  const _ForceTargetMoveBehavior(this.dragId);
+
+  final ElementId dragId;
+
+  @override
+  CanvasDragStartIntent? resolveDragStartSelection(
+    BuildContext context,
+    CanvasViewportBehaviorContext ctx,
+    CanvasHitTestResult hit,
+    ScaleStartDetails details,
+  ) {
+    if (details.pointerCount != 1) {
+      return const CanvasDragStartIntent.noMove();
+    }
+
+    return CanvasDragStartIntent.move(dragId);
   }
 }
 
@@ -192,13 +246,306 @@ void main() {
 
     await tester.pump();
 
-    expect(editor.selection.value.ids, contains('shape-1'));
+    expect(editor.selection.value, 'shape-1');
 
     await tester.tapAt(viewportBox.localToGlobal(const Offset(280, 180)));
 
     await tester.pump();
 
-    expect(editor.selection.value.isEmpty, isTrue);
+    expect(editor.selection.value, isNull);
+  });
+
+  testWidgets('Ctrl and Meta clicks replace selection instead of adding', (
+    tester,
+  ) async {
+    final hostSize = ValueNotifier<Size>(const Size(1400, 900));
+    addTearDown(hostSize.dispose);
+
+    final editor = await _pumpResizableEditor(
+      tester,
+      hostSize: hostSize,
+      initialScene: _twoShapeScene(),
+    );
+
+    editor.camera.setPanZoom(newScale: 1.0, newPan: Offset.zero);
+    await tester.pumpAndSettle();
+
+    final render = editor.controller.render.value;
+    final geometry = EditorGeometryIndex.fromComputed(render.computed);
+
+    Offset centerOf(ElementId id) {
+      final bounds = geometry.layoutBoundsWorldById[id]!;
+
+      return Offset(
+        (bounds.left + bounds.right) * 0.5,
+        (bounds.top + bounds.bottom) * 0.5,
+      );
+    }
+
+    final viewportBox = tester.renderObject<RenderBox>(
+      find.byType(CanvasViewport).first,
+    );
+
+    await tester.tapAt(viewportBox.localToGlobal(centerOf('shape-1')));
+    await tester.pump();
+
+    expect(editor.selection.value, 'shape-1');
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+
+    await tester.tapAt(viewportBox.localToGlobal(centerOf('shape-2')));
+
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+
+    expect(editor.selection.value, 'shape-2');
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.metaLeft);
+
+    await tester.tapAt(viewportBox.localToGlobal(centerOf('shape-1')));
+
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.metaLeft);
+    await tester.pump();
+
+    expect(editor.selection.value, 'shape-1');
+  });
+
+  testWidgets(
+    'explicit drag target remains authoritative when selection changes',
+    (tester) async {
+      final hostSize = ValueNotifier<Size>(const Size(1400, 900));
+      addTearDown(hostSize.dispose);
+
+      final editor = await _pumpResizableEditor(
+        tester,
+        hostSize: hostSize,
+        initialScene: _twoShapeScene(),
+        extensions: const <EditorExtension<CanvasSceneDocument>>[
+          StaticEditorExtension<CanvasSceneDocument>(
+            surfaceFeatures: EditorSurfaceFeatures(
+              viewportBehavior: _ForceTargetMoveBehavior('shape-2'),
+            ),
+          ),
+        ],
+      );
+
+      editor.camera.setPanZoom(newScale: 1.0, newPan: Offset.zero);
+
+      await tester.pumpAndSettle();
+
+      final shape1Before = findById(
+        editor.controller.document.value,
+        'shape-1',
+      )!.xf.position;
+
+      final shape2Before = findById(
+        editor.controller.document.value,
+        'shape-2',
+      )!.xf.position;
+
+      final geometry = EditorGeometryIndex.fromComputed(
+        editor.controller.render.value.computed,
+      );
+
+      final shape1Bounds = geometry.layoutBoundsWorldById['shape-1']!;
+
+      final shape1Center = Offset(
+        (shape1Bounds.left + shape1Bounds.right) * 0.5,
+        (shape1Bounds.top + shape1Bounds.bottom) * 0.5,
+      );
+
+      final viewportBox = tester.renderObject<RenderBox>(
+        find.byType(CanvasViewport).first,
+      );
+
+      final gesture = await tester.startGesture(
+        viewportBox.localToGlobal(shape1Center),
+      );
+
+      await tester.pump();
+
+      // Let Flutter establish the scale gesture.
+      await gesture.moveBy(const Offset(30, 0));
+      await tester.pump();
+
+      // Change selection while shape-2 remains the explicit drag target.
+      editor.selection.selectItem('shape-1');
+      await tester.pump();
+
+      await gesture.moveBy(const Offset(60, 0));
+      await tester.pump();
+
+      final shape1After = findById(
+        editor.controller.document.value,
+        'shape-1',
+      )!.xf.position;
+
+      final shape2After = findById(
+        editor.controller.document.value,
+        'shape-2',
+      )!.xf.position;
+
+      expect(editor.selection.value, 'shape-1');
+
+      // Selection must never redirect the active drag.
+      expect(shape1After, shape1Before);
+      expect(shape2After, isNot(shape2Before));
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'drag stops when its explicit target disappears without redirecting',
+    (tester) async {
+      final hostSize = ValueNotifier<Size>(const Size(1400, 900));
+      addTearDown(hostSize.dispose);
+
+      final editor = await _pumpResizableEditor(
+        tester,
+        hostSize: hostSize,
+        initialScene: _twoShapeScene(),
+        extensions: const <EditorExtension<CanvasSceneDocument>>[
+          StaticEditorExtension<CanvasSceneDocument>(
+            surfaceFeatures: EditorSurfaceFeatures(
+              viewportBehavior: _ForceTargetMoveBehavior('shape-2'),
+            ),
+          ),
+        ],
+      );
+
+      editor.camera.setPanZoom(newScale: 1.0, newPan: Offset.zero);
+
+      editor.selection.selectItem('shape-1');
+
+      await tester.pumpAndSettle();
+
+      final shape1Before = findById(
+        editor.controller.document.value,
+        'shape-1',
+      )!.xf.position;
+
+      final geometry = EditorGeometryIndex.fromComputed(
+        editor.controller.render.value.computed,
+      );
+
+      final shape1Bounds = geometry.layoutBoundsWorldById['shape-1']!;
+
+      final shape1Center = Offset(
+        (shape1Bounds.left + shape1Bounds.right) * 0.5,
+        (shape1Bounds.top + shape1Bounds.bottom) * 0.5,
+      );
+
+      final viewportBox = tester.renderObject<RenderBox>(
+        find.byType(CanvasViewport).first,
+      );
+
+      final gesture = await tester.startGesture(
+        viewportBox.localToGlobal(shape1Center),
+      );
+
+      await tester.pump();
+
+      // Establish the gesture with shape-2 as the explicit movement target.
+      await gesture.moveBy(const Offset(30, 0));
+      await tester.pump();
+
+      editor.controller.applyEdit(EditorEdits.deleteSubtree('shape-2'));
+
+      await tester.pumpAndSettle();
+
+      expect(findById(editor.controller.document.value, 'shape-2'), isNull);
+
+      // A different valid selection still exists.
+      expect(editor.selection.value, 'shape-1');
+
+      await gesture.moveBy(const Offset(60, 0));
+      await tester.pump();
+
+      final shape1After = findById(
+        editor.controller.document.value,
+        'shape-1',
+      )!.xf.position;
+
+      // Losing the drag target must end movement, not redirect it to selection.
+      expect(shape1After, shape1Before);
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('drag uses raw delta when rendered bounds are unavailable', (
+    tester,
+  ) async {
+    final hostSize = ValueNotifier<Size>(const Size(1400, 900));
+    addTearDown(hostSize.dispose);
+
+    final editor = await _pumpResizableEditor(
+      tester,
+      hostSize: hostSize,
+      initialScene: _emptyGroupScene(),
+      extensions: const <EditorExtension<CanvasSceneDocument>>[
+        StaticEditorExtension<CanvasSceneDocument>(
+          surfaceFeatures: EditorSurfaceFeatures(
+            viewportBehavior: _ForceTargetMoveBehavior('group-1'),
+          ),
+        ),
+      ],
+    );
+
+    editor.camera.setPanZoom(newScale: 1.0, newPan: Offset.zero);
+
+    await tester.pumpAndSettle();
+
+    final geometry = EditorGeometryIndex.fromComputed(
+      editor.controller.render.value.computed,
+    );
+
+    // An empty group has no descendant-derived interaction bounds.
+    expect(geometry.layoutBoundsWorldById['group-1'], isNull);
+
+    final before = findById(
+      editor.controller.document.value,
+      'group-1',
+    )!.xf.position;
+
+    final viewportBox = tester.renderObject<RenderBox>(
+      find.byType(CanvasViewport).first,
+    );
+
+    final gesture = await tester.startGesture(
+      viewportBox.localToGlobal(
+        Offset(viewportBox.size.width * 0.5, viewportBox.size.height * 0.5),
+      ),
+    );
+
+    await tester.pump();
+
+    // Establish the gesture.
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump();
+
+    // With no snapping bounds, this must still apply the raw world delta.
+    await gesture.moveBy(const Offset(60, 0));
+    await tester.pump();
+
+    final after = findById(
+      editor.controller.document.value,
+      'group-1',
+    )!.xf.position;
+
+    expect(after, isNot(before));
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('keyboard shortcuts route to undo and redo', (tester) async {

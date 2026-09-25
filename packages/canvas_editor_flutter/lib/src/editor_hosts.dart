@@ -1,10 +1,9 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_hosts.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_hosts.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:flutter/foundation.dart';
 
-import 'package:canvas_editor_flutter/src/editor_api.dart'
-    show EditorEdit, SelectionState;
+import 'package:canvas_editor_flutter/src/editor_api.dart' show EditorEdit;
 
 /// Canonical document capability for hosted/source-document editors.
 ///
@@ -40,18 +39,11 @@ abstract interface class EditorDocumentHost<TSourceDocument> {
 
 /// Selection capability exposed to editor extensions.
 ///
-/// Extensions should depend on this capability rather than the concrete
-/// selection controller.
+/// Selection is either one canvas item ID or null.
 abstract interface class EditorSelectionHost
-    implements ValueListenable<SelectionState> {
-  /// First selected item ID, when item selection is non-empty.
-  String? get firstId;
-
-  /// Clears the current item selection.
-  void clearSelection();
-
-  /// Selects canvas item IDs.
+    implements ValueListenable<rt.ElementId?> {
+  /// Replaces the current selection.
   ///
-  /// Empty input clears the selection.
-  void selectItems(Iterable<String> ids, {bool additive = false});
+  /// Pass null to clear selection.
+  void selectItem(rt.ElementId? id);
 }

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/canvas_editor_surface_extension_integration_test.dart
+// Path: packages/canvas_editor_flutter/test/canvas_editor_surface_extension_integration_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/extensions.dart';
@@ -284,7 +284,7 @@ void main() {
     final endSession = runtime.beginEditSession();
 
     try {
-      runtime.updateDragMany({_nodeId}, const rt.Vec2(80, 0));
+      runtime.updateDrag(_nodeId, const rt.Vec2(80, 0));
     } finally {
       endSession();
     }

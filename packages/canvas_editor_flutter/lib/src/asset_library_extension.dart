@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/asset_library_extension.dart
+// Path: packages/canvas_editor_flutter/lib/src/asset_library_extension.dart
 
 import 'dart:math' as math;
 
@@ -98,7 +98,7 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
               return SceneTreeOps.addNode(nextScene, node);
             }),
           );
-          context.selectItems([nodeId]);
+          context.selectItem(nodeId);
         },
       ),
     ],

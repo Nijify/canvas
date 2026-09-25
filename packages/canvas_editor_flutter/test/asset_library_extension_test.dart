@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/asset_library_extension_test.dart
+// Path: packages/canvas_editor_flutter/test/asset_library_extension_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/asset_library.dart';
@@ -215,7 +215,7 @@ void main() {
       await extension.actionSpecs.single.invoke(harness.context);
 
       expect(harness.controller.document.value.children, isEmpty);
-      expect(harness.selection.value.isEmpty, isTrue);
+      expect(harness.selection.value, isNull);
     });
 
     testWidgets(
@@ -266,7 +266,7 @@ void main() {
 
         expect(inserted.xf.position.x, closeTo(150, 0.001));
         expect(inserted.xf.position.y, closeTo(100, 0.001));
-        expect(harness.selection.firstId, inserted.id);
+        expect(harness.selection.value, inserted.id);
       },
     );
 
