@@ -36,18 +36,18 @@ abstract class EditorDocumentAdapter<TSourceDocument> {
   /// Resolves the canonical document into the runtime scene used for rendering.
   rt.CanvasSceneDocument resolve(TSourceDocument doc, Object? ctx);
 
-  /// Returns why a registered literal field cannot currently be edited.
+  /// Returns why a registered field cannot currently be edited.
   ///
   /// This is evaluated against the current canonical [TSourceDocument].
-  /// Return null to allow the literal commit, or a non-empty user-facing
+  /// Return null to allow the field mutation, or a non-empty user-facing
   /// reason to deny it.
   ///
   /// [nodeId] is [kSceneFieldsId] for registered scene-level fields.
   ///
-  /// This hook governs registered literal edits through
-  /// [EditorController.commitField] only. It is not an authorization boundary
-  /// and does not restrict structural [EditorEdit] operations or
-  /// source-document-level mutations.
+  /// This hook governs registered field edits through
+  /// [EditorController.commitField] and [EditorController.updateField].
+  /// It is not an authorization boundary and does not restrict structural
+  /// [EditorEdit] operations or source-document-level mutations.
   ///
   /// Implementations must be synchronous, deterministic, side-effect-free,
   /// and fast because this may be evaluated during UI builds and commits.
@@ -184,28 +184,47 @@ abstract class EditorController {
 
   /// Executes a persistent canonical scene edit.
   ///
-  /// Use this directly for structural, multi-node, or custom operations that are
-  /// not represented by a [rt.CanvasFieldKey]. UI editing a registered field
-  /// should use [commitField] so that its `FieldCodec` policy is not bypassed.
+  /// Use this directly for structural, multi-node, or custom operations that
+  /// are not represented by a [rt.CanvasFieldKey].
+  ///
+  /// Registered-field editing should use [commitField] or [updateField] so the
+  /// field's canonical `FieldCodec` read/write policy is not bypassed.
   rt.ElementId? applyEdit(EditorEdit edit);
 
   // ---- Inspector Field API ----
 
-  /// Reads the effective value of a registered field.
+  /// Reads the effective presentation value of a registered field.
   ///
-  /// The value may come from the resolved/rendered scene even though commits are
-  /// applied to the canonical document.
+  /// The value may come from the resolved/rendered scene even though persistent
+  /// mutations are applied to the canonical base scene.
+  ///
+  /// Do not use this value as the starting point for a canonical functional
+  /// update; use [updateField] for read-modify-write behavior.
   FieldState<T> getField<T>(rt.ElementId nodeId, rt.CanvasFieldKey fieldKey);
 
   /// Commits a literal value for a registered field.
   ///
-  /// The field's `FieldCodec` owns field-specific normalization and translation
-  /// into an [EditorEdit]. The current [EditorDocumentAdapter] may additionally
-  /// deny the literal edit based on canonical source-document state.
+  /// Literal and functional field mutations share the same runtime-owned
+  /// canonical mutation path. The field's `FieldCodec` owns field-specific
+  /// normalization and canonical scene storage.
   ///
-  /// Invalid, stale, or source-document-denied commit targets are ignored
+  /// Missing, stale, wrong-kind, or source-document-denied targets are ignored
   /// safely.
   void commitField<T>(rt.ElementId nodeId, rt.CanvasFieldKey fieldKey, T value);
+
+  /// Updates a registered field from its current canonical value.
+  ///
+  /// [update] receives the value read from the latest canonical base scene,
+  /// including the latest in-flight transaction state. It never starts from
+  /// the value returned by [getField].
+  ///
+  /// Missing, stale, wrong-kind, or source-document-denied targets are ignored
+  /// without invoking [update].
+  void updateField<T>(
+    rt.ElementId nodeId,
+    rt.CanvasFieldKey fieldKey,
+    T Function(T currentCanonicalValue) update,
+  );
 
   /// Lifecycle hook for implementations that hold subscriptions.
   void dispose();

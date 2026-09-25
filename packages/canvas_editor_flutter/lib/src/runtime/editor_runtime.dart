@@ -4,8 +4,8 @@
 // Shared editor document/render state.
 //
 // - Canvas editor is canonical-document agnostic.
-// - Persistent scene mutations enter through EditorEdit.
-// - Field codecs translate typed field commits into EditorEdit values.
+// - Persistent structural scene mutations enter through EditorEdit.
+// - Registered field mutations use runtime-owned canonical read/write paths.
 // - Custom document behavior is injected through a canonical adapter.
 // - Ephemeral transform updates remain runtime-owned for gesture batching.
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
@@ -226,13 +226,24 @@ final class EditorRuntime<TSourceDocument>
     _pipeline.applySourceDocument(next);
   }
 
-  /// Public canonical mutation seam for domain-specific extensions.
-  /// Shared/base editor code should prefer [applyEdit] for reusable scene edits.
   @override
-  void updateSourceDocument(
-    TSourceDocument Function(TSourceDocument document) update,
+  void applySourceEdit(
+    TSourceDocument Function(TSourceDocument document) edit,
   ) {
-    _commit(update);
+    _commit((before) {
+      final beforeBase = _adapter.getBase(before);
+      final candidate = edit(before);
+      final candidateBase = _adapter.getBase(candidate);
+
+      final baseChanged =
+          !identical(candidateBase, beforeBase) && candidateBase != beforeBase;
+
+      if (baseChanged) {
+        throw StateError('Source edits must preserve the base scene.');
+      }
+
+      return candidate;
+    });
   }
 
   void _applyEphemeral(TSourceDocument next) {
@@ -403,6 +414,79 @@ final class EditorRuntime<TSourceDocument>
     return reason.trim().isEmpty ? null : reason;
   }
 
+  void _mutateField(
+    rt.ElementId nodeId,
+    rt.CanvasFieldKey fieldKey,
+    Object Function(Object currentCanonicalValue) update,
+  ) {
+    final codec = FieldCatalog.of(fieldKey, extra: _extraFieldCodecs);
+
+    _commit((document) {
+      final base = _adapter.getBase(document);
+
+      if (nodeId == kSceneFieldsId) {
+        if (!codec.isSceneOnly) {
+          return document;
+        }
+
+        final readCanonicalScene = codec.readCanonicalScene;
+
+        if (readCanonicalScene == null) {
+          throw StateError(
+            'Editable scene FieldCodec for $fieldKey '
+            'must define readCanonicalScene.',
+          );
+        }
+
+        if (_fieldEditDisabledReason(document, nodeId, fieldKey) != null) {
+          return document;
+        }
+
+        final currentCanonicalValue = readCanonicalScene(base);
+        final requestedValue = update(currentCanonicalValue);
+
+        final nextBase = codec.writeCanonical(base, nodeId, requestedValue);
+
+        return _replaceBase(document, nextBase);
+      }
+
+      if (codec.isSceneOnly) {
+        return document;
+      }
+
+      final canReadCanonicalNode = codec.canReadCanonicalNode;
+      final readCanonicalNode = codec.readCanonicalNode;
+
+      if (canReadCanonicalNode == null || readCanonicalNode == null) {
+        throw StateError(
+          'Editable node FieldCodec for $fieldKey must define '
+          'canReadCanonicalNode and readCanonicalNode.',
+        );
+      }
+
+      final node = rt.findById(base, nodeId);
+
+      if (node == null) {
+        return document;
+      }
+
+      if (!canReadCanonicalNode(base, node)) {
+        return document;
+      }
+
+      if (_fieldEditDisabledReason(document, nodeId, fieldKey) != null) {
+        return document;
+      }
+
+      final currentCanonicalValue = readCanonicalNode(base, node);
+      final requestedValue = update(currentCanonicalValue);
+
+      final nextBase = codec.writeCanonical(base, nodeId, requestedValue);
+
+      return _replaceBase(document, nextBase);
+    });
+  }
+
   @override
   FieldState<T> getField<T>(rt.ElementId nodeId, rt.CanvasFieldKey fieldKey) {
     final codec = FieldCatalog.of(fieldKey, extra: _extraFieldCodecs);
@@ -484,32 +568,17 @@ final class EditorRuntime<TSourceDocument>
     rt.CanvasFieldKey fieldKey,
     T value,
   ) {
-    final codec = FieldCatalog.of(fieldKey, extra: _extraFieldCodecs);
+    _mutateField(nodeId, fieldKey, (_) => value as Object);
+  }
 
-    if (nodeId == kSceneFieldsId) {
-      if (!codec.isSceneOnly) return;
-
-      final presentDocument = _presentSourceDocument;
-
-      if (_fieldEditDisabledReason(presentDocument, nodeId, fieldKey) != null) {
-        return;
-      }
-
-      codec.commit(this, nodeId, value as Object);
-      return;
-    }
-
-    if (codec.isSceneOnly) return;
-
-    final presentDocument = _presentSourceDocument;
-    final presentBase = _adapter.getBase(presentDocument);
-
-    if (rt.findById(presentBase, nodeId) == null) return;
-
-    if (_fieldEditDisabledReason(presentDocument, nodeId, fieldKey) != null) {
-      return;
-    }
-
-    codec.commit(this, nodeId, value as Object);
+  @override
+  void updateField<T>(
+    rt.ElementId nodeId,
+    rt.CanvasFieldKey fieldKey,
+    T Function(T currentCanonicalValue) update,
+  ) {
+    _mutateField(nodeId, fieldKey, (currentCanonicalValue) {
+      return update(currentCanonicalValue as T) as Object;
+    });
   }
 }
