@@ -1,5 +1,12 @@
 # Unreleased
 
+- **Breaking:** replace multi-item editor selection with one nullable
+  `ElementId`. Remove `SelectionState`, `EditorSelectionHost.firstId`,
+  `selectItems()`, `clearSelection()`, and the corresponding
+  `EditorActionContext` helpers. Use `EditorSelectionHost.value` and
+  `selectItem(ElementId?)`.
+- **Breaking:** replace `EditorController.updateDragMany()` with
+  `updateDrag(ElementId, Vec2)` for single-target dragging.
 - **Breaking:** remove `EditorEdits.setElementHidden()` and the Layers
   visibility control. Layers continue to list canonical scene nodes regardless
   of their persisted `Node.hidden` value.
@@ -18,9 +25,8 @@
 - Keep object dragging stable when viewport or camera geometry changes during
   an active drag.
 - Make the canvas viewport fill the same layout area used for camera planning.
-- Own selection geometry plus derived world interaction geometry for picking,
-  snapping, multi-selection, and manipulation instead of storing those values
-  in `canvas_core`'s `ComputedScene`.
+- Own derived world interaction geometry for picking, snapping, and drag probes
+  instead of storing those values in `canvas_core`'s `ComputedScene`.
 - Own the editor's immutable `History<T>` reducer directly instead of importing
   history from `canvas_core`.
 - Own scene picking, path hit testing, snapping types, snap candidate

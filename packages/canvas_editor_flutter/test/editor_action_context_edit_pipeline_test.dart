@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/editor_action_context_edit_pipeline_test.dart
+// Path: packages/canvas_editor_flutter/test/editor_action_context_edit_pipeline_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart';
@@ -149,7 +149,7 @@ void main() {
     final id = ctx.addNodeAndSelect(const Node.text(id: 't1', data: _textData));
 
     expect(id, 't1');
-    expect(selection.firstId, 't1');
+    expect(selection.value, 't1');
     expect(controller.document.value.children.single.id, 't1');
   });
 
@@ -159,7 +159,7 @@ void main() {
     final controller = _FakeEditorController(
       _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
     );
-    final selection = SelectionController()..selectItems(const <String>['t1']);
+    final selection = SelectionController()..selectItem('t1');
 
     addTearDown(controller.dispose);
     addTearDown(selection.dispose);
@@ -175,32 +175,36 @@ void main() {
     ctx.duplicateSelection();
 
     expect(controller.document.value.children, hasLength(2));
-    expect(selection.firstId, isNot('t1'));
-    expect(selection.firstId, isNotNull);
+    expect(selection.value, isNot('t1'));
+    expect(selection.value, isNotNull);
   });
 
-  testWidgets('deleteSelection applies edit and clears selection', (
-    tester,
-  ) async {
-    final controller = _FakeEditorController(
-      _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-    );
-    final selection = SelectionController()..selectItems(const <String>['t1']);
+  testWidgets(
+    'deleteSelection applies edit without eagerly clearing selection',
+    (tester) async {
+      final controller = _FakeEditorController(
+        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
+      );
 
-    addTearDown(controller.dispose);
-    addTearDown(selection.dispose);
+      final selection = SelectionController()..selectItem('t1');
 
-    final ctx = EditorActionContext(
-      buildContext: await _pumpContext(tester),
-      resources: canvasRuntimeResourcesForTest(),
-      ui: _NoopUiFeedback(),
-      controller: controller,
-      selection: selection,
-    );
+      addTearDown(controller.dispose);
+      addTearDown(selection.dispose);
 
-    ctx.deleteSelection();
+      final ctx = EditorActionContext(
+        buildContext: await _pumpContext(tester),
+        resources: canvasRuntimeResourcesForTest(),
+        ui: _NoopUiFeedback(),
+        controller: controller,
+        selection: selection,
+      );
 
-    expect(controller.document.value.children, isEmpty);
-    expect(selection.value.isEmpty, isTrue);
-  });
+      ctx.deleteSelection();
+
+      expect(controller.document.value.children, isEmpty);
+
+      // Selection validity belongs to CanvasEditorSurface render reconciliation.
+      expect(selection.value, 't1');
+    },
+  );
 }

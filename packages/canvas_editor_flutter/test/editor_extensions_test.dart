@@ -1,4 +1,5 @@
-// Path: oss_packages/canvas_editor_flutter/test/editor_extensions_test.dart
+// Path: packages/canvas_editor_flutter/test/editor_extensions_test.dart
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/extensions.dart';
 import 'package:flutter/widgets.dart';

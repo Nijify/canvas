@@ -1,4 +1,5 @@
-// Path: oss_packages/canvas_editor_flutter/test/canvas_editor_session_lifecycle_test.dart
+// Path: packages/canvas_editor_flutter/test/canvas_editor_session_lifecycle_test.dart
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/extensions.dart';
 import 'package:canvas_editor_flutter/src/interaction/selection_controllers.dart';
@@ -124,6 +125,8 @@ _pumpEditor(
   required CanvasSceneDocument scene,
   required CanvasRuntimeResources resources,
   required _ResourceProbeExtension probe,
+  List<EditorExtension<CanvasSceneDocument>> extraExtensions =
+      const <EditorExtension<CanvasSceneDocument>>[],
 }) async {
   late EditorActionDispatcher capturedActions;
 
@@ -134,7 +137,10 @@ _pumpEditor(
           key: key,
           initialScene: scene,
           resources: resources,
-          extensions: <EditorExtension<CanvasSceneDocument>>[probe],
+          extensions: <EditorExtension<CanvasSceneDocument>>[
+            probe,
+            ...extraExtensions,
+          ],
           appBarBuilder: (_, _, actions, _) {
             capturedActions = actions;
             return null;
@@ -155,6 +161,21 @@ _pumpEditor(
   );
 }
 
+CanvasSceneDocument _keepSelectedRendered(
+  CanvasSceneDocument scene,
+  CoreServices _,
+) {
+  const selectedId = 'selected';
+
+  if (findById(scene, selectedId) != null) {
+    return scene;
+  }
+
+  final renderedOnlyNode = _scene(selectedId).children.single;
+
+  return scene.copyWith(children: <Node>[...scene.children, renderedOnlyNode]);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -173,6 +194,7 @@ void main() {
       );
 
       _addLocalEdit(first.controller);
+      first.selection.selectItem('local-edit');
       await tester.pumpAndSettle();
 
       expect(first.controller.canUndo.value, isTrue);
@@ -186,6 +208,7 @@ void main() {
       );
 
       expect(rebuilt.controller, same(first.controller));
+      expect(rebuilt.selection.value, 'local-edit');
 
       final ids = rebuilt.controller.document.value.children
           .map((node) => node.id)
@@ -253,11 +276,11 @@ void main() {
     );
 
     _addLocalEdit(first.controller);
-    first.selection.selectItems(<String>['local-edit']);
+    first.selection.selectItem('local-edit');
     await tester.pumpAndSettle();
 
     expect(first.controller.canUndo.value, isTrue);
-    expect(first.selection.value.ids, contains('local-edit'));
+    expect(first.selection.value, 'local-edit');
 
     final rebuilt = await _pumpEditor(
       tester,
@@ -276,7 +299,7 @@ void main() {
     expect(ids, equals(<String>{'seed-b'}));
     expect(rebuilt.controller.canUndo.value, isFalse);
     expect(rebuilt.controller.canRedo.value, isFalse);
-    expect(rebuilt.selection.value.hasItems, isFalse);
+    expect(rebuilt.selection.value, isNull);
 
     expect(find.text('inspector-resource:B'), findsOneWidget);
 
@@ -285,4 +308,79 @@ void main() {
 
     expect(probe.actionResourceTags, <String>['B']);
   });
+
+  testWidgets(
+    'selection clears only after render confirms the selected id disappeared',
+    (tester) async {
+      final probe = _ResourceProbeExtension(<String>[]);
+
+      final editor = await _pumpEditor(
+        tester,
+        key: const ValueKey<String>('selection-delete'),
+        scene: _scene('selected'),
+        resources: _resources('A'),
+        probe: probe,
+      );
+
+      editor.selection.selectItem('selected');
+      await tester.pump();
+
+      expect(editor.selection.value, 'selected');
+
+      editor.controller.applyEdit(EditorEdits.deleteSubtree('selected'));
+
+      await tester.pumpAndSettle();
+
+      expect(findById(editor.controller.document.value, 'selected'), isNull);
+      expect(
+        findById(editor.controller.render.value.scene, 'selected'),
+        isNull,
+      );
+      expect(editor.selection.value, isNull);
+
+      editor.controller.undo();
+      await tester.pumpAndSettle();
+
+      expect(findById(editor.controller.document.value, 'selected'), isNotNull);
+
+      // Undo restores the node, not an old cleared selection.
+      expect(editor.selection.value, isNull);
+    },
+  );
+
+  testWidgets(
+    'selection remains when deletion removes canonical id but render still has it',
+    (tester) async {
+      final probe = _ResourceProbeExtension(<String>[]);
+
+      final editor = await _pumpEditor(
+        tester,
+        key: const ValueKey<String>('rendered-selection-delete'),
+        scene: _scene('selected'),
+        resources: _resources('A'),
+        probe: probe,
+        extraExtensions: <EditorExtension<CanvasSceneDocument>>[
+          StaticEditorExtension<CanvasSceneDocument>(
+            scenePreparer: _keepSelectedRendered,
+          ),
+        ],
+      );
+
+      editor.selection.selectItem('selected');
+      await tester.pump();
+
+      editor.controller.applyEdit(EditorEdits.deleteSubtree('selected'));
+
+      await tester.pumpAndSettle();
+
+      expect(findById(editor.controller.document.value, 'selected'), isNull);
+
+      expect(
+        findById(editor.controller.render.value.scene, 'selected'),
+        isNotNull,
+      );
+
+      expect(editor.selection.value, 'selected');
+    },
+  );
 }

@@ -1,3 +1,5 @@
+// Path: packages/canvas_editor_flutter/test/image_tools_extension_test.dart
+
 import 'dart:async';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -278,7 +280,7 @@ void main() {
         ],
       );
 
-      editor.selection.selectItems(const <String>[_imageA]);
+      editor.selection.selectItem(_imageA);
       await tester.pumpAndSettle();
 
       expect(find.text('Image tools'), findsOneWidget);
@@ -314,7 +316,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_textId]);
+    editor.selection.selectItem(_textId);
     await tester.pumpAndSettle();
 
     expect(find.text('Image tools'), findsNothing);
@@ -342,7 +344,7 @@ void main() {
         ],
       );
 
-      editor.selection.selectItems(const <String>[_imageA]);
+      editor.selection.selectItem(_imageA);
       await tester.pumpAndSettle();
 
       final sourceFinder = find.byKey(
@@ -381,7 +383,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     expect(find.text('Exclusive image inspector'), findsOneWidget);
@@ -398,7 +400,7 @@ void main() {
 
       final editor = await _pumpDeniedEditor(tester, port: port);
 
-      editor.selection.selectItems(const <String>[_imageA]);
+      editor.selection.selectItem(_imageA);
       await tester.pumpAndSettle();
 
       expect(find.text('Bound to brand.logo'), findsOneWidget);
@@ -450,7 +452,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     expect(
@@ -479,14 +481,14 @@ void main() {
         ],
       );
 
-      editor.selection.selectItems(const <String>[_imageA]);
+      editor.selection.selectItem(_imageA);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(_removeButtonKey));
       await tester.pump();
       expect(port.sourceRefs, <String>['media:shared']);
 
-      editor.selection.selectItems(const <String>[_imageB]);
+      editor.selection.selectItem(_imageB);
       await tester.pump();
 
       port.complete(
@@ -512,7 +514,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(_removeButtonKey));
@@ -546,7 +548,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(_removeButtonKey));
@@ -578,7 +580,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(_removeButtonKey));
@@ -612,7 +614,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(_removeButtonKey));
@@ -636,7 +638,7 @@ void main() {
       ],
     );
 
-    editor.selection.selectItems(const <String>[_imageA]);
+    editor.selection.selectItem(_imageA);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(_removeButtonKey));

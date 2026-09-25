@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/editor_runtime_controller_behavior_test.dart
+// Path: packages/canvas_editor_flutter/test/editor_runtime_controller_behavior_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/src/editor_api.dart';
@@ -368,7 +368,7 @@ void main() {
 
       final endSession = runtime.beginEditSession();
 
-      runtime.updateDragMany({'t1'}, const rt.Vec2(10, 0));
+      runtime.updateDrag('t1', const rt.Vec2(10, 0));
 
       expect(runtime.sourceDocument, same(initialSource));
       expect(runtime.source.value, same(initialSource));
@@ -423,7 +423,7 @@ void main() {
 
     final endSession = runtime.beginEditSession();
 
-    runtime.updateDragMany({'t1'}, rt.Vec2.zero);
+    runtime.updateDrag('t1', rt.Vec2.zero);
     await tester.pump();
 
     endSession();

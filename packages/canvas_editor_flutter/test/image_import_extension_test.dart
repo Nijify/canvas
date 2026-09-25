@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/image_import_extension_test.dart
+// Path: packages/canvas_editor_flutter/test/image_import_extension_test.dart
 
 import 'dart:async';
 
@@ -268,7 +268,7 @@ void main() {
         imageImport: imageImport,
       );
 
-      editor.selection.selectItems(const <String>[_existingImageId]);
+      editor.selection.selectItem(_existingImageId);
       await tester.pumpAndSettle();
 
       expect(find.byKey(_replaceGalleryKey), findsOneWidget);
@@ -314,7 +314,7 @@ void main() {
         ],
       );
 
-      editor.selection.selectItems(const <String>[_existingImageId]);
+      editor.selection.selectItem(_existingImageId);
       await tester.pumpAndSettle();
 
       expect(find.byKey(_replaceGalleryKey), findsOneWidget);
@@ -344,7 +344,7 @@ void main() {
       imageImport: imageImport,
     );
 
-    editor.selection.selectItems(const <String>[_existingImageId]);
+    editor.selection.selectItem(_existingImageId);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(_replaceGalleryKey));
@@ -373,7 +373,7 @@ void main() {
         imageImport: imageImport,
       );
 
-      editor.selection.selectItems(const <String>[_existingImageId]);
+      editor.selection.selectItem(_existingImageId);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(_replaceGalleryKey));
@@ -401,7 +401,7 @@ void main() {
         imageImport: imageImport,
       );
 
-      editor.selection.selectItems(const <String>[_existingImageId]);
+      editor.selection.selectItem(_existingImageId);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(_replaceGalleryKey));
@@ -411,7 +411,7 @@ void main() {
         ImageImportSource.gallery,
       ]);
 
-      editor.selection.selectItems(const <String>[_secondImageId]);
+      editor.selection.selectItem(_secondImageId);
       await tester.pump();
 
       imageImport.complete(
@@ -441,7 +441,7 @@ void main() {
         imageImport: imageImport,
       );
 
-      editor.selection.selectItems(const <String>[_existingImageId]);
+      editor.selection.selectItem(_existingImageId);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(_replaceGalleryKey));
@@ -503,7 +503,7 @@ void main() {
       expect(size.h, 200);
       expect(image.xf.position.x, 180);
       expect(image.xf.position.y, 180);
-      expect(editor.selection.firstId, image.id);
+      expect(editor.selection.value, image.id);
       expect(editor.controller.canUndo.value, isTrue);
     },
   );
@@ -573,7 +573,7 @@ void main() {
       expect(image.data.size, const Size2D(200, 200));
       expect(image.xf.position, const Vec2(180, 180));
       expect(_imageAsset(editor.controller, image.id)?.intrinsicSize, isNull);
-      expect(editor.selection.firstId, image.id);
+      expect(editor.selection.value, image.id);
 
       images.intrinsicSizes.complete(const <String, Size2D>{});
       await tester.pump();
@@ -601,7 +601,7 @@ void main() {
 
     expect(imageImport.requestedSources, isEmpty);
     expect(editor.controller.document.value.children, isEmpty);
-    expect(editor.selection.value.isEmpty, isTrue);
+    expect(editor.selection.value, isNull);
     expect(editor.controller.canUndo.value, isFalse);
   });
 
@@ -628,7 +628,7 @@ void main() {
       ImageImportSource.camera,
     ]);
     expect(editor.controller.document.value.children, isEmpty);
-    expect(editor.selection.value.isEmpty, isTrue);
+    expect(editor.selection.value, isNull);
     expect(find.text('Failed to add image: Upload failed'), findsOneWidget);
   });
 
@@ -648,7 +648,7 @@ void main() {
         ],
       );
 
-      editor.selection.selectItems(const <String>[_existingImageId]);
+      editor.selection.selectItem(_existingImageId);
       await tester.pumpAndSettle();
 
       expect(find.text('Later image panel'), findsOneWidget);

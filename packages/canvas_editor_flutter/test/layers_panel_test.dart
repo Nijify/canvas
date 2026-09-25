@@ -201,8 +201,7 @@ void main() {
 
     await _tapLayerControl(tester, find.text('Layer A'));
 
-    expect(selection.value.hasItems, isTrue);
-    expect(selection.value.ids, const <String>{'a'});
+    expect(selection.value, 'a');
   });
 
   testWidgets('rename dialog applies rename edit with row id', (tester) async {
@@ -258,8 +257,7 @@ void main() {
       // Hidden nodes remain selectable from Layers.
       await _tapLayerControl(tester, find.text('Hidden Layer'));
 
-      expect(selection.value.hasItems, isTrue);
-      expect(selection.value.ids, const <String>{'a'});
+      expect(selection.value, 'a');
 
       // Hidden nodes also remain renameable from Layers.
       await _tapLayerControl(
