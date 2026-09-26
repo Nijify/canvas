@@ -14,6 +14,7 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_conte
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_field_row.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
+import 'package:canvas_editor_flutter/src/presentation/inspector/shadow_editor.dart';
 
 Widget _defaultInspectorFieldRowBuilder<T>(
   ElementId nodeId,
@@ -168,6 +169,15 @@ Widget _buildTextInspectorPanel({
         ids: FillFieldIds.text,
         header: 'Fill',
       ),
+      const Gap(16),
+      ShadowEditor(
+        key: ValueKey<String>(
+          'shadow-editor:$nodeId:${CanvasFields.textUnderlays.value}',
+        ),
+        nodeId: nodeId,
+        inspector: inspector,
+        fieldKey: CanvasFields.textUnderlays,
+      ),
     ],
   );
 }
@@ -295,6 +305,15 @@ Widget _buildIconInspectorPanel({
         inspector: inspector,
         ids: FillFieldIds.icon,
         header: 'Fill',
+      ),
+      const Gap(16),
+      ShadowEditor(
+        key: ValueKey<String>(
+          'shadow-editor:$nodeId:${CanvasFields.iconUnderlays.value}',
+        ),
+        nodeId: nodeId,
+        inspector: inspector,
+        fieldKey: CanvasFields.iconUnderlays,
       ),
     ],
   );

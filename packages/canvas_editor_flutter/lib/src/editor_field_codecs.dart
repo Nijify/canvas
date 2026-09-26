@@ -141,6 +141,74 @@ rt.CanvasSceneDocument _writeFill(
   });
 }
 
+bool _sameUnderlays(
+  List<rt.CanvasSourceUnderlay> left,
+  List<rt.CanvasSourceUnderlay> right,
+) {
+  if (identical(left, right)) return true;
+  if (left.length != right.length) return false;
+
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+rt.CanvasSceneDocument _writeTextUnderlays(
+  rt.CanvasSceneDocument base,
+  rt.ElementId nodeId,
+  List<rt.CanvasSourceUnderlay> requestedUnderlays,
+) {
+  return _writeNodeUpdate(base, nodeId, (node) {
+    if (node is! rt.TextNode) return node;
+
+    final currentUnderlays = node.data.appearance.underlays;
+
+    if (_sameUnderlays(currentUnderlays, requestedUnderlays)) {
+      return node;
+    }
+
+    final nextUnderlays = List<rt.CanvasSourceUnderlay>.unmodifiable(
+      requestedUnderlays,
+    );
+
+    return node.copyWith(
+      data: node.data.copyWith(
+        appearance: node.data.appearance.copyWith(underlays: nextUnderlays),
+      ),
+    );
+  });
+}
+
+rt.CanvasSceneDocument _writeIconUnderlays(
+  rt.CanvasSceneDocument base,
+  rt.ElementId nodeId,
+  List<rt.CanvasSourceUnderlay> requestedUnderlays,
+) {
+  return _writeNodeUpdate(base, nodeId, (node) {
+    if (node is! rt.IconNode) return node;
+
+    final currentUnderlays = node.data.appearance.underlays;
+
+    if (_sameUnderlays(currentUnderlays, requestedUnderlays)) {
+      return node;
+    }
+
+    final nextUnderlays = List<rt.CanvasSourceUnderlay>.unmodifiable(
+      requestedUnderlays,
+    );
+
+    return node.copyWith(
+      data: node.data.copyWith(
+        appearance: node.data.appearance.copyWith(underlays: nextUnderlays),
+      ),
+    );
+  });
+}
+
 // -----------------------------------------------------------------------------
 // Field registry
 // -----------------------------------------------------------------------------
@@ -208,6 +276,21 @@ class FieldCatalog {
           (node as rt.TextNode).data.appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
+      },
+    ),
+
+    rt.CanvasFields.textUnderlays: FieldCodec(
+      fallback: const <rt.CanvasSourceUnderlay>[],
+      readNode: (_, node) => (node as rt.TextNode).data.appearance.underlays,
+      canReadCanonicalNode: (_, node) => node is rt.TextNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.TextNode).data.appearance.underlays,
+      writeCanonical: (base, nodeId, value) {
+        return _writeTextUnderlays(
+          base,
+          nodeId,
+          value as List<rt.CanvasSourceUnderlay>,
+        );
       },
     ),
 
@@ -294,6 +377,21 @@ class FieldCatalog {
           (node as rt.IconNode).data.appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
+      },
+    ),
+
+    rt.CanvasFields.iconUnderlays: FieldCodec(
+      fallback: const <rt.CanvasSourceUnderlay>[],
+      readNode: (_, node) => (node as rt.IconNode).data.appearance.underlays,
+      canReadCanonicalNode: (_, node) => node is rt.IconNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.IconNode).data.appearance.underlays,
+      writeCanonical: (base, nodeId, value) {
+        return _writeIconUnderlays(
+          base,
+          nodeId,
+          value as List<rt.CanvasSourceUnderlay>,
+        );
       },
     ),
 

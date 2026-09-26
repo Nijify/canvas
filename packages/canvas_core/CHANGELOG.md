@@ -27,6 +27,9 @@
   `CanvasAppearance` model.
 - Add ordered `CanvasSourceUnderlay` values with stable serialization and
   validation, including configurable shadow effects.
+- Add `CanvasFields.textUnderlays` and `CanvasFields.iconUnderlays` as
+  aggregate field identities for editing authored text and icon source
+  underlays.
 - Allow text and icons to use `CanvasFill.none()` as their foreground while
   retaining their source silhouette for underlay rendering.
 - **Breaking:** remove `canvas_core_editor.dart`; editor-owned history, picking,

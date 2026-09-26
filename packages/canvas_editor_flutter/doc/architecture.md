@@ -118,6 +118,14 @@ transaction-present canonical base scene before invoking its updater.
 `FieldCodec` owns field applicability, canonical reads, normalization, and the
 commit-free canonical scene writer.
 
+Aggregate fields follow the same rule. Text and icon source underlays are
+registered as whole-list fields rather than per-index or per-property fields.
+Inspector presentation builds authored underlay rows from the canonical
+editable scene, while `getField()` supplies field editability. List mutations
+run through `updateField()` and locate individual underlays by stable ID against
+the latest canonical list, so stale UI callbacks cannot accidentally mutate a
+different list entry.
+
 ```text
 Registered literal field
   -> commitField
