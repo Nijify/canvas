@@ -1,5 +1,6 @@
-# Unreleased
+# 0.14.0
 
+- **Breaking:** require `canvas_core 0.11.x` and `canvas_renderer_flutter 0.10.x`.
 - **Breaking:** replace `FieldCodec.commit` with explicit canonical field
   readers and a commit-free `writeCanonical` scene transform. Presentation
   reads remain separate through `readNode` and `readScene`.

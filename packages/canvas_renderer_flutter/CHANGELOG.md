@@ -1,5 +1,6 @@
-## Unreleased
+## 0.10.0
 
+- **Breaking:** require `canvas_core 0.11.x`.
 - Render ordered `CanvasSourceUnderlay` values for text and icons.
 - Support configurable shadow underlays, including enablement, offset, blur,
   color, and back-to-front ordering.
