@@ -1,4 +1,4 @@
-## Unreleased
+## 0.11.0
 
 - **Breaking:** remove the optional `idGen` parameter from
   `SceneTreeOps.duplicateSubtree()` and remove `createdIds` from its result.
