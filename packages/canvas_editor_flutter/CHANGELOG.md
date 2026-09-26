@@ -6,6 +6,10 @@
 - Add `EditorController.updateField()` for canonical read-modify-write field
   updates. Literal `commitField()` and functional `updateField()` now share one
   runtime-owned canonical mutation path.
+- Add built-in text and icon shadow authoring through aggregate underlay
+  fields, including add/remove, enable/disable, stacking order, signed offsets,
+  blur, RGB color, and alpha controls. Shadow list edits use stable underlay IDs
+  and the latest canonical field value.
 - **Breaking:** replace `EditorDocumentHost.updateSourceDocument()` with
   `applySourceEdit()`. Source edits must preserve the canonical base scene.
 - **Breaking:** remove `EditorDocumentHost.applyEdit()`. Canonical base-scene
