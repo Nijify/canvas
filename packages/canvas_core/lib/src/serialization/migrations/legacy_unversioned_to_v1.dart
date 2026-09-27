@@ -91,6 +91,13 @@ Map<String, Object?> _convertNode(
   if (kind == 'image' || kind == 'path') {
     final data = _object(node['data'], '$path.data');
 
+    if (kind == 'image' && data.containsKey('sourcePath')) {
+      throw FormatException(
+        '$path.data.sourcePath is not supported by the canvas_core 0.10.x '
+        'legacy migration',
+      );
+    }
+
     if (data.containsKey('appearance') || data.containsKey('shadowOffset')) {
       throw FormatException('$path.data mixes scene formats');
     }

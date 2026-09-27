@@ -112,6 +112,26 @@ void main() {
       expect(decodeCanvasScene(json), _imageScene());
     });
 
+    test('rejects sourcePath in scene format v1 image data', () {
+      final json = encodeCanvasScene(_imageScene());
+      final children = json['children'] as List<dynamic>;
+      final image = children.single as Map<String, dynamic>;
+      final data = image['data'] as Map<String, dynamic>;
+
+      data['sourcePath'] = 'legacy/image.png';
+
+      expect(
+        () => decodeCanvasScene(json),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('sourcePath'),
+          ),
+        ),
+      );
+    });
+
     test('requires image frame size when decoding', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;

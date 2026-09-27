@@ -81,6 +81,47 @@ void main() {
       );
     });
 
+    test('rejects unsupported pre-0.10 image sourcePath', () {
+      final legacy = _loadFixture('legacy_v010_nested.json');
+
+      _legacyGroupChildren(legacy).add(<String, dynamic>{
+        'id': 'image-pre-v010-1',
+        'name': 'Older image',
+        'hidden': false,
+        'locked': false,
+        'xf': <String, dynamic>{
+          'position': <String, double>{'x': 0.0, 'y': 0.0},
+          'rotationRad': 0.0,
+          'scale': <String, double>{'x': 1.0, 'y': 1.0},
+          'origin': 'center',
+          'customPivotPx': null,
+        },
+        'data': <String, dynamic>{
+          'size': <String, double>{'w': 320.0, 'h': 180.0},
+          'sourcePath': 'legacy/image.png',
+          'fit': 'contain',
+          'align': <String, double>{'x': 0.5, 'y': 0.5},
+        },
+        'role': null,
+        'runtimeType': 'image',
+      });
+
+      expect(
+        () => upgradeCanvasScene(
+          Map<String, Object?>.from(legacy),
+          legacyUnversioned: true,
+          resolveLegacyIconWasGlyph: _resolveLegacyIconWasGlyph,
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('sourcePath'),
+          ),
+        ),
+      );
+    });
+
     test('requires legacy icon rendering knowledge for nonzero shadows', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
 

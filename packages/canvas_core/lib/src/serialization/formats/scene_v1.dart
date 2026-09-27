@@ -81,6 +81,10 @@ void _validateNode(Object? raw, String path) {
     return;
   }
 
+  if (kind == 'image' && data.containsKey('sourcePath')) {
+    throw FormatException('$path.data.sourcePath is not in scene format v1');
+  }
+
   if (data.containsKey('appearance') || data.containsKey('shadowOffset')) {
     throw FormatException('$path.data contains unsupported appearance fields');
   }
