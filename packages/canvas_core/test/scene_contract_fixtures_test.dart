@@ -1,4 +1,4 @@
-// Path: test/scene_contract_fixtures_test.dart
+// Path: packages/canvas_core/test/scene_contract_fixtures_test.dart
 
 import 'dart:convert';
 import 'dart:io';
@@ -86,6 +86,12 @@ void main() {
       test('parses and contains no legacy keys: $name', () {
         final raw = _loadJson(name);
         _assertNoForbiddenKeys(raw);
+
+        expect(
+          raw['sceneFormatVersion'],
+          currentCanvasSceneFormatVersion,
+          reason: '$name must use the current persisted scene format',
+        );
 
         final scene = decodeCanvasScene(raw);
 
