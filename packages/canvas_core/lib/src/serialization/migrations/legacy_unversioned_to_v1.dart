@@ -4,16 +4,25 @@ import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v1.dart'
     show canvasSceneFormatV1;
 
-enum CanvasLegacyIconKind { glyph, path }
-
-typedef CanvasLegacyIconKindResolver =
-    CanvasLegacyIconKind? Function(String iconRef);
-
-/// Converts a scene the caller has identified as pre-appearance,
-/// unversioned Canvas JSON. Does not mutate its input.
+/// Converts an unversioned Canvas scene using the canvas_core 0.10.x
+/// persisted wire shape to scene format v1.
+///
+/// This is intentionally not a generic migration for arbitrary historical
+/// unversioned Canvas JSON. Earlier releases used different persisted shapes,
+/// including different image representation.
+///
+/// The caller is responsible for knowing that the input uses the supported
+/// 0.10.x wire shape.
+///
+/// [resolveLegacyIconWasGlyph] is consulted only for an icon with a nonzero
+/// legacy shadowOffset. Return true when that icon was rendered as a font
+/// glyph, false when it was rendered as a path, or null when its historical
+/// rendering mode cannot be determined.
+///
+/// Does not mutate its input.
 Map<String, Object?> convertLegacyUnversionedCanvasSceneToV1(
   Map<String, Object?> legacy, {
-  CanvasLegacyIconKindResolver? resolveLegacyIconKind,
+  bool? Function(String iconRef)? resolveLegacyIconWasGlyph,
 }) {
   if (legacy.containsKey('sceneFormatVersion') ||
       legacy.containsKey('schemaVersion') ||
@@ -23,7 +32,8 @@ Map<String, Object?> convertLegacyUnversionedCanvasSceneToV1(
     );
   }
 
-  // The old generated decoder defaulted omitted/null children to empty.
+  // The canvas_core 0.10.x generated decoder defaulted omitted/null children
+  // to empty.
   final rawChildren = legacy['children'] ?? <Object?>[];
   if (rawChildren is! List) {
     throw const FormatException('children must be a list');
@@ -33,7 +43,7 @@ Map<String, Object?> convertLegacyUnversionedCanvasSceneToV1(
   result['sceneFormatVersion'] = canvasSceneFormatV1;
   result['children'] = <Map<String, Object?>>[
     for (var i = 0; i < rawChildren.length; i++)
-      _convertNode(rawChildren[i], 'children[$i]', resolveLegacyIconKind),
+      _convertNode(rawChildren[i], 'children[$i]', resolveLegacyIconWasGlyph),
   ];
 
   return result;
@@ -42,7 +52,7 @@ Map<String, Object?> convertLegacyUnversionedCanvasSceneToV1(
 Map<String, Object?> _convertNode(
   Object? raw,
   String path,
-  CanvasLegacyIconKindResolver? resolveLegacyIconKind,
+  bool? Function(String iconRef)? resolveLegacyIconWasGlyph,
 ) {
   final node = _object(raw, path);
   final kind = node['runtimeType'];
@@ -51,6 +61,7 @@ Map<String, Object?> _convertNode(
   if (id is! String) {
     throw FormatException('$path.id must be a string');
   }
+
   if (node.containsKey('locked') &&
       node['locked'] != null &&
       node['locked'] is! bool) {
@@ -70,17 +81,20 @@ Map<String, Object?> _convertNode(
         _convertNode(
           rawChildren[i],
           '$path.children[$i]',
-          resolveLegacyIconKind,
+          resolveLegacyIconWasGlyph,
         ),
     ];
+
     return result;
   }
 
   if (kind == 'image' || kind == 'path') {
     final data = _object(node['data'], '$path.data');
+
     if (data.containsKey('appearance') || data.containsKey('shadowOffset')) {
       throw FormatException('$path.data mixes scene formats');
     }
+
     return result;
   }
 
@@ -89,6 +103,7 @@ Map<String, Object?> _convertNode(
   }
 
   final data = _object(node['data'], '$path.data');
+
   if (data.containsKey('appearance')) {
     throw FormatException('$path.data mixes legacy fields with appearance');
   }
@@ -98,6 +113,7 @@ Map<String, Object?> _convertNode(
     data['shadowOffset'],
     '$path.data.shadowOffset',
   );
+
   final underlays = <Map<String, Object?>>[];
 
   if (shadowOffset != 0) {
@@ -109,16 +125,19 @@ Map<String, Object?> _convertNode(
         throw FormatException('$path.data.iconRef must be a string');
       }
 
-      final iconKind = resolveLegacyIconKind?.call(iconRef);
-      if (iconKind == null) {
+      final wasGlyph = resolveLegacyIconWasGlyph?.call(iconRef);
+
+      if (wasGlyph == null) {
         throw FormatException(
           '$path.data.iconRef: cannot migrate a nonzero icon shadow '
-          'without resolving whether "$iconRef" is a glyph or path icon',
+          'without resolving whether "$iconRef" was rendered as a glyph '
+          'or path icon',
         );
       }
 
-      // The old renderer used shadowOffset for glyph icons, not path icons.
-      addShadow = iconKind == CanvasLegacyIconKind.glyph;
+      // The canvas_core 0.10.x renderer used shadowOffset for glyph icons,
+      // but not for path-resolved icons.
+      addShadow = wasGlyph;
     }
 
     if (addShadow) {
@@ -147,17 +166,19 @@ Map<String, Object?> _convertNode(
     'foreground': fill.toJson(),
     'underlays': underlays,
   };
+
   result['data'] = updatedData;
   return result;
 }
 
 CanvasFill _legacyFill(Object? raw, String path) {
-  // Default from the old TextData/CanvasIconData generated decoder.
+  // Defaults match the canvas_core 0.10.x TextData/CanvasIconData decoder.
   if (raw == null) {
     return const CanvasFill.solid(0xFF111111);
   }
 
   final CanvasFill fill;
+
   try {
     fill = CanvasFill.fromJson(_object(raw, path));
   } on FormatException catch (error) {
@@ -169,14 +190,18 @@ CanvasFill _legacyFill(Object? raw, String path) {
   if (fill is CanvasFillNone) {
     throw FormatException('$path cannot be none in a legacy text/icon');
   }
+
   return fill;
 }
 
 double _legacyShadowOffset(Object? raw, String path) {
+  // Default matches the canvas_core 0.10.x generated decoder.
   if (raw == null) return 0.0;
+
   if (raw is! num || !raw.isFinite) {
     throw FormatException('$path must be a finite number');
   }
+
   return raw.toDouble();
 }
 
@@ -184,5 +209,6 @@ Map<String, Object?> _object(Object? raw, String path) {
   if (raw is! Map || raw.keys.any((key) => key is! String)) {
     throw FormatException('$path must be an object with string keys');
   }
+
   return Map<String, Object?>.from(raw);
 }

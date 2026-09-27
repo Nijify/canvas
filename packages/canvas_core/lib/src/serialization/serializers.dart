@@ -7,19 +7,25 @@ export 'package:canvas_core/src/serialization/converters.dart';
 export 'package:canvas_core/src/serialization/path_converters.dart';
 export 'package:canvas_core/src/serialization/scene_format.dart'
     show currentCanvasSceneFormatVersion;
-export 'package:canvas_core/src/serialization/migrations/legacy_unversioned_to_v1.dart'
-    show CanvasLegacyIconKind, CanvasLegacyIconKindResolver;
-export 'package:canvas_core/src/serialization/scene_migrations.dart'
-    show upgradeCanvasScene;
 
 /// Decodes current, versioned persisted scene JSON.
-/// Upgrade known older JSON before calling this function.
+///
+/// Known legacy JSON must be upgraded explicitly before calling this function.
+///
+/// The persistence-format version belongs to the wire format and is removed
+/// before constructing the runtime [CanvasSceneDocument].
 CanvasSceneDocument decodeCanvasScene(Map<String, Object?> json) {
   validateCurrentCanvasSceneJson(json);
-  return CanvasSceneDocument.fromJson(Map<String, dynamic>.from(json));
+
+  final payload = Map<String, dynamic>.from(json)..remove('sceneFormatVersion');
+
+  return CanvasSceneDocument.fromJson(payload);
 }
 
 /// Encodes a runtime scene as current, versioned persisted JSON.
+///
+/// `sceneFormatVersion` is persistence metadata and is intentionally not part
+/// of the runtime [CanvasSceneDocument] model.
 Map<String, Object?> encodeCanvasScene(CanvasSceneDocument scene) {
   return Map<String, Object?>.from(scene.toJson())
     ..['sceneFormatVersion'] = currentCanvasSceneFormatVersion;
