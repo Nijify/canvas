@@ -1,3 +1,8 @@
+## 0.11.0
+
+- **Breaking:** require `canvas_core 0.12.x`.
+- No rendering behavior changes.
+
 ## 0.10.0
 
 - **Breaking:** require `canvas_core 0.11.x`.

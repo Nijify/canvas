@@ -52,12 +52,18 @@ CanvasSceneDocument _imageScene() {
 
 void main() {
   group('scene JSON boundary', () {
-    test('preserves the generated scene wire format', () {
+    test('encodes the current persisted scene wire format', () {
       final scene = _scene();
 
       final json = encodeCanvasScene(scene);
 
-      expect(json, equals(scene.toJson()));
+      expect(json['sceneFormatVersion'], currentCanvasSceneFormatVersion);
+
+      final generatedPayload = Map<String, Object?>.from(json)
+        ..remove('sceneFormatVersion');
+
+      expect(generatedPayload, equals(scene.toJson()));
+
       expect(
         json['backgroundFill'],
         equals({
@@ -73,6 +79,17 @@ void main() {
       expect(json['backgroundOpacity'], 0.5);
       expect(json.containsKey('bgGradient'), isFalse);
       expect(json.containsKey('bgOpacity'), isFalse);
+    });
+
+    test('keeps sceneFormatVersion out of the runtime model', () {
+      final scene = _scene();
+
+      expect(scene.toJson().containsKey('sceneFormatVersion'), isFalse);
+
+      final restored = decodeCanvasScene(encodeCanvasScene(scene));
+
+      expect(restored, scene);
+      expect(restored.toJson().containsKey('sceneFormatVersion'), isFalse);
     });
 
     test('uses the image asset registry wire shape', () {
@@ -95,6 +112,26 @@ void main() {
       expect(decodeCanvasScene(json), _imageScene());
     });
 
+    test('rejects sourcePath in scene format v1 image data', () {
+      final json = encodeCanvasScene(_imageScene());
+      final children = json['children'] as List<dynamic>;
+      final image = children.single as Map<String, dynamic>;
+      final data = image['data'] as Map<String, dynamic>;
+
+      data['sourcePath'] = 'legacy/image.png';
+
+      expect(
+        () => decodeCanvasScene(json),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('sourcePath'),
+          ),
+        ),
+      );
+    });
+
     test('requires image frame size when decoding', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
@@ -105,16 +142,21 @@ void main() {
       expect(() => decodeCanvasScene(json), throwsA(anything));
     });
 
-    test('preserves generated scene decoding', () {
-      final json = encodeCanvasScene(_scene());
+    test(
+      'decodes the generated runtime payload after removing wire metadata',
+      () {
+        final json = encodeCanvasScene(_scene());
 
-      final decoded = decodeCanvasScene(json);
-      final generated = CanvasSceneDocument.fromJson(
-        Map<String, dynamic>.from(json),
-      );
+        final decoded = decodeCanvasScene(json);
 
-      expect(decoded, generated);
-    });
+        final payload = Map<String, dynamic>.from(json)
+          ..remove('sceneFormatVersion');
+
+        final generated = CanvasSceneDocument.fromJson(payload);
+
+        expect(decoded, generated);
+      },
+    );
 
     test('round-trips a scene', () {
       final scene = _scene();
@@ -130,10 +172,30 @@ void main() {
       );
     });
 
+    test('rejects a missing sceneFormatVersion', () {
+      final json = encodeCanvasScene(_scene())..remove('sceneFormatVersion');
+
+      expect(() => decodeCanvasScene(json), throwsA(isA<FormatException>()));
+    });
+
+    test('rejects a non-integer sceneFormatVersion', () {
+      final json = encodeCanvasScene(_scene())..['sceneFormatVersion'] = 1.0;
+
+      expect(() => decodeCanvasScene(json), throwsA(isA<FormatException>()));
+    });
+
+    test('rejects an unknown sceneFormatVersion', () {
+      final json = encodeCanvasScene(_scene())..['sceneFormatVersion'] = 999;
+
+      expect(() => decodeCanvasScene(json), throwsA(isA<FormatException>()));
+    });
+
     test('rejects missing required background fields', () {
       final base = encodeCanvasScene(_scene());
+
       final missingFill = Map<String, Object?>.from(base)
         ..remove('backgroundFill');
+
       final missingOpacity = Map<String, Object?>.from(base)
         ..remove('backgroundOpacity');
 
@@ -141,15 +203,13 @@ void main() {
       expect(() => decodeCanvasScene(missingOpacity), throwsA(anything));
     });
 
-    test('rejects a legacy-only background payload', () {
-      final legacy = <String, Object?>{
-        'artboardSize': {'w': 740.0, 'h': 360.0},
-        'bgGradient': {'color1': 0, 'color2': 0, 'angle': 0.0, 'width': 0.0},
-        'bgOpacity': 0.0,
-        'children': <Object?>[],
-      };
+    test('rejects unversioned scenes instead of guessing their format', () {
+      final unversioned = Map<String, Object?>.from(_scene().toJson());
 
-      expect(() => decodeCanvasScene(legacy), throwsA(anything));
+      expect(
+        () => decodeCanvasScene(unversioned),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test('keeps decoding separate from semantic validation', () {

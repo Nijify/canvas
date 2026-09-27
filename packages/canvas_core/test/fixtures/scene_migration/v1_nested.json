@@ -1,0 +1,196 @@
+{
+  "artboardSize": {
+    "w": 1080.0,
+    "h": 1080.0
+  },
+  "backgroundFill": {
+    "type": "none"
+  },
+  "backgroundOpacity": 1.0,
+  "assets": {},
+  "children": [
+    {
+      "id": "group-legacy-1",
+      "name": "Legacy group",
+      "hidden": false,
+      "xf": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotationRad": 0.0,
+        "scale": {
+          "x": 1.0,
+          "y": 1.0
+        },
+        "origin": "center",
+        "customPivotPx": null
+      },
+      "behavior": null,
+      "children": [
+        {
+          "id": "text-legacy-1",
+          "name": "Legacy text",
+          "hidden": false,
+          "xf": {
+            "position": {
+              "x": 20.0,
+              "y": 30.0
+            },
+            "rotationRad": 0.0,
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "origin": "center",
+            "customPivotPx": null
+          },
+          "data": {
+            "text": "Legacy",
+            "fontFamily": "Inter",
+            "fontWeight": 700,
+            "fontSize": 64.0,
+            "letterSpacing": 0.0,
+            "appearance": {
+              "foreground": {
+                "type": "gradient",
+                "grad": {
+                  "color1": 4279312947,
+                  "color2": 4282668390,
+                  "angle": 45.0,
+                  "width": 20.0
+                }
+              },
+              "underlays": [
+                {
+                  "type": "shadow",
+                  "id": "legacy-shadow-text-legacy-1",
+                  "enabled": true,
+                  "offset": {
+                    "x": 4.0,
+                    "y": 4.0
+                  },
+                  "blurSigma": 0.0,
+                  "color": 4279312947
+                }
+              ]
+            }
+          },
+          "role": "headline",
+          "runtimeType": "text"
+        },
+        {
+          "id": "icon-glyph-1",
+          "name": "Legacy glyph icon",
+          "hidden": false,
+          "xf": {
+            "position": {
+              "x": 100.0,
+              "y": 100.0
+            },
+            "rotationRad": 0.0,
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "origin": "center",
+            "customPivotPx": null
+          },
+          "data": {
+            "iconRef": "icon.glyph",
+            "sizePx": 96.0,
+            "appearance": {
+              "foreground": {
+                "type": "solid",
+                "color": 4286023833
+              },
+              "underlays": [
+                {
+                  "type": "shadow",
+                  "id": "legacy-shadow-icon-glyph-1",
+                  "enabled": true,
+                  "offset": {
+                    "x": 3.0,
+                    "y": 3.0
+                  },
+                  "blurSigma": 0.0,
+                  "color": 4286023833
+                }
+              ]
+            }
+          },
+          "role": null,
+          "runtimeType": "icon"
+        },
+        {
+          "id": "icon-path-1",
+          "name": "Legacy path icon",
+          "hidden": false,
+          "xf": {
+            "position": {
+              "x": 200.0,
+              "y": 100.0
+            },
+            "rotationRad": 0.0,
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "origin": "center",
+            "customPivotPx": null
+          },
+          "data": {
+            "iconRef": "icon.path",
+            "sizePx": 96.0,
+            "appearance": {
+              "foreground": {
+                "type": "solid",
+                "color": 4289449455
+              },
+              "underlays": []
+            }
+          },
+          "role": null,
+          "runtimeType": "icon"
+        },
+        {
+          "id": "path-legacy-1",
+          "name": "Legacy path",
+          "hidden": false,
+          "xf": {
+            "position": {
+              "x": 300.0,
+              "y": 100.0
+            },
+            "rotationRad": 0.0,
+            "scale": {
+              "x": 1.0,
+              "y": 1.0
+            },
+            "origin": "center",
+            "customPivotPx": null
+          },
+          "data": {
+            "points": [],
+            "source": null,
+            "fill": {
+              "type": "solid",
+              "color": 4279246896
+            },
+            "fillRule": "nonZero",
+            "strokeColor": 0,
+            "strokeWidth": 4.0,
+            "strokeCap": "butt",
+            "strokeJoin": "miter",
+            "miterLimit": 4.0,
+            "dash": []
+          },
+          "role": null,
+          "runtimeType": "path"
+        }
+      ],
+      "runtimeType": "group"
+    }
+  ],
+  "sceneFormatVersion": 1
+}

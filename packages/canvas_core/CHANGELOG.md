@@ -1,3 +1,20 @@
+## 0.12.0
+
+- **Breaking:** version persisted Canvas scene JSON with
+  `sceneFormatVersion: 1`. `encodeCanvasScene()` now emits the current scene
+  format version, while `decodeCanvasScene()` rejects missing, malformed, and
+  unsupported versions.
+- Add `upgradeCanvasScene()` for explicitly identified `canvas_core 0.10.x`
+  unversioned scene JSON.
+- Migrate legacy text and icon `fill` / `shadowOffset` data to
+  `CanvasAppearance`, remove persisted node `locked` values, and preserve
+  historical glyph-versus-path icon shadow behavior through caller-supplied
+  icon rendering knowledge.
+- Reject unsupported older image `sourcePath` payloads instead of allowing the
+  current image decoder to silently discard their source.
+- Keep `sceneFormatVersion` as persistence metadata outside the runtime
+  `CanvasSceneDocument` model.
+
 ## 0.11.0
 
 - **Breaking:** remove the optional `idGen` parameter from
