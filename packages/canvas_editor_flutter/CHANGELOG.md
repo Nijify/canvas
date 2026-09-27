@@ -1,3 +1,10 @@
+# 0.15.0
+
+- **Breaking:** require `canvas_core 0.12.x` and
+  `canvas_renderer_flutter 0.11.x`.
+- Scene JSON exported through the canonical `canvas_core` serialization
+  boundary now includes `sceneFormatVersion`.
+
 # 0.14.0
 
 - **Breaking:** require `canvas_core 0.11.x` and `canvas_renderer_flutter 0.10.x`.
