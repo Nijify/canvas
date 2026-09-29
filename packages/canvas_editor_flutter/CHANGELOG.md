@@ -1,3 +1,8 @@
+# Unreleased
+
+- Move live-editor framing policy into `EditorCameraController`, including positive-only screen-space padding, usable content-bounds selection, artboard fallback, and existing camera scale limits.
+- Remove obsolete fit/bleed arguments from the built-in PNG export spec while preserving existing contain-export behavior.
+
 # 0.15.0
 
 - **Breaking:** require `canvas_core 0.12.x` and

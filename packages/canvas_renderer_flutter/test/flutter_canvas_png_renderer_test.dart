@@ -111,6 +111,24 @@ CanvasSceneDocument _backgroundScene({
   );
 }
 
+CanvasSceneDocument _pathScene() {
+  return CanvasSceneDocument(
+    artboardSize: const Size2D(100, 100),
+    backgroundFill: const CanvasFill.none(),
+    backgroundOpacity: 1,
+    children: const <Node>[
+      Node.path(
+        id: 'shape-1',
+        data: PathData(
+          source: RectSource(20, 10),
+          fill: CanvasFill.solid(0xFF22C55E),
+          strokeWidth: 0,
+        ),
+      ),
+    ],
+  );
+}
+
 CanvasSceneDocument _textScene(String family) {
   return CanvasSceneDocument(
     artboardSize: const Size2D(100, 60),
@@ -235,33 +253,39 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('FlutterCanvasPngRenderer output', () {
-    test('applies pixel ratio, bleed, and opaque backing', () async {
-      final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
+    test(
+      'applies fractional pixel ratio rounding and opaque backing',
+      () async {
+        final renderer = FlutterCanvasPngRenderer(
+          fonts: _RecordingFontLoader(),
+        );
 
-      final bytes = await renderer.renderPng(
-        scene: _backgroundScene(size: const Size2D(40, 20), color: 0xFF00FF00),
-        spec: const CanvasPngSpec(
-          widthPx: 100,
-          heightPx: 50,
-          bleedPx: 8,
-          pixelRatio: 2.5,
-          transparent: false,
-          fit: CanvasFit.contain,
-        ),
-      );
+        final bytes = await renderer.renderPng(
+          scene: _backgroundScene(
+            size: const Size2D(40, 20),
+            color: 0xFF00FF00,
+          ),
+          spec: const CanvasPngSpec(
+            widthPx: 101,
+            heightPx: 101,
+            pixelRatio: 2.5,
+            transparent: false,
+          ),
+        );
 
-      final image = await _decodePng(bytes);
+        final image = await _decodePng(bytes);
 
-      try {
-        expect(image.width, ((100 + 16) * 2.5).round());
+        try {
+          expect(image.width, 253);
+          expect(image.height, 253);
 
-        expect(image.height, ((50 + 16) * 2.5).round());
-
-        expect(await _pixelAt(image, 1, 1), 0xFFFFFFFF);
-      } finally {
-        image.dispose();
-      }
-    });
+          expect(await _pixelAt(image, 1, 1), 0xFFFFFFFF);
+          expect(await _pixelAt(image, 10, 100), 0xFF00FF00);
+        } finally {
+          image.dispose();
+        }
+      },
+    );
 
     test('contain fit centers artboard inside target', () async {
       final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
@@ -273,7 +297,6 @@ void main() {
           heightPx: 200,
           pixelRatio: 1,
           transparent: false,
-          fit: CanvasFit.contain,
         ),
       );
 
@@ -288,6 +311,81 @@ void main() {
         expect(await _pixelAt(image, 10, 60), 0xFFFF0000);
 
         expect(await _pixelAt(image, 10, 180), 0xFFFFFFFF);
+      } finally {
+        image.dispose();
+      }
+    });
+
+    test('tight crop owns output sizing from usable content bounds', () async {
+      final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
+
+      final bytes = await renderer.renderPng(
+        scene: _pathScene(),
+        spec: const CanvasPngSpec(
+          widthPx: 100,
+          heightPx: 100,
+          pixelRatio: 1,
+          transparent: true,
+          cropToContent: true,
+          tight: true,
+        ),
+      );
+
+      final image = await _decodePng(bytes);
+
+      try {
+        expect(image.width, 100);
+        expect(image.height, 50);
+        expect(await _pixelAt(image, 50, 25), 0xFF22C55E);
+      } finally {
+        image.dispose();
+      }
+    });
+
+    test('missing content bounds fall back to requested output size', () async {
+      final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
+
+      final bytes = await renderer.renderPng(
+        scene: _emptyScene(size: const Size2D(40, 20)),
+        spec: const CanvasPngSpec(
+          widthPx: 101,
+          heightPx: 51,
+          pixelRatio: 1,
+          cropToContent: true,
+          tight: true,
+        ),
+      );
+
+      final image = await _decodePng(bytes);
+
+      try {
+        expect(image.width, 101);
+        expect(image.height, 51);
+      } finally {
+        image.dispose();
+      }
+    });
+
+    test('degenerate content bounds fall back to the artboard', () async {
+      final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
+
+      final bytes = await renderer.renderPng(
+        scene: _pathScene(),
+        spec: const CanvasPngSpec(
+          widthPx: 80,
+          heightPx: 40,
+          pixelRatio: 1,
+          cropToContent: true,
+          contentPaddingPx: -10,
+          tight: true,
+        ),
+      );
+
+      final image = await _decodePng(bytes);
+
+      try {
+        expect(image.width, 80);
+        expect(image.height, 40);
       } finally {
         image.dispose();
       }

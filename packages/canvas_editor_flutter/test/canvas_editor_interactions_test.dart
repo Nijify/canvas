@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 // Path: packages/canvas_editor_flutter/test/canvas_editor_interactions_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -677,24 +679,14 @@ void main() {
       find.byType(CanvasViewport).first,
     );
 
-    final expected = CanvasViewportPlanner.plan(
+    final expected = _expectedPaddedArtboardFit(
+      viewportPx: viewport.viewportPx,
       artboard: _fixtureScene().artboardSize,
-      targetW: viewport.viewportPx.width,
-      targetH: viewport.viewportPx.height,
-      bounds: null,
-      paddingPx: 24.0,
-      fit: CanvasFit.contain,
-      minUniformScale: kEditorCameraMinScale,
-      maxUniformScale: kEditorCameraMaxScale,
-      snappingEnabled: false,
     );
 
     expect(editor.camera.value.userInteracted, isFalse);
-    expect(editor.camera.value.scale, closeTo(expected.scaleX, 0.0000001));
-    _expectOffsetCloseTo(
-      editor.camera.value.pan,
-      Offset(expected.translateX, expected.translateY),
-    );
+    expect(editor.camera.value.scale, closeTo(expected.scale, 0.0000001));
+    _expectOffsetCloseTo(editor.camera.value.pan, expected.pan);
 
     expect(editor.camera.value.viewportW, viewport.viewportPx.width);
     expect(editor.camera.value.viewportH, viewport.viewportPx.height);
@@ -768,27 +760,17 @@ void main() {
         find.byType(CanvasViewport).first,
       );
 
-      final expected = CanvasViewportPlanner.plan(
+      final expected = _expectedPaddedArtboardFit(
+        viewportPx: viewport.viewportPx,
         artboard: nextArtboard,
-        targetW: viewport.viewportPx.width,
-        targetH: viewport.viewportPx.height,
-        bounds: null,
-        paddingPx: 24.0,
-        fit: CanvasFit.contain,
-        minUniformScale: kEditorCameraMinScale,
-        maxUniformScale: kEditorCameraMaxScale,
-        snappingEnabled: false,
       );
 
       expect(editor.camera.value.artboardW, nextArtboard.w);
       expect(editor.camera.value.artboardH, nextArtboard.h);
 
-      expect(editor.camera.value.scale, closeTo(expected.scaleX, 0.0000001));
+      expect(editor.camera.value.scale, closeTo(expected.scale, 0.0000001));
 
-      _expectOffsetCloseTo(
-        editor.camera.value.pan,
-        Offset(expected.translateX, expected.translateY),
-      );
+      _expectOffsetCloseTo(editor.camera.value.pan, expected.pan);
     },
   );
 
@@ -951,16 +933,9 @@ void main() {
       find.byType(CanvasViewport).first,
     );
 
-    final expected = CanvasViewportPlanner.plan(
+    final expected = _expectedPaddedArtboardFit(
+      viewportPx: viewport.viewportPx,
       artboard: scene.artboardSize,
-      targetW: viewport.viewportPx.width,
-      targetH: viewport.viewportPx.height,
-      bounds: null,
-      paddingPx: 24.0,
-      fit: CanvasFit.contain,
-      minUniformScale: kEditorCameraMinScale,
-      maxUniformScale: kEditorCameraMaxScale,
-      snappingEnabled: false,
     );
 
     expect(camera.value.viewportW, viewport.viewportPx.width);
@@ -969,11 +944,8 @@ void main() {
     expect(camera.value.artboardH, scene.artboardSize.h);
     expect(camera.value.userInteracted, isFalse);
 
-    expect(camera.value.scale, closeTo(expected.scaleX, 0.0000001));
-    _expectOffsetCloseTo(
-      camera.value.pan,
-      Offset(expected.translateX, expected.translateY),
-    );
+    expect(camera.value.scale, closeTo(expected.scale, 0.0000001));
+    _expectOffsetCloseTo(camera.value.pan, expected.pan);
 
     // The actual first CanvasViewport widget must receive precisely the same
     // already-fitted transform as the controller.
@@ -1031,6 +1003,28 @@ void main() {
       // and not serialized JSON.
       expect(emittedScene, currentBaseScene);
     },
+  );
+}
+
+({double scale, Offset pan}) _expectedPaddedArtboardFit({
+  required Size viewportPx,
+  required Size2D artboard,
+  double paddingPx = 24.0,
+}) {
+  final targetW = math.max(1.0, viewportPx.width - paddingPx * 2);
+  final targetH = math.max(1.0, viewportPx.height - paddingPx * 2);
+
+  final scale = math
+      .min(targetW / artboard.w, targetH / artboard.h)
+      .clamp(kEditorCameraMinScale, kEditorCameraMaxScale)
+      .toDouble();
+
+  return (
+    scale: scale,
+    pan: Offset(
+      paddingPx + (targetW - artboard.w * scale) / 2,
+      paddingPx + (targetH - artboard.h * scale) / 2,
+    ),
   );
 }
 

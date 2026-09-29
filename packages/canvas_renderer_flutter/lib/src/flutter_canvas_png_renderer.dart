@@ -1,5 +1,6 @@
 // Path: lib/src/flutter_canvas_png_renderer.dart
 
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -355,16 +356,42 @@ Future<Uint8List> _encodePng({
 }) async {
   final artboard = built.scene.artboardSize;
 
-  final viewport = CanvasViewportPlanner.plan(
-    artboard: artboard,
-    targetW: spec.widthPx.toDouble(),
-    targetH: spec.heightPx.toDouble(),
-    bounds: built.contentBounds,
-    bleedPx: spec.bleedPx.toDouble(),
-    fit: spec.fit,
-    tight: spec.cropToContent && spec.tight,
-    snappingEnabled: false,
-    pixelRatioForSnapping: spec.pixelRatio,
+  final requestedW = spec.widthPx.toDouble();
+  final requestedH = spec.heightPx.toDouble();
+
+  final contentBounds = built.contentBounds;
+
+  // Content bounds are a usable fit source only when both dimensions are
+  // positive. Missing or unusable bounds fall back to the artboard.
+  final usableContentBounds =
+      contentBounds != null &&
+          contentBounds.width > 0 &&
+          contentBounds.height > 0
+      ? contentBounds
+      : null;
+
+  final sourceBounds =
+      usableContentBounds ?? Rect2D.fromLTWH(0, 0, artboard.w, artboard.h);
+
+  var outputW = requestedW;
+  var outputH = requestedH;
+
+  // Tight output sizing is renderer policy. Keep logical dimensions as doubles
+  // until the final raster dimensions are calculated below.
+  if (spec.cropToContent && spec.tight && usableContentBounds != null) {
+    final tightScale = math.min(
+      requestedW / usableContentBounds.width,
+      requestedH / usableContentBounds.height,
+    );
+
+    outputW = usableContentBounds.width * tightScale;
+    outputH = usableContentBounds.height * tightScale;
+  }
+
+  final viewport = computeViewport(
+    sourceBounds: sourceBounds,
+    targetW: outputW,
+    targetH: outputH,
   );
 
   final pixelRatio = spec.pixelRatio.clamp(1.0, 4.0).toDouble();
@@ -373,22 +400,17 @@ Future<Uint8List> _encodePng({
 
   final canvas = ui.Canvas(
     recorder,
-    ui.Rect.fromLTWH(
-      0,
-      0,
-      viewport.recordingW * pixelRatio,
-      viewport.recordingH * pixelRatio,
-    ),
+    ui.Rect.fromLTWH(0, 0, outputW * pixelRatio, outputH * pixelRatio),
   );
 
-  canvas.scale(pixelRatio, pixelRatio);
+  canvas.scale(pixelRatio);
 
   // Preserve the previous exporter behavior: transparent output has no backing
   // fill; opaque output receives a white backing surface before scene paint
   // operations are replayed.
   if (!spec.transparent) {
     canvas.drawRect(
-      ui.Rect.fromLTWH(0, 0, viewport.recordingW, viewport.recordingH),
+      ui.Rect.fromLTWH(0, 0, outputW, outputH),
       ui.Paint()..color = const ui.Color(0xFFFFFFFF),
     );
   }
@@ -396,8 +418,7 @@ Future<Uint8List> _encodePng({
   canvas.save();
 
   canvas.translate(viewport.translateX, viewport.translateY);
-
-  canvas.scale(viewport.scaleX, viewport.scaleY);
+  canvas.scale(viewport.scale);
 
   CanvasRenderer(
     images: imagePool.images,
@@ -420,8 +441,8 @@ Future<Uint8List> _encodePng({
 
   try {
     image = await picture.toImage(
-      (viewport.recordingW * pixelRatio).round(),
-      (viewport.recordingH * pixelRatio).round(),
+      (outputW * pixelRatio).round(),
+      (outputH * pixelRatio).round(),
     );
   } finally {
     picture.dispose();

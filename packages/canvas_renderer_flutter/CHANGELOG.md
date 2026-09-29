@@ -1,3 +1,8 @@
+## Unreleased
+
+- **Breaking:** remove `CanvasPngSpec.fit` and `CanvasPngSpec.bleedPx`; canonical PNG output now uses contain fitting without an export-space bleed option.
+- Move content/artboard source selection and tight crop output sizing into the PNG renderer while preserving content padding, transparency, pixel-ratio clamping, and final raster rounding.
+
 ## 0.11.0
 
 - **Breaking:** require `canvas_core 0.12.x`.

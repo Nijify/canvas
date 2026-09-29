@@ -2,111 +2,79 @@
 
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 
-enum CanvasFit { contain, cover, stretch }
-
+/// Renderer-neutral contain-fit transform.
+///
+/// Callers are responsible for choosing the source bounds and applying any
+/// higher-level viewport policy such as padding, cropping, or output sizing.
 class CanvasViewportTransform {
   const CanvasViewportTransform({
-    required this.scaleX,
-    required this.scaleY,
+    required this.scale,
     required this.translateX,
     required this.translateY,
-    required this.recordingW,
-    required this.recordingH,
   });
 
-  final double scaleX, scaleY;
-  final double translateX, translateY;
-  final double recordingW, recordingH;
+  final double scale;
+  final double translateX;
+  final double translateY;
 
   CanvasViewportTransform snapTranslation(double pixelRatio) {
     final tx = (translateX * pixelRatio).roundToDouble() / pixelRatio;
     final ty = (translateY * pixelRatio).roundToDouble() / pixelRatio;
+
     return CanvasViewportTransform(
-      scaleX: scaleX,
-      scaleY: scaleY,
+      scale: scale,
       translateX: tx,
       translateY: ty,
-      recordingW: recordingW,
-      recordingH: recordingH,
     );
   }
 }
 
-/// Fits either the artboard (bounds=null) or a world-space bounds rect into a target,
-/// with optional "bleed" (outer margin).
+/// Contains [sourceBounds] inside the target dimensions.
+///
+/// This function owns only renderer-neutral viewport math. Callers choose the
+/// source bounds and own policies such as artboard/content selection, padding,
+/// tight output sizing, and translation snapping.
+///
+/// [minUniformScale] and [maxUniformScale] optionally clamp the uniform scale.
+/// Translation is calculated after clamping so the source remains centred.
+///
+/// Nonpositive source dimensions are treated defensively as an identity
+/// transform. Callers should normally avoid this by supplying valid bounds.
 CanvasViewportTransform computeViewport({
-  required double artboardW,
-  required double artboardH,
+  required Rect2D sourceBounds,
   required double targetW,
   required double targetH,
-  Rect2D? bounds, // if set: fit this rect in artboard coordinates
-  double bleed = 0,
-  CanvasFit fit = CanvasFit.contain,
-
-  // Optional clamp used by editor camera (export doesn’t need this).
   double? minUniformScale,
   double? maxUniformScale,
 }) {
-  // Source rect
-  final double srcW, srcH, srcLeft, srcTop;
-
-  if (bounds != null) {
-    srcW = (bounds.right - bounds.left).abs();
-    srcH = (bounds.bottom - bounds.top).abs();
-    srcLeft = bounds.left;
-    srcTop = bounds.top;
-  } else {
-    srcW = artboardW;
-    srcH = artboardH;
-    srcLeft = 0;
-    srcTop = 0;
-  }
+  final srcW = sourceBounds.width;
+  final srcH = sourceBounds.height;
 
   if (srcW <= 0 || srcH <= 0) {
-    return CanvasViewportTransform(
-      scaleX: 1,
-      scaleY: 1,
-      translateX: bleed,
-      translateY: bleed,
-      recordingW: targetW + bleed * 2,
-      recordingH: targetH + bleed * 2,
+    return const CanvasViewportTransform(
+      scale: 1,
+      translateX: 0,
+      translateY: 0,
     );
   }
 
   final sx = targetW / srcW;
   final sy = targetH / srcH;
 
-  final base = switch (fit) {
-    CanvasFit.contain => sx < sy ? sx : sy,
-    CanvasFit.cover => sx > sy ? sx : sy,
-    CanvasFit.stretch => 1.0,
-  };
+  var scale = sx < sy ? sx : sy;
 
-  var scaleX = fit == CanvasFit.stretch ? sx : base;
-  var scaleY = fit == CanvasFit.stretch ? sy : base;
-
-  // Editor clamp (uniform only; stretch shouldn’t clamp like this)
-  if (fit != CanvasFit.stretch &&
-      (minUniformScale != null || maxUniformScale != null)) {
+  if (minUniformScale != null || maxUniformScale != null) {
     final lo = minUniformScale ?? double.negativeInfinity;
     final hi = maxUniformScale ?? double.infinity;
-    final clamped = base.clamp(lo, hi).toDouble();
-    scaleX = clamped;
-    scaleY = clamped;
+    scale = scale.clamp(lo, hi).toDouble();
   }
 
-  final scaledW = srcW * scaleX;
-  final scaledH = srcH * scaleY;
-
-  final dx = bleed + (targetW - scaledW) / 2.0 - srcLeft * scaleX;
-  final dy = bleed + (targetH - scaledH) / 2.0 - srcTop * scaleY;
+  final sourceCenterX = (sourceBounds.left + sourceBounds.right) / 2.0;
+  final sourceCenterY = (sourceBounds.top + sourceBounds.bottom) / 2.0;
 
   return CanvasViewportTransform(
-    scaleX: scaleX,
-    scaleY: scaleY,
-    translateX: dx,
-    translateY: dy,
-    recordingW: targetW + bleed * 2,
-    recordingH: targetH + bleed * 2,
+    scale: scale,
+    translateX: targetW / 2.0 - sourceCenterX * scale,
+    translateY: targetH / 2.0 - sourceCenterY * scale,
   );
 }
