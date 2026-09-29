@@ -167,7 +167,7 @@ export 'src/runtime/validation/scene_document_validation.dart'
 // 10) Viewport + export helpers (renderer-agnostic)
 // ============================================================================
 export 'src/algorithms/viewport/viewport_math.dart'
-    show CanvasFit, CanvasViewportTransform, computeViewport;
+    show CanvasViewportTransform, computeViewport;
 
 // Crop-to-content / content bounds helpers
 export 'src/algorithms/export/content_bounds_policy.dart'
@@ -201,4 +201,3 @@ export 'src/foundation/paint/canvas_fill.dart';
 // canvas_core.
 export 'src/runtime/render/canvas_render_pipeline.dart';
 
-export 'src/runtime/viewport/canvas_viewport_planner.dart';
