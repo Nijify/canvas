@@ -8,14 +8,11 @@ import 'package:canvas_core/canvas_core_runtime.dart'
 import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_state.dart';
 import 'package:flutter/foundation.dart' show ValueNotifier;
 
-/// Owns mutable editor-camera state.
+/// Owns mutable editor-camera state and framing policy.
 ///
-/// It preserves established camera math, scale limits, epsilon checks,
-/// content-bounds handling, and layout synchronization behavior.
-///
-/// Camera policy remains outside this controller:
-/// - [CanvasEditorSurface] decides when to call [syncToLayout].
-/// - The controller only applies the requested camera update.
+/// [CanvasEditorSurface] decides when layout synchronization is required.
+/// This controller owns how the requested artboard or content framing is
+/// converted into camera scale and pan.
 final class EditorCameraController extends ValueNotifier<EditorCameraState> {
   EditorCameraController() : super(const EditorCameraState.initial());
 
@@ -91,13 +88,17 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
           ? contentBounds
           : null;
 
-      if (usableContentBounds != null) {
-        final fit = _computeFitBounds(
-          viewportPx: viewportPx,
-          bounds: usableContentBounds,
-          paddingPx: paddingPx,
-        );
+      final sourceBounds =
+          usableContentBounds ??
+          Rect2D.fromLTWH(0, 0, artboard.w, artboard.h);
 
+      final fit = _computeFit(
+        viewportPx: viewportPx,
+        sourceBounds: sourceBounds,
+        paddingPx: paddingPx,
+      );
+
+      if (usableContentBounds != null) {
         _set(
           current.copyWith(
             scale: fit.scale,
@@ -111,12 +112,6 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
         );
         return;
       }
-
-      final fit = _computeArtboardFit(
-        viewportPx: viewportPx,
-        artboard: artboard,
-        paddingPx: paddingPx,
-      );
 
       // Preserve the old optimization: when only layout metadata changes and
       // fit values are effectively identical, retain scale/pan unchanged.
@@ -176,30 +171,6 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
   void _set(EditorCameraState next) {
     if (next == value) return;
     value = next;
-  }
-
-  ({double scale, Offset pan}) _computeArtboardFit({
-    required Size viewportPx,
-    required Size2D artboard,
-    required double paddingPx,
-  }) {
-    return _computeFit(
-      viewportPx: viewportPx,
-      sourceBounds: Rect2D.fromLTWH(0, 0, artboard.w, artboard.h),
-      paddingPx: paddingPx,
-    );
-  }
-
-  ({double scale, Offset pan}) _computeFitBounds({
-    required Size viewportPx,
-    required Rect2D bounds,
-    required double paddingPx,
-  }) {
-    return _computeFit(
-      viewportPx: viewportPx,
-      sourceBounds: bounds,
-      paddingPx: paddingPx,
-    );
   }
 
   ({double scale, Offset pan}) _computeFit({
