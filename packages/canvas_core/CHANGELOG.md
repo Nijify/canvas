@@ -1,3 +1,8 @@
+## Unreleased
+
+- **Breaking:** remove `CanvasFit` and `CanvasViewportPlanner`. `computeViewport()` now accepts one caller-selected `Rect2D sourceBounds` and returns a uniform `CanvasViewportTransform` with `scale` and translation only.
+- Keep optional uniform scale clamping with recentering and `snapTranslation()`; callers now own artboard/content selection, padding, output sizing, and other viewport policy.
+
 ## 0.12.0
 
 - **Breaking:** version persisted Canvas scene JSON with
