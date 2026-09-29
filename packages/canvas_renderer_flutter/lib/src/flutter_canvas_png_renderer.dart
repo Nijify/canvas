@@ -371,13 +371,7 @@ Future<Uint8List> _encodePng({
       : null;
 
   final sourceBounds =
-      usableContentBounds ??
-      Rect2D.fromLTWH(
-        0,
-        0,
-        artboard.w,
-        artboard.h,
-      );
+      usableContentBounds ?? Rect2D.fromLTWH(0, 0, artboard.w, artboard.h);
 
   var outputW = requestedW;
   var outputH = requestedH;
@@ -406,12 +400,7 @@ Future<Uint8List> _encodePng({
 
   final canvas = ui.Canvas(
     recorder,
-    ui.Rect.fromLTWH(
-      0,
-      0,
-      outputW * pixelRatio,
-      outputH * pixelRatio,
-    ),
+    ui.Rect.fromLTWH(0, 0, outputW * pixelRatio, outputH * pixelRatio),
   );
 
   canvas.scale(pixelRatio);

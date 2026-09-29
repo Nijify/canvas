@@ -200,4 +200,3 @@ export 'src/foundation/paint/canvas_fill.dart';
 // Domain-specific preparation policies belong in extension packages outside
 // canvas_core.
 export 'src/runtime/render/canvas_render_pipeline.dart';
-

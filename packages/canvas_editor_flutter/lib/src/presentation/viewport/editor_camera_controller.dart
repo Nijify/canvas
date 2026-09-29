@@ -89,8 +89,7 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
           : null;
 
       final sourceBounds =
-          usableContentBounds ??
-          Rect2D.fromLTWH(0, 0, artboard.w, artboard.h);
+          usableContentBounds ?? Rect2D.fromLTWH(0, 0, artboard.w, artboard.h);
 
       final fit = _computeFit(
         viewportPx: viewportPx,
@@ -202,10 +201,7 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
 
     return (
       scale: transform.scale,
-      pan: Offset(
-        transform.translateX + inset,
-        transform.translateY + inset,
-      ),
+      pan: Offset(transform.translateX + inset, transform.translateY + inset),
     );
   }
 

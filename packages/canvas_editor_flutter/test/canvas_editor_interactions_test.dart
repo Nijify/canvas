@@ -686,10 +686,7 @@ void main() {
 
     expect(editor.camera.value.userInteracted, isFalse);
     expect(editor.camera.value.scale, closeTo(expected.scale, 0.0000001));
-    _expectOffsetCloseTo(
-      editor.camera.value.pan,
-      expected.pan,
-    );
+    _expectOffsetCloseTo(editor.camera.value.pan, expected.pan);
 
     expect(editor.camera.value.viewportW, viewport.viewportPx.width);
     expect(editor.camera.value.viewportH, viewport.viewportPx.height);
@@ -773,10 +770,7 @@ void main() {
 
       expect(editor.camera.value.scale, closeTo(expected.scale, 0.0000001));
 
-      _expectOffsetCloseTo(
-        editor.camera.value.pan,
-        expected.pan,
-      );
+      _expectOffsetCloseTo(editor.camera.value.pan, expected.pan);
     },
   );
 
@@ -951,10 +945,7 @@ void main() {
     expect(camera.value.userInteracted, isFalse);
 
     expect(camera.value.scale, closeTo(expected.scale, 0.0000001));
-    _expectOffsetCloseTo(
-      camera.value.pan,
-      expected.pan,
-    );
+    _expectOffsetCloseTo(camera.value.pan, expected.pan);
 
     // The actual first CanvasViewport widget must receive precisely the same
     // already-fitted transform as the controller.
