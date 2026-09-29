@@ -414,7 +414,7 @@ Future<Uint8List> _encodePng({
     ),
   );
 
-  canvas.scale(pixelRatio, pixelRatio);
+  canvas.scale(pixelRatio);
 
   // Preserve the previous exporter behavior: transparent output has no backing
   // fill; opaque output receives a white backing surface before scene paint
@@ -429,7 +429,7 @@ Future<Uint8List> _encodePng({
   canvas.save();
 
   canvas.translate(viewport.translateX, viewport.translateY);
-  canvas.scale(viewport.scale, viewport.scale);
+  canvas.scale(viewport.scale);
 
   CanvasRenderer(
     images: imagePool.images,
