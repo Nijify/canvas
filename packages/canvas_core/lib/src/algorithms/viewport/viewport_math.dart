@@ -69,15 +69,14 @@ CanvasViewportTransform computeViewport({
     scale = scale.clamp(lo, hi).toDouble();
   }
 
-  final scaledW = srcW * scale;
-  final scaledH = srcH * scale;
-
-  final dx = (targetW - scaledW) / 2.0 - sourceBounds.left * scale;
-  final dy = (targetH - scaledH) / 2.0 - sourceBounds.top * scale;
+  final sourceCenterX =
+      (sourceBounds.left + sourceBounds.right) / 2.0;
+  final sourceCenterY =
+      (sourceBounds.top + sourceBounds.bottom) / 2.0;
 
   return CanvasViewportTransform(
     scale: scale,
-    translateX: dx,
-    translateY: dy,
+    translateX: targetW / 2.0 - sourceCenterX * scale,
+    translateY: targetH / 2.0 - sourceCenterY * scale,
   );
 }
