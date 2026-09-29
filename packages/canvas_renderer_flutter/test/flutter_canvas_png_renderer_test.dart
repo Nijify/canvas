@@ -235,29 +235,27 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('FlutterCanvasPngRenderer output', () {
-    test('applies pixel ratio, bleed, and opaque backing', () async {
+    test('applies fractional pixel ratio rounding and opaque backing', () async {
       final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
 
       final bytes = await renderer.renderPng(
         scene: _backgroundScene(size: const Size2D(40, 20), color: 0xFF00FF00),
         spec: const CanvasPngSpec(
-          widthPx: 100,
-          heightPx: 50,
-          bleedPx: 8,
+          widthPx: 101,
+          heightPx: 101,
           pixelRatio: 2.5,
           transparent: false,
-          fit: CanvasFit.contain,
         ),
       );
 
       final image = await _decodePng(bytes);
 
       try {
-        expect(image.width, ((100 + 16) * 2.5).round());
-
-        expect(image.height, ((50 + 16) * 2.5).round());
+        expect(image.width, 253);
+        expect(image.height, 253);
 
         expect(await _pixelAt(image, 1, 1), 0xFFFFFFFF);
+        expect(await _pixelAt(image, 10, 100), 0xFF00FF00);
       } finally {
         image.dispose();
       }
@@ -273,7 +271,6 @@ void main() {
           heightPx: 200,
           pixelRatio: 1,
           transparent: false,
-          fit: CanvasFit.contain,
         ),
       );
 
