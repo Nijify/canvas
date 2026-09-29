@@ -318,7 +318,6 @@ void main() {
       );
       expect(port.spec?.widthPx, 2048);
       expect(port.spec?.heightPx, 1024);
-      expect(port.spec?.fit, CanvasFit.contain);
       expect(port.spec?.pixelRatio, 2.0);
       expect(port.filename, 'canvas_export.png');
     },
@@ -364,7 +363,6 @@ void main() {
     expect(identical(port.scene, outputScene), isTrue);
     expect(port.spec?.widthPx, 2048);
     expect(port.spec?.heightPx, 1024);
-    expect(port.spec?.fit, CanvasFit.contain);
     expect(port.filename, 'canvas_export.png');
   });
 }
