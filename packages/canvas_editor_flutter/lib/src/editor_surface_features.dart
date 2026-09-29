@@ -46,7 +46,7 @@ class EditorViewportFraming {
     this.contentBoundsSpec = const ContentBoundsSpec(paddingPx: 24.0),
   });
 
-  /// Padding applied by the viewport planner while fitting the framing target.
+  /// Screen-space padding applied while fitting the framing target.
   final double paddingPx;
 
   /// Configuration used to derive rendered content bounds.
