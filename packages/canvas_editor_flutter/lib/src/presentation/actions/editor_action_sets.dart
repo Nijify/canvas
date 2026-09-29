@@ -3,7 +3,7 @@
 import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFillNone, CanvasFit, CanvasSceneDocument, encodeCanvasScene;
+    show CanvasFillNone, CanvasSceneDocument, encodeCanvasScene;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
     show CanvasPngSpec;
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
@@ -201,11 +201,9 @@ CanvasPngSpec _pngExportSpec(CanvasSceneDocument scene) {
   return CanvasPngSpec(
     widthPx: widthPx,
     heightPx: heightPx,
-    bleedPx: 0,
     transparent:
         scene.backgroundFill is CanvasFillNone ||
         !(scene.backgroundOpacity > 0),
-    fit: CanvasFit.contain,
     pixelRatio: 2.0,
   );
 }
