@@ -9,10 +9,8 @@ final class CanvasPngSpec {
   const CanvasPngSpec({
     required this.widthPx,
     required this.heightPx,
-    this.bleedPx = 0,
     this.pixelRatio = 2.0,
     this.transparent = true,
-    this.fit = CanvasFit.contain,
     this.cropToContent = false,
     this.contentPaddingPx = 0,
     this.tight = false,
@@ -21,20 +19,20 @@ final class CanvasPngSpec {
 
   final int widthPx;
   final int heightPx;
-  final int bleedPx;
   final double pixelRatio;
   final bool transparent;
-  final CanvasFit fit;
 
-  /// Computes content bounds from the prepared final scene and uses those
-  /// bounds as the export viewport.
+  /// Computes content bounds from the prepared final scene and uses usable
+  /// positive-size bounds as the export viewport. Otherwise the artboard is
+  /// used.
   final bool cropToContent;
 
   /// Additional document-space padding around computed content bounds.
   final double contentPaddingPx;
 
-  /// When cropping to content, allows the output dimensions to tighten around
-  /// the computed bounds while remaining within [widthPx] and [heightPx].
+  /// When cropping to usable content bounds, allows the output dimensions to
+  /// tighten around those bounds while remaining within [widthPx] and
+  /// [heightPx].
   final bool tight;
 
   /// Optional generic content-selection policy used for content bounds.
