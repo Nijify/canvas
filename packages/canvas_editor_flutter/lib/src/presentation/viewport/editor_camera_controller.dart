@@ -1,9 +1,10 @@
 // Path: oss_packages/canvas_editor_flutter/lib/src/presentation/viewport/editor_camera_controller.dart
 
+import 'dart:math' as math;
 import 'dart:ui' show Offset, Size;
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show CanvasFit, CanvasViewportPlanner, Rect2D, Size2D;
+    show Rect2D, Size2D, computeViewport;
 import 'package:canvas_editor_flutter/src/presentation/viewport/editor_camera_state.dart';
 import 'package:flutter/foundation.dart' show ValueNotifier;
 
@@ -45,7 +46,8 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
   ///
   /// Camera behavior:
   ///
-  /// - Before user interaction, fit the artboard or provided content bounds.
+  /// - Before user interaction, fit the artboard or usable content bounds.
+  /// - Content bounds are usable only when both dimensions are positive.
   /// - When [forceFit] is true, fit even after user interaction.
   /// - After user interaction, preserve the same world point at the viewport
   ///   centre when this method is invoked for a real layout change.
@@ -82,10 +84,17 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
     final shouldFit = forceFit || !current.userInteracted;
 
     if (shouldFit) {
-      if (contentBounds != null) {
+      final usableContentBounds =
+          contentBounds != null &&
+              contentBounds.width > 0 &&
+              contentBounds.height > 0
+          ? contentBounds
+          : null;
+
+      if (usableContentBounds != null) {
         final fit = _computeFitBounds(
           viewportPx: viewportPx,
-          bounds: contentBounds,
+          bounds: usableContentBounds,
           paddingPx: paddingPx,
         );
 
@@ -174,21 +183,10 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
     required Size2D artboard,
     required double paddingPx,
   }) {
-    final transform = CanvasViewportPlanner.plan(
-      artboard: artboard,
-      targetW: viewportPx.width,
-      targetH: viewportPx.height,
-      bounds: null,
+    return _computeFit(
+      viewportPx: viewportPx,
+      sourceBounds: Rect2D.fromLTWH(0, 0, artboard.w, artboard.h),
       paddingPx: paddingPx,
-      fit: CanvasFit.contain,
-      minUniformScale: kEditorCameraMinScale,
-      maxUniformScale: kEditorCameraMaxScale,
-      snappingEnabled: false,
-    );
-
-    return (
-      scale: transform.scaleX,
-      pan: Offset(transform.translateX, transform.translateY),
     );
   }
 
@@ -197,23 +195,46 @@ final class EditorCameraController extends ValueNotifier<EditorCameraState> {
     required Rect2D bounds,
     required double paddingPx,
   }) {
-    final transform = CanvasViewportPlanner.plan(
-      // The planner uses [bounds] as the fit target when it is provided.
-      // Artboard dimensions are only relevant to artboard-fit mode.
-      artboard: const Size2D(1, 1),
-      targetW: viewportPx.width,
-      targetH: viewportPx.height,
-      bounds: bounds,
+    return _computeFit(
+      viewportPx: viewportPx,
+      sourceBounds: bounds,
       paddingPx: paddingPx,
-      fit: CanvasFit.contain,
+    );
+  }
+
+  ({double scale, Offset pan}) _computeFit({
+    required Size viewportPx,
+    required Rect2D sourceBounds,
+    required double paddingPx,
+  }) {
+    // Preserve the established editor rule: only positive padding affects the
+    // viewport fit. Zero and negative padding are treated as no padding.
+    final hasPadding = paddingPx > 0;
+
+    final targetW = hasPadding
+        ? math.max(1.0, viewportPx.width - paddingPx * 2)
+        : viewportPx.width;
+
+    final targetH = hasPadding
+        ? math.max(1.0, viewportPx.height - paddingPx * 2)
+        : viewportPx.height;
+
+    final transform = computeViewport(
+      sourceBounds: sourceBounds,
+      targetW: targetW,
+      targetH: targetH,
       minUniformScale: kEditorCameraMinScale,
       maxUniformScale: kEditorCameraMaxScale,
-      snappingEnabled: false,
     );
 
+    final inset = hasPadding ? paddingPx : 0.0;
+
     return (
-      scale: transform.scaleX,
-      pan: Offset(transform.translateX, transform.translateY),
+      scale: transform.scale,
+      pan: Offset(
+        transform.translateX + inset,
+        transform.translateY + inset,
+      ),
     );
   }
 
