@@ -164,7 +164,6 @@ void main() {
         heightPx: 1,
         pixelRatio: 2,
         transparent: true,
-        fit: CanvasFit.contain,
       ),
     );
 
