@@ -36,7 +36,8 @@ export 'src/flutter_canvas_renderer.dart'
 //    Mental model: scene -> resources -> preparation -> strict PNG output.
 // ============================================================================
 export 'src/canvas_png_renderer.dart' show CanvasPngRenderer, CanvasPngSpec;
-export 'src/flutter_canvas_png_renderer.dart' show FlutterCanvasPngRenderer;
+export 'src/flutter_canvas_png_renderer.dart'
+    show CanvasImageRenderException, FlutterCanvasPngRenderer;
 
 // ============================================================================
 // 3) Font loading
@@ -58,7 +59,11 @@ export 'src/flutter_text_pipeline.dart'
 //    repaint notifications, and resource disposal.
 // ============================================================================
 export 'src/images/flutter_image_pool.dart'
-    show FlutterImageDecoder, FlutterImagePool;
+    show
+        FlutterImageDecoder,
+        FlutterImageLoadFailure,
+        FlutterImageLoadPhase,
+        FlutterImagePool;
 
 // ============================================================================
 // 6) Gradients (adapter)

@@ -6,6 +6,18 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter_image_providers.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+final class _FailingImageProvider extends ImageProvider<Object> {
+  const _FailingImageProvider(this.error, this.stackTrace);
+
+  final Object error;
+  final StackTrace stackTrace;
+
+  @override
+  Future<Object> obtainKey(ImageConfiguration configuration) {
+    return Future<Object>.error(error, stackTrace);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -60,6 +72,20 @@ void main() {
   });
 
   group('toUiImage', () {
+    test('preserves provider errors and their original stack trace', () async {
+      final error = StateError('provider failed');
+      final stackTrace = StackTrace.fromString('provider-origin');
+      final provider = _FailingImageProvider(error, stackTrace);
+
+      try {
+        await toUiImage(provider);
+        fail('Expected the provider error.');
+      } catch (caught, caughtStack) {
+        expect(caught, same(error));
+        expect(caughtStack.toString(), contains('provider-origin'));
+      }
+    });
+
     test('returns an independently owned disposable image handle', () async {
       const pngBase64 =
           'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl'

@@ -48,10 +48,16 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
   _RecordingImageResolver({
     this.sources = const <String, String>{},
     this.intrinsics = const <String, Size2D>{},
+    this.sourceError,
+    this.intrinsicError,
+    this.errorStack,
   });
 
   final Map<String, String> sources;
   final Map<String, Size2D> intrinsics;
+  final Object? sourceError;
+  final Object? intrinsicError;
+  final StackTrace? errorStack;
 
   final List<List<String>> sourceRequests = <List<String>>[];
 
@@ -60,6 +66,10 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
   @override
   Future<Map<String, String>> resolveSources(List<String> sourceRefs) async {
     sourceRequests.add(List<String>.unmodifiable(sourceRefs));
+    final error = sourceError;
+    if (error != null) {
+      Error.throwWithStackTrace(error, errorStack ?? StackTrace.current);
+    }
 
     return <String, String>{
       for (final sourceRef in sourceRefs)
@@ -72,6 +82,10 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
     List<String> sourceRefs,
   ) async {
     intrinsicRequests.add(List<String>.unmodifiable(sourceRefs));
+    final error = intrinsicError;
+    if (error != null) {
+      Error.throwWithStackTrace(error, errorStack ?? StackTrace.current);
+    }
 
     return <String, Size2D>{
       for (final sourceRef in sourceRefs)
@@ -750,6 +764,135 @@ void main() {
   });
 
   group('FlutterCanvasPngRenderer images', () {
+    test('an intentionally empty image frame is not a missing resource', () async {
+      final images = _RecordingImageResolver(
+        sourceError: StateError('source resolution must not run'),
+        intrinsicError: StateError('metadata resolution must not run'),
+      );
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: _RecordingFontLoader(),
+        images: images,
+      );
+      final scene = _emptyScene().copyWith(
+        children: const <Node>[
+          Node.image(
+            id: 'empty-frame',
+            data: ImageData(size: Size2D(32, 32)),
+          ),
+        ],
+      );
+
+      final bytes = await renderer.renderPng(
+        scene: scene,
+        spec: const CanvasPngSpec(widthPx: 64, heightPx: 64, pixelRatio: 1),
+      );
+
+      expect(bytes, isNotEmpty);
+      expect(images.sourceRequests, isEmpty);
+      expect(images.intrinsicRequests, isEmpty);
+    });
+
+    test('required metadata failure retains its original cause before preparation',
+        () async {
+      final error = StateError('metadata unavailable');
+      final stack = StackTrace.fromString('metadata-origin');
+      var preparationCalls = 0;
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: _RecordingFontLoader(),
+        images: _RecordingImageResolver(
+          intrinsicError: error,
+          errorStack: stack,
+        ),
+        scenePreparer: (scene, _) {
+          preparationCalls++;
+          return scene;
+        },
+      );
+
+      await expectLater(
+        renderer.renderPng(
+          scene: _imageScene(sourceRef: 'media:missing'),
+          spec: const CanvasPngSpec(widthPx: 64, heightPx: 64),
+        ),
+        throwsA(
+          isA<CanvasImageRenderException>()
+              .having((error) => error.nodeIds, 'nodes', ['image-1'])
+              .having((error) => error.failures.single.sourceRef,
+                  'logical source', 'media:missing')
+              .having((error) => error.failures.single.phase,
+                  'phase', FlutterImageLoadPhase.intrinsicMetadata)
+              .having((failure) => failure.failures.single.cause,
+                  'original cause', same(error))
+              .having((error) => error.failures.single.stackTrace.toString(),
+                  'original stack', contains('metadata-origin')),
+        ),
+      );
+      expect(preparationCalls, 0);
+    });
+
+    test('raster source errors retain structured causes without leaking URLs',
+        () async {
+      const sourceRef = 'https://user:secret@example.com/a.png?token=private';
+      final error = StateError('Unable to resolve $sourceRef');
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: _RecordingFontLoader(),
+        images: _RecordingImageResolver(
+          sourceError: error,
+          // Persisted intrinsics must avoid the failing metadata resolver.
+          intrinsicError: StateError('metadata should not be requested'),
+        ),
+      );
+
+      await expectLater(
+        renderer.renderPng(
+          scene: _imageScene(
+            sourceRef: sourceRef,
+            intrinsicSize: const Size2D(4, 4),
+          ),
+          spec: const CanvasPngSpec(widthPx: 64, heightPx: 64),
+        ),
+        throwsA(
+          isA<CanvasImageRenderException>()
+              .having((error) => error.nodeIds, 'nodes', ['image-1'])
+              .having((error) => error.failures.single.sourceRef,
+                  'logical source', sourceRef)
+              .having((error) => error.failures.single.phase,
+                  'phase', FlutterImageLoadPhase.sourceResolution)
+              .having((failure) => failure.failures.single.cause,
+                  'original cause', same(error))
+              .having((error) => error.toString(), 'safe message',
+                  allOf(isNot(contains('secret')), isNot(contains('private')))),
+        ),
+      );
+    });
+
+    test('provider failures reach strict PNG errors rather than becoming null',
+        () async {
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: _RecordingFontLoader(),
+        images: _RecordingImageResolver(
+          sources: const {'media:bad': 'data:image/png;base64,%%%'},
+        ),
+      );
+
+      await expectLater(
+        renderer.renderPng(
+          scene: _imageScene(
+            sourceRef: 'media:bad',
+            intrinsicSize: const Size2D(4, 4),
+          ),
+          spec: const CanvasPngSpec(widthPx: 64, heightPx: 64),
+        ),
+        throwsA(
+          isA<CanvasImageRenderException>()
+              .having((error) => error.failures.single.phase,
+                  'phase', FlutterImageLoadPhase.rasterDecode)
+              .having((error) => error.failures.single.cause,
+                  'provider cause', isA<FormatException>()),
+        ),
+      );
+    });
+
     test('fails when a required visible raster cannot resolve', () async {
       final images = _RecordingImageResolver();
 

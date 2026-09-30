@@ -88,6 +88,8 @@ ImageProvider<Object> withSize(
 /// Resolves [provider] into an independently owned [ui.Image] handle.
 ///
 /// The returned handle must be disposed by its eventual owner.
+/// Provider, image-stream, and clone failures complete with the original error
+/// and available stack trace rather than returning null.
 Future<ui.Image?> toUiImage(ImageProvider<Object> provider) {
   final completer = Completer<ui.Image?>();
   final stream = provider.resolve(const ImageConfiguration());
@@ -106,6 +108,14 @@ Future<ui.Image?> toUiImage(ImageProvider<Object> provider) {
     completer.complete(image);
   }
 
+  void fail(Object error, StackTrace? stackTrace) {
+    if (completed) return;
+
+    completed = true;
+    stream.removeListener(listener);
+    completer.completeError(error, stackTrace);
+  }
+
   listener = ImageStreamListener(
     (ImageInfo info, _) {
       if (completed) {
@@ -118,7 +128,7 @@ Future<ui.Image?> toUiImage(ImageProvider<Object> provider) {
       try {
         retained = info.image.clone();
       } catch (error, stackTrace) {
-        debugPrint('toUiImage clone error: $error\n$stackTrace');
+        fail(error, stackTrace);
       } finally {
         // The callback-delivered ImageInfo is no longer retained.
         info.dispose();
@@ -127,12 +137,7 @@ Future<ui.Image?> toUiImage(ImageProvider<Object> provider) {
       complete(retained);
     },
     onError: (error, stackTrace) {
-      debugPrint(
-        'toUiImage error: $error'
-        '${stackTrace == null ? '' : '\n$stackTrace'}',
-      );
-
-      complete(null);
+      fail(error, stackTrace);
     },
   );
 
