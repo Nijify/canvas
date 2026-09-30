@@ -59,7 +59,7 @@ ImageProvider<Object> sourceToProvider(String source) {
   }
 
   if (ref is CanvasFileAssetRef) {
-    return fileImageProvider(ref.path);
+    return fileImageProvider(ref.raw);
   }
 
   if (ref is CanvasRawAssetRef && _looksLikeFlutterAssetPath(ref.raw)) {

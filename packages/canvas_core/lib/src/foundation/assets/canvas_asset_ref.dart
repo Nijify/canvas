@@ -87,14 +87,18 @@ final class CanvasBlobUrlAssetRef extends CanvasAssetRef {
 
 /// Local file reference.
 ///
-/// This includes file:// URIs and path-like local strings.
+/// This includes file:// URIs and path-like local strings. Core does not
+/// convert URI syntax into a native path; the executing host owns that step.
 final class CanvasFileAssetRef extends CanvasAssetRef {
-  const CanvasFileAssetRef({required String raw, required this.path})
-    : super(raw);
-  final String path;
+  const CanvasFileAssetRef({required String raw, this.uri}) : super(raw);
+
+  /// Parsed file URI, or null when [raw] is a path-like string.
+  ///
+  /// This URI has not been interpreted for any operating system.
+  final Uri? uri;
 
   @override
-  String get canonicalKey => path;
+  String get canonicalKey => raw;
 }
 
 /// Bare/raw source reference with no recognized syntax.
@@ -117,11 +121,11 @@ CanvasAssetRef parseCanvasAssetRef(String input) {
 
   // Windows absolute path, e.g. C:\tmp\a.png or C:/tmp/a.png.
   if (RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(raw)) {
-    return CanvasFileAssetRef(raw: raw, path: raw);
+    return CanvasFileAssetRef(raw: raw);
   }
 
   if (_looksLikeLocalPath(raw)) {
-    return CanvasFileAssetRef(raw: raw, path: raw);
+    return CanvasFileAssetRef(raw: raw);
   }
 
   final uri = Uri.tryParse(raw);
@@ -140,7 +144,7 @@ CanvasAssetRef parseCanvasAssetRef(String input) {
   }
 
   if (scheme == 'file') {
-    return CanvasFileAssetRef(raw: raw, path: _filePathFromUri(raw));
+    return CanvasFileAssetRef(raw: raw, uri: uri!);
   }
 
   final customScheme = _customScheme(raw);
@@ -160,14 +164,6 @@ bool _looksLikeLocalPath(String raw) {
       raw.startsWith('./') ||
       raw.startsWith('../') ||
       raw.startsWith('~');
-}
-
-String _filePathFromUri(String raw) {
-  try {
-    return Uri.parse(raw).toFilePath();
-  } catch (_) {
-    return raw;
-  }
 }
 
 (String, String)? _customScheme(String raw) {
