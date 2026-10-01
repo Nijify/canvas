@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter_image_providers.dart';
+import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,6 +16,32 @@ final class _FailingImageProvider extends ImageProvider<Object> {
   @override
   Future<Object> obtainKey(ImageConfiguration configuration) {
     return Future<Object>.error(error, stackTrace);
+  }
+}
+
+final class _TestImageStreamCompleter extends ImageStreamCompleter {
+  bool get hasActiveListeners => hasListeners;
+}
+
+final class _StreamImageProvider extends ImageProvider<Object> {
+  const _StreamImageProvider(this.completer);
+
+  final ImageStreamCompleter completer;
+
+  @override
+  Future<Object> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<Object>(this);
+  }
+
+  @override
+  void resolveStreamForKey(
+    ImageConfiguration configuration,
+    ImageStream stream,
+    Object key,
+    ImageErrorListener handleError,
+  ) {
+    // This controlled test stream bypasses the global image cache.
+    stream.setCompleter(completer);
   }
 }
 
@@ -72,6 +99,33 @@ void main() {
   });
 
   group('toUiImage', () {
+    test('preserves stream errors and removes its listener', () async {
+      final error = StateError('image stream failed');
+      final stackTrace = StackTrace.fromString('image-stream-origin');
+      final completer = _TestImageStreamCompleter();
+      final provider = _StreamImageProvider(completer);
+
+      final result = toUiImage(provider);
+      expect(completer.hasActiveListeners, isTrue);
+
+      Object? caught;
+      StackTrace? caughtStack;
+      final completed = result.then<void>(
+        (_) => fail('Expected the image-stream error.'),
+        onError: (Object error, StackTrace stackTrace) {
+          caught = error;
+          caughtStack = stackTrace;
+        },
+      );
+
+      completer.reportError(exception: error, stack: stackTrace);
+      await completed;
+
+      expect(caught, same(error));
+      expect(caughtStack.toString(), contains('image-stream-origin'));
+      expect(completer.hasActiveListeners, isFalse);
+    });
+
     test('preserves provider errors and their original stack trace', () async {
       final error = StateError('provider failed');
       final stackTrace = StackTrace.fromString('provider-origin');

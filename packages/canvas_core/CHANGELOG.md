@@ -1,5 +1,11 @@
 ## Unreleased
 
+- **Breaking:** remove `CanvasFileAssetRef.path`. File references now expose the
+  trimmed `raw` value and an optional unconverted `uri`; native path conversion
+  belongs to the executing host.
+- **Breaking:** file-reference `canonicalKey` now equals `raw`. A file URI and
+  its converted native path no longer share an implicit cache key. Stored scene
+  `sourceRef` values and the scene format are unchanged.
 - **Breaking:** remove `CanvasFit` and `CanvasViewportPlanner`. `computeViewport()` now accepts one caller-selected `Rect2D sourceBounds` and returns a uniform `CanvasViewportTransform` with `scale` and translation only.
 - Keep optional uniform scale clamping with recentering and `snapTranslation()`; callers now own artboard/content selection, padding, output sizing, and other viewport policy.
 

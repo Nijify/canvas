@@ -1,5 +1,21 @@
 ## Unreleased
 
+- **Breaking:** `toUiImage()` now propagates provider, image-stream, and clone
+  errors with their available original stack traces instead of returning null.
+  Direct callers must handle these failures.
+- **Breaking:** change `resolveSceneIntrinsics()` and `preloadScene()` from
+  `Future<void>` to `Future<List<FlutterImageLoadFailure>>`, returning immutable
+  operation-local failures. Interactive consumers may ignore results;
+  superseded or disposed operations return an empty list.
+- Add `CanvasImageRenderException`, a `StateError` subtype retaining missing
+  node IDs and relevant image-loading failures for strict PNG output. Formatted
+  errors omit source values and original exception text; structured causes and
+  references require host-controlled redaction.
+- Convert file URIs only in the native image-provider adapter, propagating
+  unsupported or invalid conversions instead of treating URIs as filenames.
+- Prevent obsolete intrinsic-resolution results from populating the active
+  metadata cache. Preserve independent metadata/raster loading, retry behavior,
+  stale image disposal, and the existing strict PNG requirements.
 - **Breaking:** remove `CanvasPngSpec.fit` and `CanvasPngSpec.bleedPx`; canonical PNG output now uses contain fitting without an export-space bleed option.
 - Move content/artboard source selection and tight crop output sizing into the PNG renderer while preserving content padding, transparency, pixel-ratio clamping, and final raster rounding.
 

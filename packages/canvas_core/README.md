@@ -89,6 +89,31 @@ final fontFamilies = collectSceneFontFamilies(
 );
 ```
 
+## File-reference migration (Unreleased)
+
+`parseCanvasAssetRef()` classifies reference syntax without interpreting files
+for an operating system. `CanvasFileAssetRef.path` has been removed. Use `raw`
+for the original trimmed reference and `uri` for parsed file-URI syntax; `uri`
+is null for a path-like string.
+
+```dart
+final ref = parseCanvasAssetRef('file:///tmp/a%20b.png') as CanvasFileAssetRef;
+// ref.raw and ref.canonicalKey == 'file:///tmp/a%20b.png'
+// ref.uri == Uri.parse('file:///tmp/a%20b.png')
+```
+
+Native hosts that need a filesystem path must convert the URI in their own
+adapter using the target platform's rules and handle conversion errors. Flutter
+consumers can pass `ref.raw` to `sourceToProvider()` from
+`canvas_renderer_flutter_image_providers.dart`; its native adapter performs
+that conversion. Unsupported hosts must resolve file references to a supported
+runtime source instead.
+
+`canonicalKey` now equals `raw`: an escaped file URI and its decoded native path
+are distinct logical keys. Review host caches that previously relied on their
+implicit equivalence. This change does not rewrite persisted `sourceRef` values
+or require a scene-format migration. Custom schemes remain host-owned.
+
 ## Immutable node editing
 
 `NodeEditingX` provides common immutable field edits that preserve node
