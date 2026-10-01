@@ -6,8 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_renderer_flutter/src/images/flutter_image_adapters.dart';
-import 'package:flutter/foundation.dart'
-    show ValueListenable, ValueNotifier, debugPrint, kDebugMode;
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:flutter/widgets.dart' show ImageProvider, ResizeImage;
 
 /// Decodes an [ImageProvider] into an independently owned image handle.
@@ -18,10 +17,33 @@ import 'package:flutter/widgets.dart' show ImageProvider, ResizeImage;
 typedef FlutterImageDecoder =
     Future<ui.Image?> Function(ImageProvider<Object> provider);
 
-void _dlog(String tag, Object message) {
-  if (!kDebugMode) return;
+/// The loading stage that could not supply an image resource.
+enum FlutterImageLoadPhase { sourceResolution, intrinsicMetadata, rasterDecode }
 
-  debugPrint('[${DateTime.now().toIso8601String()}][$tag] $message');
+/// Failure from one image-loading operation, not retained pool state.
+///
+/// [sourceRef], [cause], and [stackTrace] are structured diagnostic data and may
+/// contain private paths, inline bytes, or URL credentials. Do not log them
+/// without host-specific redaction. [toString] deliberately omits those values.
+final class FlutterImageLoadFailure {
+  const FlutterImageLoadFailure({
+    required this.sourceRef,
+    required this.phase,
+    required this.reason,
+    this.cause,
+    this.stackTrace,
+  });
+
+  final String sourceRef;
+  final FlutterImageLoadPhase phase;
+  final String reason;
+  final Object? cause;
+  final StackTrace? stackTrace;
+
+  @override
+  String toString() =>
+      '${phase.name}: $reason'
+      '${cause == null ? '' : ' (${cause.runtimeType})'}';
 }
 
 class _DecodeDims {
@@ -209,6 +231,7 @@ class FlutterImagePool implements ImageIntrinsics {
 
   Future<Map<String, String>> _resolveRenderableSources(
     Set<String> sourceRefs,
+    List<FlutterImageLoadFailure> failures,
   ) async {
     if (_disposed || sourceRefs.isEmpty) {
       return const <String, String>{};
@@ -216,12 +239,11 @@ class FlutterImagePool implements ImageIntrinsics {
 
     final imageResolver = resolver;
 
-    // Without a host resolver, logical source refs are assumed to already be
-    // renderable by this Flutter host.
+    // Without a host resolver, logical refs must already be renderable.
     if (imageResolver == null) {
-      return Map<String, String>.unmodifiable(<String, String>{
+      return <String, String>{
         for (final sourceRef in sourceRefs) sourceRef: sourceRef,
-      });
+      };
     }
 
     try {
@@ -229,9 +251,7 @@ class FlutterImagePool implements ImageIntrinsics {
         sourceRefs.toList(growable: false),
       );
 
-      if (_disposed) {
-        return const <String, String>{};
-      }
+      if (_disposed) return const <String, String>{};
 
       final result = <String, String>{};
 
@@ -240,56 +260,96 @@ class FlutterImagePool implements ImageIntrinsics {
 
         if (resolved != null && resolved.isNotEmpty) {
           result[sourceRef] = resolved;
+        } else {
+          failures.add(
+            FlutterImageLoadFailure(
+              sourceRef: sourceRef,
+              phase: FlutterImageLoadPhase.sourceResolution,
+              reason: resolved == null
+                  ? 'Resolver returned no source.'
+                  : 'Resolver returned an empty source.',
+            ),
+          );
         }
       }
 
-      return Map<String, String>.unmodifiable(result);
+      return result;
     } catch (error, stackTrace) {
-      if (!_disposed) {
-        _dlog('POOL_SOURCE', 'resolver exception=$error\n$stackTrace');
+      for (final sourceRef in sourceRefs) {
+        failures.add(
+          FlutterImageLoadFailure(
+            sourceRef: sourceRef,
+            phase: FlutterImageLoadPhase.sourceResolution,
+            reason: 'Source resolver threw.',
+            cause: error,
+            stackTrace: stackTrace,
+          ),
+        );
       }
 
       return const <String, String>{};
     }
   }
 
-  Future<void> _primeMetaCache(Set<String> sourceRefs) async {
-    final imageResolver = resolver;
-
-    if (_disposed || sourceRefs.isEmpty || imageResolver == null) {
-      return;
-    }
-
+  Future<List<FlutterImageLoadFailure>> _primeMetaCache(
+    Set<String> sourceRefs,
+    int generation,
+  ) async {
     final missing = <String>[
       for (final ref in sourceRefs)
         if (!_metaCache.containsKey(ref)) ref,
     ];
 
-    if (missing.isEmpty) return;
+    if (missing.isEmpty) return const [];
+
+    final imageResolver = resolver;
+    final failures = <FlutterImageLoadFailure>[];
 
     try {
-      final resolvedByRef = await imageResolver.resolveIntrinsicSizes(missing);
+      final resolvedByRef = imageResolver == null
+          ? const <String, Size2D>{}
+          : await imageResolver.resolveIntrinsicSizes(missing);
 
-      if (_disposed) return;
+      // Stale metadata must not populate the cache used by the current scene.
+      if (!_isCurrentIntrinsicsRequest(generation)) return const [];
 
       for (final ref in missing) {
-        final size = _usableIntrinsicSize(resolvedByRef[ref]);
+        final rawSize = resolvedByRef[ref];
+        final size = _usableIntrinsicSize(rawSize);
 
         if (size != null) {
           _metaCache[ref] = size;
         } else {
-          _metaCache.remove(ref);
+          failures.add(
+            FlutterImageLoadFailure(
+              sourceRef: ref,
+              phase: FlutterImageLoadPhase.intrinsicMetadata,
+              reason: imageResolver == null
+                  ? 'No intrinsic metadata resolver.'
+                  : rawSize == null
+                  ? 'Resolver returned no intrinsic metadata.'
+                  : 'Resolver returned unusable intrinsic metadata.',
+            ),
+          );
         }
       }
     } catch (error, stackTrace) {
-      if (_disposed) return;
+      if (!_isCurrentIntrinsicsRequest(generation)) return const [];
 
       for (final ref in missing) {
-        _metaCache.remove(ref);
+        failures.add(
+          FlutterImageLoadFailure(
+            sourceRef: ref,
+            phase: FlutterImageLoadPhase.intrinsicMetadata,
+            reason: 'Intrinsic metadata resolver threw.',
+            cause: error,
+            stackTrace: stackTrace,
+          ),
+        );
       }
-
-      _dlog('POOL_META', 'resolver exception=$error\n$stackTrace');
     }
+
+    return failures;
   }
 
   void _reconcileIntrinsicSources(Map<ElementId, String?> sourceByElement) {
@@ -362,11 +422,13 @@ class FlutterImagePool implements ImageIntrinsics {
   /// Resolves and publishes stable intrinsic image metadata.
   ///
   /// This method never decodes raster images and never changes [revision].
-  Future<void> resolveSceneIntrinsics(
+  /// Returns immutable, operation-local failures; best-effort consumers may
+  /// ignore them. Superseded or disposed operations return an empty list.
+  Future<List<FlutterImageLoadFailure>> resolveSceneIntrinsics(
     CanvasSceneDocument scene, {
     bool includeHidden = true,
   }) async {
-    if (_disposed) return;
+    if (_disposed) return const [];
 
     final generation = ++_intrinsicsGeneration;
 
@@ -402,10 +464,10 @@ class FlutterImagePool implements ImageIntrinsics {
         .whereType<String>()
         .toSet();
 
-    await _primeMetaCache(sourceRefs);
+    final failures = await _primeMetaCache(sourceRefs, generation);
 
     if (!_isCurrentIntrinsicsRequest(generation)) {
-      return;
+      return const [];
     }
 
     for (final entry in sourceByElement.entries) {
@@ -416,19 +478,23 @@ class FlutterImagePool implements ImageIntrinsics {
 
       _setIntrinsicSize(entry.key, size);
     }
+
+    return List<FlutterImageLoadFailure>.unmodifiable(failures);
   }
 
   /// Decodes raster images for painting.
   ///
   /// This method never updates intrinsic metadata and therefore never emits
   /// [onIntrinsicUpdated].
-  Future<void> preloadScene(
+  /// Returns immutable, operation-local failures without making interactive
+  /// loading strict. Superseded or disposed operations return an empty list.
+  Future<List<FlutterImageLoadFailure>> preloadScene(
     CanvasSceneDocument scene, {
     int? targetW,
     int? targetH,
     bool includeHidden = true,
   }) async {
-    if (_disposed) return;
+    if (_disposed) return const [];
 
     final generation = ++_preloadGeneration;
 
@@ -454,10 +520,14 @@ class FlutterImagePool implements ImageIntrinsics {
 
     final sourceRefs = sourceByElement.values.whereType<String>().toSet();
 
-    final renderableSourceByRef = await _resolveRenderableSources(sourceRefs);
+    final failures = <FlutterImageLoadFailure>[];
+    final renderableSourceByRef = await _resolveRenderableSources(
+      sourceRefs,
+      failures,
+    );
 
     if (!_isCurrentPreloadRequest(generation)) {
-      return;
+      return const [];
     }
 
     // Do not fetch optional metadata on the raster critical path. Each image
@@ -465,7 +535,7 @@ class FlutterImagePool implements ImageIntrinsics {
     // back to a one-sided decode hint.
     final side = _decodeSide(targetW, targetH);
 
-    await Future.wait([
+    final decodeFailures = await Future.wait<FlutterImageLoadFailure?>([
       for (final image in imageNodes)
         _preloadImageNode(
           image,
@@ -478,9 +548,14 @@ class FlutterImagePool implements ImageIntrinsics {
           persistedIntrinsic: persistedIntrinsicByElement[image.id],
         ),
     ]);
+
+    if (!_isCurrentPreloadRequest(generation)) return const [];
+
+    failures.addAll(decodeFailures.whereType<FlutterImageLoadFailure>());
+    return List<FlutterImageLoadFailure>.unmodifiable(failures);
   }
 
-  Future<void> _preloadImageNode(
+  Future<FlutterImageLoadFailure?> _preloadImageNode(
     ImageNode image, {
     required int generation,
     required int? side,
@@ -489,20 +564,14 @@ class FlutterImagePool implements ImageIntrinsics {
     required Size2D? persistedIntrinsic,
   }) async {
     if (!_isCurrentPreloadRequest(generation)) {
-      return;
+      return null;
     }
-
-    _dlog(
-      'POOL_PRELOAD',
-      'el=${image.id} assetId=${image.data.assetId} sourceRef=$sourceRef '
-          'renderable="$renderableSource"',
-    );
 
     // When a host resolver is installed, a missing result is authoritative.
     // Without a resolver, _resolveRenderableSources maps sourceRef to itself.
     if (renderableSource == null || renderableSource.isEmpty) {
       _clearDecodedImage(image.id);
-      return;
+      return null;
     }
 
     final meta =
@@ -515,7 +584,7 @@ class FlutterImagePool implements ImageIntrinsics {
         '$renderableSource@${dimensions.w ?? 0}x${dimensions.h ?? 0}';
 
     if (_loadedKey[image.id] == loadedKey && _images[image.id] != null) {
-      return;
+      return null;
     }
 
     try {
@@ -533,32 +602,33 @@ class FlutterImagePool implements ImageIntrinsics {
 
       if (!_isCurrentPreloadRequest(generation)) {
         decoded?.dispose();
-        return;
+        return null;
       }
-
-      _dlog(
-        'POOL_DECODE',
-        'el=${image.id} ok=${decoded != null} key="$loadedKey"',
-      );
 
       if (decoded == null) {
         _clearDecodedImage(image.id);
-        return;
+        return FlutterImageLoadFailure(
+          sourceRef: sourceRef!,
+          phase: FlutterImageLoadPhase.rasterDecode,
+          reason: 'Decoder returned no image.',
+        );
       }
 
       _installDecodedImage(image.id, decoded, loadedKey);
+      return null;
     } catch (error, stackTrace) {
       if (!_isCurrentPreloadRequest(generation)) {
-        return;
+        return null;
       }
 
-      _dlog(
-        'POOL_DECODE',
-        'el=${image.id} exception=$error key="$loadedKey"\n'
-            '$stackTrace',
-      );
-
       _clearDecodedImage(image.id);
+      return FlutterImageLoadFailure(
+        sourceRef: sourceRef!,
+        phase: FlutterImageLoadPhase.rasterDecode,
+        reason: 'Image provider or decoder threw.',
+        cause: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 

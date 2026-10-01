@@ -12,6 +12,27 @@ import 'package:canvas_renderer_flutter/src/flutter_text_pipeline.dart';
 import 'package:canvas_renderer_flutter/src/fonts/flutter_font_loader.dart';
 import 'package:canvas_renderer_flutter/src/images/flutter_image_pool.dart';
 
+/// Strict PNG failure for required image resources.
+///
+/// Only failures relevant to [nodeIds] are retained. Original causes and
+/// logical references remain available in [failures] but are not formatted
+/// into the error message because they can contain credentials or inline data.
+final class CanvasImageRenderException extends StateError {
+  CanvasImageRenderException(
+    String message, {
+    required Iterable<ElementId> nodeIds,
+    required Iterable<FlutterImageLoadFailure> failures,
+  }) : nodeIds = List<ElementId>.unmodifiable(nodeIds),
+       failures = List<FlutterImageLoadFailure>.unmodifiable(failures),
+       super(
+         '$message'
+         '${failures.isEmpty ? '' : '\n${failures.join('\n')}'}',
+       );
+
+  final List<ElementId> nodeIds;
+  final List<FlutterImageLoadFailure> failures;
+}
+
 /// Canonical Flutter implementation of [CanvasPngRenderer].
 ///
 /// One render operation owns one [FlutterTextPipeline] and one
@@ -74,9 +95,17 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
 
       // Canonical metadata is required before preparation because preparation
       // may synchronously inspect image geometry through CoreServices.
-      await imagePool.resolveSceneIntrinsics(scene, includeHidden: true);
+      final canonicalFailures = await imagePool.resolveSceneIntrinsics(
+        scene,
+        includeHidden: true,
+      );
 
-      _ensureRequiredIntrinsics(scene, imagePool, stage: 'canonical');
+      _ensureRequiredIntrinsics(
+        scene,
+        imagePool,
+        stage: 'canonical',
+        failures: canonicalFailures,
+      );
 
       // Final output owns preparation. A supplied preparer is invoked exactly
       // once and failures propagate to the caller.
@@ -121,9 +150,17 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // create a new ElementId that legally reuses an already-approved logical
       // image sourceRef. Intrinsic metadata must therefore be published for the
       // prepared element IDs after resource conformance has been established.
-      await imagePool.resolveSceneIntrinsics(prepared, includeHidden: true);
+      final preparedFailures = await imagePool.resolveSceneIntrinsics(
+        prepared,
+        includeHidden: true,
+      );
 
-      _ensureRequiredIntrinsics(prepared, imagePool, stage: 'prepared');
+      _ensureRequiredIntrinsics(
+        prepared,
+        imagePool,
+        stage: 'prepared',
+        failures: preparedFailures,
+      );
 
       // Raster decoding is required only for nodes that can actually paint in
       // the final prepared scene.
@@ -133,9 +170,12 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // before painting. Authoritative PNG rendering keeps the source raster at
       // its native decoded resolution so pixelRatio, crop/cover behavior, and
       // scene transforms cannot magnify an already-downsampled image.
-      await imagePool.preloadScene(prepared, includeHidden: false);
+      final rasterFailures = await imagePool.preloadScene(
+        prepared,
+        includeHidden: false,
+      );
 
-      _ensureVisibleImagesDecoded(prepared, imagePool);
+      _ensureVisibleImagesDecoded(prepared, imagePool, rasterFailures);
 
       final built = renderPipeline.build(
         prepared,
@@ -285,8 +325,10 @@ void _ensureRequiredIntrinsics(
   CanvasSceneDocument scene,
   FlutterImagePool imagePool, {
   required String stage,
+  required List<FlutterImageLoadFailure> failures,
 }) {
   final missing = <ElementId>[];
+  final missingRefs = <String>{};
 
   visitSceneNodes(
     scene,
@@ -304,6 +346,8 @@ void _ensureRequiredIntrinsics(
           intrinsic.w <= 0 ||
           intrinsic.h <= 0) {
         missing.add(node.id);
+        final sourceRef = scene.assets[node.data.assetId]?.sourceRef.trim();
+        if (sourceRef != null) missingRefs.add(sourceRef);
       }
     },
   );
@@ -312,17 +356,23 @@ void _ensureRequiredIntrinsics(
     return;
   }
 
-  throw StateError(
+  throw CanvasImageRenderException(
     'The $stage scene has image nodes without usable intrinsic metadata: '
     '${missing.join(', ')}',
+    nodeIds: missing,
+    failures: failures.where(
+      (failure) => missingRefs.contains(failure.sourceRef),
+    ),
   );
 }
 
 void _ensureVisibleImagesDecoded(
   CanvasSceneDocument scene,
   FlutterImagePool imagePool,
+  List<FlutterImageLoadFailure> failures,
 ) {
   final missing = <ElementId>[];
+  final missingRefs = <String>{};
 
   visitSceneNodes(
     scene,
@@ -334,6 +384,8 @@ void _ensureVisibleImagesDecoded(
 
       if (imagePool.images[node.id] == null) {
         missing.add(node.id);
+        final sourceRef = scene.assets[node.data.assetId]?.sourceRef.trim();
+        if (sourceRef != null) missingRefs.add(sourceRef);
       }
     },
   );
@@ -342,9 +394,13 @@ void _ensureVisibleImagesDecoded(
     return;
   }
 
-  throw StateError(
+  throw CanvasImageRenderException(
     'Final PNG rendering could not decode required image nodes: '
     '${missing.join(', ')}',
+    nodeIds: missing,
+    failures: failures.where(
+      (failure) => missingRefs.contains(failure.sourceRef),
+    ),
   );
 }
 

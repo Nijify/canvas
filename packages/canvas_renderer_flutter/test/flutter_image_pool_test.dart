@@ -89,6 +89,262 @@ Future<ui.Image> _createImage({
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('FlutterImagePool operation-local failures', () {
+    test(
+      'preserves source exceptions and reports an immutable result',
+      () async {
+        final error = StateError('resolver failed');
+        final stackTrace = StackTrace.fromString('source-origin');
+        final pool = FlutterImagePool(
+          resolver: _TestImageAssetResolver(
+            resolveSourcesCallback: (_) =>
+                Future<Map<String, String>>.error(error, stackTrace),
+          ),
+        );
+        addTearDown(pool.dispose);
+
+        final failures = await pool.preloadScene(
+          _sceneWithImages(['media:one']),
+        );
+
+        expect(failures, hasLength(1));
+        expect(failures.single.sourceRef, 'media:one');
+        expect(failures.single.phase, FlutterImageLoadPhase.sourceResolution);
+        expect(failures.single.cause, same(error));
+        expect(
+          failures.single.stackTrace.toString(),
+          contains('source-origin'),
+        );
+        expect(() => failures.clear(), throwsUnsupportedError);
+        expect(pool.images, isEmpty);
+      },
+    );
+
+    test('partial source resolution still decodes usable resources', () async {
+      final decoded = await _createImage();
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (_) async => {
+            'media:good': 'asset:assets/good.png',
+            'media:empty': '  ',
+          },
+        ),
+        decoder: (_) async => decoded,
+      );
+      addTearDown(pool.dispose);
+
+      final failures = await pool.preloadScene(
+        _sceneWithImages(['media:good', 'media:empty', 'media:missing']),
+      );
+
+      expect(pool.images['image-0'], same(decoded));
+      expect(failures.map((failure) => failure.sourceRef), [
+        'media:empty',
+        'media:missing',
+      ]);
+      expect(failures.map((failure) => failure.reason), [
+        'Resolver returned an empty source.',
+        'Resolver returned no source.',
+      ]);
+      expect(failures.every((failure) => failure.cause == null), isTrue);
+    });
+
+    test(
+      'intrinsic failures distinguish missing, invalid, and thrown results',
+      () async {
+        final error = StateError('metadata failed');
+        final stackTrace = StackTrace.fromString('metadata-origin');
+        var shouldThrow = false;
+        final pool = FlutterImagePool(
+          resolver: _TestImageAssetResolver(
+            resolveIntrinsicSizesCallback: (_) {
+              if (shouldThrow) {
+                return Future<Map<String, Size2D>>.error(error, stackTrace);
+              }
+              return Future.value({'media:invalid': const Size2D(0, 10)});
+            },
+          ),
+        );
+        addTearDown(pool.dispose);
+
+        final failures = await pool.resolveSceneIntrinsics(
+          _sceneWithImages(['media:missing', 'media:invalid']),
+        );
+        expect(failures.map((failure) => failure.reason), [
+          'Resolver returned no intrinsic metadata.',
+          'Resolver returned unusable intrinsic metadata.',
+        ]);
+
+        shouldThrow = true;
+        final thrown = await pool.resolveSceneIntrinsics(
+          _sceneWithImages(['media:missing']),
+        );
+        expect(thrown.single.phase, FlutterImageLoadPhase.intrinsicMetadata);
+        expect(thrown.single.cause, same(error));
+        expect(
+          thrown.single.stackTrace.toString(),
+          contains('metadata-origin'),
+        );
+      },
+    );
+
+    test(
+      'decode failure, null result, and successful retry stay independent',
+      () async {
+        final error = StateError('decode failed');
+        final stackTrace = StackTrace.fromString('decode-origin');
+        final decoded = await _createImage();
+        var calls = 0;
+        final pool = FlutterImagePool(
+          decoder: (_) {
+            switch (calls++) {
+              case 0:
+                return Future<ui.Image?>.error(error, stackTrace);
+              case 1:
+                return Future<ui.Image?>.value(null);
+              default:
+                return Future<ui.Image?>.value(decoded);
+            }
+          },
+        );
+        addTearDown(pool.dispose);
+        final scene = _sceneWithImages(['asset:assets/test.png']);
+
+        final thrown = await pool.preloadScene(scene);
+        expect(thrown.single.phase, FlutterImageLoadPhase.rasterDecode);
+        expect(thrown.single.cause, same(error));
+        expect(thrown.single.stackTrace.toString(), contains('decode-origin'));
+
+        final absent = await pool.preloadScene(scene);
+        expect(absent.single.reason, 'Decoder returned no image.');
+        expect(absent.single.cause, isNull);
+
+        expect(await pool.preloadScene(scene), isEmpty);
+        expect(pool.images['image-0'], same(decoded));
+        expect(thrown.single.cause, same(error));
+      },
+    );
+
+    test('superseded and disposed source failures are discarded', () async {
+      final pending = Completer<Map<String, String>>();
+      var calls = 0;
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (_) => calls++ == 0
+              ? pending.future
+              : Future.value(const <String, String>{}),
+        ),
+      );
+      addTearDown(pool.dispose);
+
+      final obsolete = pool.preloadScene(_sceneWithImages(['media:old']));
+      expect(await pool.preloadScene(_sceneWithImages(const [])), isEmpty);
+      pending.completeError(StateError('obsolete source'));
+      expect(await obsolete, isEmpty);
+
+      final late = Completer<Map<String, String>>();
+      final disposedPool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveSourcesCallback: (_) => late.future,
+        ),
+      );
+      final disposed = disposedPool.preloadScene(
+        _sceneWithImages(['media:late']),
+      );
+      disposedPool.dispose();
+      late.completeError(StateError('disposed source'));
+      expect(await disposed, isEmpty);
+    });
+
+    test(
+      'superseded metadata cannot poison the current source cache',
+      () async {
+        final pending = Completer<Map<String, Size2D>>();
+        var calls = 0;
+        final pool = FlutterImagePool(
+          resolver: _TestImageAssetResolver(
+            resolveIntrinsicSizesCallback: (_) => calls++ == 0
+                ? pending.future
+                : Future.value({'media:same': const Size2D(800, 600)}),
+          ),
+        );
+        addTearDown(pool.dispose);
+        final scene = _sceneWithImages(['media:same']);
+
+        final obsolete = pool.resolveSceneIntrinsics(scene);
+        expect(await pool.resolveSceneIntrinsics(scene), isEmpty);
+        pending.complete({'media:same': const Size2D(1, 1)});
+        expect(await obsolete, isEmpty);
+
+        expect(await pool.resolveSceneIntrinsics(scene), isEmpty);
+        expect(pool.intrinsicSize('image-0'), const Size2D(800, 600));
+        expect(calls, 2);
+      },
+    );
+
+    test('metadata failures after disposal are discarded', () async {
+      final pending = Completer<Map<String, Size2D>>();
+      final pool = FlutterImagePool(
+        resolver: _TestImageAssetResolver(
+          resolveIntrinsicSizesCallback: (_) => pending.future,
+        ),
+      );
+
+      final late = pool.resolveSceneIntrinsics(
+        _sceneWithImages(['media:late']),
+      );
+      pool.dispose();
+      pending.completeError(StateError('disposed metadata'));
+
+      expect(await late, isEmpty);
+      expect(pool.intrinsicSize('image-0'), isNull);
+    });
+
+    test(
+      'superseded decoder failures do not become current failures',
+      () async {
+        final pending = Completer<ui.Image?>();
+        final started = Completer<void>();
+        final pool = FlutterImagePool(
+          decoder: (_) {
+            started.complete();
+            return pending.future;
+          },
+        );
+        addTearDown(pool.dispose);
+
+        final obsolete = pool.preloadScene(
+          _sceneWithImages(['asset:assets/old.png']),
+        );
+        await started.future;
+        expect(await pool.preloadScene(_sceneWithImages(const [])), isEmpty);
+        pending.completeError(StateError('obsolete decoder'));
+        expect(await obsolete, isEmpty);
+        expect(pool.images, isEmpty);
+      },
+    );
+
+    test(
+      'formatted diagnostics omit inline data and credential-bearing causes',
+      () {
+        for (final sourceRef in [
+          'data:image/png;base64,private-bytes',
+          'https://user:secret@example.com/image.png?token=secret',
+        ]) {
+          final failure = FlutterImageLoadFailure(
+            sourceRef: sourceRef,
+            phase: FlutterImageLoadPhase.rasterDecode,
+            reason: 'Image provider or decoder threw.',
+            cause: StateError(sourceRef),
+          );
+
+          expect(failure.toString(), isNot(contains(sourceRef)));
+          expect(failure.toString(), isNot(contains('secret')));
+        }
+      },
+    );
+  });
+
   group('FlutterImagePool intrinsic metadata', () {
     test('implements ImageIntrinsics directly', () {
       final pool = FlutterImagePool();
