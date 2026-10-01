@@ -360,7 +360,9 @@ void _ensureRequiredIntrinsics(
     'The $stage scene has image nodes without usable intrinsic metadata: '
     '${missing.join(', ')}',
     nodeIds: missing,
-    failures: failures.where((failure) => missingRefs.contains(failure.sourceRef)),
+    failures: failures.where(
+      (failure) => missingRefs.contains(failure.sourceRef),
+    ),
   );
 }
 
@@ -396,7 +398,9 @@ void _ensureVisibleImagesDecoded(
     'Final PNG rendering could not decode required image nodes: '
     '${missing.join(', ')}',
     nodeIds: missing,
-    failures: failures.where((failure) => missingRefs.contains(failure.sourceRef)),
+    failures: failures.where(
+      (failure) => missingRefs.contains(failure.sourceRef),
+    ),
   );
 }
 

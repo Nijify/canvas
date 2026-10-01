@@ -69,20 +69,23 @@ void main() {
       expect(parseCanvasAssetRef('C:/tmp/a.png'), isA<CanvasFileAssetRef>());
     });
 
-    test('preserves file URI syntax and identity without native conversion', () {
-      for (final raw in <String>[
-        'file:///tmp/a%20b.png',
-        'file:///C:/tmp/a%20b.png',
-        'file://server/share/a.png',
-        'file:///tmp/a.png?unsupported=query',
-      ]) {
-        final ref = parseCanvasAssetRef('  $raw  ') as CanvasFileAssetRef;
+    test(
+      'preserves file URI syntax and identity without native conversion',
+      () {
+        for (final raw in <String>[
+          'file:///tmp/a%20b.png',
+          'file:///C:/tmp/a%20b.png',
+          'file://server/share/a.png',
+          'file:///tmp/a.png?unsupported=query',
+        ]) {
+          final ref = parseCanvasAssetRef('  $raw  ') as CanvasFileAssetRef;
 
-        expect(ref.raw, raw);
-        expect(ref.uri, Uri.parse(raw));
-        expect(ref.canonicalKey, raw);
-      }
-    });
+          expect(ref.raw, raw);
+          expect(ref.uri, Uri.parse(raw));
+          expect(ref.canonicalKey, raw);
+        }
+      },
+    );
 
     test('distinguishes native paths from file URI syntax', () {
       for (final raw in <String>[
