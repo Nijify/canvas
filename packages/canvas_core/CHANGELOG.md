@@ -1,4 +1,4 @@
-## Unreleased
+## 0.13.0
 
 - **Breaking:** remove `CanvasFileAssetRef.path`. File references now expose the
   trimmed `raw` value and an optional unconverted `uri`; native path conversion

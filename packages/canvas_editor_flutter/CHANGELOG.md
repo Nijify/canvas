@@ -1,4 +1,4 @@
-# Unreleased
+# 0.16.0
 
 - Move live-editor framing policy into `EditorCameraController`, including positive-only screen-space padding, usable content-bounds selection, artboard fallback, and existing camera scale limits.
 - Remove obsolete fit/bleed arguments from the built-in PNG export spec while preserving existing contain-export behavior.
