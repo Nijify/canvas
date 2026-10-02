@@ -1,4 +1,4 @@
-## Unreleased
+## 0.12.0
 
 - **Breaking:** `toUiImage()` now propagates provider, image-stream, and clone
   errors with their available original stack traces instead of returning null.
