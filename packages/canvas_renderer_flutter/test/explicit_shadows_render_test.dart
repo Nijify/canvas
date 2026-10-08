@@ -100,16 +100,13 @@ void main() {
               children: [_node(target, shadows, fill)],
             );
 
-            final computed = computeScene(
+            final evaluation = evaluateScene(
               scene,
               CoreServices(textMeasurer: text, icons: _Icons()),
             );
-            final ops = buildPaintOpsFromScene(scene, computed);
-            if (target == 'path' && shadows.isNotEmpty) {
-              expect(ops.whereType<DrawPathUnderlaysOp>(), hasLength(1));
-            }
             return _pixels(
-              (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
+              (canvas) =>
+                  CanvasRenderer(text: text).paintScene(canvas, evaluation),
             );
           }
 
@@ -201,15 +198,13 @@ void main() {
           ],
         );
 
-        final computed = computeScene(
+        final evaluation = evaluateScene(
           scene,
           CoreServices(textMeasurer: text, icons: _Icons()),
         );
 
-        final ops = buildPaintOpsFromScene(scene, computed);
-
         final pixels = await _pixels(
-          (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
+          (canvas) => CanvasRenderer(text: text).paintScene(canvas, evaluation),
         );
 
         var sourcePixels = 0;
@@ -246,43 +241,6 @@ void main() {
   }
 
   test(
-    'path fill and intrinsic stroke contribute to source silhouette',
-    () async {
-      final text = FlutterTextPipeline();
-
-      try {
-        final path = PathIR(
-          [
-            PathCmd.moveTo(const Vec2(-10, -10)),
-            PathCmd.lineTo(const Vec2(10, -10)),
-            PathCmd.lineTo(const Vec2(10, 10)),
-            PathCmd.lineTo(const Vec2(-10, 10)),
-            PathCmd.close(),
-          ],
-          const PathStyle(fill: 0xFFFFFFFF, stroke: 0xFFFFFFFF, strokeWidth: 8),
-        );
-
-        final op = DrawPathUnderlaysOp(path, const [
-          ShadowEffect(id: 's', offset: Vec2(50, 0), color: 0x800000FF),
-        ]);
-
-        final pixels = await _pixels(
-          (canvas) => CanvasRenderer(text: text).replay(canvas, [op]),
-        );
-
-        // Filled interior.
-        expect(_channel(pixels, 50, 0, 3), closeTo(128, 1));
-
-        // Stroke-only coverage:
-        // fill ends at local x=10; 8px stroke extends to x=14.
-        expect(_channel(pixels, 63, 0, 3), closeTo(128, 1));
-      } finally {
-        text.dispose();
-      }
-    },
-  );
-
-  test(
     'path icon none foreground suppresses intrinsic fill and stroke',
     () async {
       final text = FlutterTextPipeline();
@@ -312,21 +270,13 @@ void main() {
           ],
         );
 
-        final computed = computeScene(
+        final evaluation = evaluateScene(
           scene,
           CoreServices(textMeasurer: text, icons: _Icons()),
         );
 
-        final ops = buildPaintOpsFromScene(scene, computed);
-
-        expect(ops.whereType<DrawPathUnderlaysOp>(), hasLength(1));
-
-        expect(ops.whereType<FillPathOp>(), isEmpty);
-        expect(ops.whereType<FillPathGradientOp>(), isEmpty);
-        expect(ops.whereType<StrokePathOp>(), isEmpty);
-
         final pixels = await _pixels(
-          (canvas) => CanvasRenderer(text: text).replay(canvas, ops),
+          (canvas) => CanvasRenderer(text: text).paintScene(canvas, evaluation),
         );
 
         // Nothing from the authored foreground may remain around the source.

@@ -98,7 +98,7 @@ EditorRuntime<rt.CanvasSceneDocument> _runtime(
   return EditorRuntime<rt.CanvasSceneDocument>(
     initial: initial,
     adapter: adapter,
-    renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: rt.CoreServices(textMeasurer: _FakeTextMeasurer()),
   );
 }
 

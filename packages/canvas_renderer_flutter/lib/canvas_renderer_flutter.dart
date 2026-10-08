@@ -26,7 +26,7 @@ library;
 
 // ============================================================================
 // 1) Low-level renderer
-//    Mental model: replay core PaintOps onto a Flutter Canvas.
+//    Mental model: paint a prepared scene using its computed geometry.
 // ============================================================================
 export 'src/flutter_canvas_renderer.dart'
     show CanvasRenderer, CanvasRendererOptions, MissingImageBehavior;
@@ -69,8 +69,7 @@ export 'src/images/flutter_image_pool.dart'
 // 6) Gradients (adapter)
 //    Mental model: core resolves gradient math; adapter builds ui.Shader.
 // ============================================================================
-export 'src/flutter_linear_shader.dart'
-    show buildLinearShaderFlutter, buildLinearShaderFromResolved;
+export 'src/flutter_linear_shader.dart' show buildLinearShaderFlutter;
 
 // ============================================================================
 // 7) Value mappers (core ↔ Flutter)

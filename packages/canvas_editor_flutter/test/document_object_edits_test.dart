@@ -41,14 +41,12 @@ CanvasSceneDocument _sceneWithChildren(List<Node> children) {
 EditorRuntime<CanvasSceneDocument> _buildRuntime(
   CanvasSceneDocument initialScene,
 ) {
-  final renderPipeline = CanvasRenderPipeline(
-    textMeasurer: _FakeTextMeasurer(),
-  );
+  final renderPipeline = CoreServices(textMeasurer: _FakeTextMeasurer());
 
   return EditorRuntime<CanvasSceneDocument>(
     initial: initialScene,
     adapter: const CanvasSceneDocumentAdapter(),
-    renderPipeline: renderPipeline,
+    services: renderPipeline,
   );
 }
 
@@ -121,7 +119,7 @@ EditorRuntime<_MetadataSceneDocument> _buildMetadataRuntime(
   return EditorRuntime<_MetadataSceneDocument>(
     initial: initial,
     adapter: const _MetadataSceneDocumentAdapter(),
-    renderPipeline: CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: CoreServices(textMeasurer: _FakeTextMeasurer()),
   );
 }
 

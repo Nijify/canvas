@@ -1,5 +1,3 @@
-// Path: test/flutter_canvas_renderer_test.dart
-
 import 'dart:ui' as ui;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -26,84 +24,77 @@ class _CapturingTextPipeline extends FlutterTextPipeline {
   }
 }
 
-void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  test('passes solid color to text pipeline even when shader is set', () {
-    final pipeline = _CapturingTextPipeline();
-    final renderer = CanvasRenderer(text: pipeline);
-
-    final gradient = ResolvedLinearGradient(
-      const Vec2(0, 0),
-      const Vec2(10, 0),
-      const [0xFF0000FF, 0xFF00FF00],
-      const [0.0, 1.0],
-    );
-
-    const solid = 0xFFAA8844;
-
-    final op = DrawTextOp(
-      text: 'Hi',
-      family: 'Inter',
-      weight: 400,
-      size: 20,
-      letterSpacing: 0.75,
-      originBaselineCenter: const Vec2(10, 10),
-      gradient: gradient,
-      solid: solid,
-      underlays: const [
-        ShadowEffect(id: 's', offset: Vec2(1, 1), color: 0xFF000000),
+CanvasSceneDocument _textScene(String value, CanvasFill fill) =>
+    CanvasSceneDocument(
+      backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 1,
+      children: [
+        Node.text(
+          id: 'text',
+          data: TextData(
+            text: value,
+            fontFamily: 'Inter',
+            fontWeight: 400,
+            fontSize: 20,
+            letterSpacing: 1.25,
+            appearance: CanvasAppearance(foreground: fill),
+          ),
+        ),
       ],
     );
 
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
+void _paint(CanvasSceneDocument scene, _CapturingTextPipeline pipeline) {
+  final evaluation = evaluateScene(scene, CoreServices(textMeasurer: pipeline));
+  final recorder = ui.PictureRecorder();
+  CanvasRenderer(text: pipeline).paintScene(ui.Canvas(recorder), evaluation);
+  recorder.endRecording().dispose();
+}
 
-    renderer.replay(canvas, [op]);
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    final picture = recorder.endRecording();
-    picture.dispose();
+  test(
+    'passes scene solid color and raw Unicode text to the text pipeline',
+    () {
+      final pipeline = _CapturingTextPipeline();
+      const original = 'A🙂e\u0301👨‍👩‍👧‍👦';
+      _paint(
+        _textScene(original, const CanvasFill.solid(0xFFAA8844)),
+        pipeline,
+      );
+      expect(pipeline.lastSpec?.text, original);
+      expect(pipeline.lastSpec?.letterSpacing, 1.25);
+      expect(pipeline.lastSolid, const ui.Color(0xFFAA8844));
+      expect(pipeline.lastShader, isNull);
+      pipeline.dispose();
+    },
+  );
 
-    expect(pipeline.lastSpec?.text, 'Hi');
-    expect(pipeline.lastSpec?.letterSpacing, 0.75);
-    expect(pipeline.lastSolid, const ui.Color(solid));
-    expect(pipeline.lastShader, isNotNull);
-  });
-
-  test('forwards raw Unicode text and letter spacing to pipeline', () {
+  test('passes scene gradient as a shader to the text pipeline', () {
     final pipeline = _CapturingTextPipeline();
-    final renderer = CanvasRenderer(text: pipeline);
-
-    const original = 'A🙂e\u0301👨‍👩‍👧‍👦';
-
-    final op = DrawTextOp(
-      text: original,
-      family: 'Roboto',
-      weight: 400,
-      size: 20.0,
-      letterSpacing: 1.25,
-      originBaselineCenter: const Vec2(10, 10),
-      solid: 0xFF111111,
+    _paint(
+      _textScene(
+        'Hi',
+        const CanvasFill.gradient(
+          LinearGradientSpec(
+            color1: 0xFF0000FF,
+            color2: 0xFF00FF00,
+            angle: 0,
+            width: 20,
+          ),
+        ),
+      ),
+      pipeline,
     );
-
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-
-    renderer.replay(canvas, [op]);
-
-    final picture = recorder.endRecording();
-    picture.dispose();
-
-    expect(pipeline.lastSpec, isNotNull);
-    expect(pipeline.lastSpec!.text, original);
-    expect(pipeline.lastSpec!.letterSpacing, 1.25);
+    expect(pipeline.lastSpec?.text, 'Hi');
+    expect(pipeline.lastShader, isNotNull);
+    pipeline.dispose();
   });
 
   test(
     'renderer options default to interactive missing-image placeholders',
     () {
       const options = CanvasRendererOptions();
-
       expect(options.imageFilterQuality, ui.FilterQuality.none);
       expect(options.missingImageBehavior, MissingImageBehavior.placeholder);
     },
@@ -113,8 +104,6 @@ void main() {
     const options = CanvasRendererOptions(
       missingImageBehavior: MissingImageBehavior.skip,
     );
-
-    expect(options.imageFilterQuality, ui.FilterQuality.none);
     expect(options.missingImageBehavior, MissingImageBehavior.skip);
   });
 
@@ -123,7 +112,6 @@ void main() {
       imageFilterQuality: ui.FilterQuality.medium,
       missingImageBehavior: MissingImageBehavior.skip,
     );
-
     expect(options.imageFilterQuality, ui.FilterQuality.medium);
     expect(options.missingImageBehavior, MissingImageBehavior.skip);
   });

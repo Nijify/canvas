@@ -14,7 +14,7 @@ class CanvasViewportBehaviorContext {
     required this.controller,
   });
 
-  final rt.RenderSnapshot render;
+  final rt.SceneEvaluation render;
   final EditorSelectionHost selection;
   final EditorController controller;
 }

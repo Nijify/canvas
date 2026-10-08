@@ -2,10 +2,9 @@
 
 `canvas_core` is a pure-Dart canvas document engine. It owns the runtime scene
 model, document/render geometry primitives, deterministic scene computation,
-viewport math, serialization, logical resource contracts, and renderer-agnostic
-paint operations.
+viewport math, serialization, and logical resource contracts.
 
-The package is complete on its own: apps can create `CanvasSceneDocument` values, serialize them, compute scene geometry, build paint operations, and layer editor interactions over the same runtime data without any product-specific package.
+The package is complete on its own: apps can create `CanvasSceneDocument` values, serialize them, compute scene geometry, and layer editor interactions over the same runtime data without any product-specific package.
 
 ## Public entrypoints
 
@@ -19,19 +18,19 @@ Public consumers should not import `package:canvas_core/src/**`.
 
 ## Runtime pipeline
 
-`CanvasRenderPipeline` owns deterministic scene computation, paint-op generation, optional content bounds, and `RenderSnapshot` construction.
+`evaluateScene` computes deterministic scene geometry and optional content bounds from an already-prepared scene and caller-supplied `CoreServices`.
 
 ```text
 CanvasSceneDocument
   -> optional host-invoked ScenePreparer
-  -> CanvasRenderPipeline.build()
-  -> RenderSnapshot
-  -> renderer-specific PaintOp replay
+  -> evaluateScene(preparedScene, services)
+  -> SceneEvaluation
+  -> Flutter scene painting
 ```
 
-`CanvasRenderPipeline.services` is constructed once with the pipeline and remains stable for its lifetime. Hosts may pass this exact service bundle to a `ScenePreparer` before `build()`.
+Hosts construct a stable `CoreServices` bundle and pass the same instance to a `ScenePreparer` and `evaluateScene`.
 
-The generic pipeline does not invoke preparation itself. High-level renderer/editor layers decide where preparation belongs. In particular, an authoritative final-output renderer may own the preparation call so callers cannot accidentally render an already-prepared scene twice.
+Scene evaluation does not invoke preparation itself. High-level renderer/editor layers decide where preparation belongs. In particular, an authoritative final-output renderer may own the preparation call so callers cannot accidentally render an already-prepared scene twice.
 
 ## Host services and logical resources
 
@@ -80,7 +79,7 @@ without making editor-owned interaction geometry part of the core runtime contra
 - `canvas_core` is Dart-only and does not import Flutter, `dart:ui`, widgets, files, HTTP, or renderer-specific APIs.
 - Runtime APIs operate on `CanvasSceneDocument`, `Node`, and renderer-neutral value types.
 - Core owns logical resource contracts but does not load platform resources.
-- Renderers consume `PaintOp` values instead of reimplementing scene traversal, transforms, layout, or z-order.
+- Flutter painting consumes the prepared scene and `ComputedScene` draw order, transforms, and cached geometry.
 - Apps/editors own when to resolve host data, prepare scenes, and invoke final rendering.
 
 ## Data flows
@@ -90,9 +89,9 @@ General rendering:
 ```text
 Host/app data
   -> CanvasSceneDocument
-  -> optional ScenePreparer with pipeline.services
-  -> CanvasRenderPipeline.build()
-  -> RenderSnapshot
+  -> optional ScenePreparer with services
+  -> evaluateScene(preparedScene, services)
+  -> SceneEvaluation
   -> renderer
 ```
 

@@ -37,7 +37,7 @@ class CanvasViewportSurface extends StatelessWidget {
   });
 
   final SelectionChromeMode selectionChromeMode;
-  final RenderSnapshot snap;
+  final SceneEvaluation snap;
   final EditorCameraController camera;
 
   final CanvasRenderer renderer;

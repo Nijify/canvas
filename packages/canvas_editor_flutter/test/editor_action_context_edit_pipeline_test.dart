@@ -37,12 +37,12 @@ class _FakeTextMeasurer implements TextMeasurer {
 class _FakeEditorController implements EditorController {
   _FakeEditorController(CanvasSceneDocument scene)
     : _scene = scene,
-      _render = ValueNotifier<RenderSnapshot>(_snapshotFor(scene)),
+      _render = ValueNotifier<SceneEvaluation>(_snapshotFor(scene)),
       _document = ValueNotifier<CanvasSceneDocument>(scene);
 
   CanvasSceneDocument _scene;
 
-  final ValueNotifier<RenderSnapshot> _render;
+  final ValueNotifier<SceneEvaluation> _render;
   final ValueNotifier<CanvasSceneDocument> _document;
   final ValueNotifier<bool> _canUndo = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _canRedo = ValueNotifier<bool>(false);
@@ -50,7 +50,7 @@ class _FakeEditorController implements EditorController {
   EditorEdit? lastEdit;
 
   @override
-  ValueListenable<RenderSnapshot> get render => _render;
+  ValueListenable<SceneEvaluation> get render => _render;
 
   @override
   ValueListenable<CanvasSceneDocument> get document => _document;
@@ -104,9 +104,9 @@ CanvasSceneDocument _sceneWithChildren(List<Node> children) {
   );
 }
 
-RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
-  final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
-  return pipeline.build(scene);
+SceneEvaluation _snapshotFor(CanvasSceneDocument scene) {
+  final pipeline = CoreServices(textMeasurer: _FakeTextMeasurer());
+  return evaluateScene(scene, pipeline);
 }
 
 Future<BuildContext> _pumpContext(WidgetTester tester) async {

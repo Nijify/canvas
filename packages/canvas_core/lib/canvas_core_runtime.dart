@@ -5,7 +5,7 @@
 // Mental model:
 // Runtime is the “real scene + behavior” layer for the generic canvas engine.
 // It defines the concrete scene objects and everything needed to operate/render
-// them in a renderer-agnostic way (scene model, compute, paint ops, geometry,
+// them in a renderer-agnostic way (scene model, compute, geometry,
 // traversal, and host service contracts).
 //
 // Dependency direction:
@@ -16,11 +16,11 @@
 // External packages (renderers/apps) should import this file when they need the
 // generic runtime surface.
 //
-// Generic runtime pipeline:
-//   computeScene(scene, services) → buildPaintOpsFromScene(scene, computed)
+// Generic runtime evaluation:
+//   evaluateScene(preparedScene, services) → SceneEvaluation
 //
-// Runtime render pipeline guidance:
-//   • CanvasRenderPipeline renders an already-prepared runtime scene.
+// Runtime evaluation guidance:
+//   • evaluateScene computes an already-prepared runtime scene.
 //   • It does not hardcode application-provided behavior.
 //
 // Higher-level subsystems should consume ComputedScene as the canonical
@@ -74,13 +74,8 @@ export 'src/algorithms/layout/image_fit.dart' show ImagePlacement;
 export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 
 // ============================================================================
-// 4) Paint plan / IR (renderer-agnostic drawing plan)
+// 4) Shared path geometry and style
 // ============================================================================
-export 'src/render_plan/paint_ops.dart';
-export 'src/render_plan/op_builder_scene.dart' show buildPaintOpsFromScene;
-
-export 'src/render_plan/gradient_resolver.dart'
-    show ResolvedLinearGradient, resolveLinearGradient;
 
 // Shared style enums (used by models and IR)
 export 'src/foundation/style/style_types.dart'
@@ -186,17 +181,8 @@ export 'src/algorithms/export/content_bounds.dart'
 export 'src/foundation/paint/canvas_fill.dart';
 
 // ============================================================================
-// 12) Runtime render pipeline
+// 12) Runtime scene evaluation
 // ============================================================================
-//
-// The generic runtime surface includes:
-//   • CanvasRenderPipeline
-//   • RenderSnapshot
-//   • ScenePreparer
-//
-// Scene preparers transform runtime scenes. CanvasRenderPipeline remains the
-// sole owner of compute, paint-op construction, content bounds, and snapshots.
-//
-// Domain-specific preparation policies belong in extension packages outside
-// canvas_core.
-export 'src/runtime/render/canvas_render_pipeline.dart';
+// Scene preparers transform runtime scenes. Evaluation computes geometry and
+// optional content bounds. Flutter paints the evaluated scene directly.
+export 'src/runtime/render/scene_evaluation.dart';

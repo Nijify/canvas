@@ -12,7 +12,7 @@ Use the complete stack or depend only on the packages your application needs.
 
 | Package | Purpose | Runtime |
 |---|---|---|
-| [`canvas_core`](packages/canvas_core) | Scene documents, document/render geometry, layout, serialization, logical resource contracts, and renderer-neutral paint operations | Pure Dart |
+| [`canvas_core`](packages/canvas_core) | Scene documents, document/render geometry, layout, serialization, logical resource contracts, and computed scene geometry | Pure Dart |
 | [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text/font resources, image management, and canonical PNG output | Flutter |
 | [`canvas_editor_flutter`](packages/canvas_editor_flutter) | Turnkey and composable visual editor UI | Flutter |
 | [`canvas_svg_export`](packages/canvas_svg_export) | Strict SVG export proof for prepared path scenes (experimental) | Pure Dart |
@@ -83,7 +83,7 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, paint operations, serialization, geometry, and resource contracts.
+See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, serialization, geometry, and resource contracts.
 
 ## Render with Flutter
 
@@ -96,15 +96,12 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 final textPipeline = FlutterTextPipeline();
 
 try {
-  final renderPipeline = CanvasRenderPipeline(
-    textMeasurer: textPipeline,
-  );
-
-  final snapshot = renderPipeline.build(document);
+  final services = CoreServices(textMeasurer: textPipeline);
+  final evaluation = evaluateScene(document, services);
 
   CanvasRenderer(
     text: textPipeline,
-  ).replay(canvas, snapshot.ops);
+  ).paintScene(canvas, evaluation);
 } finally {
   textPipeline.dispose();
 }

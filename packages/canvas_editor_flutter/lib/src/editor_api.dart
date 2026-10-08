@@ -139,7 +139,7 @@ abstract class EditorController {
   ///
   /// This may contain a resolved or otherwise prepared scene that differs from
   /// the canonical editable document.
-  ValueListenable<rt.RenderSnapshot> get render;
+  ValueListenable<rt.SceneEvaluation> get render;
 
   /// Latest canonical editable base scene.
   ///

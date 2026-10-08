@@ -2,7 +2,7 @@
 
 `canvas_core` is a pure-Dart canvas document engine. It provides a serializable
 scene graph, platform-neutral document/render geometry, deterministic scene
-computation, viewport math, and renderer-agnostic paint operations.
+computation, viewport math, and derived geometry.
 
 Use it when you want to model or transform canvas-style documents without depending on Flutter, `dart:ui`, widgets, files, HTTP, or a specific rendering backend.
 
@@ -11,7 +11,7 @@ Use it when you want to model or transform canvas-style documents without depend
 - `CanvasSceneDocument` and `Node` models for text, image, icon, path, and group content.
 - Stable JSON serialization for storing, syncing, and round-tripping scene documents.
 - `computeScene` for deterministic transforms, draw order, bounds, and cached geometry.
-- `buildPaintOpsFromScene` for a renderer-neutral draw plan.
+- `evaluateScene` for the prepared scene, computed geometry, and optional content bounds.
 - Renderer-neutral geometry and viewport calculation shared by runtime consumers.
 - Host-service contracts for text measurement, image intrinsics, image source resolution, and icon resolution.
 - Generic scene font-family discovery for renderer/resource preflight.
@@ -28,8 +28,7 @@ and editors.
 The sibling [`canvas_svg_export`](../canvas_svg_export/README.md) package is a
 strict, one-way check of prepared visual scenes. It uses the scene and
 `ComputedScene`, reports unsupported semantics, and currently exports only a
-small path profile. This does not make SVG the editable format or `PaintOp` an
-interchange contract.
+small path profile. This does not make SVG the editable format.
 
 ## Installation
 
@@ -47,7 +46,7 @@ flutter pub add canvas_core
 
 ## Imports
 
-Import the runtime API for documents, geometry, services, scene computation, and paint operations:
+Import the runtime API for documents, geometry, services, scene computation, and evaluation:
 
 ```dart
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -57,13 +56,13 @@ Do not import files under `package:canvas_core/src/`; use `canvas_core_runtime.d
 
 ## Basic usage
 
-Create a document, compute it with host services, and build paint operations for any renderer:
+Create a document, compute it with host services, and evaluate it for Flutter painting or SVG export:
 
 ```dart
 import 'package:canvas_core/canvas_core_runtime.dart';
 
 final document = CanvasSceneDocument(
-  artboardSize: const Size2D(1080, 1080), 
+  artboardSize: const Size2D(1080, 1080),
   backgroundFill: const CanvasFill.none(),
   backgroundOpacity: 1.0,
   children: <Node>[
@@ -81,8 +80,8 @@ final document = CanvasSceneDocument(
 );
 
 final services = CoreServices(textMeasurer: myTextMeasurer);
-final computed = computeScene(document, services);
-final paintOps = buildPaintOpsFromScene(document, computed);
+final evaluation = evaluateScene(document, services);
+final computed = evaluation.computed;
 ```
 
 `myTextMeasurer` is supplied by your runtime. A Flutter app can use
@@ -157,32 +156,31 @@ The canonical runtime flow is:
 ```text
 CanvasSceneDocument
   -> optional host-invoked ScenePreparer
-  -> CanvasRenderPipeline.build()
-  -> RenderSnapshot
-  -> renderer-specific PaintOp replay
+  -> evaluateScene(preparedScene, services)
+  -> SceneEvaluation
+  -> Flutter renderer paints scene + computed geometry
 ```
 
 `ScenePreparer` is a synchronous, renderer-neutral transformation applied by
 the host before building:
 
 ```dart
-final renderPipeline = CanvasRenderPipeline(
+final services = CoreServices(
   textMeasurer: myTextMeasurer,
   images: myImageIntrinsics,
   icons: myIconResolver,
 );
 
 final preparedScene =
-    scenePreparer?.call(document, renderPipeline.services) ?? document;
+    scenePreparer?.call(document, services) ?? document;
 
-final snapshot = renderPipeline.build(preparedScene);
+final evaluation = evaluateScene(preparedScene, services);
 ```
 
-`CanvasRenderPipeline` does not invoke preparation automatically. Its stable
-`services` instance can be shared with preparation so preparation and final
-layout use the same host services.
-
-Renderers consume `PaintOp` values. They do not need to interpret the scene graph, layout rules, or z-order themselves.
+`evaluateScene` does not invoke preparation automatically. Pass the same
+`CoreServices` instance to preparation and evaluation so both use the same
+host capabilities. The Flutter renderer uses the evaluation's computed draw
+order, transforms, and cached geometry to paint the prepared scene.
 
 ## Architecture
 
