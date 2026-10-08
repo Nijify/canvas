@@ -9,3 +9,4 @@ workspace:
   - packages/canvas_renderer_flutter
   - packages/canvas_editor_flutter
   - packages/canvas_editor_flutter/example
+  - packages/canvas_svg_export
