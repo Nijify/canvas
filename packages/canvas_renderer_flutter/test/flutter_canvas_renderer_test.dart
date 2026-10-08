@@ -27,6 +27,7 @@ class _CapturingTextPipeline extends FlutterTextPipeline {
 CanvasSceneDocument _textScene(String value, CanvasFill fill) =>
     CanvasSceneDocument(
       backgroundFill: const CanvasFill.none(),
+      backgroundOpacity: 1,
       children: [
         Node.text(
           id: 'text',

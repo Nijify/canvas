@@ -43,6 +43,7 @@ void main() {
       const scene = CanvasSceneDocument(
         artboardSize: Size2D(64, 64),
         backgroundFill: CanvasFill.none(),
+      backgroundOpacity: 1,
         children: [
           Node.group(
             id: 'group',
@@ -83,6 +84,7 @@ void main() {
     const scene = CanvasSceneDocument(
       artboardSize: Size2D(64, 64),
       backgroundFill: CanvasFill.none(),
+      backgroundOpacity: 1,
       children: [
         Node.image(
           id: 'empty',
