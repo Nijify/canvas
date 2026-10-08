@@ -43,7 +43,7 @@ void main() {
       const scene = CanvasSceneDocument(
         artboardSize: Size2D(64, 64),
         backgroundFill: CanvasFill.none(),
-      backgroundOpacity: 1,
+        backgroundOpacity: 1,
         children: [
           Node.group(
             id: 'group',
