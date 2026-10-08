@@ -16,6 +16,21 @@ Use it when you want to model or transform canvas-style documents without depend
 - Host-service contracts for text measurement, image intrinsics, image source resolution, and icon resolution.
 - Generic scene font-family discovery for renderer/resource preflight.
 
+## Graphics semantics and SVG
+
+The typed scene and JSON round-trip are the current editable document contract.
+The direction is to simplify `canvas_core` graphics semantics incrementally.
+Familiar node names do not by themselves mean that a fill, transform, or effect
+has SVG semantics. Changes should prefer established graphics meanings where
+they fit, and document any deliberate difference and its cost across renderers
+and editors.
+
+The sibling [`canvas_svg_export`](../canvas_svg_export/README.md) package is a
+strict, one-way check of prepared visual scenes. It uses the scene and
+`ComputedScene`, reports unsupported semantics, and currently exports only a
+small path profile. This does not make SVG the editable format or `PaintOp` an
+interchange contract.
+
 ## Installation
 
 Add the package to your app or package:

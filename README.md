@@ -15,6 +15,7 @@ Use the complete stack or depend only on the packages your application needs.
 | [`canvas_core`](packages/canvas_core) | Scene documents, document/render geometry, layout, serialization, logical resource contracts, and renderer-neutral paint operations | Pure Dart |
 | [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text/font resources, image management, and canonical PNG output | Flutter |
 | [`canvas_editor_flutter`](packages/canvas_editor_flutter) | Turnkey and composable visual editor UI | Flutter |
+| [`canvas_svg_export`](packages/canvas_svg_export) | Strict SVG export proof for prepared path scenes (experimental) | Pure Dart |
 
 The dependency direction is one-way:
 
@@ -26,6 +27,8 @@ canvas_editor_flutter
 ```
 
 `canvas_core` is independent of Flutter. The renderer implements Flutter-specific drawing/resource behavior, while the editor uses both packages to provide a complete editing experience.
+
+`canvas_svg_export` depends on `canvas_core` directly; it does not depend on the Flutter renderer or editor.
 
 ## Installation
 
@@ -143,6 +146,7 @@ See the [`canvas_editor_flutter` README](packages/canvas_editor_flutter/README.m
 | `canvas_core` | [README](packages/canvas_core/README.md) |
 | `canvas_renderer_flutter` | [README](packages/canvas_renderer_flutter/README.md) |
 | `canvas_editor_flutter` | [README](packages/canvas_editor_flutter/README.md) |
+| `canvas_svg_export` | [README](packages/canvas_svg_export/README.md) |
 
 ## License
 
@@ -151,5 +155,6 @@ Each package is licensed under the Apache License, Version 2.0:
 - [`canvas_core`](packages/canvas_core/LICENSE)
 - [`canvas_renderer_flutter`](packages/canvas_renderer_flutter/LICENSE)
 - [`canvas_editor_flutter`](packages/canvas_editor_flutter/LICENSE)
+- [`canvas_svg_export`](packages/canvas_svg_export/LICENSE)
 
 Copyright 2026 Nijify.

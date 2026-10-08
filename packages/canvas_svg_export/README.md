@@ -30,3 +30,7 @@ The caller must pass geometry computed from the same prepared scene. Host
 resolution and scene preparation remain outside this package. This package
 does not consume `PaintOp`; its narrow supported profile does not imply general
 SVG fidelity or pixel-identical rasterization across engines.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
