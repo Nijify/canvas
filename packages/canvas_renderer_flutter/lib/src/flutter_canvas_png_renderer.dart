@@ -87,7 +87,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
     final imagePool = FlutterImagePool(resolver: _images);
 
     try {
-      final renderPipeline = CanvasRenderPipeline(
+      final services = CoreServices(
         textMeasurer: textPipeline,
         images: imagePool,
         icons: _icons,
@@ -110,7 +110,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // Final output owns preparation. A supplied preparer is invoked exactly
       // once and failures propagate to the caller.
       final prepared =
-          _scenePreparer?.call(scene, renderPipeline.services) ?? scene;
+          _scenePreparer?.call(scene, services) ?? scene;
 
       _validateScene(prepared, stage: 'prepared');
 
@@ -177,8 +177,9 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
 
       _ensureVisibleImagesDecoded(prepared, imagePool, rasterFailures);
 
-      final built = renderPipeline.build(
+      final built = evaluateScene(
         prepared,
+        services,
         contentBounds: spec.cropToContent
             ? ContentBoundsSpec(
                 paddingPx: spec.contentPaddingPx,
@@ -405,7 +406,7 @@ void _ensureVisibleImagesDecoded(
 }
 
 Future<Uint8List> _encodePng({
-  required RenderSnapshot built,
+  required SceneEvaluation built,
   required CanvasPngSpec spec,
   required FlutterImagePool imagePool,
   required FlutterTextPipeline textPipeline,
@@ -463,7 +464,7 @@ Future<Uint8List> _encodePng({
 
   // Preserve the previous exporter behavior: transparent output has no backing
   // fill; opaque output receives a white backing surface before scene paint
-  // operations are replayed.
+  // scene is painted.
   if (!spec.transparent) {
     canvas.drawRect(
       ui.Rect.fromLTWH(0, 0, outputW, outputH),
@@ -487,7 +488,7 @@ Future<Uint8List> _encodePng({
     options: const CanvasRendererOptions(
       missingImageBehavior: MissingImageBehavior.skip,
     ),
-  ).replay(canvas, built.ops);
+  ).paintScene(canvas, built);
 
   canvas.restore();
 

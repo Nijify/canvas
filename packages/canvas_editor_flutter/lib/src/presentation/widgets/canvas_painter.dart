@@ -6,22 +6,22 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 class CanvasPainter extends CustomPainter {
   final Size2D artboardSize;
-  final List<PaintOp> ops;
+  final SceneEvaluation evaluation;
   final CanvasRenderer renderer;
 
   CanvasPainter({
     required this.artboardSize,
-    required this.ops,
+    required this.evaluation,
     required this.renderer,
     required Listenable repaint,
   }) : super(repaint: repaint);
 
   @override
   void paint(Canvas canvas, Size size) {
-    renderer.replay(canvas, ops);
+    renderer.paintScene(canvas, evaluation);
   }
 
   @override
   bool shouldRepaint(covariant CanvasPainter old) =>
-      !identical(ops, old.ops) || artboardSize != old.artboardSize;
+      !identical(evaluation, old.evaluation) || artboardSize != old.artboardSize;
 }

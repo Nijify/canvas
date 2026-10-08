@@ -1,6 +1,5 @@
 // Path: lib/src/flutter_canvas_renderer.dart
 
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -89,103 +88,179 @@ class CanvasRenderer {
     return ui.Rect.fromLTRB(left, top, right, bottom);
   }
 
-  void replay(ui.Canvas canvas, List<PaintOp> ops) {
-    for (final op in ops) {
-      switch (op) {
-        case SaveOp():
-          canvas.save();
+  /// Paint the evaluated scene in computed paint order.
+  void paintScene(ui.Canvas canvas, SceneEvaluation evaluation) {
+    final scene = evaluation.scene;
+    final computed = evaluation.computed;
+    final artboard = ui.Size(scene.artboardSize.w, scene.artboardSize.h);
+    final background = ui.Rect.fromLTWH(0, 0, artboard.width, artboard.height);
 
-        case RestoreOp():
-          canvas.restore();
-
-        case SetTransformOp(
-          :final a,
-          :final b,
-          :final c,
-          :final d,
-          :final e,
-          :final f,
-        ):
-          canvas.transform(_m(a, b, c, d, e, f));
-
-        case FillRectOp(:final r, :final color):
-          canvas.drawRect(r.toUi, ui.Paint()..color = ui.Color(color));
-
-        case FillPathOp(:final path):
-          final uiPath = _buildUiPath(path);
-          uiPath.fillType = switch (path.style.fillRule) {
-            FillRule.evenOdd => ui.PathFillType.evenOdd,
-            FillRule.nonZero => ui.PathFillType.nonZero,
-          };
-          final fill = path.style.fill;
-          if (fill != null) {
-            canvas.drawPath(
-              uiPath,
-              ui.Paint()
-                ..style = ui.PaintingStyle.fill
-                ..color = ui.Color(fill),
-            );
-          }
-
-        case StrokePathOp(:final path):
-          final style = path.style;
-          if (style.stroke != null && style.strokeWidth > 0) {
-            final uiPath = _buildUiPath(path);
-            final paint = ui.Paint()
-              ..style = ui.PaintingStyle.stroke
-              ..color = ui.Color(style.stroke!)
-              ..strokeWidth = style.strokeWidth
-              ..strokeCap = _mapCap(style.strokeCap)
-              ..strokeJoin = _mapJoin(style.strokeJoin)
-              ..strokeMiterLimit = style.miterLimit;
-
-            canvas.drawPath(uiPath, paint);
-          }
-
-        case DrawImageOp(:final id, :final src, :final dst):
-          final img = images[id];
-          final dstRect = dst.toUi;
-
-          if (img == null) {
-            if (options.missingImageBehavior == MissingImageBehavior.skip) {
-              continue;
-            }
-
-            _drawMissingImagePlaceholder(canvas, dstRect);
-            continue;
-          }
-
-          // PaintOp src is in intrinsic-space pixels; Flutter expects
-          // decoded-space pixels.
-          final srcRect = _mapSrcToDecoded(id: id, img: img, srcIntrinsic: src);
-
-          final paint = ui.Paint()..filterQuality = options.imageFilterQuality;
-
-          canvas.drawImageRect(img, srcRect, dstRect, paint);
-
-        case DrawPathUnderlaysOp(:final path, :final underlays):
-          _drawPathUnderlays(canvas, path, underlays);
-
-        case DrawTextOp t:
-          _drawText(canvas, t);
-
-        case FillRectGradientOp(:final r, :final gradient):
-          final paint = ui.Paint()
-            ..shader = buildLinearShaderFromResolved(gradient);
-          canvas.drawRect(r.toUi, paint);
-
-        case FillPathGradientOp(:final path, :final gradient):
-          final uiPath = _buildUiPath(path);
-          uiPath.fillType = switch (path.style.fillRule) {
-            FillRule.evenOdd => ui.PathFillType.evenOdd,
-            FillRule.nonZero => ui.PathFillType.nonZero,
-          };
-          final paint = ui.Paint()
-            ..style = ui.PaintingStyle.fill
-            ..shader = buildLinearShaderFromResolved(gradient);
-          canvas.drawPath(uiPath, paint);
+    if (scene.backgroundOpacity > 0) {
+      switch (scene.backgroundFill) {
+        case CanvasFillNone():
+          break;
+        case CanvasFillSolid(:final color):
+          final alpha = (color >> 24) & 0xFF;
+          final merged = (alpha * scene.backgroundOpacity).clamp(0, 255).round();
+          canvas.drawRect(
+            background,
+            ui.Paint()..color = ui.Color((merged << 24) | (color & 0x00FFFFFF)),
+          );
+        case CanvasFillGradient(:final grad):
+          canvas.drawRect(
+            background,
+            ui.Paint()
+              ..shader = buildLinearShaderFlutter(
+                artboard,
+                grad,
+                opacity: scene.backgroundOpacity,
+              ),
+          );
       }
     }
+
+    for (final item in computed.drawList) {
+      final id = item.leafId;
+      final node = computed.nodeById[id];
+      final world = computed.worldById[id];
+      if (node == null || world == null) continue;
+
+      canvas.save();
+      try {
+        canvas.transform(world.storage);
+        switch (node) {
+          case TextNode(data: final data):
+            _drawText(
+              canvas,
+              textValue: data.text,
+              family: data.fontFamily,
+              weight: data.fontWeight,
+              size: data.fontSize,
+              letterSpacing: data.letterSpacing,
+              appearance: data.appearance,
+              artboard: artboard,
+            );
+          case IconNode(data: final data):
+            final glyph = computed.iconTextById[id];
+            final path = computed.iconPathIRById[id];
+            if (glyph != null) {
+              _drawText(
+                canvas,
+                textValue: glyph.glyph,
+                family: glyph.fontFamily,
+                weight: glyph.fontWeight,
+                size: data.sizePx,
+                appearance: data.appearance,
+                artboard: artboard,
+              );
+            } else if (path != null) {
+              _drawPathUnderlays(canvas, path, data.appearance.underlays);
+              final foreground = data.appearance.foreground;
+              _drawPathFill(
+                canvas,
+                path,
+                foreground,
+                artboard,
+                requireAuthoredFill: false,
+              );
+              if (foreground is! CanvasFillNone) {
+                _drawPathStroke(canvas, path);
+              }
+            }
+          case ImageNode(data: final data):
+            // A null asset is an intentionally empty frame.
+            if (data.assetId == null) break;
+            final placement = computed.imagePlacementById[id];
+            if (placement != null) {
+              _drawImage(canvas, id, placement.src, placement.dst);
+            }
+          case PathNode(data: final data):
+            final path = computed.pathIRById[id];
+            if (path != null) {
+              _drawPathFill(
+                canvas,
+                path,
+                data.fill,
+                artboard,
+                requireAuthoredFill: true,
+              );
+              _drawPathStroke(canvas, path);
+            }
+          case GroupNode():
+            break;
+        }
+      } finally {
+        canvas.restore();
+      }
+    }
+  }
+
+  void _drawImage(ui.Canvas canvas, ElementId id, Rect2D src, Rect2D dst) {
+    final image = images[id];
+    final destination = dst.toUi;
+    if (image == null) {
+      if (options.missingImageBehavior == MissingImageBehavior.placeholder) {
+        _drawMissingImagePlaceholder(canvas, destination);
+      }
+      return;
+    }
+
+    canvas.drawImageRect(
+      image,
+      _mapSrcToDecoded(id: id, img: image, srcIntrinsic: src),
+      destination,
+      ui.Paint()..filterQuality = options.imageFilterQuality,
+    );
+  }
+
+  void _drawPathFill(
+    ui.Canvas canvas,
+    PathIR path,
+    CanvasFill fill,
+    ui.Size artboard, {
+    required bool requireAuthoredFill,
+  }) {
+    final uiPath = _buildUiPath(path);
+    uiPath.fillType = switch (path.style.fillRule) {
+      FillRule.evenOdd => ui.PathFillType.evenOdd,
+      FillRule.nonZero => ui.PathFillType.nonZero,
+    };
+
+    switch (fill) {
+      case CanvasFillNone():
+        break;
+      case CanvasFillSolid(:final color):
+        if (!requireAuthoredFill || path.style.fill != null) {
+          canvas.drawPath(
+            uiPath,
+            ui.Paint()
+              ..style = ui.PaintingStyle.fill
+              ..color = ui.Color(requireAuthoredFill ? path.style.fill! : color),
+          );
+        }
+      case CanvasFillGradient(:final grad):
+        canvas.drawPath(
+          uiPath,
+          ui.Paint()
+            ..style = ui.PaintingStyle.fill
+            ..shader = buildLinearShaderFlutter(artboard, grad),
+        );
+    }
+  }
+
+  void _drawPathStroke(ui.Canvas canvas, PathIR path) {
+    final style = path.style;
+    if (style.stroke == null || style.strokeWidth <= 0) return;
+    canvas.drawPath(
+      _buildUiPath(path),
+      ui.Paint()
+        ..style = ui.PaintingStyle.stroke
+        ..color = ui.Color(style.stroke!)
+        ..strokeWidth = style.strokeWidth
+        ..strokeCap = _mapCap(style.strokeCap)
+        ..strokeJoin = _mapJoin(style.strokeJoin)
+        ..strokeMiterLimit = style.miterLimit,
+    );
   }
 
   static void _drawMissingImagePlaceholder(ui.Canvas canvas, ui.Rect dstRect) {
@@ -287,59 +362,58 @@ class CanvasRenderer {
     );
   }
 
-  void _drawText(ui.Canvas canvas, DrawTextOp t) {
-    if (t.text.isEmpty) return;
-
+  void _drawText(
+    ui.Canvas canvas, {
+    required String textValue,
+    required String family,
+    required FontWeightNum weight,
+    required double size,
+    double letterSpacing = 0,
+    required CanvasAppearance appearance,
+    required ui.Size artboard,
+  }) {
+    if (textValue.isEmpty) return;
     final spec = TextSpec(
-      t.text,
-      t.family,
-      t.weight,
-      t.size,
-      letterSpacing: t.letterSpacing,
+      textValue,
+      family,
+      weight,
+      size,
+      letterSpacing: letterSpacing,
     );
-
+    const origin = ui.Offset.zero;
     paintSourceUnderlays(
       canvas,
-      underlays: t.underlays,
+      underlays: appearance.underlays,
       paintSource: (sourceCanvas) {
-        // No visual override here. The cached opaque text paint represents the
-        // source silhouette independently from foreground appearance.
         text.paint(
           sourceCanvas,
-          t.originBaselineCenter.toUi,
+          origin,
           spec,
           originKind: TextOriginKind.center,
         );
       },
     );
 
-    // Most important behavior change in this renderer:
-    // no foreground means DO NOT invoke FlutterTextPipeline's fallback-black
-    // paint path.
-    if (!t.hasForeground) return;
-
-    final shader = t.gradient == null
-        ? null
-        : buildLinearShaderFromResolved(t.gradient!);
-
-    final solid = t.solid == null ? null : ui.Color(t.solid!);
-
-    text.paint(
-      canvas,
-      t.originBaselineCenter.toUi,
-      spec,
-      solid: solid,
-      shader: shader,
-      originKind: TextOriginKind.center,
-    );
+    switch (appearance.foreground) {
+      case CanvasFillNone():
+        break;
+      case CanvasFillSolid(:final color):
+        text.paint(
+          canvas,
+          origin,
+          spec,
+          solid: ui.Color(color),
+          originKind: TextOriginKind.center,
+        );
+      case CanvasFillGradient(:final grad):
+        text.paint(
+          canvas,
+          origin,
+          spec,
+          shader: buildLinearShaderFlutter(artboard, grad),
+          originKind: TextOriginKind.center,
+        );
+    }
   }
 
-  static Float64List _m(
-    double a,
-    double b,
-    double c,
-    double d,
-    double e,
-    double f,
-  ) => Float64List.fromList([a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, e, f, 0, 1]);
 }

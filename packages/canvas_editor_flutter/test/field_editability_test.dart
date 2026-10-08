@@ -137,7 +137,7 @@ EditorRuntime<_PolicyDocument> _buildPolicyRuntime(
   return EditorRuntime<_PolicyDocument>(
     initial: initial,
     adapter: const _PolicyAdapter(),
-    renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: rt.CoreServices(textMeasurer: _FakeTextMeasurer()),
     extraFieldCodecs: extraFieldCodecs,
   );
 }
@@ -146,7 +146,7 @@ EditorRuntime<rt.CanvasSceneDocument> _buildSceneRuntime() {
   return EditorRuntime<rt.CanvasSceneDocument>(
     initial: _scene(),
     adapter: const CanvasSceneDocumentAdapter(),
-    renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: rt.CoreServices(textMeasurer: _FakeTextMeasurer()),
   );
 }
 
@@ -413,7 +413,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: ValueListenableBuilder<rt.RenderSnapshot>(
+          home: ValueListenableBuilder<rt.SceneEvaluation>(
             valueListenable: runtime.render,
             builder: (context, snapshot, child) {
               return Material(

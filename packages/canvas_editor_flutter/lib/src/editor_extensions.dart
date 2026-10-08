@@ -44,7 +44,7 @@ abstract class EditorExtension<TSourceDocument> {
   const EditorExtension();
 
   /// Optional transformation applied after document resolution and before the
-  /// runtime render pipeline builds its snapshot.
+  /// runtime evaluates the prepared scene.
   ///
   /// An editor session may have at most one contributed preparer.
   ScenePreparer? get scenePreparer => null;

@@ -155,7 +155,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
     targetH: 2048,
   );
 
-  late final CanvasRenderPipeline renderPipeline = CanvasRenderPipeline(
+  late final CoreServices services = CoreServices(
     textMeasurer: _textPipeline,
     images: _pool,
     icons: _assets.icons,
@@ -242,7 +242,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
   void _syncViewportCamera({
     required Size viewportPx,
-    required RenderSnapshot snap,
+    required SceneEvaluation snap,
     required bool forceFit,
   }) {
     if (!viewportPx.width.isFinite ||
@@ -288,7 +288,7 @@ class _CanvasEditorSurfaceState<TSourceDocument>
     _runtime = EditorRuntime<TSourceDocument>(
       initial: widget.initialDocument,
       adapter: widget.adapter,
-      renderPipeline: renderPipeline,
+      services: services,
       initialContext: widget.initialResolveContext,
       scenePreparer: scenePreparer,
       maxHistory: 100,

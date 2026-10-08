@@ -37,20 +37,20 @@ List<String> _rootIds(CanvasSceneDocument scene) {
 EditorRuntime<CanvasSceneDocument> _buildRuntime(
   CanvasSceneDocument initialScene,
 ) {
-  final renderPipeline = CanvasRenderPipeline(
+  final renderPipeline = CoreServices(
     textMeasurer: _FakeTextMeasurer(),
   );
 
   return EditorRuntime<CanvasSceneDocument>(
     initial: initialScene,
     adapter: const CanvasSceneDocumentAdapter(),
-    renderPipeline: renderPipeline,
+    services: renderPipeline,
   );
 }
 
-Future<RenderSnapshot> _waitForRenderPublication(
+Future<SceneEvaluation> _waitForRenderPublication(
   EditorRuntime<CanvasSceneDocument> runtime,
-  RenderSnapshot previous,
+  SceneEvaluation previous,
 ) async {
   final current = runtime.render.value;
 
@@ -58,7 +58,7 @@ Future<RenderSnapshot> _waitForRenderPublication(
     return current;
   }
 
-  final completer = Completer<RenderSnapshot>();
+  final completer = Completer<SceneEvaluation>();
 
   void listener() {
     final next = runtime.render.value;
@@ -112,11 +112,11 @@ void main() {
 
       final scene = runtime.sourceDocument;
       final snapshot = await _waitForRenderPublication(runtime, initialRender);
-      final ops = snapshot.ops;
+      final drawList = snapshot.computed.drawList;
 
       expect(_rootIds(scene), ['t1']);
       expect(scene.children.single, isA<TextNode>());
-      expect(ops.isNotEmpty, true);
+      expect(drawList.map((item) => item.leafId), ['t1']);
     },
   );
 

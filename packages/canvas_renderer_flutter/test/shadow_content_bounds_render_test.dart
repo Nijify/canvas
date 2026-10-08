@@ -14,13 +14,13 @@ Rect2D _pixelRect(Rect2D rect) => Rect2D.fromLTRB(
 
 Future<Uint8List> _render(
   CanvasRenderer renderer,
-  List<PaintOp> ops,
+  SceneEvaluation evaluation,
   Rect2D viewport,
 ) async {
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   canvas.translate(-viewport.left, -viewport.top);
-  renderer.replay(canvas, ops);
+  renderer.paintScene(canvas, evaluation);
   final picture = recorder.endRecording();
   try {
     final image = await picture.toImage(
@@ -80,11 +80,11 @@ void main() {
               ),
             ],
           );
-          final computed = computeScene(
+          final evaluation = evaluateScene(
             scene,
             CoreServices(textMeasurer: text),
           );
-          final ops = buildPaintOpsFromScene(scene, computed);
+          final computed = evaluation.computed;
           final renderer = CanvasRenderer(text: text);
 
           const rasterSafetyPadding = 2.0;
@@ -101,8 +101,8 @@ void main() {
           final reference = _pixelRect(
             computed.layoutBoundsLocalById['text']!.inflate(128),
           );
-          final cropPixels = await _render(renderer, ops, crop);
-          final referencePixels = await _render(renderer, ops, reference);
+          final cropPixels = await _render(renderer, evaluation, crop);
+          final referencePixels = await _render(renderer, evaluation, reference);
           final cropWidth = crop.width.toInt();
           final cropHeight = crop.height.toInt();
           final refWidth = reference.width.toInt();

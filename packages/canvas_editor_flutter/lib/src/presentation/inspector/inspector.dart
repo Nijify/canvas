@@ -368,7 +368,7 @@ class Inspector extends StatelessWidget {
     this.fieldRowBuilder,
   });
 
-  final RenderSnapshot renderSnapshot;
+  final SceneEvaluation renderSnapshot;
   final EditorController controller;
 
   final EditorSelectionHost selection;

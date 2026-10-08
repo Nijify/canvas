@@ -41,14 +41,14 @@ CanvasSceneDocument _sceneWithChildren(List<Node> children) {
 EditorRuntime<CanvasSceneDocument> _buildRuntime(
   CanvasSceneDocument initialScene,
 ) {
-  final renderPipeline = CanvasRenderPipeline(
+  final renderPipeline = CoreServices(
     textMeasurer: _FakeTextMeasurer(),
   );
 
   return EditorRuntime<CanvasSceneDocument>(
     initial: initialScene,
     adapter: const CanvasSceneDocumentAdapter(),
-    renderPipeline: renderPipeline,
+    services: renderPipeline,
   );
 }
 

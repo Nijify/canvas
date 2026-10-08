@@ -1,10 +1,10 @@
 # canvas_renderer_flutter
 
-`canvas_renderer_flutter` is the Flutter rendering adapter for `canvas_core`. It provides low-level paint-op replay, Flutter text measurement/painting, decoded image ownership, font loading, and the canonical final PNG rendering boundary.
+`canvas_renderer_flutter` is the Flutter rendering adapter for `canvas_core`. It provides direct scene painting, Flutter text measurement/painting, decoded image ownership, font loading, and the canonical final PNG rendering boundary.
 
 ## Features
 
-- `CanvasRenderer` for replaying `PaintOp` values onto a Flutter `Canvas`.
+- `CanvasRenderer` for painting a `SceneEvaluation` onto a Flutter `Canvas`.
 - `FlutterTextPipeline` for Flutter text measurement, painting, caching, and lifecycle ownership.
 - `FlutterImagePool` for decoded raster ownership, intrinsic metadata, repaint notifications, stale-request protection, and image disposal.
 - `FlutterFontLoader` for host-controlled font availability, with `BundledFlutterFontLoader` for bundled assets.
@@ -34,7 +34,7 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter_image_providers.
 
 ## Low-level rendering
 
-`CanvasRenderer` replays paint operations produced by `canvas_core`. It borrows text, image, and intrinsic resources; it does not own or dispose them.
+`CanvasRenderer` paints the prepared scene using computed draw order and geometry. It borrows text, image, and intrinsic resources; it does not own or dispose them.
 
 Use one `FlutterTextPipeline` for both core measurement and Flutter text painting:
 
@@ -43,17 +43,14 @@ final textPipeline = FlutterTextPipeline(
   fallbackFontFamilies: const ['Noto Sans'],
 );
 
-final renderPipeline = CanvasRenderPipeline(
-  textMeasurer: textPipeline,
-);
-
-final snapshot = renderPipeline.build(document);
+final services = CoreServices(textMeasurer: textPipeline);
+final evaluation = evaluateScene(document, services);
 
 final renderer = CanvasRenderer(
   text: textPipeline,
 );
 
-renderer.replay(canvas, snapshot.ops);
+renderer.paintScene(canvas, evaluation);
 ```
 
 The creator owns `FlutterTextPipeline` and must dispose it. Long-lived editor/preview surfaces may reuse one pipeline and clear its cache when Flutter font availability changes.
@@ -177,7 +174,7 @@ Its render operation performs, in order:
 6. prepared-scene validation and resource-preservation checks;
 7. a second prepared image-intrinsic pass for new element IDs that reuse allowed logical sources;
 8. visible raster preload and strict required-image verification;
-9. layout, paint replay, PNG encoding, and operation-scoped cleanup.
+9. layout, scene painting, PNG encoding, and operation-scoped cleanup.
 
 Preparation may remove dependencies or introduce new element/asset IDs that reuse already-approved logical resources. It may not introduce new font families, icon refs, or active image `sourceRef` dependencies.
 
@@ -225,7 +222,7 @@ Support for `blob:` and `file:` depends on the Flutter target platform. App-spec
 - `canvas_renderer_flutter` depends on `canvas_core` and does not depend on editor UI.
 - `canvas_core` owns logical scene/resource contracts; this package owns Flutter resource implementations and drawing.
 - Hosts own storage, authentication, networking, signed-URL refresh, media IDs, persistence, and product concepts.
-- `CanvasRenderer` is a public low-level paint-op replayer.
+- `CanvasRenderer` is a public direct scene paintinger.
 - `FlutterCanvasPngRenderer` is the high-level authoritative final PNG boundary.
 - `FlutterTextPipeline` and `FlutterImagePool` own their respective Flutter resources and must be disposed by their creators, except when created internally by `FlutterCanvasPngRenderer`.
 

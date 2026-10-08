@@ -4,19 +4,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 
-/// Pure function that maps source document -> runtime render snapshot.
+/// Pure function that maps source document -> runtime scene evaluation.
 typedef RenderBuildFn<TSourceDocument> =
-    rt.RenderSnapshot Function(TSourceDocument sourceDocument);
+    rt.SceneEvaluation Function(TSourceDocument sourceDocument);
 
 /// Coordinates source-document application, deferred render scheduling, and
-/// prepared render-snapshot publication.
+/// prepared scene-evaluation publication.
 ///
 /// Source-document callbacks fire only when the source document changes.
-/// Layout-only invalidations rebuild the render snapshot without publishing a
+/// Layout-only invalidations rebuild the scene evaluation without publishing a
 /// source-document change.
 ///
 /// Render builders should return a new snapshot whenever rendered output
-/// changes. Returning the current snapshot instance represents no new rendered
+/// changes. Returning the current evaluation instance represents no new rendered
 /// value and therefore does not notify [render] listeners.
 class RenderPipelineDriver<TSourceDocument> {
   RenderPipelineDriver({
@@ -26,15 +26,15 @@ class RenderPipelineDriver<TSourceDocument> {
   }) : _sourceDocument = initialSourceDocument,
        _build = build,
        _onSourceDocumentApplied = onSourceDocumentApplied {
-    _render = ValueNotifier<rt.RenderSnapshot>(_build(_sourceDocument));
+    _render = ValueNotifier<rt.SceneEvaluation>(_build(_sourceDocument));
   }
 
   final RenderBuildFn<TSourceDocument> _build;
   final void Function(TSourceDocument sourceDocument)? _onSourceDocumentApplied;
 
-  late final ValueNotifier<rt.RenderSnapshot> _render;
+  late final ValueNotifier<rt.SceneEvaluation> _render;
 
-  ValueListenable<rt.RenderSnapshot> get render => _render;
+  ValueListenable<rt.SceneEvaluation> get render => _render;
 
   TSourceDocument _sourceDocument;
   TSourceDocument? _pendingSourceDocument;
@@ -71,7 +71,7 @@ class RenderPipelineDriver<TSourceDocument> {
 
   /// Schedules a render-only invalidation.
   ///
-  /// This may rebuild the render snapshot, but it does not imply that the
+  /// This may rebuild the scene evaluation, but it does not imply that the
   /// editable/source document changed.
   void scheduleLayoutInvalidation() {
     if (_disposed) return;

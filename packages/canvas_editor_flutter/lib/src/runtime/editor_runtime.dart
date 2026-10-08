@@ -21,12 +21,12 @@ final class EditorRuntime<TSourceDocument>
   EditorRuntime({
     required TSourceDocument initial,
     required EditorDocumentAdapter<TSourceDocument> adapter,
-    required this.renderPipeline,
+    required this.services,
     Object? initialContext,
     rt.ContentBoundsSpec? contentBounds,
 
     /// Optional scene transformation applied after adapter resolution and
-    /// before the runtime pipeline builds the render snapshot.
+    /// before scene evaluation.
     this.scenePreparer,
 
     Map<rt.CanvasFieldKey, FieldCodec> extraFieldCodecs =
@@ -64,11 +64,12 @@ final class EditorRuntime<TSourceDocument>
         final resolvedScene = _adapter.resolve(canonical, _ctx);
 
         final preparedScene =
-            scenePreparer?.call(resolvedScene, renderPipeline.services) ??
+            scenePreparer?.call(resolvedScene, services) ??
             resolvedScene;
 
-        return renderPipeline.build(
+        return rt.evaluateScene(
           preparedScene,
+          services,
           contentBounds: contentBounds,
         );
       },
@@ -87,7 +88,7 @@ final class EditorRuntime<TSourceDocument>
   // Deps
   // --------------------------------------------------------------------------
 
-  final rt.CanvasRenderPipeline renderPipeline;
+  final rt.CoreServices services;
   final EditorDocumentAdapter<TSourceDocument> _adapter;
 
   final rt.ScenePreparer? scenePreparer;
@@ -109,7 +110,7 @@ final class EditorRuntime<TSourceDocument>
 
   // Render output surface
   @override
-  ValueListenable<rt.RenderSnapshot> get render => _pipeline.render;
+  ValueListenable<rt.SceneEvaluation> get render => _pipeline.render;
 
   // Canonical/base scene surface
   late final ValueNotifier<rt.CanvasSceneDocument> _documentListenable;

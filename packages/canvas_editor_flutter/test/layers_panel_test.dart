@@ -55,18 +55,18 @@ CanvasSceneDocument _scene(List<Node> children) {
   );
 }
 
-RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
-  final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
-  return pipeline.build(scene);
+SceneEvaluation _snapshotFor(CanvasSceneDocument scene) {
+  final pipeline = CoreServices(textMeasurer: _FakeTextMeasurer());
+  return evaluateScene(scene, pipeline);
 }
 
 class _RecordingEditorController implements EditorController {
   _RecordingEditorController(CanvasSceneDocument scene)
     : _document = ValueNotifier<CanvasSceneDocument>(scene),
-      _render = ValueNotifier<RenderSnapshot>(_snapshotFor(scene));
+      _render = ValueNotifier<SceneEvaluation>(_snapshotFor(scene));
 
   final ValueNotifier<CanvasSceneDocument> _document;
-  final ValueNotifier<RenderSnapshot> _render;
+  final ValueNotifier<SceneEvaluation> _render;
   final ValueNotifier<bool> _canUndo = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _canRedo = ValueNotifier<bool>(false);
 
@@ -76,7 +76,7 @@ class _RecordingEditorController implements EditorController {
   ValueListenable<CanvasSceneDocument> get document => _document;
 
   @override
-  ValueListenable<RenderSnapshot> get render => _render;
+  ValueListenable<SceneEvaluation> get render => _render;
 
   @override
   ValueListenable<bool> get canUndo => _canUndo;

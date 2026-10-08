@@ -141,7 +141,7 @@ EditorRuntime<rt.CanvasSceneDocument> _buildSceneRuntime(
   return EditorRuntime<rt.CanvasSceneDocument>(
     initial: initial,
     adapter: adapter,
-    renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: rt.CoreServices(textMeasurer: _FakeTextMeasurer()),
     extraFieldCodecs: extraFieldCodecs,
   );
 }
@@ -189,7 +189,7 @@ EditorRuntime<_MetadataDocument> _buildMetadataRuntime(
   return EditorRuntime<_MetadataDocument>(
     initial: initial,
     adapter: const _MetadataDocumentAdapter(),
-    renderPipeline: rt.CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: rt.CoreServices(textMeasurer: _FakeTextMeasurer()),
   );
 }
 

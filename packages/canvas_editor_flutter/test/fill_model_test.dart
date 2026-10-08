@@ -33,7 +33,7 @@ EditorRuntime<CanvasSceneDocument> _buildRuntime(CanvasSceneDocument scene) {
   return EditorRuntime<CanvasSceneDocument>(
     initial: scene,
     adapter: const CanvasSceneDocumentAdapter(),
-    renderPipeline: CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+    services: CoreServices(textMeasurer: _FakeTextMeasurer()),
   );
 }
 

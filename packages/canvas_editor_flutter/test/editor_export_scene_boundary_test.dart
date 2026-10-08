@@ -43,21 +43,21 @@ class _NoopUiFeedback implements UiFeedback {
 
 class _FakeEditorController implements EditorController {
   _FakeEditorController({
-    required RenderSnapshot renderSnapshot,
+    required SceneEvaluation renderSnapshot,
     required CanvasSceneDocument document,
     CanvasSceneDocument? outputScene,
-  }) : _render = ValueNotifier<RenderSnapshot>(renderSnapshot),
+  }) : _render = ValueNotifier<SceneEvaluation>(renderSnapshot),
        _document = ValueNotifier<CanvasSceneDocument>(document),
        _outputScene = outputScene ?? document;
 
-  final ValueNotifier<RenderSnapshot> _render;
+  final ValueNotifier<SceneEvaluation> _render;
   final ValueNotifier<CanvasSceneDocument> _document;
   final CanvasSceneDocument _outputScene;
   final ValueNotifier<bool> _canUndo = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _canRedo = ValueNotifier<bool>(false);
 
   @override
-  ValueListenable<RenderSnapshot> get render => _render;
+  ValueListenable<SceneEvaluation> get render => _render;
 
   @override
   ValueListenable<CanvasSceneDocument> get document => _document;
@@ -141,9 +141,9 @@ class _RecordingPngExportPort implements PngExportPort {
   }
 }
 
-RenderSnapshot _snapshotFor(CanvasSceneDocument scene) {
-  final pipeline = CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer());
-  return pipeline.build(scene);
+SceneEvaluation _snapshotFor(CanvasSceneDocument scene) {
+  final pipeline = CoreServices(textMeasurer: _FakeTextMeasurer());
+  return evaluateScene(scene, pipeline);
 }
 
 CanvasSceneDocument _scene(double backgroundOpacity) {
@@ -267,7 +267,7 @@ void main() {
       final runtime = EditorRuntime<_SourceDocument>(
         initial: _SourceDocument(baseScene),
         adapter: const _ResolvingAdapter(),
-        renderPipeline: CanvasRenderPipeline(textMeasurer: _FakeTextMeasurer()),
+        services: CoreServices(textMeasurer: _FakeTextMeasurer()),
         initialContext: 'initial',
         scenePreparer: (scene, services) {
           preparerCalls++;

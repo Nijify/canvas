@@ -53,7 +53,7 @@ CanvasRuntimeResources
 
 `FlutterFontLoader` is renderer-owned because font registration is a Flutter rendering concern. `FontPickerItem` remains editor-owned presentation metadata. `CanvasImageAssetResolver` is core-owned because logical image source identity is renderer-neutral.
 
-`CanvasEditorSurface` owns its long-lived `FlutterTextPipeline` and `FlutterImagePool`. It also owns the pool's intrinsic-update subscription because the notification lifecycle belongs with the concrete pool owner. `EditorRuntime` only consumes `CanvasRenderPipeline` and does not subscribe to image-resource streams.
+`CanvasEditorSurface` owns its long-lived `FlutterTextPipeline` and `FlutterImagePool`. It also owns the pool's intrinsic-update subscription because the notification lifecycle belongs with the concrete pool owner. `EditorRuntime` consumes `CoreServices` and does not subscribe to image-resource streams.
 
 `EditorAssetCoordinator` discovers required scene font families, asks the shared font loader to ensure them, starts best-effort intrinsic metadata resolution, and preloads visible raster state. Optional intrinsic metadata does not block raster loading for the interactive editor.
 
@@ -73,12 +73,12 @@ Prepared state is not canonical persistence state.
 current source document
   -> EditorDocumentAdapter.resolve()
   -> optional ScenePreparer
-  -> CanvasRenderPipeline.build()
-  -> RenderSnapshot
+  -> evaluateScene(preparedScene, services)
+  -> SceneEvaluation
   -> CanvasRenderer
 ```
 
-The preparer receives the exact stable `CoreServices` instance retained by the render pipeline. Extension composition permits at most one non-null preparer.
+The preparer receives the exact stable `CoreServices` instance used by scene evaluation. Extension composition permits at most one non-null preparer.
 
 ### Authoritative PNG output
 
@@ -200,6 +200,6 @@ Image tools operate on logical source references. Applications own image access,
 ## Package boundaries
 
 - `canvas_editor_flutter` owns reusable editor interaction, runtime orchestration, and presentation, including history, picking, snapping, selection, gestures, and derived world interaction geometry.
-- `canvas_core` owns runtime documents, document/render geometry, scene computation, logical resource contracts, and renderer-neutral paint operations.
+- `canvas_core` owns runtime documents, document/render geometry, scene computation, logical resource contracts, and computed scene geometry.
 - `canvas_renderer_flutter` owns Flutter drawing, font/text implementations, decoded raster ownership, and canonical final PNG rendering.
 - Applications own product-specific storage, authentication, networking, permissions, analytics, media/font lifecycle, processing, and workflow decisions.

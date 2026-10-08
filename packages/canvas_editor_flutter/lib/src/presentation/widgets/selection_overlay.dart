@@ -11,7 +11,7 @@ import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/src/editor_api.dart';
 
 class CanvasSelectionOverlay extends StatefulWidget {
-  final rt.RenderSnapshot render;
+  final rt.SceneEvaluation render;
   final double scale;
   final Offset pan;
   final rt.ElementId selectedId;

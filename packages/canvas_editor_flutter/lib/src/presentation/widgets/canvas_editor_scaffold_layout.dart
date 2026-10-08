@@ -91,7 +91,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
       );
     }
 
-    Widget buildCanvasOnly(BuildContext context, RenderSnapshot snap) {
+    Widget buildCanvasOnly(BuildContext context, SceneEvaluation snap) {
       final selection = context.read<SelectionController>();
 
       return CanvasViewportSurface(
@@ -111,7 +111,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
 
     Widget buildDockedInspectorLayout(
       BuildContext context,
-      RenderSnapshot snap, {
+      SceneEvaluation snap, {
       required double availableWidth,
     }) {
       final selection = context.read<SelectionController>();
@@ -169,7 +169,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
 
     Widget buildCompactHostedInspectorPanel(
       BuildContext context,
-      RenderSnapshot snap,
+      SceneEvaluation snap,
     ) {
       final selection = context.read<SelectionController>();
 
@@ -190,7 +190,7 @@ class CanvasEditorScaffoldLayout extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return ValueListenableBuilder<RenderSnapshot>(
+        return ValueListenableBuilder<SceneEvaluation>(
           valueListenable: controller.render,
           builder: (context, snap, _) {
             if (shell.hosted) {

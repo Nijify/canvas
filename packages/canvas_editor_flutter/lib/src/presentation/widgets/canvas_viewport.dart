@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart' show listEquals, Listenable;
 import 'package:flutter/material.dart';
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show ElementId, Rect2D, RenderSnapshot, Vec2, findById;
+    show ElementId, Rect2D, SceneEvaluation, Vec2, findById;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 import 'package:canvas_editor_flutter/src/editor_api.dart'
@@ -43,7 +43,7 @@ class CanvasViewport extends StatefulWidget {
     this.viewportBehavior,
   });
 
-  final RenderSnapshot render;
+  final SceneEvaluation render;
   final EditorGeometryIndex geometry;
   final CanvasRenderer renderer;
   final Listenable repaint;
@@ -202,7 +202,6 @@ class _CanvasViewportState extends State<CanvasViewport> {
     final scene = widget.render.scene;
     final computed = widget.render.computed;
     final geometry = widget.geometry;
-    final ops = widget.render.ops;
 
     final vp = widget.viewportPx;
     final displayScale = widget.scale;
@@ -483,7 +482,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
                             size: scene.artboardSize.toUi,
                             painter: CanvasPainter(
                               artboardSize: scene.artboardSize,
-                              ops: ops,
+                              evaluation: widget.render,
                               renderer: widget.renderer,
                               repaint: widget.repaint,
                             ),

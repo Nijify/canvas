@@ -145,7 +145,7 @@ void main() {
     'resolves before preparation and preserves the canonical scene boundary',
     () {
       final canonicalScene = _fixtureScene();
-      final pipeline = rt.CanvasRenderPipeline(
+      final pipeline = rt.CoreServices(
         textMeasurer: _FakeTextMeasurer(),
       );
 
@@ -156,7 +156,7 @@ void main() {
       final runtime = EditorRuntime<rt.CanvasSceneDocument>(
         initial: canonicalScene,
         adapter: const _ResolvingAdapter(),
-        renderPipeline: pipeline,
+        services: pipeline,
         scenePreparer: (scene, services) {
           preparerCalls += 1;
           receivedScene = scene;
@@ -170,7 +170,7 @@ void main() {
 
       expect(preparerCalls, 1);
       expect(receivedScene?.backgroundOpacity, 0.4);
-      expect(identical(receivedServices, pipeline.services), isTrue);
+      expect(identical(receivedServices, pipeline), isTrue);
 
       expect(identical(runtime.document.value, canonicalScene), isTrue);
       expect(runtime.document.value.backgroundOpacity, 1.0);
@@ -211,7 +211,7 @@ void main() {
       expect(
         identical(
           extension.lastServices,
-          extension.runtime!.renderPipeline.services,
+          extension.runtime!.services,
         ),
         isTrue,
       );
