@@ -43,10 +43,7 @@ CanvasSceneDocument _textScene(String value, CanvasFill fill) =>
     );
 
 void _paint(CanvasSceneDocument scene, _CapturingTextPipeline pipeline) {
-  final evaluation = evaluateScene(
-    scene,
-    CoreServices(textMeasurer: pipeline),
-  );
+  final evaluation = evaluateScene(scene, CoreServices(textMeasurer: pipeline));
   final recorder = ui.PictureRecorder();
   CanvasRenderer(text: pipeline).paintScene(ui.Canvas(recorder), evaluation);
   recorder.endRecording().dispose();
@@ -55,16 +52,22 @@ void _paint(CanvasSceneDocument scene, _CapturingTextPipeline pipeline) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('passes scene solid color and raw Unicode text to the text pipeline', () {
-    final pipeline = _CapturingTextPipeline();
-    const original = 'A🙂e\u0301👨‍👩‍👧‍👦';
-    _paint(_textScene(original, const CanvasFill.solid(0xFFAA8844)), pipeline);
-    expect(pipeline.lastSpec?.text, original);
-    expect(pipeline.lastSpec?.letterSpacing, 1.25);
-    expect(pipeline.lastSolid, const ui.Color(0xFFAA8844));
-    expect(pipeline.lastShader, isNull);
-    pipeline.dispose();
-  });
+  test(
+    'passes scene solid color and raw Unicode text to the text pipeline',
+    () {
+      final pipeline = _CapturingTextPipeline();
+      const original = 'A🙂e\u0301👨‍👩‍👧‍👦';
+      _paint(
+        _textScene(original, const CanvasFill.solid(0xFFAA8844)),
+        pipeline,
+      );
+      expect(pipeline.lastSpec?.text, original);
+      expect(pipeline.lastSpec?.letterSpacing, 1.25);
+      expect(pipeline.lastSolid, const ui.Color(0xFFAA8844));
+      expect(pipeline.lastShader, isNull);
+      pipeline.dispose();
+    },
+  );
 
   test('passes scene gradient as a shader to the text pipeline', () {
     final pipeline = _CapturingTextPipeline();
@@ -87,11 +90,14 @@ void main() {
     pipeline.dispose();
   });
 
-  test('renderer options default to interactive missing-image placeholders', () {
-    const options = CanvasRendererOptions();
-    expect(options.imageFilterQuality, ui.FilterQuality.none);
-    expect(options.missingImageBehavior, MissingImageBehavior.placeholder);
-  });
+  test(
+    'renderer options default to interactive missing-image placeholders',
+    () {
+      const options = CanvasRendererOptions();
+      expect(options.imageFilterQuality, ui.FilterQuality.none);
+      expect(options.missingImageBehavior, MissingImageBehavior.placeholder);
+    },
+  );
 
   test('renderer options can skip missing images for output paths', () {
     const options = CanvasRendererOptions(

@@ -23,5 +23,6 @@ class CanvasPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CanvasPainter old) =>
-      !identical(evaluation, old.evaluation) || artboardSize != old.artboardSize;
+      !identical(evaluation, old.evaluation) ||
+      artboardSize != old.artboardSize;
 }

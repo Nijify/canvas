@@ -37,9 +37,7 @@ List<String> _rootIds(CanvasSceneDocument scene) {
 EditorRuntime<CanvasSceneDocument> _buildRuntime(
   CanvasSceneDocument initialScene,
 ) {
-  final renderPipeline = CoreServices(
-    textMeasurer: _FakeTextMeasurer(),
-  );
+  final renderPipeline = CoreServices(textMeasurer: _FakeTextMeasurer());
 
   return EditorRuntime<CanvasSceneDocument>(
     initial: initialScene,

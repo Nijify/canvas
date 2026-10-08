@@ -101,7 +101,9 @@ class CanvasRenderer {
           break;
         case CanvasFillSolid(:final color):
           final alpha = (color >> 24) & 0xFF;
-          final merged = (alpha * scene.backgroundOpacity).clamp(0, 255).round();
+          final merged = (alpha * scene.backgroundOpacity)
+              .clamp(0, 255)
+              .round();
           canvas.drawRect(
             background,
             ui.Paint()..color = ui.Color((merged << 24) | (color & 0x00FFFFFF)),
@@ -235,7 +237,9 @@ class CanvasRenderer {
             uiPath,
             ui.Paint()
               ..style = ui.PaintingStyle.fill
-              ..color = ui.Color(requireAuthoredFill ? path.style.fill! : color),
+              ..color = ui.Color(
+                requireAuthoredFill ? path.style.fill! : color,
+              ),
           );
         }
       case CanvasFillGradient(:final grad):
@@ -415,5 +419,4 @@ class CanvasRenderer {
         );
     }
   }
-
 }

@@ -145,9 +145,7 @@ void main() {
     'resolves before preparation and preserves the canonical scene boundary',
     () {
       final canonicalScene = _fixtureScene();
-      final pipeline = rt.CoreServices(
-        textMeasurer: _FakeTextMeasurer(),
-      );
+      final pipeline = rt.CoreServices(textMeasurer: _FakeTextMeasurer());
 
       var preparerCalls = 0;
       rt.CanvasSceneDocument? receivedScene;
@@ -209,10 +207,7 @@ void main() {
       expect(extension.runtime, isNotNull);
       expect(extension.scenePreparerCalls, greaterThanOrEqualTo(1));
       expect(
-        identical(
-          extension.lastServices,
-          extension.runtime!.services,
-        ),
+        identical(extension.lastServices, extension.runtime!.services),
         isTrue,
       );
       expect(extension.runtime!.render.value.contentBounds, isNotNull);

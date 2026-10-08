@@ -69,8 +69,7 @@ export 'src/images/flutter_image_pool.dart'
 // 6) Gradients (adapter)
 //    Mental model: core resolves gradient math; adapter builds ui.Shader.
 // ============================================================================
-export 'src/flutter_linear_shader.dart'
-    show buildLinearShaderFlutter;
+export 'src/flutter_linear_shader.dart' show buildLinearShaderFlutter;
 
 // ============================================================================
 // 7) Value mappers (core ↔ Flutter)

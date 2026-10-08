@@ -109,8 +109,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
 
       // Final output owns preparation. A supplied preparer is invoked exactly
       // once and failures propagate to the caller.
-      final prepared =
-          _scenePreparer?.call(scene, services) ?? scene;
+      final prepared = _scenePreparer?.call(scene, services) ?? scene;
 
       _validateScene(prepared, stage: 'prepared');
 

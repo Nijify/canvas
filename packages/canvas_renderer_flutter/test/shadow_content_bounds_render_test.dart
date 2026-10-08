@@ -102,7 +102,11 @@ void main() {
             computed.layoutBoundsLocalById['text']!.inflate(128),
           );
           final cropPixels = await _render(renderer, evaluation, crop);
-          final referencePixels = await _render(renderer, evaluation, reference);
+          final referencePixels = await _render(
+            renderer,
+            evaluation,
+            reference,
+          );
           final cropWidth = crop.width.toInt();
           final cropHeight = crop.height.toInt();
           final refWidth = reference.width.toInt();

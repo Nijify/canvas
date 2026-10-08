@@ -64,8 +64,7 @@ final class EditorRuntime<TSourceDocument>
         final resolvedScene = _adapter.resolve(canonical, _ctx);
 
         final preparedScene =
-            scenePreparer?.call(resolvedScene, services) ??
-            resolvedScene;
+            scenePreparer?.call(resolvedScene, services) ?? resolvedScene;
 
         return rt.evaluateScene(
           preparedScene,

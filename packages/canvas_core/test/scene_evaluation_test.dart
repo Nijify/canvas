@@ -22,7 +22,12 @@ void main() {
       children: <Node>[
         Node.text(
           id: 'label',
-          data: TextData(text: 'Hi', fontFamily: 'Ahem', fontWeight: 400, fontSize: 20),
+          data: TextData(
+            text: 'Hi',
+            fontFamily: 'Ahem',
+            fontWeight: 400,
+            fontSize: 20,
+          ),
         ),
       ],
     );

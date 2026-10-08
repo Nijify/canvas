@@ -105,7 +105,8 @@ void main() {
               CoreServices(textMeasurer: text, icons: _Icons()),
             );
             return _pixels(
-              (canvas) => CanvasRenderer(text: text).paintScene(canvas, evaluation),
+              (canvas) =>
+                  CanvasRenderer(text: text).paintScene(canvas, evaluation),
             );
           }
 
