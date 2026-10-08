@@ -60,12 +60,18 @@ void main() {
     expect(root.getAttribute('viewBox'), '0 0 120.0 80.0');
     final rect = root.findAllElements('rect').single;
     expect(rect.getAttribute('fill'), '#445566');
-    expect(double.parse(rect.getAttribute('fill-opacity')!), closeTo(64 / 255, 1e-12));
+    expect(
+      double.parse(rect.getAttribute('fill-opacity')!),
+      closeTo(64 / 255, 1e-12),
+    );
     final path = root.findAllElements('path').single;
     expect(path.getAttribute('d'), startsWith('M-10.0 -5.0'));
     expect(path.getAttribute('fill'), '#ff0000');
     expect(path.getAttribute('fill-rule'), 'evenodd');
-    expect(double.parse(path.getAttribute('fill-opacity')!), closeTo(128 / 255, 1e-12));
+    expect(
+      double.parse(path.getAttribute('fill-opacity')!),
+      closeTo(128 / 255, 1e-12),
+    );
     expect(path.getAttribute('stroke'), '#00ff00');
     expect(path.getAttribute('stroke-width'), '2.0');
     expect(path.getAttribute('stroke-linecap'), 'round');
@@ -79,58 +85,67 @@ void main() {
   });
 
   test('flattens nested groups in computed paint order', () {
-    final scene = _scene(children: const [
-      Node.group(
-        id: 'group',
-        xf: Transform2D(
-          position: Vec2(40, 20),
-          scale: Vec2(2, 2),
-          origin: OriginKind.custom,
-          customPivotPx: Vec2.zero,
+    final scene = _scene(
+      children: const [
+        Node.group(
+          id: 'group',
+          xf: Transform2D(
+            position: Vec2(40, 20),
+            scale: Vec2(2, 2),
+            origin: OriginKind.custom,
+            customPivotPx: Vec2.zero,
+          ),
+          children: [
+            Node.path(
+              id: 'first',
+              xf: Transform2D(
+                position: Vec2(10, 5),
+                origin: OriginKind.custom,
+                customPivotPx: Vec2.zero,
+              ),
+              data: PathData(
+                source: RectSource(10, 10),
+                fill: CanvasFill.solid(0xffff0000),
+              ),
+            ),
+            Node.path(
+              id: 'second',
+              xf: Transform2D(
+                position: Vec2(20, 5),
+                origin: OriginKind.custom,
+                customPivotPx: Vec2.zero,
+              ),
+              data: PathData(
+                source: RectSource(20, 10),
+                fill: CanvasFill.solid(0xff0000ff),
+              ),
+            ),
+          ],
         ),
-        children: [
-          Node.path(
-            id: 'first',
-            xf: Transform2D(
-              position: Vec2(10, 5),
-              origin: OriginKind.custom,
-              customPivotPx: Vec2.zero,
-            ),
-            data: PathData(
-              source: RectSource(10, 10),
-              fill: CanvasFill.solid(0xffff0000),
-            ),
-          ),
-          Node.path(
-            id: 'second',
-            xf: Transform2D(
-              position: Vec2(20, 5),
-              origin: OriginKind.custom,
-              customPivotPx: Vec2.zero,
-            ),
-            data: PathData(
-              source: RectSource(20, 10),
-              fill: CanvasFill.solid(0xff0000ff),
-            ),
-          ),
-        ],
-      ),
-    ]);
+      ],
+    );
 
     final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
-    final paths = XmlDocument.parse(result.svg!).findAllElements('path').toList();
+    final paths = XmlDocument.parse(
+      result.svg!,
+    ).findAllElements('path').toList();
     expect(paths.map((p) => p.getAttribute('fill')), ['#ff0000', '#0000ff']);
     expect(paths[0].getAttribute('transform'), 'matrix(2.0 0 0 2.0 60.0 30.0)');
     expect(paths[1].getAttribute('transform'), 'matrix(2.0 0 0 2.0 80.0 30.0)');
   });
 
   test('writes compiled quadratic and cubic path commands', () {
-    final scene = _scene(children: const [
-      Node.path(id: 'curve', data: PathData(
-        source: RectSource(10, 10),
-        fill: CanvasFill.solid(0xff123456),
-      )),
-    ]);
+    final scene = _scene(
+      children: const [
+        Node.path(
+          id: 'curve',
+          data: PathData(
+            source: RectSource(10, 10),
+            fill: CanvasFill.solid(0xff123456),
+          ),
+        ),
+      ],
+    );
     final computed = _compute(scene);
     final original = computed.pathIRById['curve']!;
     final withCurves = ComputedScene(
@@ -145,7 +160,9 @@ void main() {
           PathCmd.moveTo(const Vec2(0, 0)),
           PathCmd.quadTo(const Vec2(2, 3), const Vec2(4, 5)),
           PathCmd.cubicTo(
-            const Vec2(6, 7), const Vec2(8, 9), const Vec2(10, 11),
+            const Vec2(6, 7),
+            const Vec2(8, 9),
+            const Vec2(10, 11),
           ),
           PathCmd.close(),
         ], original.style),
@@ -156,27 +173,36 @@ void main() {
     );
     final result = exportPreparedSvg(scene: scene, computed: withCurves);
     final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
-    expect(path.getAttribute('d'), 'M0 0 Q2.0 3.0 4.0 5.0 '
-        'C6.0 7.0 8.0 9.0 10.0 11.0 Z');
+    expect(
+      path.getAttribute('d'),
+      'M0 0 Q2.0 3.0 4.0 5.0 '
+      'C6.0 7.0 8.0 9.0 10.0 11.0 Z',
+    );
   });
 
   test('rejects gradients and dashed strokes without partial SVG', () {
     final scene = _scene(
-      background: const CanvasFill.gradient(LinearGradientSpec(
-        color1: 0xff000000, color2: 0xffffffff,
-      )),
+      background: const CanvasFill.gradient(
+        LinearGradientSpec(color1: 0xff000000, color2: 0xffffffff),
+      ),
       children: const [
-        Node.path(id: 'gradient', data: PathData(
-          source: RectSource(10, 10),
-          fill: CanvasFill.gradient(LinearGradientSpec(
-            color1: 0xff000000, color2: 0xffffffff,
-          )),
-        )),
-        Node.path(id: 'dashed', data: PathData(
-          source: RectSource(20, 10),
-          strokeColor: 0xff000000,
-          dash: [5, 3],
-        )),
+        Node.path(
+          id: 'gradient',
+          data: PathData(
+            source: RectSource(10, 10),
+            fill: CanvasFill.gradient(
+              LinearGradientSpec(color1: 0xff000000, color2: 0xffffffff),
+            ),
+          ),
+        ),
+        Node.path(
+          id: 'dashed',
+          data: PathData(
+            source: RectSource(20, 10),
+            strokeColor: 0xff000000,
+            dash: [5, 3],
+          ),
+        ),
       ],
     );
 
@@ -190,28 +216,47 @@ void main() {
   });
 
   test('hidden unsupported nodes do not block export', () {
-    final scene = _scene(children: const [
-      Node.text(
-        id: 'hidden-text',
-        hidden: true,
-        data: TextData(
-          text: 'hidden', fontFamily: 'sans', fontWeight: 400, fontSize: 12,
+    final scene = _scene(
+      children: const [
+        Node.text(
+          id: 'hidden-text',
+          hidden: true,
+          data: TextData(
+            text: 'hidden',
+            fontFamily: 'sans',
+            fontWeight: 400,
+            fontSize: 12,
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
     final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
     expect(result.issues, isEmpty);
     expect(XmlDocument.parse(result.svg!).findAllElements('path'), isEmpty);
   });
 
   test('rejects visible non-path nodes even when resources are missing', () {
-    final scene = _scene(children: const [
-      Node.text(id: 't', data: TextData(
-        text: 'x', fontFamily: 'sans', fontWeight: 400, fontSize: 12,
-      )),
-      Node.image(id: 'i', data: ImageData(size: Size2D(10, 10))),
-      Node.icon(id: 'c', data: CanvasIconData(iconRef: 'missing')),
-    ]);
+    final scene = _scene(
+      children: const [
+        Node.text(
+          id: 't',
+          data: TextData(
+            text: 'x',
+            fontFamily: 'sans',
+            fontWeight: 400,
+            fontSize: 12,
+          ),
+        ),
+        Node.image(
+          id: 'i',
+          data: ImageData(size: Size2D(10, 10)),
+        ),
+        Node.icon(
+          id: 'c',
+          data: CanvasIconData(iconRef: 'missing'),
+        ),
+      ],
+    );
     final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
     expect(result.svg, isNull);
     expect(result.issues.map((i) => i.code), [
@@ -222,12 +267,17 @@ void main() {
   });
 
   test('does not silently skip missing computed path geometry', () {
-    final scene = _scene(children: const [
-      Node.path(id: 'p', data: PathData(
-        source: RectSource(10, 10),
-        fill: CanvasFill.solid(0xff000000),
-      )),
-    ]);
+    final scene = _scene(
+      children: const [
+        Node.path(
+          id: 'p',
+          data: PathData(
+            source: RectSource(10, 10),
+            fill: CanvasFill.solid(0xff000000),
+          ),
+        ),
+      ],
+    );
     final computed = _compute(scene);
     final incomplete = ComputedScene(
       drawList: computed.drawList,
@@ -243,7 +293,10 @@ void main() {
     );
     final result = exportPreparedSvg(scene: scene, computed: incomplete);
     expect(result.svg, isNull);
-    expect(result.issues.single.code, SvgExportIssueCode.missingComputedGeometry);
+    expect(
+      result.issues.single.code,
+      SvgExportIssueCode.missingComputedGeometry,
+    );
     expect(result.issues.single.nodeId, 'p');
   });
 

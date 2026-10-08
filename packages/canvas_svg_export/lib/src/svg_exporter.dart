@@ -27,7 +27,8 @@ SvgExportResult exportPreparedSvg({
       const SvgExportIssue(
         code: SvgExportIssueCode.unsupportedGradient,
         path: '/backgroundFill',
-        message: 'The current angle/width background gradient has no '
+        message:
+            'The current angle/width background gradient has no '
             'direct SVG semantics.',
       ),
     );
@@ -50,7 +51,8 @@ SvgExportResult exportPreparedSvg({
             SvgExportIssue(
               code: SvgExportIssueCode.unsupportedGradient,
               nodeId: node.id,
-              message: 'The current angle/width path gradient has no '
+              message:
+                  'The current angle/width path gradient has no '
                   'direct SVG semantics.',
             ),
           );
@@ -62,7 +64,8 @@ SvgExportResult exportPreparedSvg({
             SvgExportIssue(
               code: SvgExportIssueCode.unsupportedDashedStroke,
               nodeId: node.id,
-              message: 'Flutter currently paints this stroke without its '
+              message:
+                  'Flutter currently paints this stroke without its '
                   'authored dash pattern.',
             ),
           );
@@ -141,7 +144,8 @@ SvgExportResult exportPreparedSvg({
         SvgExportIssue(
           code: SvgExportIssueCode.unsupportedDashedStroke,
           nodeId: id,
-          message: 'Flutter currently paints this stroke without its '
+          message:
+              'Flutter currently paints this stroke without its '
               'authored dash pattern.',
         ),
       );
@@ -152,40 +156,54 @@ SvgExportResult exportPreparedSvg({
   final width = _number(scene.artboardSize.w);
   final height = _number(scene.artboardSize.h);
   final out = StringBuffer()
-    ..writeln('<svg xmlns="http://www.w3.org/2000/svg" '
-        'width="$width" height="$height" viewBox="0 0 $width $height">');
+    ..writeln(
+      '<svg xmlns="http://www.w3.org/2000/svg" '
+      'width="$width" height="$height" viewBox="0 0 $width $height">',
+    );
 
   if (scene.backgroundFill case CanvasFillSolid(:final color)) {
     final alpha = (((color >> 24) & 0xff) * scene.backgroundOpacity)
         .clamp(0, 255)
         .round();
     if (alpha > 0) {
-      out.writeln('  <rect x="0" y="0" width="$width" height="$height" '
-          'fill="${_rgb(color)}" fill-opacity="${_number(alpha / 255)}"/>');
+      out.writeln(
+        '  <rect x="0" y="0" width="$width" height="$height" '
+        'fill="${_rgb(color)}" fill-opacity="${_number(alpha / 255)}"/>',
+      );
     }
   }
 
   for (final path in paths) {
     final ir = computed.pathIRById[path.id]!;
     final storage = computed.worldById[path.id]!.storage;
-    final matrix = [storage[0], storage[1], storage[4], storage[5],
-      storage[12], storage[13]].map(_number).join(' ');
+    final matrix = [
+      storage[0],
+      storage[1],
+      storage[4],
+      storage[5],
+      storage[12],
+      storage[13],
+    ].map(_number).join(' ');
     final style = ir.style;
     final fill = style.fill;
     final stroke = style.strokeWidth > 0 ? style.stroke : null;
-    out.write('  <path d="${_pathData(ir)}" transform="matrix($matrix)" '
-        'fill="${fill == null ? 'none' : _rgb(fill)}" '
-        'fill-rule="${style.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"');
+    out.write(
+      '  <path d="${_pathData(ir)}" transform="matrix($matrix)" '
+      'fill="${fill == null ? 'none' : _rgb(fill)}" '
+      'fill-rule="${style.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
+    );
     if (fill != null) {
       out.write(' fill-opacity="${_opacity(fill)}"');
     }
     out.write(' stroke="${stroke == null ? 'none' : _rgb(stroke)}"');
     if (stroke != null) {
-      out.write(' stroke-opacity="${_opacity(stroke)}" '
-          'stroke-width="${_number(style.strokeWidth)}" '
-          'stroke-linecap="${style.strokeCap.name}" '
-          'stroke-linejoin="${style.strokeJoin.name}" '
-          'stroke-miterlimit="${_number(style.miterLimit)}"');
+      out.write(
+        ' stroke-opacity="${_opacity(stroke)}" '
+        'stroke-width="${_number(style.strokeWidth)}" '
+        'stroke-linecap="${style.strokeCap.name}" '
+        'stroke-linejoin="${style.strokeJoin.name}" '
+        'stroke-miterlimit="${_number(style.miterLimit)}"',
+      );
     }
     out.writeln('/>');
   }
@@ -205,12 +223,20 @@ bool _validPath(PathIR path) {
       case PathVerb.close:
         if (!hasStart) return false;
       case PathVerb.quadTo:
-        if (!hasStart || cmd.c1 == null ||
-            !cmd.c1!.x.isFinite || !cmd.c1!.y.isFinite) return false;
+        if (!hasStart ||
+            cmd.c1 == null ||
+            !cmd.c1!.x.isFinite ||
+            !cmd.c1!.y.isFinite)
+          return false;
       case PathVerb.cubicTo:
-        if (!hasStart || cmd.c1 == null || cmd.c2 == null ||
-            !cmd.c1!.x.isFinite || !cmd.c1!.y.isFinite ||
-            !cmd.c2!.x.isFinite || !cmd.c2!.y.isFinite) return false;
+        if (!hasStart ||
+            cmd.c1 == null ||
+            cmd.c2 == null ||
+            !cmd.c1!.x.isFinite ||
+            !cmd.c1!.y.isFinite ||
+            !cmd.c2!.x.isFinite ||
+            !cmd.c2!.y.isFinite)
+          return false;
     }
   }
   return true;
@@ -224,26 +250,28 @@ bool _validMatrix(List<double> m) {
       (m[15] - 1).abs() < 1e-9;
 }
 
-String _pathData(PathIR path) => path.cmds.map((cmd) {
-  final p = cmd.p;
-  switch (cmd.verb) {
-    case PathVerb.moveTo:
-      return 'M${_number(p.x)} ${_number(p.y)}';
-    case PathVerb.lineTo:
-      return 'L${_number(p.x)} ${_number(p.y)}';
-    case PathVerb.quadTo:
-      final c = cmd.c1!;
-      return 'Q${_number(c.x)} ${_number(c.y)} '
-          '${_number(p.x)} ${_number(p.y)}';
-    case PathVerb.cubicTo:
-      final c1 = cmd.c1!, c2 = cmd.c2!;
-      return 'C${_number(c1.x)} ${_number(c1.y)} '
-          '${_number(c2.x)} ${_number(c2.y)} '
-          '${_number(p.x)} ${_number(p.y)}';
-    case PathVerb.close:
-      return 'Z';
-  }
-}).join(' ');
+String _pathData(PathIR path) => path.cmds
+    .map((cmd) {
+      final p = cmd.p;
+      switch (cmd.verb) {
+        case PathVerb.moveTo:
+          return 'M${_number(p.x)} ${_number(p.y)}';
+        case PathVerb.lineTo:
+          return 'L${_number(p.x)} ${_number(p.y)}';
+        case PathVerb.quadTo:
+          final c = cmd.c1!;
+          return 'Q${_number(c.x)} ${_number(c.y)} '
+              '${_number(p.x)} ${_number(p.y)}';
+        case PathVerb.cubicTo:
+          final c1 = cmd.c1!, c2 = cmd.c2!;
+          return 'C${_number(c1.x)} ${_number(c1.y)} '
+              '${_number(c2.x)} ${_number(c2.y)} '
+              '${_number(p.x)} ${_number(p.y)}';
+        case PathVerb.close:
+          return 'Z';
+      }
+    })
+    .join(' ');
 
 String _number(double value) => value == 0 ? '0' : value.toString();
 String _rgb(int argb) =>
