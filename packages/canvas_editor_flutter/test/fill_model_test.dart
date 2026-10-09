@@ -266,11 +266,11 @@ void main() {
       dropdownFinder,
     );
     expect(
-      unavailable.items!.map((item) => item.value).toList(),
+      unavailable.items.map((item) => item.value).toList(),
       FillVariant.values,
     );
     expect(
-      unavailable.items!
+      unavailable.items
           .singleWhere((item) => item.value == FillVariant.gradient)
           .enabled,
       isFalse,
@@ -281,7 +281,7 @@ void main() {
       dropdownFinder,
     );
     expect(
-      available.items!
+      available.items
           .singleWhere((item) => item.value == FillVariant.gradient)
           .enabled,
       isTrue,
