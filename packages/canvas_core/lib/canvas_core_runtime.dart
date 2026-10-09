@@ -102,7 +102,7 @@ export 'src/path/path_source.dart'
 // ============================================================================
 
 export 'src/foundation/core_types.dart'
-    show Color32, LinearGradientSpec, Size2D, Vec2, FontWeightNum;
+    show Color32, GradientStop, LinearGradientSpec, Size2D, Vec2, FontWeightNum;
 export 'src/foundation/assets/canvas_asset_ref.dart'
     show
         CanvasAssetRef,

@@ -1,5 +1,7 @@
 // Path: oss_packages/canvas_editor_flutter/lib/src/editor_fill.dart
 
+import 'dart:math' as math;
+
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 
 /// Editor-facing fill variants.
@@ -60,7 +62,7 @@ FillVariant fillVariantOf(rt.CanvasFill fill) {
 int representativeColorForFill(rt.CanvasFill fill, FillCapability capability) {
   int c = switch (fill) {
     rt.CanvasFillSolid(color: final color) => color,
-    rt.CanvasFillGradient(grad: final g) => g.color1,
+    rt.CanvasFillGradient(grad: final g) => _firstStopColor(g),
     rt.CanvasFillNone() => _representativeColorForFallback(capability),
   };
 
@@ -76,33 +78,13 @@ int representativeColorForFill(rt.CanvasFill fill, FillCapability capability) {
 int _representativeColorForFallback(FillCapability capability) {
   return switch (capability.fallback) {
     rt.CanvasFillSolid(color: final color) => color,
-    rt.CanvasFillGradient(grad: final g) => g.color1,
+    rt.CanvasFillGradient(grad: final g) => _firstStopColor(g),
     rt.CanvasFillNone() => 0xFF000000,
   };
 }
 
-rt.LinearGradientSpec gradientForEditing(
-  rt.CanvasFill fill,
-  FillCapability capability, {
-  double defaultAngle = 0,
-  double defaultWidth = 20,
-}) {
-  return switch (fill) {
-    rt.CanvasFillGradient(grad: final g) => g,
-    rt.CanvasFillSolid(color: final c) => rt.LinearGradientSpec(
-      color1: c,
-      color2: c,
-      angle: defaultAngle,
-      width: defaultWidth,
-    ),
-    _ => rt.LinearGradientSpec(
-      color1: representativeColorForFill(fill, capability),
-      color2: representativeColorForFill(fill, capability),
-      angle: defaultAngle,
-      width: defaultWidth,
-    ),
-  };
-}
+int _firstStopColor(rt.LinearGradientSpec gradient) =>
+    gradient.stops.isEmpty ? 0xFF000000 : gradient.stops.first.color;
 
 rt.CanvasFill coerceFill(rt.CanvasFill fill, FillCapability capability) {
   final variant = fillVariantOf(fill);
@@ -112,14 +94,6 @@ rt.CanvasFill coerceFill(rt.CanvasFill fill, FillCapability capability) {
     return rt.CanvasFill.solid(representativeColorForFill(fill, capability));
   }
 
-  if (capability.allows(FillVariant.gradient)) {
-    return rt.CanvasFill.gradient(gradientForEditing(fill, capability));
-  }
-
-  if (capability.allows(FillVariant.none)) {
-    return const rt.CanvasFill.none();
-  }
-
   return capability.fallback;
 }
 
@@ -127,57 +101,92 @@ rt.CanvasFill coerceFillForNode(rt.Node node, rt.CanvasFill fill) {
   return coerceFill(fill, fillCapabilityForNode(node));
 }
 
-rt.CanvasFill convertFillVariant(
-  rt.CanvasFill current,
-  FillVariant target,
-  FillCapability capability,
-) {
-  if (!capability.allows(target)) {
-    return coerceFill(current, capability);
+/// Creates the standard horizontal gradient for a target with real local
+/// bounds. Callers intentionally own the geometry lookup; existing-gradient
+/// editing never needs it.
+rt.LinearGradientSpec createDefaultGradient({
+  required rt.Rect2D referenceBounds,
+  required rt.Color32 color,
+}) {
+  final values = <double>[
+    referenceBounds.left,
+    referenceBounds.top,
+    referenceBounds.right,
+    referenceBounds.bottom,
+  ];
+  if (values.any((value) => !value.isFinite) || referenceBounds.width <= 0) {
+    throw ArgumentError.value(
+      referenceBounds,
+      'referenceBounds',
+      'must be finite with positive width',
+    );
   }
 
-  switch (target) {
-    case FillVariant.none:
-      return const rt.CanvasFill.none();
-
-    case FillVariant.solid:
-      return rt.CanvasFill.solid(
-        representativeColorForFill(current, capability),
-      );
-
-    case FillVariant.gradient:
-      if (current is rt.CanvasFillGradient) {
-        return coerceFill(current, capability);
-      }
-      return rt.CanvasFill.gradient(gradientForEditing(current, capability));
-  }
+  final centerY = (referenceBounds.top + referenceBounds.bottom) / 2.0;
+  return rt.LinearGradientSpec(
+    start: rt.Vec2(referenceBounds.left, centerY),
+    end: rt.Vec2(referenceBounds.right, centerY),
+    stops: <rt.GradientStop>[
+      rt.GradientStop(offset: 0, color: color),
+      rt.GradientStop(offset: 1, color: color),
+    ],
+  );
 }
 
-class LinearGradientPatch {
-  const LinearGradientPatch({this.color1, this.color2, this.angle, this.width});
-
-  final int? color1;
-  final int? color2;
-  final double? angle;
-  final double? width;
+rt.LinearGradientSpec replaceGradientStopColor(
+  rt.LinearGradientSpec gradient, {
+  required int index,
+  required rt.Color32 color,
+}) {
+  RangeError.checkValidIndex(index, gradient.stops, 'index');
+  return gradient.copyWith(
+    stops: <rt.GradientStop>[
+      for (var stopIndex = 0; stopIndex < gradient.stops.length; stopIndex++)
+        stopIndex == index
+            ? gradient.stops[stopIndex].copyWith(color: color)
+            : gradient.stops[stopIndex],
+    ],
+  );
 }
 
-rt.CanvasFill patchLinearGradient(
-  rt.CanvasFill current,
-  LinearGradientPatch patch,
-  FillCapability capability,
+double linearGradientAngleDegrees(rt.LinearGradientSpec gradient) {
+  final delta = gradient.end - gradient.start;
+  var degrees = math.atan2(delta.y, delta.x) * 180.0 / math.pi;
+  if (degrees < 0) degrees += 360.0;
+  return degrees;
+}
+
+rt.LinearGradientSpec setLinearGradientAngleDegrees(
+  rt.LinearGradientSpec gradient,
+  double angleDegrees,
 ) {
-  final g = gradientForEditing(current, capability);
+  if (!angleDegrees.isFinite) {
+    throw ArgumentError.value(
+      angleDegrees,
+      'angleDegrees',
+      'must be finite',
+    );
+  }
 
-  return coerceFill(
-    rt.CanvasFill.gradient(
-      g.copyWith(
-        color1: patch.color1 ?? g.color1,
-        color2: patch.color2 ?? g.color2,
-        angle: patch.angle ?? g.angle,
-        width: patch.width ?? g.width,
-      ),
-    ),
-    capability,
+  final delta = gradient.end - gradient.start;
+  final halfLength = delta.length / 2.0;
+  if (!halfLength.isFinite || halfLength <= 0) {
+    throw ArgumentError.value(
+      gradient,
+      'gradient',
+      'must have distinct finite endpoints',
+    );
+  }
+
+  final center = (gradient.start + gradient.end) / 2.0;
+  final radians = angleDegrees * math.pi / 180.0;
+  final halfVector = rt.Vec2(
+    math.cos(radians) * halfLength,
+    math.sin(radians) * halfLength,
+  );
+
+  return gradient.copyWith(
+    start: center - halfVector,
+    end: center + halfVector,
   );
 }

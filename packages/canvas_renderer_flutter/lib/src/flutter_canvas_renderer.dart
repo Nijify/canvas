@@ -113,7 +113,6 @@ class CanvasRenderer {
             background,
             ui.Paint()
               ..shader = buildLinearShaderFlutter(
-                artboard,
                 grad,
                 opacity: scene.backgroundOpacity,
               ),
@@ -140,7 +139,6 @@ class CanvasRenderer {
               size: data.fontSize,
               letterSpacing: data.letterSpacing,
               appearance: data.appearance,
-              artboard: artboard,
             );
           case IconNode(data: final data):
             final glyph = computed.iconTextById[id];
@@ -153,7 +151,6 @@ class CanvasRenderer {
                 weight: glyph.fontWeight,
                 size: data.sizePx,
                 appearance: data.appearance,
-                artboard: artboard,
               );
             } else if (path != null) {
               _drawPathUnderlays(canvas, path, data.appearance.underlays);
@@ -162,8 +159,6 @@ class CanvasRenderer {
                 canvas,
                 path,
                 foreground,
-                artboard,
-                requireAuthoredFill: false,
               );
               if (foreground is! CanvasFillNone) {
                 _drawPathStroke(canvas, path);
@@ -183,8 +178,6 @@ class CanvasRenderer {
                 canvas,
                 path,
                 data.fill,
-                artboard,
-                requireAuthoredFill: true,
               );
               _drawPathStroke(canvas, path);
             }
@@ -219,9 +212,7 @@ class CanvasRenderer {
     ui.Canvas canvas,
     PathIR path,
     CanvasFill fill,
-    ui.Size artboard, {
-    required bool requireAuthoredFill,
-  }) {
+  ) {
     final uiPath = _buildUiPath(path);
     uiPath.fillType = switch (path.style.fillRule) {
       FillRule.evenOdd => ui.PathFillType.evenOdd,
@@ -232,22 +223,20 @@ class CanvasRenderer {
       case CanvasFillNone():
         break;
       case CanvasFillSolid(:final color):
-        if (!requireAuthoredFill || path.style.fill != null) {
-          canvas.drawPath(
-            uiPath,
-            ui.Paint()
-              ..style = ui.PaintingStyle.fill
-              ..color = ui.Color(
-                requireAuthoredFill ? path.style.fill! : color,
-              ),
-          );
-        }
+        // The scene fill is the paint authority. PathIR supplies only the
+        // compiled outline and source stroke/fill-rule metadata.
+        canvas.drawPath(
+          uiPath,
+          ui.Paint()
+            ..style = ui.PaintingStyle.fill
+            ..color = ui.Color(color),
+        );
       case CanvasFillGradient(:final grad):
         canvas.drawPath(
           uiPath,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
-            ..shader = buildLinearShaderFlutter(artboard, grad),
+            ..shader = buildLinearShaderFlutter(grad),
         );
     }
   }
@@ -374,7 +363,6 @@ class CanvasRenderer {
     required double size,
     double letterSpacing = 0,
     required CanvasAppearance appearance,
-    required ui.Size artboard,
   }) {
     if (textValue.isEmpty) return;
     final spec = TextSpec(
@@ -414,7 +402,7 @@ class CanvasRenderer {
           canvas,
           origin,
           spec,
-          shader: buildLinearShaderFlutter(artboard, grad),
+          shader: buildLinearShaderFlutter(grad),
           originKind: TextOriginKind.center,
         );
     }

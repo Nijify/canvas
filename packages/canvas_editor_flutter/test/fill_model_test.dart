@@ -120,77 +120,85 @@ void main() {
     expect(node.data.appearance.foreground, const CanvasFill.none());
   });
 
-  test('solid to gradient conversion preserves representative color', () {
-    final next = convertFillVariant(
-      const CanvasFill.solid(0xFFABCDEF),
-      FillVariant.gradient,
-      kPathFillCapability,
+  test('creates a horizontal default gradient from local bounds', () {
+    final gradient = createDefaultGradient(
+      referenceBounds: const Rect2D(-20, 10, 80, 50),
+      color: 0xFFABCDEF,
     );
 
-    expect(next, isA<CanvasFillGradient>());
-
-    final gradient = (next as CanvasFillGradient).grad;
-    expect(gradient.color1, 0xFFABCDEF);
-    expect(gradient.color2, 0xFFABCDEF);
+    expect(gradient.start, const Vec2(-20, 30));
+    expect(gradient.end, const Vec2(80, 30));
+    expect(gradient.stops, const <GradientStop>[
+      GradientStop(offset: 0, color: 0xFFABCDEF),
+      GradientStop(offset: 1, color: 0xFFABCDEF),
+    ]);
   });
 
-  test('gradient to solid conversion uses color1', () {
-    final next = convertFillVariant(
-      const CanvasFill.gradient(
-        LinearGradientSpec(
-          color1: 0xFF111111,
-          color2: 0xFFFFFFFF,
-          angle: 45,
-          width: 20,
-        ),
+  test('gradient to solid coercion uses the first stop color', () {
+    final gradient = CanvasFill.gradient(
+      LinearGradientSpec(
+        start: const Vec2(-10, 0),
+        end: const Vec2(10, 0),
+        stops: const <GradientStop>[
+          GradientStop(offset: 0, color: 0xFF111111),
+          GradientStop(offset: 1, color: 0xFFFFFFFF),
+        ],
       ),
-      FillVariant.solid,
-      kPathFillCapability,
+    );
+
+    final next = coerceFill(
+      gradient,
+      const FillCapability(
+        allowed: <FillVariant>{FillVariant.solid},
+        fallback: CanvasFill.solid(0xFF000000),
+      ),
     );
 
     expect(next, const CanvasFill.solid(0xFF111111));
   });
 
-  test('patchLinearGradient preserves geometry when editing one color', () {
-    final next = patchLinearGradient(
-      const CanvasFill.gradient(
-        LinearGradientSpec(
-          color1: 0xFF111111,
-          color2: 0xFFFFFFFF,
-          angle: 45,
-          width: 30,
-        ),
-      ),
-      const LinearGradientPatch(color1: 0xFF22C55E),
-      kPathFillCapability,
+  test('replacing a stop color preserves endpoints and interior stops', () {
+    final gradient = LinearGradientSpec(
+      start: const Vec2(-20, 5),
+      end: const Vec2(20, 5),
+      stops: const <GradientStop>[
+        GradientStop(offset: 0, color: 0xFF111111),
+        GradientStop(offset: 0.5, color: 0xFFAAAAAA),
+        GradientStop(offset: 1, color: 0xFFFFFFFF),
+      ],
     );
 
-    final gradient = (next as CanvasFillGradient).grad;
-    expect(gradient.color1, 0xFF22C55E);
-    expect(gradient.color2, 0xFFFFFFFF);
-    expect(gradient.angle, 45);
-    expect(gradient.width, 30);
+    final next = replaceGradientStopColor(
+      gradient,
+      index: 2,
+      color: 0xFF22C55E,
+    );
+
+    expect(next.start, gradient.start);
+    expect(next.end, gradient.end);
+    expect(next.stops, const <GradientStop>[
+      GradientStop(offset: 0, color: 0xFF111111),
+      GradientStop(offset: 0.5, color: 0xFFAAAAAA),
+      GradientStop(offset: 1, color: 0xFF22C55E),
+    ]);
   });
 
-  test('patchLinearGradient preserves colors when editing geometry', () {
-    final next = patchLinearGradient(
-      const CanvasFill.gradient(
-        LinearGradientSpec(
-          color1: 0xFF111111,
-          color2: 0xFFFFFFFF,
-          angle: 45,
-          width: 30,
-        ),
-      ),
-      const LinearGradientPatch(angle: 135, width: 12),
-      kPathFillCapability,
+  test('angle editing preserves midpoint, length, and stops', () {
+    final gradient = LinearGradientSpec(
+      start: const Vec2(-20, 5),
+      end: const Vec2(20, 5),
+      stops: const <GradientStop>[
+        GradientStop(offset: 0, color: 0xFF111111),
+        GradientStop(offset: 1, color: 0xFFFFFFFF),
+      ],
     );
 
-    final gradient = (next as CanvasFillGradient).grad;
-    expect(gradient.color1, 0xFF111111);
-    expect(gradient.color2, 0xFFFFFFFF);
-    expect(gradient.angle, 135);
-    expect(gradient.width, 12);
+    final next = setLinearGradientAngleDegrees(gradient, 90);
+
+    expect(linearGradientAngleDegrees(next), closeTo(90, 1e-9));
+    expect((next.start + next.end) / 2.0, const Vec2(0, 5));
+    expect((next.end - next.start).length, closeTo(40, 1e-9));
+    expect(next.stops, gradient.stops);
   });
 
   test(
@@ -209,12 +217,14 @@ void main() {
     final runtime = _buildRuntime(_sceneWithChildren(const <Node>[]));
     addTearDown(runtime.dispose);
 
-    const fill = CanvasFill.gradient(
+    final fill = CanvasFill.gradient(
       LinearGradientSpec(
-        color1: 0xFF2563EB,
-        color2: 0xFF06B6D4,
-        angle: 45,
-        width: 20,
+        start: const Vec2(0, 0),
+        end: const Vec2(300, 0),
+        stops: const <GradientStop>[
+          GradientStop(offset: 0, color: 0xFF2563EB),
+          GradientStop(offset: 1, color: 0xFF06B6D4),
+        ],
       ),
     );
 

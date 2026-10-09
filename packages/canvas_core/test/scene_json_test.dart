@@ -6,12 +6,14 @@ import 'package:test/test.dart';
 CanvasSceneDocument _scene({double backgroundOpacity = 0.5}) {
   return CanvasSceneDocument(
     artboardSize: const Size2D(640, 480),
-    backgroundFill: const CanvasFill.gradient(
+    backgroundFill: CanvasFill.gradient(
       LinearGradientSpec(
-        color1: 0xFF112233,
-        color2: 0x80445566,
-        angle: 45,
-        width: 20,
+        start: const Vec2(0, 0),
+        end: const Vec2(640, 480),
+        stops: const <GradientStop>[
+          GradientStop(offset: 0.25, color: 0xFF112233),
+          GradientStop(offset: 0.75, color: 0x80445566),
+        ],
       ),
     ),
     backgroundOpacity: backgroundOpacity,
@@ -69,10 +71,12 @@ void main() {
         equals({
           'type': 'gradient',
           'grad': {
-            'color1': 0xFF112233,
-            'color2': 0x80445566,
-            'angle': 45.0,
-            'width': 20.0,
+            'start': {'x': 0.0, 'y': 0.0},
+            'end': {'x': 640.0, 'y': 480.0},
+            'stops': [
+              {'offset': 0.25, 'color': 0xFF112233},
+              {'offset': 0.75, 'color': 0x80445566},
+            ],
           },
         }),
       );
@@ -112,7 +116,7 @@ void main() {
       expect(decodeCanvasScene(json), _imageScene());
     });
 
-    test('rejects sourcePath in scene format v1 image data', () {
+    test('rejects sourcePath in scene format v2 image data', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
@@ -130,6 +134,28 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('rejects legacy or invalid gradient geometry in scene format v2', () {
+      final legacyGradient = encodeCanvasScene(_scene());
+      final legacyFill =
+          legacyGradient['backgroundFill'] as Map<String, dynamic>;
+      legacyFill['grad'] = <String, Object?>{
+        'color1': 0xFF112233,
+        'color2': 0xFF445566,
+        'angle': 45,
+        'width': 20,
+      };
+
+      final degenerateGradient = encodeCanvasScene(_scene());
+      final degenerateFill =
+          degenerateGradient['backgroundFill'] as Map<String, dynamic>;
+      final degenerateSpec =
+          degenerateFill['grad'] as Map<String, dynamic>;
+      degenerateSpec['end'] = <String, double>{'x': 0, 'y': 0};
+
+      expect(() => decodeCanvasScene(legacyGradient), throwsA(anything));
+      expect(() => decodeCanvasScene(degenerateGradient), throwsA(anything));
     });
 
     test('requires image frame size when decoding', () {

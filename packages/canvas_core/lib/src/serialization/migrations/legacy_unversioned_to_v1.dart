@@ -1,6 +1,5 @@
 // Path: packages/canvas_core/lib/src/serialization/migrations/legacy_unversioned_to_v1.dart
 
-import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v1.dart'
     show canvasSceneFormatV1;
 
@@ -154,13 +153,7 @@ Map<String, Object?> _convertNode(
         'enabled': true,
         'offset': <String, double>{'x': shadowOffset, 'y': shadowOffset},
         'blurSigma': 0.0,
-        'color': switch (fill) {
-          CanvasFillSolid(:final color) => color,
-          CanvasFillGradient(:final grad) => grad.color1,
-          CanvasFillNone() => throw FormatException(
-            '$path.data.fill cannot be none in a legacy text/icon',
-          ),
-        },
+        'color': fill.representativeColor,
       });
     }
   }
@@ -170,7 +163,7 @@ Map<String, Object?> _convertNode(
     ..remove('shadowOffset');
 
   updatedData['appearance'] = <String, Object?>{
-    'foreground': fill.toJson(),
+    'foreground': fill.json,
     'underlays': underlays,
   };
 
@@ -178,27 +171,57 @@ Map<String, Object?> _convertNode(
   return result;
 }
 
-CanvasFill _legacyFill(Object? raw, String path) {
+_LegacyFill _legacyFill(Object? raw, String path) {
   // Defaults match the canvas_core 0.10.x TextData/CanvasIconData decoder.
   if (raw == null) {
-    return const CanvasFill.solid(0xFF111111);
+    return const _LegacyFill(
+      <String, Object?>{'type': 'solid', 'color': 0xFF111111},
+      0xFF111111,
+    );
   }
 
-  final CanvasFill fill;
-
-  try {
-    fill = CanvasFill.fromJson(_object(raw, path));
-  } on FormatException catch (error) {
-    throw FormatException('$path: $error');
-  } on TypeError catch (error) {
-    throw FormatException('$path: $error');
+  final fill = _object(raw, path);
+  switch (fill['type']) {
+    case 'solid':
+      final color = _legacyColor(fill['color']);
+      return _LegacyFill(
+        <String, Object?>{'type': 'solid', 'color': color},
+        color,
+      );
+    case 'gradient':
+      final gradient = _object(fill['grad'], '$path.grad');
+      final color1 = _legacyColor(gradient['color1']);
+      final color2 = _legacyColor(gradient['color2']);
+      final angle = _legacyNumber(gradient['angle']);
+      final width = _legacyNumber(gradient['width']);
+      return _LegacyFill(
+        <String, Object?>{
+          'type': 'gradient',
+          'grad': <String, Object?>{
+            'color1': color1,
+            'color2': color2,
+            'angle': angle,
+            'width': width,
+          },
+        },
+        color1,
+      );
+    case 'none':
+      throw FormatException('$path cannot be none in a legacy text/icon');
+    default:
+      throw FormatException('$path has unsupported fill type: ${fill['type']}');
   }
+}
 
-  if (fill is CanvasFillNone) {
-    throw FormatException('$path cannot be none in a legacy text/icon');
-  }
+int _legacyColor(Object? raw) => raw is num ? raw.toInt() : 0;
 
-  return fill;
+double _legacyNumber(Object? raw) => raw is num ? raw.toDouble() : 0.0;
+
+final class _LegacyFill {
+  const _LegacyFill(this.json, this.representativeColor);
+
+  final Map<String, Object?> json;
+  final int representativeColor;
 }
 
 double _legacyShadowOffset(Object? raw, String path) {

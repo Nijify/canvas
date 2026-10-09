@@ -1,6 +1,9 @@
 // Path: packages/canvas_core/lib/src/serialization/scene_migrations.dart
 
+import 'package:canvas_core/src/serialization/formats/scene_v1.dart';
+import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
 import 'package:canvas_core/src/serialization/migrations/legacy_unversioned_to_v1.dart';
+import 'package:canvas_core/src/serialization/migrations/v1_to_v2.dart';
 import 'package:canvas_core/src/serialization/serializers.dart';
 
 /// Brings persisted scene JSON to the current Canvas scene format.
@@ -17,9 +20,8 @@ import 'package:canvas_core/src/serialization/serializers.dart';
 /// true when the icon was historically rendered as a font glyph, false when it
 /// was rendered as a path, or null when that cannot be determined.
 ///
-/// Versioned scenes are checked by the normal current-scene codec. Future
-/// version-to-version migration steps should be dispatched here before the
-/// final current-format decode.
+/// Versioned scenes are dispatched through their explicit migration steps
+/// before the final current-format decode.
 Map<String, Object?> upgradeCanvasScene(
   Map<String, Object?> json, {
   bool legacyUnversioned = false,
@@ -35,9 +37,11 @@ Map<String, Object?> upgradeCanvasScene(
       );
     }
 
-    result = convertLegacyUnversionedCanvasSceneToV1(
-      json,
-      resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
+    result = convertCanvasSceneV1ToV2(
+      convertLegacyUnversionedCanvasSceneToV1(
+        json,
+        resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
+      ),
     );
   } else {
     if (legacyUnversioned) {
@@ -47,11 +51,17 @@ Map<String, Object?> upgradeCanvasScene(
       );
     }
 
-    // V1 is currently the only versioned format.
-    //
-    // When V2 exists, dispatch V1 -> V2 here before the final current-format
-    // decode below.
-    result = Map<String, Object?>.from(json);
+    switch (json['sceneFormatVersion']) {
+      case canvasSceneFormatV1:
+        result = convertCanvasSceneV1ToV2(json);
+      case canvasSceneFormatV2:
+        result = Map<String, Object?>.from(json);
+      default:
+        throw FormatException(
+          'Unsupported Canvas sceneFormatVersion: '
+          '${json['sceneFormatVersion']}',
+        );
+    }
   }
 
   // The canonical persisted-scene read boundary performs current wire-format

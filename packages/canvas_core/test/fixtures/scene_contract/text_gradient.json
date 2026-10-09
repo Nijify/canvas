@@ -1,5 +1,5 @@
 {
-  "sceneFormatVersion": 1,
+  "sceneFormatVersion": 2,
   "artboardSize": { "w": 1080.0, "h": 1080.0 },
   "backgroundFill": { "type": "none" },
   "backgroundOpacity": 1.0,
@@ -17,10 +17,12 @@
           "foreground": {
             "type": "gradient",
             "grad": {
-              "color1": 4279308561,
-              "color2": 4281558681,
-              "angle": 45.0,
-              "width": 20.0
+              "start": { "x": -223.67532368147135, "y": -223.67532368147135 },
+              "end": { "x": 1303.6753236814714, "y": 1303.6753236814714 },
+              "stops": [
+                { "offset": 0.3, "color": 4279308561 },
+                { "offset": 0.7, "color": 4281558681 }
+              ]
             }
           },
           "underlays": []
