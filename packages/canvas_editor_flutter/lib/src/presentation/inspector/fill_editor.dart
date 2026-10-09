@@ -28,12 +28,11 @@ const _defaultSwatchesArgb32 = <int>[
 /// Important:
 /// - this maps to ONE editor field
 /// - gradient sub-controls are UI projections over that one CanvasFill value
-/// - construction is intentionally private so FillCapability stays internal to
-///   the built-in fill implementation
+/// - construction is intentionally private; built-in targets allow all fills
 class FillFieldIds {
   const FillFieldIds._({
     required this.field,
-    required FillCapability capability,
+    required this.fallbackColor,
     required this.kindTitle,
     required this.solidTitle,
     required this.solidLabel,
@@ -42,10 +41,10 @@ class FillFieldIds {
     required this.grad2Title,
     required this.grad2Label,
     required this.angleTitle,
-  }) : _capability = capability;
+  });
 
   final rt.CanvasFieldKey field;
-  final FillCapability _capability;
+  final rt.Color32 fallbackColor;
 
   final String kindTitle;
   final String solidTitle;
@@ -58,7 +57,7 @@ class FillFieldIds {
 
   static const text = FillFieldIds._(
     field: rt.CanvasFields.textFill,
-    capability: kTextFillCapability,
+    fallbackColor: 0xFF111111,
     kindTitle: 'Fill Type',
     solidTitle: 'Color',
     solidLabel: 'Color',
@@ -71,7 +70,7 @@ class FillFieldIds {
 
   static const icon = FillFieldIds._(
     field: rt.CanvasFields.iconFill,
-    capability: kIconFillCapability,
+    fallbackColor: 0xFF111111,
     kindTitle: 'Fill Type',
     solidTitle: 'Color',
     solidLabel: 'Color',
@@ -84,7 +83,7 @@ class FillFieldIds {
 
   static const path = FillFieldIds._(
     field: rt.CanvasFields.pathFill,
-    capability: kPathFillCapability,
+    fallbackColor: 0xFF000000,
     kindTitle: 'Fill Type',
     solidTitle: 'Fill Color',
     solidLabel: 'Fill Color',
@@ -97,7 +96,7 @@ class FillFieldIds {
 
   static const background = FillFieldIds._(
     field: rt.CanvasFields.sceneBackgroundFill,
-    capability: kBackgroundFillCapability,
+    fallbackColor: 0xFF000000,
     kindTitle: 'Fill Type',
     solidTitle: 'Color',
     solidLabel: 'Color',
@@ -166,15 +165,14 @@ class FillEditor extends StatelessWidget {
   }) {
     return [
       for (final variant in FillVariant.values)
-        if (ids._capability.allows(variant))
-          DropdownMenuItem(
-            value: variant,
-            enabled:
-                variant != FillVariant.gradient ||
-                gradientCreationAvailable ||
-                current == FillVariant.gradient,
-            child: Text(_labelForVariant(variant)),
-          ),
+        DropdownMenuItem(
+          value: variant,
+          enabled:
+              variant != FillVariant.gradient ||
+              gradientCreationAvailable ||
+              current == FillVariant.gradient,
+          child: Text(_labelForVariant(variant)),
+        ),
     ];
   }
 
@@ -182,21 +180,17 @@ class FillEditor extends StatelessWidget {
     rt.CanvasFill current,
     FillVariant target,
   ) {
-    if (!ids._capability.allows(target)) {
-      return coerceFill(current, ids._capability);
-    }
-
     return switch (target) {
       FillVariant.none => const rt.CanvasFill.none(),
       FillVariant.solid => rt.CanvasFill.solid(
-        representativeColorForFill(current, ids._capability),
+        representativeColorForFill(current, ids.fallbackColor),
       ),
       FillVariant.gradient => switch (current) {
         rt.CanvasFillGradient() => current,
         _ => rt.CanvasFill.gradient(
           createDefaultGradient(
             referenceBounds: _referenceBounds()!,
-            color: representativeColorForFill(current, ids._capability),
+            color: representativeColorForFill(current, ids.fallbackColor),
           ),
         ),
       },
@@ -219,16 +213,13 @@ class FillEditor extends StatelessWidget {
             flush,
           }) {
             final current = fillVariantOf(value);
-            final safeValue = ids._capability.allows(current)
-                ? current
-                : ids._capability.allowed.first;
             final gradientCreationAvailable = _referenceBounds() != null;
 
             return LabeledDropdown<FillVariant>(
-              value: safeValue,
+              value: current,
               items: _variantItems(
                 gradientCreationAvailable: gradientCreationAvailable,
-                current: safeValue,
+                current: current,
               ),
               onChanged: enabled
                   ? (next) {
@@ -266,11 +257,11 @@ class FillEditor extends StatelessWidget {
               swatchesArgb32: swatches,
               selectedArgb32: representativeColorForFill(
                 value,
-                ids._capability,
+                ids.fallbackColor,
               ),
               enabled: enabled,
               onPick: (color) {
-                commit(coerceFill(rt.CanvasFill.solid(color), ids._capability));
+                commit(rt.CanvasFill.solid(color));
               },
             );
           },
@@ -409,7 +400,7 @@ class FillEditor extends StatelessWidget {
         .getField<rt.CanvasFill>(nodeId, kindSpec.fieldKey)
         .value;
 
-    final kind = fillVariantOf(coerceFill(currentFill, ids._capability));
+    final kind = fillVariantOf(currentFill);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

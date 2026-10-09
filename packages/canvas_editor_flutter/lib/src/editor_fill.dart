@@ -10,47 +10,6 @@ import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 /// not a persisted field and not a separate document model.
 enum FillVariant { none, solid, gradient }
 
-class FillCapability {
-  const FillCapability({required this.allowed, required this.fallback});
-
-  final Set<FillVariant> allowed;
-  final rt.CanvasFill fallback;
-
-  bool allows(FillVariant variant) => allowed.contains(variant);
-}
-
-const kTextFillCapability = FillCapability(
-  allowed: {FillVariant.none, FillVariant.solid, FillVariant.gradient},
-  fallback: rt.CanvasFill.solid(0xFF111111),
-);
-
-const kIconFillCapability = FillCapability(
-  allowed: {FillVariant.none, FillVariant.solid, FillVariant.gradient},
-  fallback: rt.CanvasFill.solid(0xFF111111),
-);
-
-const kPathFillCapability = FillCapability(
-  allowed: {FillVariant.none, FillVariant.solid, FillVariant.gradient},
-  fallback: rt.CanvasFill.solid(0xFF000000),
-);
-
-const kBackgroundFillCapability = FillCapability(
-  allowed: {FillVariant.none, FillVariant.solid, FillVariant.gradient},
-  fallback: rt.CanvasFill.none(),
-);
-
-FillCapability fillCapabilityForNode(rt.Node node) {
-  return switch (node) {
-    rt.TextNode() => kTextFillCapability,
-    rt.IconNode() => kIconFillCapability,
-    rt.PathNode() => kPathFillCapability,
-    _ => const FillCapability(
-      allowed: {FillVariant.solid},
-      fallback: rt.CanvasFill.solid(0xFF000000),
-    ),
-  };
-}
-
 FillVariant fillVariantOf(rt.CanvasFill fill) {
   return switch (fill) {
     rt.CanvasFillNone() => FillVariant.none,
@@ -59,46 +18,25 @@ FillVariant fillVariantOf(rt.CanvasFill fill) {
   };
 }
 
-int representativeColorForFill(rt.CanvasFill fill, FillCapability capability) {
-  int c = switch (fill) {
-    rt.CanvasFillSolid(color: final color) => color,
-    rt.CanvasFillGradient(grad: final g) => _firstStopColor(g),
-    rt.CanvasFillNone() => _representativeColorForFallback(capability),
+/// An opaque color for inspector swatches and fill-variant conversions.
+///
+/// Zero colors fall back to [fallbackColor]. Partially transparent RGB colors
+/// retain their RGB channels but are made opaque for visibility.
+int representativeColorForFill(rt.CanvasFill fill, rt.Color32 fallbackColor) {
+  int color = switch (fill) {
+    rt.CanvasFillSolid(color: final value) => value,
+    rt.CanvasFillGradient(grad: final gradient) =>
+      gradient.stops.isEmpty ? 0xFF000000 : gradient.stops.first.color,
+    rt.CanvasFillNone() => fallbackColor,
   };
 
-  if (c == 0) c = _representativeColorForFallback(capability);
+  if (color == 0) color = fallbackColor;
 
   // Avoid invisible fallback swatches when an RGB color has alpha == 0.
-  final a = (c >> 24) & 0xFF;
-  if (a == 0) c = 0xFF000000 | (c & 0x00FFFFFF);
+  final alpha = (color >> 24) & 0xFF;
+  if (alpha == 0) color = 0xFF000000 | (color & 0x00FFFFFF);
 
-  return c;
-}
-
-int _representativeColorForFallback(FillCapability capability) {
-  return switch (capability.fallback) {
-    rt.CanvasFillSolid(color: final color) => color,
-    rt.CanvasFillGradient(grad: final g) => _firstStopColor(g),
-    rt.CanvasFillNone() => 0xFF000000,
-  };
-}
-
-int _firstStopColor(rt.LinearGradientSpec gradient) =>
-    gradient.stops.isEmpty ? 0xFF000000 : gradient.stops.first.color;
-
-rt.CanvasFill coerceFill(rt.CanvasFill fill, FillCapability capability) {
-  final variant = fillVariantOf(fill);
-  if (capability.allows(variant)) return fill;
-
-  if (capability.allows(FillVariant.solid)) {
-    return rt.CanvasFill.solid(representativeColorForFill(fill, capability));
-  }
-
-  return capability.fallback;
-}
-
-rt.CanvasFill coerceFillForNode(rt.Node node, rt.CanvasFill fill) {
-  return coerceFill(fill, fillCapabilityForNode(node));
+  return color;
 }
 
 /// Creates the standard horizontal gradient for a target with real local
