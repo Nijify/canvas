@@ -79,7 +79,10 @@ void _validateNode(Object? raw, String path) {
     }
 
     for (var index = 0; index < underlays.length; index++) {
-      _validateUnderlay(underlays[index], '$path.data.appearance.underlays[$index]');
+      _validateUnderlay(
+        underlays[index],
+        '$path.data.appearance.underlays[$index]',
+      );
     }
     return;
   }
@@ -180,7 +183,9 @@ void _onlyKeys(Map<String, Object?> object, Set<String> allowed, String path) {
   final extras = object.keys.where((key) => !allowed.contains(key)).toList()
     ..sort();
   if (extras.isNotEmpty) {
-    throw FormatException('$path contains unsupported key(s): ${extras.join(', ')}');
+    throw FormatException(
+      '$path contains unsupported key(s): ${extras.join(', ')}',
+    );
   }
 }
 

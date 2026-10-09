@@ -48,9 +48,7 @@ bool? _resolveLegacyIconWasGlyph(String iconRef) {
   };
 }
 
-Map<String, Object?> _firstNestedTextForeground(
-  Map<String, Object?> scene,
-) {
+Map<String, Object?> _firstNestedTextForeground(Map<String, Object?> scene) {
   final roots = scene['children'] as List<Object?>;
   final group = roots.single as Map<String, Object?>;
   final children = group['children'] as List<Object?>;
@@ -98,8 +96,6 @@ void main() {
       expect(validationIssues, isEmpty);
     });
 
-
-
     test('uses historic default artboard dimensions while migrating v1', () {
       final v1 = _loadFixture('v1_nested.json');
       v1.remove('artboardSize');
@@ -110,8 +106,8 @@ void main() {
       legacyGradient['width'] = 20.0;
 
       final migrated = upgradeCanvasScene(Map<String, Object?>.from(v1));
-      final converted = _firstNestedTextForeground(migrated)['grad']
-          as Map<String, Object?>;
+      final converted =
+          _firstNestedTextForeground(migrated)['grad'] as Map<String, Object?>;
       final start = converted['start'] as Map<String, double>;
       final end = converted['end'] as Map<String, double>;
 

@@ -113,10 +113,8 @@ final class GradientStop {
   final double offset;
   final Color32 color;
 
-  GradientStop copyWith({double? offset, Color32? color}) => GradientStop(
-    offset: offset ?? this.offset,
-    color: color ?? this.color,
-  );
+  GradientStop copyWith({double? offset, Color32? color}) =>
+      GradientStop(offset: offset ?? this.offset, color: color ?? this.color);
 
   Map<String, dynamic> toJson() => {'offset': offset, 'color': color};
 
@@ -142,9 +140,7 @@ final class GradientStop {
 
   @override
   bool operator ==(Object other) =>
-      other is GradientStop &&
-      other.offset == offset &&
-      other.color == color;
+      other is GradientStop && other.offset == offset && other.color == color;
 
   @override
   int get hashCode => Object.hash(offset, color);
@@ -203,11 +199,11 @@ final class LinearGradientSpec {
   };
 
   factory LinearGradientSpec.fromJson(Map<String, dynamic> json) {
-    _requireExactKeys(
-      json,
-      const <String>{'start', 'end', 'stops'},
-      'LinearGradientSpec',
-    );
+    _requireExactKeys(json, const <String>{
+      'start',
+      'end',
+      'stops',
+    }, 'LinearGradientSpec');
 
     final stops = json['stops'];
     if (stops is! List) {
@@ -252,7 +248,6 @@ bool _sameGradientStops(List<GradientStop> a, List<GradientStop> b) {
   }
   return true;
 }
-
 
 Vec2 _gradientPoint(Object? raw, String field) {
   if (raw is! Map || raw.keys.any((key) => key is! String)) {

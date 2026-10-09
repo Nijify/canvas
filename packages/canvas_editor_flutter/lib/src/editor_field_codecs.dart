@@ -107,9 +107,7 @@ rt.CanvasSceneDocument _writeFill(
 
       return node.copyWith(
         data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(
-            foreground: requestedFill,
-          ),
+          appearance: node.data.appearance.copyWith(foreground: requestedFill),
         ),
       );
     }
@@ -120,9 +118,7 @@ rt.CanvasSceneDocument _writeFill(
 
       return node.copyWith(
         data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(
-            foreground: requestedFill,
-          ),
+          appearance: node.data.appearance.copyWith(foreground: requestedFill),
         ),
       );
     }

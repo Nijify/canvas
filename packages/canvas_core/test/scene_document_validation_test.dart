@@ -157,7 +157,6 @@ void main() {
       ]);
     });
 
-
     test('preserves ordered multi-error gradient diagnostics', () {
       final gradient = LinearGradientSpec(
         start: const Vec2(double.nan, 1),

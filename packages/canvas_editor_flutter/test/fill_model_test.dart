@@ -53,11 +53,7 @@ Widget _buildFieldRow<T>(
   ElementId nodeId,
   EditorController controller,
   InspectorFieldSpec<T> spec,
-) => InspectorFieldRow<T>(
-  nodeId: nodeId,
-  controller: controller,
-  spec: spec,
-);
+) => InspectorFieldRow<T>(nodeId: nodeId, controller: controller, spec: spec);
 
 void main() {
   final gradient = CanvasFill.gradient(
@@ -135,9 +131,9 @@ void main() {
       gradient,
     ]) {
       test('${target.name} accepts ${fillVariantOf(fill).name} and undoes', () {
-        final initial = _sceneWithChildren(target.nodes).copyWith(
-          backgroundFill: const CanvasFill.solid(0xFF010203),
-        );
+        final initial = _sceneWithChildren(
+          target.nodes,
+        ).copyWith(backgroundFill: const CanvasFill.solid(0xFF010203));
         final runtime = _buildRuntime(initial);
         addTearDown(runtime.dispose);
 
@@ -171,16 +167,8 @@ void main() {
     final runtime = _buildRuntime(initial);
     addTearDown(runtime.dispose);
 
-    runtime.commitField<CanvasFill>(
-      'p1',
-      CanvasFields.textFill,
-      gradient,
-    );
-    runtime.commitField<CanvasFill>(
-      'missing',
-      CanvasFields.pathFill,
-      gradient,
-    );
+    runtime.commitField<CanvasFill>('p1', CanvasFields.textFill, gradient);
+    runtime.commitField<CanvasFill>('missing', CanvasFields.pathFill, gradient);
     runtime.commitField<CanvasFill>(
       'p1',
       CanvasFields.pathFill,

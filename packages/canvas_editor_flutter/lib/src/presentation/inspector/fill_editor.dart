@@ -176,10 +176,7 @@ class FillEditor extends StatelessWidget {
     ];
   }
 
-  rt.CanvasFill _fillForVariant(
-    rt.CanvasFill current,
-    FillVariant target,
-  ) {
+  rt.CanvasFill _fillForVariant(rt.CanvasFill current, FillVariant target) {
     return switch (target) {
       FillVariant.none => const rt.CanvasFill.none(),
       FillVariant.solid => rt.CanvasFill.solid(

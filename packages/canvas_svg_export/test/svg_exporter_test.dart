@@ -205,10 +205,7 @@ void main() {
       children: <Node>[
         Node.path(
           id: 'gradient',
-          xf: const Transform2D(
-            position: Vec2(20, 10),
-            rotationRad: 0.5,
-          ),
+          xf: const Transform2D(position: Vec2(20, 10), rotationRad: 0.5),
           data: PathData(
             source: const RectSource(10, 10),
             fill: CanvasFill.gradient(pathGradient),
@@ -242,7 +239,11 @@ void main() {
     expect(path.getAttribute('transform'), isNotNull);
 
     final pathStops = gradients.last.findElements('stop').toList();
-    expect(pathStops.map((stop) => stop.getAttribute('offset')), ['0', '0', '1.0']);
+    expect(pathStops.map((stop) => stop.getAttribute('offset')), [
+      '0',
+      '0',
+      '1.0',
+    ]);
     expect(pathStops.last.getAttribute('stop-color'), '#00ff00');
     expect(
       double.parse(pathStops.last.getAttribute('stop-opacity')!),

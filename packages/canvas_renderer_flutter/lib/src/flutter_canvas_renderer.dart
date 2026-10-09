@@ -155,11 +155,7 @@ class CanvasRenderer {
             } else if (path != null) {
               _drawPathUnderlays(canvas, path, data.appearance.underlays);
               final foreground = data.appearance.foreground;
-              _drawPathFill(
-                canvas,
-                path,
-                foreground,
-              );
+              _drawPathFill(canvas, path, foreground);
               if (foreground is! CanvasFillNone) {
                 _drawPathStroke(canvas, path);
               }
@@ -174,11 +170,7 @@ class CanvasRenderer {
           case PathNode(data: final data):
             final path = computed.pathIRById[id];
             if (path != null) {
-              _drawPathFill(
-                canvas,
-                path,
-                data.fill,
-              );
+              _drawPathFill(canvas, path, data.fill);
               _drawPathStroke(canvas, path);
             }
           case GroupNode():
@@ -208,11 +200,7 @@ class CanvasRenderer {
     );
   }
 
-  void _drawPathFill(
-    ui.Canvas canvas,
-    PathIR path,
-    CanvasFill fill,
-  ) {
+  void _drawPathFill(ui.Canvas canvas, PathIR path, CanvasFill fill) {
     final uiPath = _buildUiPath(path);
     uiPath.fillType = switch (path.style.fillRule) {
       FillRule.evenOdd => ui.PathFillType.evenOdd,

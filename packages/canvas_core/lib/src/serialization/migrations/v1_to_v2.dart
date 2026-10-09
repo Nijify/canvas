@@ -158,14 +158,8 @@ Map<String, Object?> _convertFill(
             'y': centerY + (directionY * extent),
           },
           'stops': <Map<String, Object?>>[
-            <String, Object?>{
-              'offset': 0.5 - normalizedWidth,
-              'color': color1,
-            },
-            <String, Object?>{
-              'offset': 0.5 + normalizedWidth,
-              'color': color2,
-            },
+            <String, Object?>{'offset': 0.5 - normalizedWidth, 'color': color1},
+            <String, Object?>{'offset': 0.5 + normalizedWidth, 'color': color2},
           ],
         },
       };

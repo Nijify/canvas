@@ -174,20 +174,20 @@ Map<String, Object?> _convertNode(
 _LegacyFill _legacyFill(Object? raw, String path) {
   // Defaults match the canvas_core 0.10.x TextData/CanvasIconData decoder.
   if (raw == null) {
-    return const _LegacyFill(
-      <String, Object?>{'type': 'solid', 'color': 0xFF111111},
-      0xFF111111,
-    );
+    return const _LegacyFill(<String, Object?>{
+      'type': 'solid',
+      'color': 0xFF111111,
+    }, 0xFF111111);
   }
 
   final fill = _object(raw, path);
   switch (fill['type']) {
     case 'solid':
       final color = _legacyRequiredColor(fill['color'], '$path.color');
-      return _LegacyFill(
-        <String, Object?>{'type': 'solid', 'color': color},
-        color,
-      );
+      return _LegacyFill(<String, Object?>{
+        'type': 'solid',
+        'color': color,
+      }, color);
     case 'gradient':
       final gradient = _object(fill['grad'], '$path.grad');
       final color1 = _legacyDefaultedColor(
@@ -206,18 +206,15 @@ _LegacyFill _legacyFill(Object? raw, String path) {
         gradient['width'],
         '$path.grad.width',
       );
-      return _LegacyFill(
-        <String, Object?>{
-          'type': 'gradient',
-          'grad': <String, Object?>{
-            'color1': color1,
-            'color2': color2,
-            'angle': angle,
-            'width': width,
-          },
+      return _LegacyFill(<String, Object?>{
+        'type': 'gradient',
+        'grad': <String, Object?>{
+          'color1': color1,
+          'color2': color2,
+          'angle': angle,
+          'width': width,
         },
-        color1,
-      );
+      }, color1);
     case 'none':
       throw FormatException('$path cannot be none in a legacy text/icon');
     default:

@@ -150,16 +150,12 @@ void main() {
       final degenerateGradient = encodeCanvasScene(_scene());
       final degenerateFill =
           degenerateGradient['backgroundFill'] as Map<String, dynamic>;
-      final degenerateSpec =
-          degenerateFill['grad'] as Map<String, dynamic>;
+      final degenerateSpec = degenerateFill['grad'] as Map<String, dynamic>;
       degenerateSpec['end'] = <String, double>{'x': 0, 'y': 0};
 
       expect(() => decodeCanvasScene(legacyGradient), throwsA(anything));
       expect(() => decodeCanvasScene(degenerateGradient), throwsA(anything));
     });
-
-
-
 
     test('current wire and runtime gradient semantics agree', () {
       final valid = LinearGradientSpec(
@@ -282,17 +278,20 @@ void main() {
         (gradient) => (gradient['end'] as Map<String, dynamic>)['z'] = 2,
         (gradient) {
           final stop =
-              (gradient['stops'] as List<dynamic>).first as Map<String, dynamic>;
+              (gradient['stops'] as List<dynamic>).first
+                  as Map<String, dynamic>;
           stop['unexpected'] = true;
         },
         (gradient) {
           final stop =
-              (gradient['stops'] as List<dynamic>).first as Map<String, dynamic>;
+              (gradient['stops'] as List<dynamic>).first
+                  as Map<String, dynamic>;
           stop['color'] = 1.5;
         },
         (gradient) {
           final stop =
-              (gradient['stops'] as List<dynamic>).first as Map<String, dynamic>;
+              (gradient['stops'] as List<dynamic>).first
+                  as Map<String, dynamic>;
           stop['offset'] = '0.25';
         },
       ];
@@ -303,10 +302,7 @@ void main() {
         final gradient = fill['grad'] as Map<String, dynamic>;
         mutate(gradient);
 
-        expect(
-          () => decodeCanvasScene(json),
-          throwsA(isA<FormatException>()),
-        );
+        expect(() => decodeCanvasScene(json), throwsA(isA<FormatException>()));
       }
     });
 

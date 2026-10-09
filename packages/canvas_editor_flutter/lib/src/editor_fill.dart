@@ -99,11 +99,7 @@ rt.LinearGradientSpec setLinearGradientAngleDegrees(
   double angleDegrees,
 ) {
   if (!angleDegrees.isFinite) {
-    throw ArgumentError.value(
-      angleDegrees,
-      'angleDegrees',
-      'must be finite',
-    );
+    throw ArgumentError.value(angleDegrees, 'angleDegrees', 'must be finite');
   }
 
   final delta = gradient.end - gradient.start;
