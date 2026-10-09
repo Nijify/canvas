@@ -7,6 +7,8 @@ import 'package:canvas_editor_flutter/src/editor_api.dart'
 import 'package:canvas_editor_flutter/src/editor_fill.dart';
 import 'package:canvas_editor_flutter/src/editor_hosts.dart'
     show EditorSelectionHost;
+import 'package:canvas_editor_flutter/src/presentation/inspector/controls.dart'
+    show LabeledDropdown;
 import 'package:canvas_editor_flutter/src/presentation/inspector/fill_editor.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_context.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_field_row.dart';
@@ -259,8 +261,8 @@ void main() {
     // Only the inspector's editable bounds are unavailable. The live
     // controller/render remains a valid scene.
     await showFillEditor(initial.copyWith(artboardSize: const Size2D(0, 200)));
-    final dropdownFinder = find.byType(DropdownButtonFormField<FillVariant>);
-    final unavailable = tester.widget<DropdownButtonFormField<FillVariant>>(
+    final dropdownFinder = find.byType(LabeledDropdown<FillVariant>);
+    final unavailable = tester.widget<LabeledDropdown<FillVariant>>(
       dropdownFinder,
     );
     expect(
@@ -275,7 +277,7 @@ void main() {
     );
 
     await showFillEditor(initial);
-    final available = tester.widget<DropdownButtonFormField<FillVariant>>(
+    final available = tester.widget<LabeledDropdown<FillVariant>>(
       dropdownFinder,
     );
     expect(
