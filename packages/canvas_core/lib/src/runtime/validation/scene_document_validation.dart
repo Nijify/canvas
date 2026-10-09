@@ -4,6 +4,7 @@ import 'dart:collection';
 
 import 'package:canvas_core/src/foundation/ids.dart' show CanvasAssetId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
+import 'package:canvas_core/src/runtime/validation/linear_gradient_semantics.dart';
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
@@ -479,48 +480,29 @@ final class _SceneValidator {
       case CanvasFillSolid(:final color):
         _validateColor(color, '$path/color');
       case CanvasFillGradient(:final grad):
-        final startX = _validateFinite(grad.start.x, '$path/grad/start/x');
-        final startY = _validateFinite(grad.start.y, '$path/grad/start/y');
-        final endX = _validateFinite(grad.end.x, '$path/grad/end/x');
-        final endY = _validateFinite(grad.end.y, '$path/grad/end/y');
-
-        if (startX && startY && endX && endY && grad.start == grad.end) {
+        for (final issue in validateLinearGradientSemantics(grad)) {
+          final code = switch (issue.code) {
+            GradientSemanticCode.nonFiniteNumber =>
+              CanvasSceneValidationCode.nonFiniteNumber,
+            GradientSemanticCode.valueOutOfRange =>
+              CanvasSceneValidationCode.valueOutOfRange,
+            GradientSemanticCode.invalidColor =>
+              CanvasSceneValidationCode.invalidColor,
+            GradientSemanticCode.degenerateGradient =>
+              CanvasSceneValidationCode.degenerateGradient,
+            GradientSemanticCode.invalidGradientStopCount =>
+              CanvasSceneValidationCode.invalidGradientStopCount,
+            GradientSemanticCode.gradientStopsOutOfOrder =>
+              CanvasSceneValidationCode.gradientStopsOutOfOrder,
+          };
           _add(
-            CanvasSceneValidationCode.degenerateGradient,
-            '$path/grad/end',
-            'Gradient start and end points must differ.',
-            relatedPath: '$path/grad/start',
+            code,
+            '$path/grad${issue.path}',
+            issue.message,
+            relatedPath: issue.relatedPath == null
+                ? null
+                : '$path/grad${issue.relatedPath}',
           );
-        }
-
-        if (grad.stops.length < 2) {
-          _add(
-            CanvasSceneValidationCode.invalidGradientStopCount,
-            '$path/grad/stops',
-            'A gradient must contain at least two stops.',
-          );
-        }
-
-        double? previousOffset;
-        String? previousPath;
-        for (var index = 0; index < grad.stops.length; index++) {
-          final stop = grad.stops[index];
-          final stopPath = '$path/grad/stops/$index';
-          final offsetIsFinite = _validateFinite(stop.offset, '$stopPath/offset');
-          if (offsetIsFinite) {
-            _validateRange(stop.offset, '$stopPath/offset', 0, 1);
-            if (previousOffset != null && stop.offset < previousOffset) {
-              _add(
-                CanvasSceneValidationCode.gradientStopsOutOfOrder,
-                '$stopPath/offset',
-                'Gradient stop offsets must be nondecreasing.',
-                relatedPath: previousPath,
-              );
-            }
-            previousOffset = stop.offset;
-            previousPath = '$stopPath/offset';
-          }
-          _validateColor(stop.color, '$stopPath/color');
         }
     }
   }

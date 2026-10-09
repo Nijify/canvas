@@ -160,6 +160,156 @@ void main() {
 
 
 
+
+    test('current wire and runtime gradient semantics agree', () {
+      final valid = LinearGradientSpec(
+        start: const Vec2(0, 0),
+        end: const Vec2(25, 0),
+        stops: const <GradientStop>[
+          GradientStop(offset: 0, color: 0xFF001122),
+          GradientStop(offset: 0, color: 0xFF334455),
+          GradientStop(offset: 1, color: 0xFF667788),
+        ],
+      );
+
+      final validScene = _scene().copyWith(
+        backgroundFill: CanvasFill.gradient(valid),
+        children: <Node>[
+          Node.path(
+            id: 'gradient-path',
+            data: PathData(fill: CanvasFill.gradient(valid)),
+          ),
+        ],
+      );
+      expect(validateCanvasSceneDocument(validScene), isEmpty);
+      expect(decodeCanvasScene(encodeCanvasScene(validScene)), validScene);
+
+      final invalid = <(LinearGradientSpec, CanvasSceneValidationCode)>[
+        (
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(0, 0),
+            stops: valid.stops,
+          ),
+          CanvasSceneValidationCode.degenerateGradient,
+        ),
+        (
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(1, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: 0, color: 0xFF000000),
+            ],
+          ),
+          CanvasSceneValidationCode.invalidGradientStopCount,
+        ),
+        (
+          LinearGradientSpec(
+            start: const Vec2(double.nan, 0),
+            end: const Vec2(1, 0),
+            stops: valid.stops,
+          ),
+          CanvasSceneValidationCode.nonFiniteNumber,
+        ),
+        (
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(1, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: 0, color: 0xFF000000),
+              GradientStop(offset: double.infinity, color: 0xFFFFFFFF),
+            ],
+          ),
+          CanvasSceneValidationCode.nonFiniteNumber,
+        ),
+        (
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(1, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: -0.1, color: 0xFF000000),
+              GradientStop(offset: 1, color: 0xFFFFFFFF),
+            ],
+          ),
+          CanvasSceneValidationCode.valueOutOfRange,
+        ),
+        (
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(1, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: 0.8, color: 0xFF000000),
+              GradientStop(offset: 0.2, color: 0xFFFFFFFF),
+            ],
+          ),
+          CanvasSceneValidationCode.gradientStopsOutOfOrder,
+        ),
+        (
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(1, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: 0, color: -1),
+              GradientStop(offset: 1, color: 0xFFFFFFFF),
+            ],
+          ),
+          CanvasSceneValidationCode.invalidColor,
+        ),
+      ];
+
+      for (final (gradient, expectedCode) in invalid) {
+        final scene = _scene().copyWith(
+          backgroundFill: CanvasFill.gradient(gradient),
+        );
+        expect(
+          validateCanvasSceneDocument(scene).map((issue) => issue.code),
+          contains(expectedCode),
+          reason: expectedCode.name,
+        );
+        expect(
+          () => decodeCanvasScene(encodeCanvasScene(scene)),
+          throwsA(isA<FormatException>()),
+          reason: expectedCode.name,
+        );
+      }
+    });
+
+    test('v2 gradient decoding keeps strict shape and numeric types', () {
+      final mutations = <void Function(Map<String, dynamic>)>[
+        (gradient) => gradient['unexpected'] = true,
+        (gradient) => gradient.remove('start'),
+        (gradient) => (gradient['start'] as Map<String, dynamic>)['x'] = '0',
+        (gradient) => (gradient['end'] as Map<String, dynamic>)['z'] = 2,
+        (gradient) {
+          final stop =
+              (gradient['stops'] as List<dynamic>).first as Map<String, dynamic>;
+          stop['unexpected'] = true;
+        },
+        (gradient) {
+          final stop =
+              (gradient['stops'] as List<dynamic>).first as Map<String, dynamic>;
+          stop['color'] = 1.5;
+        },
+        (gradient) {
+          final stop =
+              (gradient['stops'] as List<dynamic>).first as Map<String, dynamic>;
+          stop['offset'] = '0.25';
+        },
+      ];
+
+      for (final mutate in mutations) {
+        final json = encodeCanvasScene(_scene());
+        final fill = json['backgroundFill'] as Map<String, dynamic>;
+        final gradient = fill['grad'] as Map<String, dynamic>;
+        mutate(gradient);
+
+        expect(
+          () => decodeCanvasScene(json),
+          throwsA(isA<FormatException>()),
+        );
+      }
+    });
+
     test('gradient value decoders reject noncanonical wire values', () {
       expect(
         () => LinearGradientSpec.fromJson(<String, dynamic>{

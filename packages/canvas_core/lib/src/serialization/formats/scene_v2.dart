@@ -1,3 +1,7 @@
+import 'package:canvas_core/src/foundation/core_types.dart'
+    show LinearGradientSpec;
+import 'package:canvas_core/src/runtime/validation/linear_gradient_semantics.dart';
+
 /// Persisted Canvas scene format with explicit linear-gradient semantics.
 ///
 /// Gradients carry local endpoints and ordered stops. Earlier angle/width
@@ -140,46 +144,23 @@ void _validateFill(Object? raw, String path) {
 }
 
 void _validateGradient(Object? raw, String path) {
-  final gradient = _object(raw, path);
-  _onlyKeys(gradient, const <String>{'start', 'end', 'stops'}, path);
-
-  final start = _validateVec2(gradient['start'], '$path.start');
-  final end = _validateVec2(gradient['end'], '$path.end');
-  if (start.$1 == end.$1 && start.$2 == end.$2) {
-    throw FormatException('$path.start and $path.end must differ');
+  // Structure and numeric types belong to the strict typed decoder.
+  // Semantic invariants are the same ones used for in-memory documents.
+  final LinearGradientSpec gradient;
+  try {
+    gradient = LinearGradientSpec.fromJson(
+      Map<String, dynamic>.from(_object(raw, path)),
+    );
+  } on FormatException catch (error) {
+    throw FormatException('$path: ${error.message}');
   }
 
-  final stops = gradient['stops'];
-  if (stops is! List || stops.length < 2) {
-    throw FormatException('$path.stops must contain at least two stops');
+  final issues = validateLinearGradientSemantics(gradient);
+  if (issues.isNotEmpty) {
+    final issue = issues.first;
+    final field = issue.path.replaceAll('/', '.');
+    throw FormatException('$path$field: ${issue.message}');
   }
-
-  double? previousOffset;
-  for (var index = 0; index < stops.length; index++) {
-    final stopPath = '$path.stops[$index]';
-    final stop = _object(stops[index], stopPath);
-    _onlyKeys(stop, const <String>{'offset', 'color'}, stopPath);
-
-    final offset = _finiteNumber(stop['offset'], '$stopPath.offset');
-    if (offset < 0 || offset > 1) {
-      throw FormatException('$stopPath.offset must be between 0 and 1');
-    }
-    if (previousOffset != null && offset < previousOffset) {
-      throw FormatException('$stopPath.offset must not be less than the previous stop');
-    }
-    previousOffset = offset;
-
-    _argbColor(stop['color'], '$stopPath.color');
-  }
-}
-
-(double, double) _validateVec2(Object? raw, String path) {
-  final point = _object(raw, path);
-  _onlyKeys(point, const <String>{'x', 'y'}, path);
-  return (
-    _finiteNumber(point['x'], '$path.x'),
-    _finiteNumber(point['y'], '$path.y'),
-  );
 }
 
 void _argbColor(Object? raw, String path) {
