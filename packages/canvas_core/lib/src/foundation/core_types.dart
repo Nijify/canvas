@@ -121,9 +121,10 @@ final class GradientStop {
   Map<String, dynamic> toJson() => {'offset': offset, 'color': color};
 
   factory GradientStop.fromJson(Map<String, dynamic> json) {
+    _requireExactKeys(json, const <String>{'offset', 'color'}, 'GradientStop');
+
     final offset = json['offset'];
     final color = json['color'];
-
     if (offset is! num || color is! int) {
       throw FormatException(
         'GradientStop requires numeric offset and integer color; '
@@ -202,24 +203,27 @@ final class LinearGradientSpec {
   };
 
   factory LinearGradientSpec.fromJson(Map<String, dynamic> json) {
-    final start = json['start'];
-    final end = json['end'];
-    final stops = json['stops'];
+    _requireExactKeys(
+      json,
+      const <String>{'start', 'end', 'stops'},
+      'LinearGradientSpec',
+    );
 
-    if (start is! Map || end is! Map || stops is! List) {
-      throw const FormatException(
-        'LinearGradientSpec requires start, end, and stops fields.',
-      );
+    final stops = json['stops'];
+    if (stops is! List) {
+      throw const FormatException('LinearGradientSpec.stops must be a list.');
     }
 
     return LinearGradientSpec(
-      start: Vec2.fromJson(start.cast<String, dynamic>()),
-      end: Vec2.fromJson(end.cast<String, dynamic>()),
+      start: _gradientPoint(json['start'], 'LinearGradientSpec.start'),
+      end: _gradientPoint(json['end'], 'LinearGradientSpec.end'),
       stops: stops.map((raw) {
-        if (raw is! Map) {
-          throw const FormatException('LinearGradientSpec.stops must be maps');
+        if (raw is! Map || raw.keys.any((key) => key is! String)) {
+          throw const FormatException(
+            'LinearGradientSpec.stops must contain objects with string keys.',
+          );
         }
-        return GradientStop.fromJson(raw.cast<String, dynamic>());
+        return GradientStop.fromJson(Map<String, dynamic>.from(raw));
       }),
     );
   }
@@ -247,4 +251,38 @@ bool _sameGradientStops(List<GradientStop> a, List<GradientStop> b) {
     if (a[index] != b[index]) return false;
   }
   return true;
+}
+
+
+Vec2 _gradientPoint(Object? raw, String field) {
+  if (raw is! Map || raw.keys.any((key) => key is! String)) {
+    throw FormatException('$field must be an object with string keys.');
+  }
+
+  final point = Map<String, dynamic>.from(raw);
+  _requireExactKeys(point, const <String>{'x', 'y'}, field);
+  final x = point['x'];
+  final y = point['y'];
+  if (x is! num || y is! num) {
+    throw FormatException('$field requires numeric x and y.');
+  }
+
+  return Vec2(x.toDouble(), y.toDouble());
+}
+
+void _requireExactKeys(
+  Map<String, dynamic> json,
+  Set<String> expected,
+  String type,
+) {
+  final extras = json.keys.where((key) => !expected.contains(key)).toList()
+    ..sort();
+  final missing = expected.where((key) => !json.containsKey(key)).toList()
+    ..sort();
+  if (extras.isEmpty && missing.isEmpty) return;
+
+  throw FormatException(
+    '$type requires exactly {${expected.toList()..sort()}}; '
+    'missing=$missing, unexpected=$extras.',
+  );
 }

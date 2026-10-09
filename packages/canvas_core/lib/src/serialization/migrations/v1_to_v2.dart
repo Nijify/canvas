@@ -12,9 +12,18 @@ import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
 Map<String, Object?> convertCanvasSceneV1ToV2(Map<String, Object?> v1) {
   validateSceneV1Json(v1);
 
-  final artboard = _object(v1['artboardSize'], 'artboardSize');
-  final width = _finiteNumber(artboard['w'], 'artboardSize.w');
-  final height = _finiteNumber(artboard['h'], 'artboardSize.h');
+  // V1 decoding defaulted omitted/null artboardSize to 740 x 360. Preserve
+  // that historical behavior so every previously readable v1 document upgrades.
+  late final double width;
+  late final double height;
+  if (v1['artboardSize'] == null) {
+    width = 740.0;
+    height = 360.0;
+  } else {
+    final artboard = _object(v1['artboardSize'], 'artboardSize');
+    width = _finiteNumber(artboard['w'], 'artboardSize.w');
+    height = _finiteNumber(artboard['h'], 'artboardSize.h');
+  }
   if (width <= 0 || height <= 0) {
     throw const FormatException(
       'artboardSize.w and artboardSize.h must be greater than zero',

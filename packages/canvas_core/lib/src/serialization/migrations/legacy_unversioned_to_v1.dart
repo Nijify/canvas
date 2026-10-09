@@ -183,17 +183,29 @@ _LegacyFill _legacyFill(Object? raw, String path) {
   final fill = _object(raw, path);
   switch (fill['type']) {
     case 'solid':
-      final color = _legacyColor(fill['color']);
+      final color = _legacyRequiredColor(fill['color'], '$path.color');
       return _LegacyFill(
         <String, Object?>{'type': 'solid', 'color': color},
         color,
       );
     case 'gradient':
       final gradient = _object(fill['grad'], '$path.grad');
-      final color1 = _legacyColor(gradient['color1']);
-      final color2 = _legacyColor(gradient['color2']);
-      final angle = _legacyNumber(gradient['angle']);
-      final width = _legacyNumber(gradient['width']);
+      final color1 = _legacyDefaultedColor(
+        gradient['color1'],
+        '$path.grad.color1',
+      );
+      final color2 = _legacyDefaultedColor(
+        gradient['color2'],
+        '$path.grad.color2',
+      );
+      final angle = _legacyDefaultedNumber(
+        gradient['angle'],
+        '$path.grad.angle',
+      );
+      final width = _legacyDefaultedNumber(
+        gradient['width'],
+        '$path.grad.width',
+      );
       return _LegacyFill(
         <String, Object?>{
           'type': 'gradient',
@@ -213,9 +225,22 @@ _LegacyFill _legacyFill(Object? raw, String path) {
   }
 }
 
-int _legacyColor(Object? raw) => raw is num ? raw.toInt() : 0;
+int _legacyRequiredColor(Object? raw, String path) {
+  if (raw is! num) throw FormatException('$path must be a number');
+  return raw.toInt();
+}
 
-double _legacyNumber(Object? raw) => raw is num ? raw.toDouble() : 0.0;
+int _legacyDefaultedColor(Object? raw, String path) {
+  if (raw == null) return 0;
+  if (raw is! num) throw FormatException('$path must be a number');
+  return raw.toInt();
+}
+
+double _legacyDefaultedNumber(Object? raw, String path) {
+  if (raw == null) return 0.0;
+  if (raw is! num) throw FormatException('$path must be a number');
+  return raw.toDouble();
+}
 
 final class _LegacyFill {
   const _LegacyFill(this.json, this.representativeColor);

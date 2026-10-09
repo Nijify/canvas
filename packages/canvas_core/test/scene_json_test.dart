@@ -158,6 +158,37 @@ void main() {
       expect(() => decodeCanvasScene(degenerateGradient), throwsA(anything));
     });
 
+
+
+    test('gradient value decoders reject noncanonical wire values', () {
+      expect(
+        () => LinearGradientSpec.fromJson(<String, dynamic>{
+          'start': <String, dynamic>{'x': '0', 'y': 0},
+          'end': <String, dynamic>{'x': 1, 'y': 0},
+          'stops': <Object?>[
+            <String, dynamic>{'offset': 0, 'color': 0xFF000000},
+            <String, dynamic>{'offset': 1, 'color': 0xFFFFFFFF},
+          ],
+        }),
+        throwsA(isA<FormatException>()),
+      );
+      expect(
+        () => LinearGradientSpec.fromJson(<String, dynamic>{
+          'start': <String, dynamic>{'x': 0, 'y': 0},
+          'end': <String, dynamic>{'x': 1, 'y': 0},
+          'stops': <Object?>[
+            <String, dynamic>{
+              'offset': 0,
+              'color': 0xFF000000,
+              'unexpected': true,
+            },
+            <String, dynamic>{'offset': 1, 'color': 0xFFFFFFFF},
+          ],
+        }),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
     test('requires image frame size when decoding', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
