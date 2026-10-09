@@ -276,14 +276,16 @@ String _assetPathFromRef(String ref) {
   return trimmed;
 }
 
-const CanvasSceneDocument _demoDocument = CanvasSceneDocument(
+final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
   artboardSize: Size2D(740, 420),
   backgroundFill: CanvasFill.gradient(
     LinearGradientSpec(
-      color1: 0xFFF8FAFC,
-      color2: 0xFFE0E7FF,
-      angle: 135,
-      width: 50,
+      start: const Vec2(0, 210),
+      end: const Vec2(740, 210),
+      stops: const <GradientStop>[
+        GradientStop(offset: 0, color: 0xFFF8FAFC),
+        GradientStop(offset: 1, color: 0xFFE0E7FF),
+      ],
     ),
   ),
   backgroundOpacity: 1.0,

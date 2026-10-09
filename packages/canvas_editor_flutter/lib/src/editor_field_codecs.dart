@@ -1,8 +1,6 @@
 // Path: packages/canvas_editor_flutter/lib/src/editor_field_codecs.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
-import 'package:canvas_editor_flutter/src/editor_fill.dart'
-    show coerceFillForNode;
 
 typedef ReadNodeFn =
     Object Function(rt.CanvasSceneDocument scene, rt.Node node);
@@ -104,37 +102,31 @@ rt.CanvasSceneDocument _writeFill(
 ) {
   return _writeNodeUpdate(base, nodeId, (node) {
     if (node is rt.TextNode) {
-      final nextFill = coerceFillForNode(node, requestedFill);
       final current = node.data.appearance.foreground;
-
-      if (nextFill == current) return node;
+      if (requestedFill == current) return node;
 
       return node.copyWith(
         data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(foreground: nextFill),
+          appearance: node.data.appearance.copyWith(foreground: requestedFill),
         ),
       );
     }
 
     if (node is rt.IconNode) {
-      final nextFill = coerceFillForNode(node, requestedFill);
       final current = node.data.appearance.foreground;
-
-      if (nextFill == current) return node;
+      if (requestedFill == current) return node;
 
       return node.copyWith(
         data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(foreground: nextFill),
+          appearance: node.data.appearance.copyWith(foreground: requestedFill),
         ),
       );
     }
 
     if (node is rt.PathNode) {
-      final nextFill = coerceFillForNode(node, requestedFill);
+      if (requestedFill == node.data.fill) return node;
 
-      if (nextFill == node.data.fill) return node;
-
-      return node.copyWith(data: node.data.copyWith(fill: nextFill));
+      return node.copyWith(data: node.data.copyWith(fill: requestedFill));
     }
 
     return node;

@@ -102,68 +102,182 @@ class Size2D {
   int get hashCode => Object.hash(w, h);
 }
 
-/// Linear gradient parameters in core space.
-/// - [angle] in degrees (0° = +X axis; same as your current usage)
-/// - [width] 0..50 (matches your editor semantics)
-class LinearGradientSpec {
-  final Color32 color1;
-  final Color32 color2;
-  final double angle; // degrees
-  final double width; // 0..50
+/// One color sample along a gradient line.
+///
+/// [offset] is expressed in the normalized gradient interval `[0, 1]`. Scene
+/// validation owns range and ordering checks so callers can collect all
+/// diagnostics for a document at once.
+final class GradientStop {
+  const GradientStop({required this.offset, required this.color});
 
-  const LinearGradientSpec({
-    required this.color1,
-    required this.color2,
-    this.angle = 0,
-    this.width = 0,
-  });
+  final double offset;
+  final Color32 color;
 
-  static const transparent = LinearGradientSpec(
-    color1: 0x00000000,
-    color2: 0x00000000,
-    angle: 0,
-    width: 0,
-  );
+  GradientStop copyWith({double? offset, Color32? color}) =>
+      GradientStop(offset: offset ?? this.offset, color: color ?? this.color);
 
-  LinearGradientSpec copyWith({
-    Color32? color1,
-    Color32? color2,
-    double? angle,
-    double? width,
-  }) => LinearGradientSpec(
-    color1: color1 ?? this.color1,
-    color2: color2 ?? this.color2,
-    angle: angle ?? this.angle,
-    width: width ?? this.width,
-  );
+  Map<String, dynamic> toJson() => {'offset': offset, 'color': color};
 
-  Map<String, dynamic> toJson() => {
-    'color1': color1,
-    'color2': color2,
-    'angle': angle,
-    'width': width,
-  };
+  factory GradientStop.fromJson(Map<String, dynamic> json) {
+    _requireExactKeys(json, const <String>{'offset', 'color'}, 'GradientStop');
 
-  factory LinearGradientSpec.fromJson(Map<String, dynamic> json) =>
-      LinearGradientSpec(
-        color1: (json['color1'] as num?)?.toInt() ?? 0x00000000,
-        color2: (json['color2'] as num?)?.toInt() ?? 0x00000000,
-        angle: (json['angle'] as num?)?.toDouble() ?? 0,
-        width: (json['width'] as num?)?.toDouble() ?? 0,
+    final offset = json['offset'];
+    final color = json['color'];
+    if (offset is! num || color is! int) {
+      throw FormatException(
+        'GradientStop requires numeric offset and integer color; '
+        'got offset=$offset (${offset.runtimeType}), '
+        'color=$color (${color.runtimeType})',
       );
+    }
+
+    return GradientStop(offset: offset.toDouble(), color: color);
+  }
 
   @override
   String toString() =>
-      'LinearGradientSpec(c1=0x${color1.toRadixString(16)}, c2=0x${color2.toRadixString(16)}, angle=$angle, width=$width)';
+      'GradientStop(offset=$offset, color=0x${color.toRadixString(16)})';
+
+  @override
+  bool operator ==(Object other) =>
+      other is GradientStop && other.offset == offset && other.color == color;
+
+  @override
+  int get hashCode => Object.hash(offset, color);
+}
+
+/// A linear gradient in the local coordinate space of its painted target.
+///
+/// The line's [start] and [end] are explicit document semantics. They are not
+/// derived from artboard size, a renderer, or an editor control. Stops are
+/// intentionally preserved as authored, including duplicate offsets for hard
+/// transitions; document validation checks that the list is usable.
+final class LinearGradientSpec {
+  factory LinearGradientSpec({
+    required Vec2 start,
+    required Vec2 end,
+    required Iterable<GradientStop> stops,
+  }) => LinearGradientSpec._(
+    start: start,
+    end: end,
+    stops: List<GradientStop>.unmodifiable(stops),
+  );
+
+  const LinearGradientSpec._({
+    required this.start,
+    required this.end,
+    required this.stops,
+  });
+
+  final Vec2 start;
+  final Vec2 end;
+  final List<GradientStop> stops;
+
+  static const transparent = LinearGradientSpec._(
+    start: Vec2(0, 0),
+    end: Vec2(1, 0),
+    stops: <GradientStop>[
+      GradientStop(offset: 0, color: 0x00000000),
+      GradientStop(offset: 1, color: 0x00000000),
+    ],
+  );
+
+  LinearGradientSpec copyWith({
+    Vec2? start,
+    Vec2? end,
+    Iterable<GradientStop>? stops,
+  }) => LinearGradientSpec(
+    start: start ?? this.start,
+    end: end ?? this.end,
+    stops: stops ?? this.stops,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'start': start.toJson(),
+    'end': end.toJson(),
+    'stops': [for (final stop in stops) stop.toJson()],
+  };
+
+  factory LinearGradientSpec.fromJson(Map<String, dynamic> json) {
+    _requireExactKeys(json, const <String>{
+      'start',
+      'end',
+      'stops',
+    }, 'LinearGradientSpec');
+
+    final stops = json['stops'];
+    if (stops is! List) {
+      throw const FormatException('LinearGradientSpec.stops must be a list.');
+    }
+
+    return LinearGradientSpec(
+      start: _gradientPoint(json['start'], 'LinearGradientSpec.start'),
+      end: _gradientPoint(json['end'], 'LinearGradientSpec.end'),
+      stops: stops.map((raw) {
+        if (raw is! Map || raw.keys.any((key) => key is! String)) {
+          throw const FormatException(
+            'LinearGradientSpec.stops must contain objects with string keys.',
+          );
+        }
+        return GradientStop.fromJson(Map<String, dynamic>.from(raw));
+      }),
+    );
+  }
+
+  @override
+  String toString() =>
+      'LinearGradientSpec(start=$start, end=$end, stops=$stops)';
 
   @override
   bool operator ==(Object other) =>
       other is LinearGradientSpec &&
-      other.color1 == color1 &&
-      other.color2 == color2 &&
-      other.angle == angle &&
-      other.width == width;
+      other.start == start &&
+      other.end == end &&
+      _sameGradientStops(other.stops, stops);
 
   @override
-  int get hashCode => Object.hash(color1, color2, angle, width);
+  int get hashCode => Object.hash(start, end, Object.hashAll(stops));
+}
+
+bool _sameGradientStops(List<GradientStop> a, List<GradientStop> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+
+  for (var index = 0; index < a.length; index++) {
+    if (a[index] != b[index]) return false;
+  }
+  return true;
+}
+
+Vec2 _gradientPoint(Object? raw, String field) {
+  if (raw is! Map || raw.keys.any((key) => key is! String)) {
+    throw FormatException('$field must be an object with string keys.');
+  }
+
+  final point = Map<String, dynamic>.from(raw);
+  _requireExactKeys(point, const <String>{'x', 'y'}, field);
+  final x = point['x'];
+  final y = point['y'];
+  if (x is! num || y is! num) {
+    throw FormatException('$field requires numeric x and y.');
+  }
+
+  return Vec2(x.toDouble(), y.toDouble());
+}
+
+void _requireExactKeys(
+  Map<String, dynamic> json,
+  Set<String> expected,
+  String type,
+) {
+  final extras = json.keys.where((key) => !expected.contains(key)).toList()
+    ..sort();
+  final missing = expected.where((key) => !json.containsKey(key)).toList()
+    ..sort();
+  if (extras.isEmpty && missing.isEmpty) return;
+
+  throw FormatException(
+    '$type requires exactly {${expected.toList()..sort()}}; '
+    'missing=$missing, unexpected=$extras.',
+  );
 }

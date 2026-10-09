@@ -107,12 +107,15 @@ void main() {
     test('validates document ranges, colors, and gradient values in order', () {
       final scene = _scene(
         artboardSize: const Size2D(0, double.infinity),
-        backgroundFill: const CanvasFill.gradient(
+        backgroundFill: CanvasFill.gradient(
           LinearGradientSpec(
-            color1: -1,
-            color2: 0x100000000,
-            angle: double.infinity,
-            width: 51,
+            start: const Vec2(double.infinity, 0),
+            end: const Vec2(0, double.nan),
+            stops: const <GradientStop>[
+              GradientStop(offset: double.infinity, color: -1),
+              GradientStop(offset: -0.1, color: 0x100000000),
+              GradientStop(offset: -0.2, color: 0),
+            ],
           ),
         ),
         backgroundOpacity: -0.1,
@@ -123,12 +126,84 @@ void main() {
       expect(_signature(issues), <String>[
         'valueOutOfRange|/artboardSize/w|',
         'nonFiniteNumber|/artboardSize/h|',
-        'invalidColor|/backgroundFill/grad/color1|',
-        'invalidColor|/backgroundFill/grad/color2|',
-        'nonFiniteNumber|/backgroundFill/grad/angle|',
-        'valueOutOfRange|/backgroundFill/grad/width|',
+        'nonFiniteNumber|/backgroundFill/grad/start/x|',
+        'nonFiniteNumber|/backgroundFill/grad/end/y|',
+        'nonFiniteNumber|/backgroundFill/grad/stops/0/offset|',
+        'invalidColor|/backgroundFill/grad/stops/0/color|',
+        'valueOutOfRange|/backgroundFill/grad/stops/1/offset|',
+        'invalidColor|/backgroundFill/grad/stops/1/color|',
+        'valueOutOfRange|/backgroundFill/grad/stops/2/offset|',
+        'gradientStopsOutOfOrder|/backgroundFill/grad/stops/2/offset|/backgroundFill/grad/stops/1/offset',
         'valueOutOfRange|/backgroundOpacity|',
       ]);
+    });
+
+    test('requires a nondegenerate line and at least two stops', () {
+      final scene = _scene(
+        backgroundFill: CanvasFill.gradient(
+          LinearGradientSpec(
+            start: const Vec2(0, 0),
+            end: const Vec2(0, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: 0, color: 0xFF000000),
+            ],
+          ),
+        ),
+      );
+
+      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
+        'degenerateGradient|/backgroundFill/grad/end|/backgroundFill/grad/start',
+        'invalidGradientStopCount|/backgroundFill/grad/stops|',
+      ]);
+    });
+
+    test('preserves ordered multi-error gradient diagnostics', () {
+      final gradient = LinearGradientSpec(
+        start: const Vec2(double.nan, 1),
+        end: const Vec2(double.infinity, 1),
+        stops: const <GradientStop>[
+          GradientStop(offset: -0.2, color: -1),
+          GradientStop(offset: 0.2, color: 0x100000000),
+          GradientStop(offset: 0.1, color: 0xFFFFFFFF),
+          GradientStop(offset: double.nan, color: 0xFF112233),
+          GradientStop(offset: 0.1, color: 0xFF445566),
+          GradientStop(offset: 1.2, color: 0xFF778899),
+        ],
+      );
+
+      final issues = validateCanvasSceneDocument(
+        _scene(backgroundFill: CanvasFill.gradient(gradient)),
+      );
+
+      expect(_signature(issues), <String>[
+        'nonFiniteNumber|/backgroundFill/grad/start/x|',
+        'nonFiniteNumber|/backgroundFill/grad/end/x|',
+        'valueOutOfRange|/backgroundFill/grad/stops/0/offset|',
+        'invalidColor|/backgroundFill/grad/stops/0/color|',
+        'invalidColor|/backgroundFill/grad/stops/1/color|',
+        'gradientStopsOutOfOrder|/backgroundFill/grad/stops/2/offset|/backgroundFill/grad/stops/1/offset',
+        'nonFiniteNumber|/backgroundFill/grad/stops/3/offset|',
+        'valueOutOfRange|/backgroundFill/grad/stops/5/offset|',
+      ]);
+    });
+
+    test('duplicate stops are permitted for hard transitions', () {
+      final gradient = LinearGradientSpec(
+        start: const Vec2(0, 0),
+        end: const Vec2(20, 0),
+        stops: const <GradientStop>[
+          GradientStop(offset: 0, color: 0xFF000000),
+          GradientStop(offset: 0, color: 0xFFFFFFFF),
+          GradientStop(offset: 1, color: 0xFF445566),
+        ],
+      );
+
+      expect(
+        validateCanvasSceneDocument(
+          _scene(backgroundFill: CanvasFill.gradient(gradient)),
+        ),
+        isEmpty,
+      );
     });
 
     test('validates transforms and path numeric values', () {

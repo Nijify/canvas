@@ -130,12 +130,14 @@ void main() {
           ], const CanvasFill.solid(0x00000000));
           final gradientFill = await render(
             [shadow],
-            const CanvasFill.gradient(
+            CanvasFill.gradient(
               LinearGradientSpec(
-                color1: 0xFF00FF00,
-                color2: 0xFFFFFF00,
-                angle: 0,
-                width: 20,
+                start: const Vec2(-20, 0),
+                end: const Vec2(20, 0),
+                stops: const <GradientStop>[
+                  GradientStop(offset: 0, color: 0xFF00FF00),
+                  GradientStop(offset: 1, color: 0xFFFFFF00),
+                ],
               ),
             ),
           );

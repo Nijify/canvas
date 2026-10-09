@@ -75,12 +75,14 @@ void main() {
     _paint(
       _textScene(
         'Hi',
-        const CanvasFill.gradient(
+        CanvasFill.gradient(
           LinearGradientSpec(
-            color1: 0xFF0000FF,
-            color2: 0xFF00FF00,
-            angle: 0,
-            width: 20,
+            start: const Vec2(-20, 0),
+            end: const Vec2(20, 0),
+            stops: const <GradientStop>[
+              GradientStop(offset: 0, color: 0xFF0000FF),
+              GradientStop(offset: 1, color: 0xFF00FF00),
+            ],
           ),
         ),
       ),

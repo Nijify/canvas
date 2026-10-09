@@ -1,3 +1,9 @@
+# Unreleased
+
+- **Breaking:** replace the editor's `RenderSnapshot`-based render contract with `SceneEvaluation`, produced from the prepared scene and its computed geometry.
+- Edit linear gradients using explicit local endpoints and ordered stops. Newly created gradients use available target-local layout bounds; existing gradient colors and angles remain editable without requiring creation bounds. Remove the gradient Width control.
+- Simplify the built-in fill editor and field codecs: text, icon, path, and background support none, solid, and gradient fills without redundant capability coercion. Preserve existing representative-color defaults, transparent-color handling, and field undo behavior.
+
 # 0.16.0
 
 - Move live-editor framing policy into `EditorCameraController`, including positive-only screen-space padding, usable content-bounds selection, artboard fallback, and existing camera scale limits.

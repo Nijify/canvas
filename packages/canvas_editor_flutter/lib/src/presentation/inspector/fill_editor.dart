@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
+import 'package:canvas_editor_flutter/src/editor_api.dart' show kSceneFieldsId;
 import 'package:canvas_editor_flutter/src/editor_fill.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/controls.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_context.dart';
@@ -27,12 +28,11 @@ const _defaultSwatchesArgb32 = <int>[
 /// Important:
 /// - this maps to ONE editor field
 /// - gradient sub-controls are UI projections over that one CanvasFill value
-/// - construction is intentionally private so FillCapability stays internal to
-///   the built-in fill implementation
+/// - construction is intentionally private; built-in targets allow all fills
 class FillFieldIds {
   const FillFieldIds._({
     required this.field,
-    required FillCapability capability,
+    required this.fallbackColor,
     required this.kindTitle,
     required this.solidTitle,
     required this.solidLabel,
@@ -41,11 +41,10 @@ class FillFieldIds {
     required this.grad2Title,
     required this.grad2Label,
     required this.angleTitle,
-    required this.widthTitle,
-  }) : _capability = capability;
+  });
 
   final rt.CanvasFieldKey field;
-  final FillCapability _capability;
+  final rt.Color32 fallbackColor;
 
   final String kindTitle;
   final String solidTitle;
@@ -55,62 +54,57 @@ class FillFieldIds {
   final String grad2Title;
   final String grad2Label;
   final String angleTitle;
-  final String widthTitle;
 
   static const text = FillFieldIds._(
     field: rt.CanvasFields.textFill,
-    capability: kTextFillCapability,
+    fallbackColor: 0xFF111111,
     kindTitle: 'Fill Type',
     solidTitle: 'Color',
     solidLabel: 'Color',
-    grad1Title: 'Color 1',
-    grad1Label: 'Color 1',
-    grad2Title: 'Color 2',
-    grad2Label: 'Color 2',
+    grad1Title: 'Start Color',
+    grad1Label: 'Start Color',
+    grad2Title: 'End Color',
+    grad2Label: 'End Color',
     angleTitle: 'Angle',
-    widthTitle: 'Width',
   );
 
   static const icon = FillFieldIds._(
     field: rt.CanvasFields.iconFill,
-    capability: kIconFillCapability,
+    fallbackColor: 0xFF111111,
     kindTitle: 'Fill Type',
     solidTitle: 'Color',
     solidLabel: 'Color',
-    grad1Title: 'Gradient 1',
-    grad1Label: 'Gradient 1',
-    grad2Title: 'Gradient 2',
-    grad2Label: 'Gradient 2',
+    grad1Title: 'Start Color',
+    grad1Label: 'Start Color',
+    grad2Title: 'End Color',
+    grad2Label: 'End Color',
     angleTitle: 'Angle',
-    widthTitle: 'Width',
   );
 
   static const path = FillFieldIds._(
     field: rt.CanvasFields.pathFill,
-    capability: kPathFillCapability,
+    fallbackColor: 0xFF000000,
     kindTitle: 'Fill Type',
     solidTitle: 'Fill Color',
     solidLabel: 'Fill Color',
-    grad1Title: 'Color 1',
-    grad1Label: 'Color 1',
-    grad2Title: 'Color 2',
-    grad2Label: 'Color 2',
+    grad1Title: 'Start Color',
+    grad1Label: 'Start Color',
+    grad2Title: 'End Color',
+    grad2Label: 'End Color',
     angleTitle: 'Angle',
-    widthTitle: 'Width',
   );
 
   static const background = FillFieldIds._(
     field: rt.CanvasFields.sceneBackgroundFill,
-    capability: kBackgroundFillCapability,
+    fallbackColor: 0xFF000000,
     kindTitle: 'Fill Type',
     solidTitle: 'Color',
     solidLabel: 'Color',
-    grad1Title: 'Color 1',
-    grad1Label: 'Color 1',
-    grad2Title: 'Color 2',
-    grad2Label: 'Color 2',
+    grad1Title: 'Start Color',
+    grad1Label: 'Start Color',
+    grad2Title: 'End Color',
+    grad2Label: 'End Color',
     angleTitle: 'Angle',
-    widthTitle: 'Width',
   );
 }
 
@@ -142,15 +136,62 @@ class FillEditor extends StatelessWidget {
     };
   }
 
-  List<DropdownMenuItem<FillVariant>> _variantItems() {
+  rt.Rect2D? _referenceBounds() {
+    if (nodeId == kSceneFieldsId) {
+      final size = inspector.editableScene.artboardSize;
+      return _usableBounds(rt.Rect2D.fromLTWH(0, 0, size.w, size.h));
+    }
+
+    return _usableBounds(
+      inspector.controller.render.value.computed.layoutBoundsLocalById[nodeId],
+    );
+  }
+
+  rt.Rect2D? _usableBounds(rt.Rect2D? bounds) {
+    if (bounds == null ||
+        !bounds.left.isFinite ||
+        !bounds.top.isFinite ||
+        !bounds.right.isFinite ||
+        !bounds.bottom.isFinite ||
+        bounds.width <= 0) {
+      return null;
+    }
+    return bounds;
+  }
+
+  List<DropdownMenuItem<FillVariant>> _variantItems({
+    required bool gradientCreationAvailable,
+    required FillVariant current,
+  }) {
     return [
       for (final variant in FillVariant.values)
-        if (ids._capability.allows(variant))
-          DropdownMenuItem(
-            value: variant,
-            child: Text(_labelForVariant(variant)),
-          ),
+        DropdownMenuItem(
+          value: variant,
+          enabled:
+              variant != FillVariant.gradient ||
+              gradientCreationAvailable ||
+              current == FillVariant.gradient,
+          child: Text(_labelForVariant(variant)),
+        ),
     ];
+  }
+
+  rt.CanvasFill _fillForVariant(rt.CanvasFill current, FillVariant target) {
+    return switch (target) {
+      FillVariant.none => const rt.CanvasFill.none(),
+      FillVariant.solid => rt.CanvasFill.solid(
+        representativeColorForFill(current, ids.fallbackColor),
+      ),
+      FillVariant.gradient => switch (current) {
+        rt.CanvasFillGradient() => current,
+        _ => rt.CanvasFill.gradient(
+          createDefaultGradient(
+            referenceBounds: _referenceBounds()!,
+            color: representativeColorForFill(current, ids.fallbackColor),
+          ),
+        ),
+      },
+    };
   }
 
   InspectorFieldSpec<rt.CanvasFill> _kindSpec() {
@@ -169,17 +210,23 @@ class FillEditor extends StatelessWidget {
             flush,
           }) {
             final current = fillVariantOf(value);
-            final safeValue = ids._capability.allows(current)
-                ? current
-                : ids._capability.allowed.first;
+            final gradientCreationAvailable = _referenceBounds() != null;
 
             return LabeledDropdown<FillVariant>(
-              value: safeValue,
-              items: _variantItems(),
+              value: current,
+              items: _variantItems(
+                gradientCreationAvailable: gradientCreationAvailable,
+                current: current,
+              ),
               onChanged: enabled
                   ? (next) {
                       if (next == null) return;
-                      commit(convertFillVariant(value, next, ids._capability));
+                      if (next == FillVariant.gradient &&
+                          current != FillVariant.gradient &&
+                          !gradientCreationAvailable) {
+                        return;
+                      }
+                      commit(_fillForVariant(value, next));
                     }
                   : null,
             );
@@ -207,11 +254,11 @@ class FillEditor extends StatelessWidget {
               swatchesArgb32: swatches,
               selectedArgb32: representativeColorForFill(
                 value,
-                ids._capability,
+                ids.fallbackColor,
               ),
               enabled: enabled,
               onPick: (color) {
-                commit(coerceFill(rt.CanvasFill.solid(color), ids._capability));
+                commit(rt.CanvasFill.solid(color));
               },
             );
           },
@@ -233,18 +280,22 @@ class FillEditor extends StatelessWidget {
             end,
             flush,
           }) {
-            final g = gradientForEditing(value, ids._capability);
+            final g = switch (value) {
+              rt.CanvasFillGradient(grad: final gradient) => gradient,
+              _ => null,
+            };
+            if (g == null || g.stops.isEmpty) {
+              return const SizedBox.shrink();
+            }
             return SwatchPickerRow(
               label: ids.grad1Label,
               swatchesArgb32: swatches,
-              selectedArgb32: g.color1,
+              selectedArgb32: g.stops.first.color,
               enabled: enabled,
               onPick: (color) {
                 commit(
-                  patchLinearGradient(
-                    value,
-                    LinearGradientPatch(color1: color),
-                    ids._capability,
+                  rt.CanvasFill.gradient(
+                    replaceGradientStopColor(g, index: 0, color: color),
                   ),
                 );
               },
@@ -268,18 +319,26 @@ class FillEditor extends StatelessWidget {
             end,
             flush,
           }) {
-            final g = gradientForEditing(value, ids._capability);
+            final g = switch (value) {
+              rt.CanvasFillGradient(grad: final gradient) => gradient,
+              _ => null,
+            };
+            if (g == null || g.stops.isEmpty) {
+              return const SizedBox.shrink();
+            }
             return SwatchPickerRow(
               label: ids.grad2Label,
               swatchesArgb32: swatches,
-              selectedArgb32: g.color2,
+              selectedArgb32: g.stops.last.color,
               enabled: enabled,
               onPick: (color) {
                 commit(
-                  patchLinearGradient(
-                    value,
-                    LinearGradientPatch(color2: color),
-                    ids._capability,
+                  rt.CanvasFill.gradient(
+                    replaceGradientStopColor(
+                      g,
+                      index: g.stops.length - 1,
+                      color: color,
+                    ),
                   ),
                 );
               },
@@ -303,58 +362,22 @@ class FillEditor extends StatelessWidget {
             end,
             flush,
           }) {
-            final g = gradientForEditing(value, ids._capability);
+            final g = switch (value) {
+              rt.CanvasFillGradient(grad: final gradient) => gradient,
+              _ => null,
+            };
+            if (g == null) return const SizedBox.shrink();
             return LabeledSlider(
               label: ids.angleTitle,
-              value: g.angle.clamp(0, 360).toDouble(),
+              value: linearGradientAngleDegrees(g),
               min: 0,
               max: 360,
               enabled: enabled,
               onChangeStart: (_) => begin?.call(),
               onChanged: (angle) {
                 commit(
-                  patchLinearGradient(
-                    value,
-                    LinearGradientPatch(angle: angle),
-                    ids._capability,
-                  ),
-                );
-              },
-              onChangeEnd: (_) => end?.call(),
-            );
-          },
-    );
-  }
-
-  InspectorFieldSpec<rt.CanvasFill> _gradientWidthSpec() {
-    return InspectorFieldSpec<rt.CanvasFill>(
-      fieldKey: ids.field,
-      title: ids.widthTitle,
-      commitMode: CommitMode.dragTxn,
-      control:
-          (
-            context, {
-            required enabled,
-            required value,
-            required commit,
-            begin,
-            end,
-            flush,
-          }) {
-            final g = gradientForEditing(value, ids._capability);
-            return LabeledSlider(
-              label: ids.widthTitle,
-              value: g.width.clamp(0, 50).toDouble(),
-              min: 0,
-              max: 50,
-              enabled: enabled,
-              onChangeStart: (_) => begin?.call(),
-              onChanged: (width) {
-                commit(
-                  patchLinearGradient(
-                    value,
-                    LinearGradientPatch(width: width),
-                    ids._capability,
+                  rt.CanvasFill.gradient(
+                    setLinearGradientAngleDegrees(g, angle),
                   ),
                 );
               },
@@ -374,7 +397,7 @@ class FillEditor extends StatelessWidget {
         .getField<rt.CanvasFill>(nodeId, kindSpec.fieldKey)
         .value;
 
-    final kind = fillVariantOf(coerceFill(currentFill, ids._capability));
+    final kind = fillVariantOf(currentFill);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,8 +427,6 @@ class FillEditor extends StatelessWidget {
           ),
           const Gap(12),
           inspector.fieldRow<rt.CanvasFill>(nodeId, _gradientAngleSpec()),
-          const Gap(6),
-          inspector.fieldRow<rt.CanvasFill>(nodeId, _gradientWidthSpec()),
         ],
       ],
     );

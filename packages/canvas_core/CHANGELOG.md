@@ -1,3 +1,9 @@
+## Unreleased
+
+- **Breaking:** replace `CanvasRenderPipeline`, `RenderSnapshot`, and the renderer-neutral `PaintOp` pipeline with `evaluateScene(preparedScene, services)` returning `SceneEvaluation`. The evaluated scene and `ComputedScene` geometry are now the inputs to rendering; `PathIR` remains available for computed path geometry.
+- **Breaking:** adopt persisted scene format v2 and replace angle/width linear gradients with explicit target-local start/end points and ordered color stops. `decodeCanvasScene()` reads the current v2 format; use `upgradeCanvasScene()` to migrate supported v1 and identified 0.10.x unversioned scenes while preserving their previous gradient appearance.
+- Share current linear-gradient semantic checks between strict v2 decoding and in-memory scene validation, including finite and distinct endpoints, stop counts, offset range/order, and ARGB colors. Equal stop offsets remain valid for hard transitions; historical migration rules are unchanged.
+
 ## 0.13.0
 
 - **Breaking:** remove `CanvasFileAssetRef.path`. File references now expose the

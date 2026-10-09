@@ -180,18 +180,103 @@ void main() {
     );
   });
 
-  test('rejects gradients and dashed strokes without partial SVG', () {
+  test('exports explicit background and path gradients', () {
+    final backgroundGradient = LinearGradientSpec(
+      start: const Vec2(0, 40),
+      end: const Vec2(120, 40),
+      stops: const <GradientStop>[
+        GradientStop(offset: 0, color: 0x80445566),
+        GradientStop(offset: 0.5, color: 0xFF778899),
+        GradientStop(offset: 1, color: 0xFF001122),
+      ],
+    );
+    final pathGradient = LinearGradientSpec(
+      start: const Vec2(-10, 0),
+      end: const Vec2(10, 0),
+      stops: const <GradientStop>[
+        GradientStop(offset: 0, color: 0xFF000000),
+        GradientStop(offset: 0, color: 0xFFFF0000),
+        GradientStop(offset: 1, color: 0x8000FF00),
+      ],
+    );
     final scene = _scene(
-      background: const CanvasFill.gradient(
-        LinearGradientSpec(color1: 0xff000000, color2: 0xffffffff),
+      background: CanvasFill.gradient(backgroundGradient),
+      opacity: 0.5,
+      children: <Node>[
+        Node.path(
+          id: 'gradient',
+          xf: const Transform2D(position: Vec2(20, 10), rotationRad: 0.5),
+          data: PathData(
+            source: const RectSource(10, 10),
+            fill: CanvasFill.gradient(pathGradient),
+          ),
+        ),
+      ],
+    );
+
+    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+
+    expect(result.issues, isEmpty);
+    final root = XmlDocument.parse(result.svg!).rootElement;
+    final gradients = root.findAllElements('linearGradient').toList();
+    expect(gradients.map((gradient) => gradient.getAttribute('id')), [
+      'gradient-0',
+      'gradient-1',
+    ]);
+    expect(gradients.first.getAttribute('gradientUnits'), 'userSpaceOnUse');
+    expect(gradients.first.getAttribute('spreadMethod'), 'pad');
+    expect(gradients.first.getAttribute('x1'), '0');
+    expect(gradients.first.getAttribute('y1'), '40.0');
+    expect(gradients.last.getAttribute('x1'), '-10.0');
+    expect(gradients.last.getAttribute('x2'), '10.0');
+
+    final background = root.findAllElements('rect').single;
+    expect(background.getAttribute('fill'), 'url(#gradient-0)');
+    expect(background.getAttribute('fill-opacity'), '0.5');
+
+    final path = root.findAllElements('path').single;
+    expect(path.getAttribute('fill'), 'url(#gradient-1)');
+    expect(path.getAttribute('transform'), isNotNull);
+
+    final pathStops = gradients.last.findElements('stop').toList();
+    expect(pathStops.map((stop) => stop.getAttribute('offset')), [
+      '0',
+      '0',
+      '1.0',
+    ]);
+    expect(pathStops.last.getAttribute('stop-color'), '#00ff00');
+    expect(
+      double.parse(pathStops.last.getAttribute('stop-opacity')!),
+      closeTo(128 / 255, 1e-12),
+    );
+  });
+
+  test('rejects dashed strokes without partial SVG', () {
+    final scene = _scene(
+      background: CanvasFill.gradient(
+        LinearGradientSpec(
+          start: const Vec2(0, 40),
+          end: const Vec2(120, 40),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: 0xff000000),
+            GradientStop(offset: 1, color: 0xffffffff),
+          ],
+        ),
       ),
-      children: const [
+      children: <Node>[
         Node.path(
           id: 'gradient',
           data: PathData(
             source: RectSource(10, 10),
             fill: CanvasFill.gradient(
-              LinearGradientSpec(color1: 0xff000000, color2: 0xffffffff),
+              LinearGradientSpec(
+                start: Vec2(-5, 0),
+                end: Vec2(5, 0),
+                stops: <GradientStop>[
+                  GradientStop(offset: 0, color: 0xff000000),
+                  GradientStop(offset: 1, color: 0xffffffff),
+                ],
+              ),
             ),
           ),
         ),
@@ -209,8 +294,6 @@ void main() {
     final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
     expect(result.svg, isNull);
     expect(result.issues.map((i) => (i.code, i.nodeId)), [
-      (SvgExportIssueCode.unsupportedGradient, null),
-      (SvgExportIssueCode.unsupportedGradient, 'gradient'),
       (SvgExportIssueCode.unsupportedDashedStroke, 'dashed'),
     ]);
   });

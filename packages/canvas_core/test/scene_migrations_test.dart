@@ -48,12 +48,21 @@ bool? _resolveLegacyIconWasGlyph(String iconRef) {
   };
 }
 
+Map<String, Object?> _firstNestedTextForeground(Map<String, Object?> scene) {
+  final roots = scene['children'] as List<Object?>;
+  final group = roots.single as Map<String, Object?>;
+  final children = group['children'] as List<Object?>;
+  final text = children.first as Map<String, Object?>;
+  final data = text['data'] as Map<String, Object?>;
+  final appearance = data['appearance'] as Map<String, Object?>;
+  return appearance['foreground'] as Map<String, Object?>;
+}
+
 void main() {
   group('scene migration', () {
-    test('upgrades literal canvas_core 0.10.x JSON to exact v1 JSON', () {
+    test('upgrades literal canvas_core 0.10.x JSON through v1 to v2', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);
-      final expected = _loadFixture('v1_nested.json');
 
       final migrated = upgradeCanvasScene(
         Map<String, Object?>.from(legacy),
@@ -61,7 +70,22 @@ void main() {
         resolveLegacyIconWasGlyph: _resolveLegacyIconWasGlyph,
       );
 
-      expect(migrated, equals(expected));
+      expect(migrated['sceneFormatVersion'], currentCanvasSceneFormatVersion);
+      final migratedForeground = _firstNestedTextForeground(migrated);
+      final gradient = migratedForeground['grad'] as Map<String, Object?>;
+      final start = gradient['start'] as Map<String, double>;
+      final end = gradient['end'] as Map<String, double>;
+      final stops = gradient['stops'] as List<Map<String, Object?>>;
+
+      expect(migratedForeground['type'], 'gradient');
+      expect(start['x'], closeTo(-223.67532368147135, 1e-12));
+      expect(start['y'], closeTo(-223.67532368147135, 1e-12));
+      expect(end['x'], closeTo(1303.6753236814714, 1e-12));
+      expect(end['y'], closeTo(1303.6753236814714, 1e-12));
+      expect(stops, <Map<String, Object?>>[
+        <String, Object?>{'offset': 0.3, 'color': 4279312947},
+        <String, Object?>{'offset': 0.7, 'color': 4282668390},
+      ]);
 
       // Migration must not mutate persisted input supplied by the caller.
       expect(legacy, equals(legacyBefore));
@@ -70,6 +94,45 @@ void main() {
       final validationIssues = validateCanvasSceneDocument(scene);
 
       expect(validationIssues, isEmpty);
+    });
+
+    test('uses historic default artboard dimensions while migrating v1', () {
+      final v1 = _loadFixture('v1_nested.json');
+      v1.remove('artboardSize');
+
+      final foreground = _firstNestedTextForeground(v1);
+      final legacyGradient = foreground['grad'] as Map<String, dynamic>;
+      legacyGradient['angle'] = 0.0;
+      legacyGradient['width'] = 20.0;
+
+      final migrated = upgradeCanvasScene(Map<String, Object?>.from(v1));
+      final converted =
+          _firstNestedTextForeground(migrated)['grad'] as Map<String, Object?>;
+      final start = converted['start'] as Map<String, double>;
+      final end = converted['end'] as Map<String, double>;
+
+      expect(start['x'], -370.0);
+      expect(start['y'], 180.0);
+      expect(end['x'], 1110.0);
+      expect(end['y'], 180.0);
+    });
+
+    test('rejects malformed legacy fill values instead of coercing them', () {
+      final legacy = _loadFixture('legacy_v010_nested.json');
+      final text = _legacyGroupChildren(legacy).first;
+      final data = text['data'] as Map<String, dynamic>;
+      final fill = data['fill'] as Map<String, dynamic>;
+      final gradient = fill['grad'] as Map<String, dynamic>;
+      gradient['angle'] = 'not-a-number';
+
+      expect(
+        () => upgradeCanvasScene(
+          Map<String, Object?>.from(legacy),
+          legacyUnversioned: true,
+          resolveLegacyIconWasGlyph: _resolveLegacyIconWasGlyph,
+        ),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test('requires explicit opt-in for an unversioned legacy scene', () {
@@ -196,7 +259,7 @@ void main() {
       );
     });
 
-    test('rejects legacy JSON mislabeled as scene format v1', () {
+    test('rejects legacy JSON mislabeled as the current scene format', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       legacy['sceneFormatVersion'] = currentCanvasSceneFormatVersion;
 
@@ -206,8 +269,18 @@ void main() {
       );
     });
 
-    test('accepts an already-current scene without legacy migration', () {
+    test('upgrades an already-versioned v1 scene to v2', () {
       final current = _loadFixture('v1_nested.json');
+
+      final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
+
+      expect(upgraded['sceneFormatVersion'], currentCanvasSceneFormatVersion);
+      expect(upgraded, isNot(equals(current)));
+    });
+
+    test('accepts an already-current v2 scene without migration', () {
+      final v1 = _loadFixture('v1_nested.json');
+      final current = upgradeCanvasScene(Map<String, Object?>.from(v1));
 
       final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
 

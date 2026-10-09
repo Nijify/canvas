@@ -4,6 +4,7 @@ import 'dart:collection';
 
 import 'package:canvas_core/src/foundation/ids.dart' show CanvasAssetId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
+import 'package:canvas_core/src/runtime/validation/linear_gradient_semantics.dart';
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
@@ -14,6 +15,9 @@ enum CanvasSceneValidationCode {
   nonFiniteNumber,
   valueOutOfRange,
   invalidColor,
+  degenerateGradient,
+  invalidGradientStopCount,
+  gradientStopsOutOfOrder,
   blankAssetId,
   blankAssetSourceRef,
   missingImageAsset,
@@ -476,10 +480,30 @@ final class _SceneValidator {
       case CanvasFillSolid(:final color):
         _validateColor(color, '$path/color');
       case CanvasFillGradient(:final grad):
-        _validateColor(grad.color1, '$path/grad/color1');
-        _validateColor(grad.color2, '$path/grad/color2');
-        _validateFinite(grad.angle, '$path/grad/angle');
-        _validateRange(grad.width, '$path/grad/width', 0, 50);
+        for (final issue in validateLinearGradientSemantics(grad)) {
+          final code = switch (issue.code) {
+            GradientSemanticCode.nonFiniteNumber =>
+              CanvasSceneValidationCode.nonFiniteNumber,
+            GradientSemanticCode.valueOutOfRange =>
+              CanvasSceneValidationCode.valueOutOfRange,
+            GradientSemanticCode.invalidColor =>
+              CanvasSceneValidationCode.invalidColor,
+            GradientSemanticCode.degenerateGradient =>
+              CanvasSceneValidationCode.degenerateGradient,
+            GradientSemanticCode.invalidGradientStopCount =>
+              CanvasSceneValidationCode.invalidGradientStopCount,
+            GradientSemanticCode.gradientStopsOutOfOrder =>
+              CanvasSceneValidationCode.gradientStopsOutOfOrder,
+          };
+          _add(
+            code,
+            '$path/grad${issue.path}',
+            issue.message,
+            relatedPath: issue.relatedPath == null
+                ? null
+                : '$path/grad${issue.relatedPath}',
+          );
+        }
     }
   }
 

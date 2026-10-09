@@ -6,7 +6,8 @@ import 'svg_export_result.dart';
 ///
 /// The caller computes [computed] from this exact [scene] with `computeScene`.
 /// This exporter does not consume paint operations or resolve host resources.
-/// Its first profile supports solid backgrounds and undashed path geometry.
+/// Its first profile supports none, solid, and linear-gradient backgrounds,
+/// plus undashed path geometry with those same fill variants.
 SvgExportResult exportPreparedSvg({
   required CanvasSceneDocument scene,
   required ComputedScene computed,
@@ -21,19 +22,6 @@ SvgExportResult exportPreparedSvg({
   ];
   if (issues.isNotEmpty) return SvgExportResult.failure(issues);
 
-  if (scene.backgroundFill is CanvasFillGradient &&
-      scene.backgroundOpacity > 0) {
-    issues.add(
-      const SvgExportIssue(
-        code: SvgExportIssueCode.unsupportedGradient,
-        path: '/backgroundFill',
-        message:
-            'The current angle/width background gradient has no '
-            'direct SVG semantics.',
-      ),
-    );
-  }
-
   final paths = <PathNode>[];
 
   void visit(Node node) {
@@ -46,17 +34,6 @@ SvgExportResult exportPreparedSvg({
         }
       case PathNode(:final data):
         paths.add(node);
-        if (data.fill is CanvasFillGradient) {
-          issues.add(
-            SvgExportIssue(
-              code: SvgExportIssueCode.unsupportedGradient,
-              nodeId: node.id,
-              message:
-                  'The current angle/width path gradient has no '
-                  'direct SVG semantics.',
-            ),
-          );
-        }
         if (data.dash.isNotEmpty &&
             data.strokeColor != 0 &&
             data.strokeWidth > 0) {
@@ -155,11 +132,41 @@ SvgExportResult exportPreparedSvg({
 
   final width = _number(scene.artboardSize.w);
   final height = _number(scene.artboardSize.h);
+  final gradients = <_SvgLinearGradient>[];
+  String? backgroundGradientId;
+  final pathGradientIds = <ElementId, String>{};
+
+  void addGradient(LinearGradientSpec gradient, void Function(String id) use) {
+    final id = 'gradient-${gradients.length}';
+    gradients.add(_SvgLinearGradient(id: id, spec: gradient));
+    use(id);
+  }
+
+  final backgroundFill = scene.backgroundFill;
+  if (scene.backgroundOpacity > 0 && backgroundFill is CanvasFillGradient) {
+    addGradient(backgroundFill.grad, (id) => backgroundGradientId = id);
+  }
+
+  for (final path in paths) {
+    final fill = path.data.fill;
+    if (fill is CanvasFillGradient) {
+      addGradient(fill.grad, (id) => pathGradientIds[path.id] = id);
+    }
+  }
+
   final out = StringBuffer()
     ..writeln(
       '<svg xmlns="http://www.w3.org/2000/svg" '
       'width="$width" height="$height" viewBox="0 0 $width $height">',
     );
+
+  if (gradients.isNotEmpty) {
+    out.writeln('  <defs>');
+    for (final gradient in gradients) {
+      _writeLinearGradient(out, gradient);
+    }
+    out.writeln('  </defs>');
+  }
 
   if (scene.backgroundFill case CanvasFillSolid(:final color)) {
     final alpha = (((color >> 24) & 0xff) * scene.backgroundOpacity)
@@ -171,6 +178,12 @@ SvgExportResult exportPreparedSvg({
         'fill="${_rgb(color)}" fill-opacity="${_number(alpha / 255)}"/>',
       );
     }
+  } else if (backgroundGradientId != null) {
+    out.writeln(
+      '  <rect x="0" y="0" width="$width" height="$height" '
+      'fill="url(#$backgroundGradientId)" '
+      'fill-opacity="${_number(scene.backgroundOpacity)}"/>',
+    );
   }
 
   for (final path in paths) {
@@ -185,15 +198,20 @@ SvgExportResult exportPreparedSvg({
       storage[13],
     ].map(_number).join(' ');
     final style = ir.style;
-    final fill = style.fill;
+    final authoredFill = path.data.fill;
+    final fill = switch (authoredFill) {
+      CanvasFillNone() => 'none',
+      CanvasFillSolid(:final color) => _rgb(color),
+      CanvasFillGradient() => 'url(#${pathGradientIds[path.id]!})',
+    };
     final stroke = style.strokeWidth > 0 ? style.stroke : null;
     out.write(
       '  <path d="${_pathData(ir)}" transform="matrix($matrix)" '
-      'fill="${fill == null ? 'none' : _rgb(fill)}" '
+      'fill="$fill" '
       'fill-rule="${style.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
     );
-    if (fill != null) {
-      out.write(' fill-opacity="${_opacity(fill)}"');
+    if (authoredFill case CanvasFillSolid(:final color)) {
+      out.write(' fill-opacity="${_opacity(color)}"');
     }
     out.write(' stroke="${stroke == null ? 'none' : _rgb(stroke)}"');
     if (stroke != null) {
@@ -210,6 +228,31 @@ SvgExportResult exportPreparedSvg({
 
   out.writeln('</svg>');
   return SvgExportResult.success(out.toString());
+}
+
+void _writeLinearGradient(StringBuffer out, _SvgLinearGradient gradient) {
+  final spec = gradient.spec;
+  out.writeln(
+    '    <linearGradient id="${gradient.id}" '
+    'gradientUnits="userSpaceOnUse" spreadMethod="pad" '
+    'x1="${_number(spec.start.x)}" y1="${_number(spec.start.y)}" '
+    'x2="${_number(spec.end.x)}" y2="${_number(spec.end.y)}">',
+  );
+  for (final stop in spec.stops) {
+    out.writeln(
+      '      <stop offset="${_number(stop.offset)}" '
+      'stop-color="${_rgb(stop.color)}" '
+      'stop-opacity="${_opacity(stop.color)}"/>',
+    );
+  }
+  out.writeln('    </linearGradient>');
+}
+
+final class _SvgLinearGradient {
+  const _SvgLinearGradient({required this.id, required this.spec});
+
+  final String id;
+  final LinearGradientSpec spec;
 }
 
 bool _validPath(PathIR path) {
