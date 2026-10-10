@@ -1,4 +1,4 @@
-## Unreleased
+## 0.14.0
 
 - **Breaking:** replace `CanvasRenderPipeline`, `RenderSnapshot`, and the renderer-neutral `PaintOp` pipeline with `evaluateScene(preparedScene, services)` returning `SceneEvaluation`. The evaluated scene and `ComputedScene` geometry are now the inputs to rendering; `PathIR` remains available for computed path geometry.
 - **Breaking:** adopt persisted scene format v2 and replace angle/width linear gradients with explicit target-local start/end points and ordered color stops. `decodeCanvasScene()` reads the current v2 format; use `upgradeCanvasScene()` to migrate supported v1 and identified 0.10.x unversioned scenes while preserving their previous gradient appearance.

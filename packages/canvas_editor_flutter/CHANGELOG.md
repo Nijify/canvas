@@ -1,5 +1,7 @@
-# Unreleased
+# 0.17.0
 
+- **Breaking:** require `canvas_core 0.14.x` and
+  `canvas_renderer_flutter 0.13.x`.
 - **Breaking:** replace the editor's `RenderSnapshot`-based render contract with `SceneEvaluation`, produced from the prepared scene and its computed geometry.
 - Edit linear gradients using explicit local endpoints and ordered stops. Newly created gradients use available target-local layout bounds; existing gradient colors and angles remain editable without requiring creation bounds. Remove the gradient Width control.
 - Simplify the built-in fill editor and field codecs: text, icon, path, and background support none, solid, and gradient fills without redundant capability coercion. Preserve existing representative-color defaults, transparent-color handling, and field undo behavior.
