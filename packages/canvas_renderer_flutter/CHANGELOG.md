@@ -1,5 +1,6 @@
-## Unreleased
+## 0.13.0
 
+- **Breaking:** require `canvas_core 0.14.x`.
 - **Breaking:** paint prepared scenes directly through `CanvasRenderer.paintScene(canvas, SceneEvaluation)` instead of replaying core `PaintOp` snapshots. Flutter now draws scene content and underlays using computed order, geometry, and transforms.
 - Render linear gradients from authored target-local endpoints and ordered color stops, with clamp behavior and existing opacity handling. Keep authored path fills authoritative rather than relying on compiled path fill style.
 - Retain strict PNG resource preflight and interactive missing-image behavior during the direct-rendering transition.
