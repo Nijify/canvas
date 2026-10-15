@@ -1,3 +1,8 @@
+## Unreleased
+
+- **Breaking:** `PathIR` now snapshots its commands and exposes an unmodifiable
+  list. Its constructor is no longer `const`.
+
 ## 0.14.0
 
 - **Breaking:** replace `CanvasRenderPipeline`, `RenderSnapshot`, and the renderer-neutral `PaintOp` pipeline with `evaluateScene(preparedScene, services)` returning `SceneEvaluation`. The evaluated scene and `ComputedScene` geometry are now the inputs to rendering; `PathIR` remains available for computed path geometry.

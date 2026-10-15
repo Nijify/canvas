@@ -66,10 +66,12 @@ class PathStyle {
 
 /// Canonical compiled representation used everywhere internally.
 class PathIR {
+  /// An immutable snapshot of the commands supplied to the constructor.
   final List<PathCmd> cmds;
   final PathStyle style;
 
-  const PathIR(this.cmds, this.style);
+  PathIR(List<PathCmd> cmds, this.style)
+    : cmds = List<PathCmd>.unmodifiable(cmds);
 
   /// Cheap local AABB (optionally includes stroke expansion)
   Rect2D localBounds({bool includeStroke = true}) {
