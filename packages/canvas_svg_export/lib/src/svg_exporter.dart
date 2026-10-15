@@ -114,18 +114,6 @@ SvgExportResult exportPreparedSvg({
           message: 'The path or its computed transform is missing or invalid.',
         ),
       );
-    } else if (ir.style.stroke != null &&
-        ir.style.strokeWidth > 0 &&
-        ir.style.dash?.isNotEmpty == true) {
-      issues.add(
-        SvgExportIssue(
-          code: SvgExportIssueCode.unsupportedDashedStroke,
-          nodeId: id,
-          message:
-              'Flutter currently paints this stroke without its '
-              'authored dash pattern.',
-        ),
-      );
     }
   }
   if (issues.isNotEmpty) return SvgExportResult.failure(issues);
@@ -197,18 +185,20 @@ SvgExportResult exportPreparedSvg({
       storage[12],
       storage[13],
     ].map(_number).join(' ');
-    final style = ir.style;
-    final authoredFill = path.data.fill;
+    final data = path.data;
+    final authoredFill = data.fill;
     final fill = switch (authoredFill) {
       CanvasFillNone() => 'none',
       CanvasFillSolid(:final color) => _rgb(color),
       CanvasFillGradient() => 'url(#${pathGradientIds[path.id]!})',
     };
-    final stroke = style.strokeWidth > 0 ? style.stroke : null;
+    final stroke = data.strokeColor != 0 && data.strokeWidth > 0
+        ? data.strokeColor
+        : null;
     out.write(
       '  <path d="${_pathData(ir)}" transform="matrix($matrix)" '
       'fill="$fill" '
-      'fill-rule="${style.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
+      'fill-rule="${data.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
     );
     if (authoredFill case CanvasFillSolid(:final color)) {
       out.write(' fill-opacity="${_opacity(color)}"');
@@ -217,10 +207,10 @@ SvgExportResult exportPreparedSvg({
     if (stroke != null) {
       out.write(
         ' stroke-opacity="${_opacity(stroke)}" '
-        'stroke-width="${_number(style.strokeWidth)}" '
-        'stroke-linecap="${style.strokeCap.name}" '
-        'stroke-linejoin="${style.strokeJoin.name}" '
-        'stroke-miterlimit="${_number(style.miterLimit)}"',
+        'stroke-width="${_number(data.strokeWidth)}" '
+        'stroke-linecap="${data.strokeCap.name}" '
+        'stroke-linejoin="${data.strokeJoin.name}" '
+        'stroke-miterlimit="${_number(data.miterLimit)}"',
       );
     }
     out.writeln('/>');

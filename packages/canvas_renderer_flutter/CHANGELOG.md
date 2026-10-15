@@ -1,3 +1,8 @@
+## Unreleased
+
+- Read ordinary-path fill rules and stroke properties directly from `PathData`.
+  Keep the existing vector-icon source behavior until its contract is replaced.
+
 ## 0.13.0
 
 - **Breaking:** require `canvas_core 0.14.x`.

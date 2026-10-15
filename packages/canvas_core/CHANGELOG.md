@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Use authored `PathData` stroke values for ordinary-path layout and paint
+  bounds, preserving the existing stroke expansion and pivot behavior.
+
 - **Breaking:** `PathIR` now snapshots its commands and exposes an unmodifiable
   list. Its constructor is no longer `const`.
 

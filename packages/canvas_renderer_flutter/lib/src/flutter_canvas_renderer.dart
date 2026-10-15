@@ -155,9 +155,23 @@ class CanvasRenderer {
             } else if (path != null) {
               _drawPathUnderlays(canvas, path, data.appearance.underlays);
               final foreground = data.appearance.foreground;
-              _drawPathFill(canvas, path, foreground);
+              final style = path.style;
+              _drawPathFill(
+                canvas,
+                path,
+                foreground,
+                fillRule: style.fillRule,
+              );
               if (foreground is! CanvasFillNone) {
-                _drawPathStroke(canvas, path);
+                _drawPathStroke(
+                  canvas,
+                  path,
+                  color: style.stroke,
+                  width: style.strokeWidth,
+                  cap: style.strokeCap,
+                  join: style.strokeJoin,
+                  miterLimit: style.miterLimit,
+                );
               }
             }
           case ImageNode(data: final data):
@@ -170,8 +184,21 @@ class CanvasRenderer {
           case PathNode(data: final data):
             final path = computed.pathIRById[id];
             if (path != null) {
-              _drawPathFill(canvas, path, data.fill);
-              _drawPathStroke(canvas, path);
+              _drawPathFill(
+                canvas,
+                path,
+                data.fill,
+                fillRule: data.fillRule,
+              );
+              _drawPathStroke(
+                canvas,
+                path,
+                color: data.strokeColor,
+                width: data.strokeWidth,
+                cap: data.strokeCap,
+                join: data.strokeJoin,
+                miterLimit: data.miterLimit,
+              );
             }
           case GroupNode():
             break;
@@ -200,9 +227,14 @@ class CanvasRenderer {
     );
   }
 
-  void _drawPathFill(ui.Canvas canvas, PathIR path, CanvasFill fill) {
+  void _drawPathFill(
+    ui.Canvas canvas,
+    PathIR path,
+    CanvasFill fill, {
+    required FillRule fillRule,
+  }) {
     final uiPath = _buildUiPath(path);
-    uiPath.fillType = switch (path.style.fillRule) {
+    uiPath.fillType = switch (fillRule) {
       FillRule.evenOdd => ui.PathFillType.evenOdd,
       FillRule.nonZero => ui.PathFillType.nonZero,
     };
@@ -211,8 +243,7 @@ class CanvasRenderer {
       case CanvasFillNone():
         break;
       case CanvasFillSolid(:final color):
-        // The scene fill is the paint authority. PathIR supplies only the
-        // compiled outline and source stroke/fill-rule metadata.
+        // Paint and fill participation come from the caller.
         canvas.drawPath(
           uiPath,
           ui.Paint()
@@ -229,18 +260,25 @@ class CanvasRenderer {
     }
   }
 
-  void _drawPathStroke(ui.Canvas canvas, PathIR path) {
-    final style = path.style;
-    if (style.stroke == null || style.strokeWidth <= 0) return;
+  void _drawPathStroke(
+    ui.Canvas canvas,
+    PathIR path, {
+    required Color32? color,
+    required double width,
+    required StrokeCap cap,
+    required StrokeJoin join,
+    required double miterLimit,
+  }) {
+    if (color == null || color == 0 || !(width > 0)) return;
     canvas.drawPath(
       _buildUiPath(path),
       ui.Paint()
         ..style = ui.PaintingStyle.stroke
-        ..color = ui.Color(style.stroke!)
-        ..strokeWidth = style.strokeWidth
-        ..strokeCap = _mapCap(style.strokeCap)
-        ..strokeJoin = _mapJoin(style.strokeJoin)
-        ..strokeMiterLimit = style.miterLimit,
+        ..color = ui.Color(color)
+        ..strokeWidth = width
+        ..strokeCap = _mapCap(cap)
+        ..strokeJoin = _mapJoin(join)
+        ..strokeMiterLimit = miterLimit,
     );
   }
 

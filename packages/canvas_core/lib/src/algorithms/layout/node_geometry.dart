@@ -126,8 +126,18 @@ final class NodeGeometry {
       case PathNode(id: final id, data: final d):
         final ir = compilePath(d);
         pathIRById?[id] = ir;
-        final layout = ir.localBounds(includeStroke: true);
-        // Retain the existing path/stroke estimate in this PR.
+        final geometryBounds = ir.localBounds(includeStroke: false);
+        final hasStroke = d.strokeColor != 0 && d.strokeWidth > 0;
+        final radius = hasStroke ? d.strokeWidth / 2 : 0.0;
+        final layout = ir.cmds.isEmpty || !hasStroke
+            ? geometryBounds
+            : Rect2D.fromLTRB(
+                geometryBounds.left - radius,
+                geometryBounds.top - radius,
+                geometryBounds.right + radius,
+                geometryBounds.bottom + radius,
+              );
+        // Preserve the existing ordinary-path stroke estimate and pivots.
         return (layout: layout, paint: ir.cmds.isEmpty ? null : layout);
 
       default:

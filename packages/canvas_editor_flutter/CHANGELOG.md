@@ -1,3 +1,8 @@
+# Unreleased
+
+- Pass fill rules explicitly to path containment tests and use authored
+  `PathData` fill rules and stroke widths for ordinary-path picking.
+
 # 0.17.0
 
 - **Breaking:** require `canvas_core 0.14.x` and

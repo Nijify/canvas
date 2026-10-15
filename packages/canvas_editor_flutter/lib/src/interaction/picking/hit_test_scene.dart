@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:canvas_core/canvas_core_runtime.dart'
     show
         CanvasSceneDocument,
+        Color32,
         ComputedScene,
         DrawItem,
         ElementId,
@@ -12,7 +13,6 @@ import 'package:canvas_core/canvas_core_runtime.dart'
         IconNode,
         ImageNode,
         Node,
-        PathIR,
         PathNode,
         Rect2D,
         TextNode,
@@ -209,26 +209,31 @@ bool _hitLeafAt(
       final ir = computed.iconPathIRById[id];
       if (ir == null) return true;
 
-      if (pathContainsClosedArea(ir, local)) return true;
+      final style = ir.style;
+      if (pathContainsClosedArea(ir, local, fillRule: style.fillRule)) {
+        return true;
+      }
 
       final outlineRadius = math.max(
-        _visibleStrokeRadiusLocal(ir),
+        _strokeRadiusLocal(color: style.stroke, width: style.strokeWidth),
         localHitSlop,
       );
       return pathHitsOutline(ir, local, radiusLocal: outlineRadius);
     }(),
 
-    PathNode(id: final id) => () {
+    PathNode(id: final id, data: final data) => () {
       final ir = computed.pathIRById[id];
       if (ir == null) return false;
 
       // Fill mode must not decide pickability. Closed geometry remains pickable
       // even when fill is CanvasFill.none().
-      if (pathContainsClosedArea(ir, local)) return true;
+      if (pathContainsClosedArea(ir, local, fillRule: data.fillRule)) {
+        return true;
+      }
 
       // Outline proximity remains interactive, with a minimum hit floor.
       final outlineRadius = math.max(
-        _visibleStrokeRadiusLocal(ir),
+        _strokeRadiusLocal(color: data.strokeColor, width: data.strokeWidth),
         localHitSlop,
       );
       return pathHitsOutline(ir, local, radiusLocal: outlineRadius);
@@ -238,9 +243,9 @@ bool _hitLeafAt(
   };
 }
 
-double _visibleStrokeRadiusLocal(PathIR ir) {
-  final hasVisibleStroke = ir.style.stroke != null && ir.style.strokeWidth > 0;
-  return hasVisibleStroke ? ir.style.strokeWidth / 2.0 : 0.0;
+double _strokeRadiusLocal({required Color32? color, required double width}) {
+  final hasStroke = color != null && color != 0 && width > 0;
+  return hasStroke ? width / 2.0 : 0.0;
 }
 
 double _localHitSlopForLeaf(

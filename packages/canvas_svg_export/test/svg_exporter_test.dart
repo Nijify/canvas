@@ -31,6 +31,57 @@ CanvasSceneDocument _scene({
 );
 
 void main() {
+  test('authored paint is authoritative over compiled style metadata', () {
+    final scene = _scene(
+      children: const [
+        Node.path(
+          id: 'p',
+          data: PathData(
+            source: RectSource(20, 10),
+            fill: CanvasFill.solid(0x80445566),
+            fillRule: FillRule.evenOdd,
+            strokeColor: 0x80112233,
+            strokeWidth: 4,
+            strokeCap: StrokeCap.round,
+            strokeJoin: StrokeJoin.bevel,
+            miterLimit: 7,
+          ),
+        ),
+      ],
+    );
+    final computed = _compute(scene);
+    final original = computed.pathIRById['p']!;
+    computed.pathIRById['p'] = PathIR(
+      original.cmds,
+      const PathStyle(
+        fillRule: FillRule.nonZero,
+        stroke: 0xFF00FF00,
+        strokeWidth: 20,
+        strokeCap: StrokeCap.butt,
+        strokeJoin: StrokeJoin.miter,
+        dash: [1, 1],
+      ),
+    );
+
+    final result = exportPreparedSvg(scene: scene, computed: computed);
+
+    expect(result.issues, isEmpty);
+    final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
+    expect(path.getAttribute('fill'), '#445566');
+    expect(path.getAttribute('fill-rule'), 'evenodd');
+    expect(path.getAttribute('stroke'), '#112233');
+    expect(path.getAttribute('stroke-width'), '4.0');
+    expect(path.getAttribute('stroke-linecap'), 'round');
+    expect(path.getAttribute('stroke-linejoin'), 'bevel');
+    expect(path.getAttribute('stroke-miterlimit'), '7.0');
+    for (final attribute in ['fill-opacity', 'stroke-opacity']) {
+      expect(
+        double.parse(path.getAttribute(attribute)!),
+        closeTo(128 / 255, 1e-12),
+      );
+    }
+  });
+
   test('emits an artboard, background, path paint, and alpha', () {
     final scene = _scene(
       background: const CanvasFill.solid(0x80445566),

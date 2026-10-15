@@ -36,6 +36,99 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 );
 
 void main() {
+  test('path picking uses the authored fill rule', () {
+    final scene = _scene([
+      const Node.path(
+        id: 'path',
+        data: PathData(
+          points: [
+            Vec2(-12, -12),
+            Vec2(12, -12),
+            Vec2(12, 12),
+            Vec2(-12, 12),
+            Vec2(-12, -12),
+            null,
+            Vec2(-5, -5),
+            Vec2(5, -5),
+            Vec2(5, 5),
+            Vec2(-5, 5),
+            Vec2(-5, -5),
+          ],
+          fillRule: FillRule.evenOdd,
+          strokeWidth: 0,
+        ),
+      ),
+    ]);
+    final computed = computeScene(scene, _services());
+    final original = computed.pathIRById['path']!;
+    computed.pathIRById['path'] = PathIR(
+      original.cmds,
+      const PathStyle(fillRule: FillRule.nonZero),
+    );
+    final geometry = EditorGeometryIndex.fromComputed(computed);
+
+    Node? pick(Vec2 point) => pickLeafTopAtScene(
+      scene,
+      point,
+      computed: computed,
+      geometry: geometry,
+      minPathHitSlopScreenPx: 0,
+    );
+
+    expect(pick(Vec2.zero), isNull);
+    expect(pick(const Vec2(8, 0))?.id, 'path');
+  });
+
+  test('path picking uses the authored stroke width', () {
+    final scene = _scene([
+      const Node.path(
+        id: 'path',
+        data: PathData(
+          points: [Vec2(-10, 0), Vec2(10, 0)],
+          strokeColor: 0xFF112233,
+          strokeWidth: 8,
+        ),
+      ),
+    ]);
+    final computed = computeScene(scene, _services());
+    final original = computed.pathIRById['path']!;
+    computed.pathIRById['path'] = PathIR(
+      original.cmds,
+      const PathStyle(strokeWidth: 0),
+    );
+    final geometry = EditorGeometryIndex.fromComputed(computed);
+
+    final hit = pickLeafTopAtScene(
+      scene,
+      const Vec2(0, 3),
+      computed: computed,
+      geometry: geometry,
+      minPathHitSlopScreenPx: 0,
+    );
+
+    expect(hit?.id, 'path');
+  });
+
+  test('an unfilled ordinary path remains selectable inside its geometry', () {
+    final scene = _scene([
+      const Node.path(
+        id: 'path',
+        data: PathData(source: RectSource(20, 20), strokeWidth: 0),
+      ),
+    ]);
+    final computed = computeScene(scene, _services());
+
+    final hit = pickLeafTopAtScene(
+      scene,
+      Vec2.zero,
+      computed: computed,
+      geometry: EditorGeometryIndex.fromComputed(computed),
+      minPathHitSlopScreenPx: 0,
+    );
+
+    expect(hit?.id, 'path');
+  });
+
   test('picks the topmost overlapping leaf', () {
     final scene = _scene([_text('bottom'), _text('top')]);
     final computed = computeScene(scene, _services());
