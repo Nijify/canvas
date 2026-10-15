@@ -1,6 +1,7 @@
 // Path: lib/src/path/path_source.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart';
+import 'package:canvas_core/src/path/path_ir.dart' show PathCmd, PathVerb;
 import 'package:canvas_core/src/serialization/json_vec2.dart';
 
 sealed class PathSource {
@@ -9,6 +10,8 @@ sealed class PathSource {
   static PathSource fromJson(Map<String, Object?> json) {
     final k = json['kind'];
     switch (k) {
+      case 'commands':
+        return CommandPathSource.fromJson(json);
       case 'polyline':
         return PolylineSource.fromJson(json);
       case 'rect':
@@ -31,6 +34,132 @@ sealed class PathSource {
         return StarSource.fromJson(json);
       default:
         throw FormatException('Unknown PathSource kind: $k');
+    }
+  }
+}
+
+/// Normalized, absolute geometry in source coordinates, with no paint data.
+///
+/// Supports multiple contours and open contours. Each contour starts with
+/// moveTo; close ends it, so subsequent drawing requires another moveTo.
+/// Empty geometry is valid. Curves are polynomial quadratics or cubics;
+/// importers must convert arcs before constructing this source.
+final class CommandPathSource extends PathSource {
+  final List<PathCmd> commands;
+
+  CommandPathSource(List<PathCmd> commands)
+    : commands = List<PathCmd>.unmodifiable(commands) {
+    var contourOpen = false;
+    for (var index = 0; index < this.commands.length; index++) {
+      final command = this.commands[index];
+      if (command.verb == PathVerb.moveTo) {
+        contourOpen = true;
+      } else if (!contourOpen) {
+        throw ArgumentError('commands[$index] requires a preceding moveTo.');
+      }
+      if (command.verb == PathVerb.close) {
+        contourOpen = false;
+        continue;
+      }
+      _requireFinite(command.p, 'commands[$index].p');
+      if (command.c1 != null) {
+        _requireFinite(command.c1!, 'commands[$index].c1');
+      }
+      if (command.c2 != null) {
+        _requireFinite(command.c2!, 'commands[$index].c2');
+      }
+    }
+  }
+
+  factory CommandPathSource.fromJson(Map<String, Object?> json) {
+    _requireKeys(json, const {'kind', 'commands'}, 'source');
+    if (json['kind'] != 'commands' || json['commands'] is! List) {
+      throw const FormatException('Expected a commands path source.');
+    }
+    final values = json['commands'] as List;
+    final commands = <PathCmd>[];
+    for (var index = 0; index < values.length; index++) {
+      final path = 'commands[$index]';
+      final value = _object(values[index], path);
+      final verb = switch (value['verb']) {
+        'moveTo' => PathVerb.moveTo,
+        'lineTo' => PathVerb.lineTo,
+        'quadTo' => PathVerb.quadTo,
+        'cubicTo' => PathVerb.cubicTo,
+        'close' => PathVerb.close,
+        _ => throw FormatException('$path has an unsupported verb.'),
+      };
+      final pointNames = switch (verb) {
+        PathVerb.moveTo || PathVerb.lineTo => const ['p'],
+        PathVerb.quadTo => const ['c1', 'p'],
+        PathVerb.cubicTo => const ['c1', 'c2', 'p'],
+        PathVerb.close => const <String>[],
+      };
+      _requireKeys(value, {'verb', ...pointNames}, path);
+      Vec2 point(String name) => _point(value[name], '$path.$name');
+      commands.add(switch (verb) {
+        PathVerb.moveTo => PathCmd.moveTo(point('p')),
+        PathVerb.lineTo => PathCmd.lineTo(point('p')),
+        PathVerb.quadTo => PathCmd.quadTo(point('c1'), point('p')),
+        PathVerb.cubicTo =>
+          PathCmd.cubicTo(point('c1'), point('c2'), point('p')),
+        PathVerb.close => PathCmd.close(),
+      });
+    }
+    try {
+      return CommandPathSource(commands);
+    } on ArgumentError catch (error) {
+      throw FormatException(error.message?.toString() ?? 'Invalid commands.');
+    }
+  }
+
+  @override
+  Map<String, Object?> toJson() => {
+    'kind': 'commands',
+    'commands': [
+      for (final command in commands)
+        <String, Object?>{
+          'verb': command.verb.name,
+          if (command.c1 != null) 'c1': command.c1!.toJson(),
+          if (command.c2 != null) 'c2': command.c2!.toJson(),
+          if (command.verb != PathVerb.close) 'p': command.p.toJson(),
+        },
+    ],
+  };
+
+  static Map<String, Object?> _object(Object? value, String path) {
+    if (value is! Map || value.keys.any((key) => key is! String)) {
+      throw FormatException('$path must be an object.');
+    }
+    return Map<String, Object?>.from(value);
+  }
+
+  static void _requireKeys(
+    Map<String, Object?> value,
+    Set<String> keys,
+    String path,
+  ) {
+    if (value.length != keys.length || !keys.every(value.containsKey)) {
+      throw FormatException('$path must contain exactly ${keys.join(', ')}.');
+    }
+  }
+
+  static Vec2 _point(Object? value, String path) {
+    final point = _object(value, path);
+    _requireKeys(point, const {'x', 'y'}, path);
+    double coordinate(String axis) {
+      final number = point[axis];
+      if (number is! num || !number.toDouble().isFinite) {
+        throw FormatException('$path.$axis must be a finite number.');
+      }
+      return number.toDouble();
+    }
+    return Vec2(coordinate('x'), coordinate('y'));
+  }
+
+  static void _requireFinite(Vec2 point, String path) {
+    if (!point.x.isFinite || !point.y.isFinite) {
+      throw ArgumentError('$path must have finite coordinates.');
     }
   }
 }

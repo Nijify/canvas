@@ -1,5 +1,8 @@
 ## Unreleased
 
+- Add immutable, geometry-only `CommandPathSource` with strict JSON decoding
+  and direct compilation of absolute move/line/quadratic/cubic/close commands.
+
 - Use authored `PathData` stroke values for ordinary-path layout and paint
   bounds, preserving the existing stroke expansion and pivot behavior.
 

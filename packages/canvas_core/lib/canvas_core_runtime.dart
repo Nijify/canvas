@@ -86,6 +86,7 @@ export 'src/path/path_ir.dart' show PathCmd, PathIR, PathStyle, PathVerb;
 export 'src/path/path_source.dart'
     show
         PathSource,
+        CommandPathSource,
         PolylineSource,
         RectSource,
         RoundRectSource,

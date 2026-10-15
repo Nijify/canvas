@@ -10,6 +10,7 @@ class PathCompiler {
   const PathCompiler();
 
   PathIR fromSource(PathSource src, PathStyle style) => switch (src) {
+    CommandPathSource(:final commands) => PathIR(commands, style),
     PolylineSource(:final points) => _polyline(points, style),
     RectSource(:final w, :final h) => _rect(w, h, style),
     RoundRectSource(:final w, :final h, :final rx, :final ry) => _roundRect(

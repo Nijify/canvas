@@ -135,6 +135,7 @@ String _fallbackPathLabel(rt.PathSource? source) {
     rt.UnderlineSource() => 'Underline',
     rt.RegularPolygonSource() => 'Polygon',
     rt.StarSource() => 'Star',
+    rt.CommandPathSource() => 'Path',
     rt.SvgPathSource() => 'Path',
     null => 'Shape',
     _ => 'Shape',

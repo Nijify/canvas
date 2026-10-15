@@ -185,49 +185,36 @@ void main() {
     expect(paths[1].getAttribute('transform'), 'matrix(2.0 0 0 2.0 80.0 30.0)');
   });
 
-  test('writes compiled quadratic and cubic path commands', () {
+  test('exports a command source through scene computation', () {
     final scene = _scene(
-      children: const [
+      children: [
         Node.path(
           id: 'curve',
           data: PathData(
-            source: RectSource(10, 10),
-            fill: CanvasFill.solid(0xff123456),
+            source: CommandPathSource([
+              PathCmd.moveTo(const Vec2(0, 0)),
+              PathCmd.quadTo(const Vec2(2, 3), const Vec2(4, 5)),
+              PathCmd.cubicTo(
+                const Vec2(6, 7),
+                const Vec2(8, 9),
+                const Vec2(10, 11),
+              ),
+              PathCmd.close(),
+              PathCmd.moveTo(const Vec2(20, 30)),
+              PathCmd.lineTo(const Vec2(40, 50)),
+            ]),
+            fill: const CanvasFill.solid(0xff123456),
           ),
         ),
       ],
     );
-    final computed = _compute(scene);
-    final original = computed.pathIRById['curve']!;
-    final withCurves = ComputedScene(
-      drawList: computed.drawList,
-      nodeById: computed.nodeById,
-      worldById: computed.worldById,
-      layoutBoundsLocalById: computed.layoutBoundsLocalById,
-      paintBoundsLocalById: computed.paintBoundsLocalById,
-      paintBoundsWorldById: computed.paintBoundsWorldById,
-      pathIRById: {
-        'curve': PathIR([
-          PathCmd.moveTo(const Vec2(0, 0)),
-          PathCmd.quadTo(const Vec2(2, 3), const Vec2(4, 5)),
-          PathCmd.cubicTo(
-            const Vec2(6, 7),
-            const Vec2(8, 9),
-            const Vec2(10, 11),
-          ),
-          PathCmd.close(),
-        ], original.style),
-      },
-      imagePlacementById: computed.imagePlacementById,
-      iconTextById: computed.iconTextById,
-      iconPathIRById: computed.iconPathIRById,
-    );
-    final result = exportPreparedSvg(scene: scene, computed: withCurves);
+    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    expect(result.issues, isEmpty);
     final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
     expect(
       path.getAttribute('d'),
       'M0 0 Q2.0 3.0 4.0 5.0 '
-      'C6.0 7.0 8.0 9.0 10.0 11.0 Z',
+      'C6.0 7.0 8.0 9.0 10.0 11.0 Z M20.0 30.0 L40.0 50.0',
     );
   });
 

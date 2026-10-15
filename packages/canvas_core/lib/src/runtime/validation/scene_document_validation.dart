@@ -316,6 +316,9 @@ final class _SceneValidator {
 
   void _validatePathSource(PathSource source, String path) {
     switch (source) {
+      case CommandPathSource():
+        // Commands are finite, structurally valid, and frozen at construction.
+        break;
       case PolylineSource(:final points):
         for (var index = 0; index < points.length; index++) {
           final point = points[index];

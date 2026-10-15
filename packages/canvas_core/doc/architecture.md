@@ -56,6 +56,20 @@ Resolver inputs are opaque logical `sourceRef` values stored in the document. `r
 
 ## Serialization boundary
 
+`CommandPathSource` supplies normalized absolute move, line, quadratic, cubic,
+and close commands through the existing path compiler. It snapshots its command
+list, contains no paint, and preserves contour order and explicit closure.
+Coordinates must be finite. Empty and open contours are supported; each contour
+starts with `moveTo`, including after `close`. Converters normalize SVG arcs
+before constructing the source. Source coordinates are preserved without fitting
+or centering. Ordinary path paint and fill rule remain authored in `PathData`.
+
+Its JSON shape is `{"kind":"commands","commands":[...]}`. Every command has a
+`verb`; move/line require `p`, quadratic requires `c1` and `p`, cubic requires
+`c1`, `c2`, and `p`, and close has no points. Points contain exactly numeric `x`
+and `y`. Missing or extra fields, unknown verbs, and invalid command order are
+rejected by the decoder.
+
 External and persisted document JSON crosses the runtime boundary through:
 
 ```text
