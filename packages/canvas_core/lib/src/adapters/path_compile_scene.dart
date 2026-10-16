@@ -7,10 +7,9 @@
 // core -> path -> scene -> algorithms/pipeline.
 
 import 'package:canvas_core/src/path/path_compile.dart';
-import 'package:canvas_core/src/path/path_ir.dart' show PathIR, PathStyle;
+import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart' show PathData;
-import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 
 const _compiler = PathCompiler();
 
@@ -21,26 +20,9 @@ PathIR compilePath(PathData d) {
   final cached = _irCache[d];
   if (cached != null) return cached;
 
-  final solidFill = switch (d.fill) {
-    CanvasFillSolid(:final color) =>
-      (((color >> 24) & 0xFF) != 0) ? color : null,
-    _ => null,
-  };
-
-  final style = PathStyle(
-    fill: solidFill,
-    fillRule: d.fillRule,
-    stroke: (d.strokeWidth > 0 && d.strokeColor != 0) ? d.strokeColor : null,
-    strokeWidth: d.strokeWidth,
-    strokeCap: d.strokeCap,
-    strokeJoin: d.strokeJoin,
-    miterLimit: d.miterLimit,
-    dash: d.dash.isEmpty ? null : d.dash,
-  );
-
   final ir = (d.source != null)
-      ? _compiler.fromSource(d.source!, style)
-      : _compiler.fromSource(PolylineSource(d.points), style);
+      ? _compiler.fromSource(d.source!)
+      : _compiler.fromSource(PolylineSource(d.points));
 
   _irCache[d] = ir;
   return ir;

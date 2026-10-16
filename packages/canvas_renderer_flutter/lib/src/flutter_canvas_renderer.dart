@@ -141,38 +141,14 @@ class CanvasRenderer {
               appearance: data.appearance,
             );
           case IconNode(data: final data):
-            final glyph = computed.iconTextById[id];
-            final path = computed.iconPathIRById[id];
-            if (glyph != null) {
-              _drawText(
-                canvas,
-                textValue: glyph.glyph,
-                family: glyph.fontFamily,
-                weight: glyph.fontWeight,
-                size: data.sizePx,
-                appearance: data.appearance,
-              );
-            } else if (path != null) {
+            final icon = computed.iconById[id];
+            if (icon != null && icon.pathIR.cmds.isNotEmpty) {
+              final path = _buildUiPath(
+                icon.pathIR,
+                fillRule: icon.fillRule,
+              ).transform(icon.sourceToLocal.storage);
               _drawPathUnderlays(canvas, path, data.appearance.underlays);
-              final foreground = data.appearance.foreground;
-              final style = path.style;
-              _drawPathFill(
-                canvas,
-                path,
-                foreground,
-                fillRule: style.fillRule,
-              );
-              if (foreground is! CanvasFillNone) {
-                _drawPathStroke(
-                  canvas,
-                  path,
-                  color: style.stroke,
-                  width: style.strokeWidth,
-                  cap: style.strokeCap,
-                  join: style.strokeJoin,
-                  miterLimit: style.miterLimit,
-                );
-              }
+              _drawPathFill(canvas, path, data.appearance.foreground);
             }
           case ImageNode(data: final data):
             // A null asset is an intentionally empty frame.
@@ -186,9 +162,8 @@ class CanvasRenderer {
             if (path != null) {
               _drawPathFill(
                 canvas,
-                path,
+                _buildUiPath(path, fillRule: data.fillRule),
                 data.fill,
-                fillRule: data.fillRule,
               );
               _drawPathStroke(
                 canvas,
@@ -227,32 +202,21 @@ class CanvasRenderer {
     );
   }
 
-  void _drawPathFill(
-    ui.Canvas canvas,
-    PathIR path,
-    CanvasFill fill, {
-    required FillRule fillRule,
-  }) {
-    final uiPath = _buildUiPath(path);
-    uiPath.fillType = switch (fillRule) {
-      FillRule.evenOdd => ui.PathFillType.evenOdd,
-      FillRule.nonZero => ui.PathFillType.nonZero,
-    };
-
+  void _drawPathFill(ui.Canvas canvas, ui.Path path, CanvasFill fill) {
     switch (fill) {
       case CanvasFillNone():
         break;
       case CanvasFillSolid(:final color):
         // Paint and fill participation come from the caller.
         canvas.drawPath(
-          uiPath,
+          path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..color = ui.Color(color),
         );
       case CanvasFillGradient(:final grad):
         canvas.drawPath(
-          uiPath,
+          path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..shader = buildLinearShaderFlutter(grad),
@@ -304,8 +268,15 @@ class CanvasRenderer {
 
   // --- helpers --------------------------------------------------------------
 
-  static ui.Path _buildUiPath(PathIR ir) {
-    final p = ui.Path();
+  static ui.Path _buildUiPath(
+    PathIR ir, {
+    FillRule fillRule = FillRule.nonZero,
+  }) {
+    final p = ui.Path()
+      ..fillType = switch (fillRule) {
+        FillRule.evenOdd => ui.PathFillType.evenOdd,
+        FillRule.nonZero => ui.PathFillType.nonZero,
+      };
     for (final cmd in ir.cmds) {
       switch (cmd.verb) {
         case PathVerb.moveTo:
@@ -339,44 +310,20 @@ class CanvasRenderer {
 
   void _drawPathUnderlays(
     ui.Canvas canvas,
-    PathIR ir,
+    ui.Path path,
     List<CanvasSourceUnderlay> underlays,
   ) {
-    if (ir.cmds.isEmpty) return;
-
     paintSourceUnderlays(
       canvas,
       underlays: underlays,
       paintSource: (sourceCanvas) {
-        final path = _buildUiPath(ir);
-        final style = ir.style;
-
-        path.fillType = switch (style.fillRule) {
-          FillRule.evenOdd => ui.PathFillType.evenOdd,
-          FillRule.nonZero => ui.PathFillType.nonZero,
-        };
-
-        // Path-icon source coverage is independent of authored foreground
-        // color, alpha, and visibility.
+        // Fitted filled coverage is independent of foreground visibility.
         sourceCanvas.drawPath(
           path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..color = const ui.Color(0xFF000000),
         );
-
-        if (style.stroke != null && style.strokeWidth > 0) {
-          sourceCanvas.drawPath(
-            path,
-            ui.Paint()
-              ..style = ui.PaintingStyle.stroke
-              ..color = const ui.Color(0xFF000000)
-              ..strokeWidth = style.strokeWidth
-              ..strokeCap = _mapCap(style.strokeCap)
-              ..strokeJoin = _mapJoin(style.strokeJoin)
-              ..strokeMiterLimit = style.miterLimit,
-          );
-        }
       },
     );
   }

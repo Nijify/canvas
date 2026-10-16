@@ -1,15 +1,6 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
-final class _TestIconResolver implements IconResolver {
-  const _TestIconResolver(this.icons);
-
-  final Map<String, ResolvedIcon> icons;
-
-  @override
-  ResolvedIcon? resolve(String iconRef) => icons[iconRef];
-}
-
 void main() {
   group('collectSceneFontFamilies', () {
     test(
@@ -87,49 +78,33 @@ void main() {
     );
 
     test(
-      'collects text-backed icon fonts and ignores path or unresolved icons',
+      'icons add no font dependencies, including hidden and missing refs',
       () {
-        const icons = _TestIconResolver(<String, ResolvedIcon>{
-          'font-icon': ResolvedIconText(
-            glyph: '\uf005',
-            fontFamily: ' Font Awesome 6 Free ',
-            fontWeight: 900,
-          ),
-          'path-icon': ResolvedIconPath(PathData(source: RectSource(16, 16))),
-        });
-
         final scene = CanvasSceneDocument(
           backgroundFill: const CanvasFill.none(),
-          backgroundOpacity: 1.0,
-          children: <Node>[
-            Node.icon(
-              id: 'font-icon-node',
-              data: const CanvasIconData(iconRef: 'font-icon'),
+          backgroundOpacity: 1,
+          children: [
+            const Node.icon(
+              id: 'icon',
+              data: CanvasIconData(iconRef: 'vector'),
             ),
-            Node.icon(
-              id: 'path-icon-node',
-              data: const CanvasIconData(iconRef: 'path-icon'),
+            const Node.icon(
+              id: 'missing',
+              data: CanvasIconData(iconRef: 'missing'),
             ),
-            Node.icon(
-              id: 'missing-icon-node',
-              data: const CanvasIconData(iconRef: 'missing-icon'),
-            ),
-            Node.group(
-              id: 'hidden-icons',
+            const Node.group(
+              id: 'hidden',
               hidden: true,
-              children: <Node>[
+              children: [
                 Node.icon(
-                  id: 'hidden-font-icon',
-                  data: const CanvasIconData(iconRef: 'font-icon'),
+                  id: 'hidden-icon',
+                  data: CanvasIconData(iconRef: 'vector'),
                 ),
               ],
             ),
           ],
         );
-
-        final families = collectSceneFontFamilies(scene, icons: icons);
-
-        expect(families, unorderedEquals(<String>['Font Awesome 6 Free']));
+        expect(collectSceneFontFamilies(scene), isEmpty);
       },
     );
   });

@@ -9,18 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String ref) => switch (ref) {
-    'glyph' => const ResolvedIconText(glyph: 'X', fontFamily: 'Ahem'),
-
-    'path' => const ResolvedIconPath(
-      PathData(source: RectSource(24, 24), strokeWidth: 0),
-    ),
-
-    'path-stroke' => const ResolvedIconPath(
-      PathData(
-        source: RectSource(24, 24),
-        strokeColor: 0xFFFFFFFF,
-        strokeWidth: 8,
-      ),
+    'path' => ResolvedIcon(
+      source: const RectSource(24, 24),
+      viewBox: const Rect2D(-12, -12, 12, 12),
+      fillRule: FillRule.nonZero,
     ),
 
     _ => null,
@@ -85,7 +77,7 @@ Node _node(String target, List<ShadowEffect> shadows, CanvasFill foreground) =>
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  for (final target in ['text', 'glyph', 'path']) {
+  for (final target in ['text', 'path']) {
     for (final sigma in [0.0, 3.0]) {
       test('$target renders independent blue shadow, sigma $sigma', () async {
         final text = FlutterTextPipeline();
@@ -181,7 +173,7 @@ void main() {
     }
   }
 
-  for (final target in ['text', 'glyph', 'path']) {
+  for (final target in ['text', 'path']) {
     test('$target renders shadow-only appearance without foreground', () async {
       final text = FlutterTextPipeline();
 
@@ -241,77 +233,6 @@ void main() {
       }
     });
   }
-
-  test(
-    'path icon none foreground suppresses intrinsic fill and stroke',
-    () async {
-      final text = FlutterTextPipeline();
-
-      try {
-        final scene = CanvasSceneDocument(
-          backgroundFill: const CanvasFill.none(),
-          backgroundOpacity: 1,
-          children: const [
-            Node.icon(
-              id: 'source',
-              data: CanvasIconData(
-                iconRef: 'path-stroke',
-                sizePx: 24,
-                appearance: CanvasAppearance(
-                  foreground: CanvasFill.none(),
-                  underlays: [
-                    ShadowEffect(
-                      id: 'shadow',
-                      offset: Vec2(70, 0),
-                      color: 0xFF0000FF,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-
-        final evaluation = evaluateScene(
-          scene,
-          CoreServices(textMeasurer: text, icons: _Icons()),
-        );
-
-        final pixels = await _pixels(
-          (canvas) => CanvasRenderer(text: text).paintScene(canvas, evaluation),
-        );
-
-        // Nothing from the authored foreground may remain around the source.
-        var sourcePixels = 0;
-
-        for (var y = -30; y <= 30; y++) {
-          for (var x = -30; x <= 30; x++) {
-            if (_channel(pixels, x, y, 3) != 0) {
-              sourcePixels++;
-            }
-          }
-        }
-
-        expect(sourcePixels, 0);
-
-        // But the displaced shadow, including intrinsic-stroke coverage,
-        // must still exist.
-        var shadowPixels = 0;
-
-        for (var y = -40; y <= 40; y++) {
-          for (var x = 45; x <= 110; x++) {
-            if (_channel(pixels, x, y, 3) != 0) {
-              shadowPixels++;
-            }
-          }
-        }
-
-        expect(shadowPixels, greaterThan(0));
-      } finally {
-        text.dispose();
-      }
-    },
-  );
 
   test('list order is back-to-front and source is recorded once', () async {
     const red = ShadowEffect(id: 'r', offset: Vec2(50, 0), color: 0x80FF0000);

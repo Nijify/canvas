@@ -71,7 +71,6 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
     final canonicalFontFamilies = collectSceneFontFamilies(
       scene,
       fallbackFontFamilies: _fonts.fallbackFontFamilies,
-      icons: _icons,
     );
 
     final canonicalImageSourceRefs = _collectImageSourceRefs(scene);
@@ -120,7 +119,6 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       final preparedFontFamilies = collectSceneFontFamilies(
         prepared,
         fallbackFontFamilies: _fonts.fallbackFontFamilies,
-        icons: _icons,
       );
 
       final preparedImageSourceRefs = _collectImageSourceRefs(prepared);
@@ -293,12 +291,6 @@ void _ensureIconsResolvable(
     if (resolved == null) {
       throw StateError(
         'The $stage scene contains unresolved icon reference "$iconRef".',
-      );
-    }
-
-    if (resolved is ResolvedIconText && resolved.fontFamily.trim().isEmpty) {
-      throw StateError(
-        'Icon reference "$iconRef" resolved to a blank font family.',
       );
     }
   }

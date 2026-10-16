@@ -16,6 +16,15 @@ final class _TextMeasurer implements TextMeasurer {
   }) => Size2D(text.length * fontSize * 0.6, fontSize);
 }
 
+final class _Icons implements IconResolver {
+  @override
+  ResolvedIcon? resolve(String ref) => ResolvedIcon(
+    source: const RectSource(24, 24),
+    viewBox: const Rect2D(-12, -12, 12, 12),
+    fillRule: FillRule.nonZero,
+  );
+}
+
 ComputedScene _compute(CanvasSceneDocument scene) =>
     computeScene(scene, const CoreServices(textMeasurer: _TextMeasurer()));
 
@@ -31,7 +40,26 @@ CanvasSceneDocument _scene({
 );
 
 void main() {
-  test('authored paint is authoritative over compiled style metadata', () {
+  test('resolved vector icons remain outside the strict SVG profile', () {
+    final scene = _scene(
+      children: const [
+        Node.icon(
+          id: 'icon',
+          data: CanvasIconData(iconRef: 'vector'),
+        ),
+      ],
+    );
+    final computed = computeScene(
+      scene,
+      CoreServices(textMeasurer: const _TextMeasurer(), icons: _Icons()),
+    );
+    expect(computed.iconById, contains('icon'));
+    final result = exportPreparedSvg(scene: scene, computed: computed);
+    expect(result.svg, isNull);
+    expect(result.issues.single.code, SvgExportIssueCode.unsupportedIcon);
+  });
+
+  test('ordinary path appearance is supplied by PathData', () {
     final scene = _scene(
       children: const [
         Node.path(
@@ -50,18 +78,6 @@ void main() {
       ],
     );
     final computed = _compute(scene);
-    final original = computed.pathIRById['p']!;
-    computed.pathIRById['p'] = PathIR(
-      original.cmds,
-      const PathStyle(
-        fillRule: FillRule.nonZero,
-        stroke: 0xFF00FF00,
-        strokeWidth: 20,
-        strokeCap: StrokeCap.butt,
-        strokeJoin: StrokeJoin.miter,
-        dash: [1, 1],
-      ),
-    );
 
     final result = exportPreparedSvg(scene: scene, computed: computed);
 
@@ -409,8 +425,7 @@ void main() {
       paintBoundsWorldById: computed.paintBoundsWorldById,
       pathIRById: const {},
       imagePlacementById: computed.imagePlacementById,
-      iconTextById: computed.iconTextById,
-      iconPathIRById: computed.iconPathIRById,
+      iconById: computed.iconById,
     );
     final result = exportPreparedSvg(scene: scene, computed: incomplete);
     expect(result.svg, isNull);

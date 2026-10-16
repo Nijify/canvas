@@ -1,13 +1,16 @@
 import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement, imageSrcDst;
+import 'package:canvas_core/src/algorithms/layout/computed_icon.dart'
+    show ComputedIcon;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
 import 'package:canvas_core/src/algorithms/layout/appearance_bounds.dart';
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
-import 'package:canvas_core/src/services/icon_resolver.dart';
+import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
+    show aabbOfTransformedRect;
 import 'package:canvas_core/src/services/services_context.dart';
 
 final class NodeGeometry {
@@ -22,8 +25,7 @@ final class NodeGeometry {
     Node n, {
     Map<ElementId, PathIR>? pathIRById,
     Map<ElementId, ImagePlacement>? imagePlacementById,
-    Map<ElementId, ResolvedIconText>? iconTextById,
-    Map<ElementId, PathIR>? iconPathIRById,
+    Map<ElementId, ComputedIcon>? iconById,
   }) {
     final s = services;
 
@@ -55,58 +57,24 @@ final class NodeGeometry {
         final layout = Rect2D.fromLTWH(-size / 2, -size / 2, size, size);
         final resolved = s.icons?.resolve(d.iconRef);
 
-        switch (resolved) {
-          case ResolvedIconText():
-            iconTextById?[id] = resolved;
-            if (resolved.glyph.isEmpty) {
-              return (layout: layout, paint: null);
-            }
-
-            // Match DrawTextOp's glyph metrics and center-origin painting.
-            // The stable icon square remains the layout/pivot geometry.
-            final m = s.textMeasurer.measure(
-              text: resolved.glyph,
-              fontFamily: resolved.fontFamily,
-              fontWeight: resolved.fontWeight,
-              fontSize: size,
-              letterSpacing: 0,
-            );
-
-            final sourceBounds = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
-
-            final appearance = d.appearance;
-
-            return (
-              layout: layout,
-              paint: estimateAppearancePaintBounds(
-                sourceBounds: sourceBounds,
-                foregroundPresent: appearance.foreground is! CanvasFillNone,
-                underlays: appearance.underlays,
-              ),
-            );
-
-          case ResolvedIconPath(:final path):
-            final ir = compilePath(path);
-            iconPathIRById?[id] = ir;
-
-            final sourceBounds = ir.cmds.isEmpty
-                ? null
-                : ir.localBounds(includeStroke: true);
-
-            final appearance = d.appearance;
-
-            return (
-              layout: layout,
-              paint: estimateAppearancePaintBounds(
-                sourceBounds: sourceBounds,
-                foregroundPresent: appearance.foreground is! CanvasFillNone,
-                underlays: appearance.underlays,
-              ),
-            );
-
-          default:
-            return (layout: layout, paint: null);
-        }
+        if (resolved == null) return (layout: layout, paint: null);
+        final icon = ComputedIcon.fit(resolved, size);
+        iconById?[id] = icon;
+        final sourceBounds = icon.pathIR.cmds.isEmpty
+            ? null
+            : aabbOfTransformedRect(
+                icon.pathIR.localBounds(),
+                icon.sourceToLocal,
+              );
+        final appearance = d.appearance;
+        return (
+          layout: layout,
+          paint: estimateAppearancePaintBounds(
+            sourceBounds: sourceBounds,
+            foregroundPresent: appearance.foreground is! CanvasFillNone,
+            underlays: appearance.underlays,
+          ),
+        );
 
       case ImageNode(id: final id, data: final d):
         final intrinsic = s.images?.intrinsicSize(id);
@@ -126,7 +94,7 @@ final class NodeGeometry {
       case PathNode(id: final id, data: final d):
         final ir = compilePath(d);
         pathIRById?[id] = ir;
-        final geometryBounds = ir.localBounds(includeStroke: false);
+        final geometryBounds = ir.localBounds();
         final hasStroke = d.strokeColor != 0 && d.strokeWidth > 0;
         final radius = hasStroke ? d.strokeWidth / 2 : 0.0;
         final layout = ir.cmds.isEmpty || !hasStroke

@@ -60,11 +60,6 @@ void main() {
       ),
     ]);
     final computed = computeScene(scene, _services());
-    final original = computed.pathIRById['path']!;
-    computed.pathIRById['path'] = PathIR(
-      original.cmds,
-      const PathStyle(fillRule: FillRule.nonZero),
-    );
     final geometry = EditorGeometryIndex.fromComputed(computed);
 
     Node? pick(Vec2 point) => pickLeafTopAtScene(
@@ -91,11 +86,6 @@ void main() {
       ),
     ]);
     final computed = computeScene(scene, _services());
-    final original = computed.pathIRById['path']!;
-    computed.pathIRById['path'] = PathIR(
-      original.cmds,
-      const PathStyle(strokeWidth: 0),
-    );
     final geometry = EditorGeometryIndex.fromComputed(computed);
 
     final hit = pickLeafTopAtScene(

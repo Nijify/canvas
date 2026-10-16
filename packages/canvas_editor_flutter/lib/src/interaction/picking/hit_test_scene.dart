@@ -40,7 +40,8 @@ typedef NodeHitTest = bool Function(Node leaf);
 ///   implicitly closed for containment
 /// - vector picking is selection-oriented and may be more permissive than
 ///   exact painted output
-/// - paths/icons also use outline proximity
+/// - icons use their nominal square, including holes and unused margins
+/// - ordinary paths also use outline proximity
 /// - thin strokes get a minimum screen-space hit slop
 
 Node? pickTopAtScene(
@@ -185,9 +186,7 @@ bool _hitLeafAt(
   final localRect = computed.layoutBoundsLocalById[leafId];
   if (localRect == null) return false;
 
-  final bool isVectorLeaf =
-      leaf is PathNode ||
-      (leaf is IconNode && computed.iconPathIRById[leafId] != null);
+  final bool isVectorLeaf = leaf is PathNode;
 
   final localHitSlop = isVectorLeaf
       ? _localHitSlopForLeaf(
@@ -205,21 +204,7 @@ bool _hitLeafAt(
     TextNode() => true,
     ImageNode() => true,
 
-    IconNode(id: final id) => () {
-      final ir = computed.iconPathIRById[id];
-      if (ir == null) return true;
-
-      final style = ir.style;
-      if (pathContainsClosedArea(ir, local, fillRule: style.fillRule)) {
-        return true;
-      }
-
-      final outlineRadius = math.max(
-        _strokeRadiusLocal(color: style.stroke, width: style.strokeWidth),
-        localHitSlop,
-      );
-      return pathHitsOutline(ir, local, radiusLocal: outlineRadius);
-    }(),
+    IconNode() => true,
 
     PathNode(id: final id, data: final data) => () {
       final ir = computed.pathIRById[id];

@@ -581,6 +581,52 @@ void main() {
   });
 
   group('FlutterCanvasPngRenderer resource preservation', () {
+    test('vector icons render without requesting any icon fonts', () async {
+      final fonts = _RecordingFontLoader();
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: fonts,
+        icons: _MapIconResolver({
+          'vector': ResolvedIcon(
+            source: const RectSource(24, 24),
+            viewBox: const Rect2D(-12, -12, 12, 12),
+            fillRule: FillRule.nonZero,
+          ),
+        }),
+      );
+      final bytes = await renderer.renderPng(
+        scene: _emptyScene().copyWith(
+          children: const [
+            Node.icon(
+              id: 'vector',
+              xf: Transform2D(position: Vec2(32, 32)),
+              data: CanvasIconData(
+                iconRef: 'vector',
+                sizePx: 24,
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.solid(0xff123456),
+                ),
+              ),
+            ),
+          ],
+        ),
+        spec: const CanvasPngSpec(
+          widthPx: 64,
+          heightPx: 64,
+          pixelRatio: 1,
+          transparent: true,
+        ),
+      );
+      expect(fonts.requests, hasLength(1));
+      expect(fonts.requests.single, isEmpty);
+      final image = await _decodePng(bytes);
+      try {
+        expect(await _pixelAt(image, 32, 32), 0xff123456);
+        expect(await _pixelAt(image, 0, 0), 0);
+      } finally {
+        image.dispose();
+      }
+    });
+
     test('rejects new prepared font family', () async {
       final renderer = FlutterCanvasPngRenderer(
         fonts: _RecordingFontLoader(),
@@ -599,16 +645,16 @@ void main() {
     });
 
     test('rejects new prepared icon reference', () async {
-      const iconFont = 'IconFont';
-
-      const icons = _MapIconResolver(<String, ResolvedIcon>{
-        'new-icon': ResolvedIconText(glyph: '*', fontFamily: iconFont),
+      final icons = _MapIconResolver(<String, ResolvedIcon>{
+        'new-icon': ResolvedIcon(
+          source: const RectSource(16, 16),
+          viewBox: const Rect2D(-8, -8, 8, 8),
+          fillRule: FillRule.nonZero,
+        ),
       });
 
       final renderer = FlutterCanvasPngRenderer(
-        fonts: _RecordingFontLoader(
-          fallbackFontFamilies: const <String>[iconFont],
-        ),
+        fonts: _RecordingFontLoader(),
         icons: icons,
         scenePreparer: (scene, services) {
           return scene.copyWith(

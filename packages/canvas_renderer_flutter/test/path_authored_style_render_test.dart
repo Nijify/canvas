@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _side = 64;
 const _center = _side ~/ 2;
 
-Future<Uint8List> _pixels(PathData data, PathStyle staleStyle) async {
+Future<Uint8List> _pixels(PathData data) async {
   final text = FlutterTextPipeline();
   try {
     final scene = CanvasSceneDocument(
@@ -26,11 +26,6 @@ Future<Uint8List> _pixels(PathData data, PathStyle staleStyle) async {
       ],
     );
     final evaluation = evaluateScene(scene, CoreServices(textMeasurer: text));
-    final original = evaluation.computed.pathIRById['path']!;
-    evaluation.computed.pathIRById['path'] = PathIR(
-      original.cmds,
-      staleStyle,
-    );
 
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -39,7 +34,9 @@ Future<Uint8List> _pixels(PathData data, PathStyle staleStyle) async {
     try {
       final image = await picture.toImage(_side, _side);
       try {
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final bytes = await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
         if (bytes == null) throw StateError('Unable to read pixels.');
         return Uint8List.fromList(
           bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
@@ -84,11 +81,6 @@ void main() {
         strokeColor: 0xFF0000FF,
         strokeWidth: 4,
       ),
-      const PathStyle(
-        fillRule: FillRule.nonZero,
-        stroke: 0xFF00FF00,
-        strokeWidth: 12,
-      ),
     );
 
     expect(_rgba(pixels, 0, 0), [0, 0, 0, 0]);
@@ -104,11 +96,6 @@ void main() {
         strokeColor: 0xFF203040,
         strokeWidth: 6,
         strokeCap: StrokeCap.round,
-      ),
-      const PathStyle(
-        stroke: 0xFFFF0000,
-        strokeWidth: 2,
-        strokeCap: StrokeCap.butt,
       ),
     );
 

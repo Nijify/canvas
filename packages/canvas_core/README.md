@@ -92,16 +92,24 @@ implement `TextMeasurer` directly.
 
 Core discovers logical resource requirements without loading platform resources.
 
-Use `collectSceneFontFamilies` to collect text and font-backed icon families,
+Use `collectSceneFontFamilies` to collect text and fallback font families,
 including hidden and nested scene content:
 
 ```dart
 final fontFamilies = collectSceneFontFamilies(
   document,
   fallbackFontFamilies: fallbackFontFamilies,
-  icons: myIconResolver,
 );
 ```
+
+Icons are filled vector symbols. An `IconResolver` returns a `ResolvedIcon`
+with a supported `PathSource`, a finite positive `viewBox`, and a `FillRule`.
+The resource snapshots normalized geometry and has no font or source paint.
+The instance's `CanvasAppearance` supplies its foreground and shadows.
+
+Scene evaluation fits the declared viewBox uniformly into the centered
+`sizePx × sizePx` layout square. Source margins are preserved. Non-square
+artwork is centered without stretching, and the square does not clip paint.
 
 ## File-reference migration (Unreleased)
 

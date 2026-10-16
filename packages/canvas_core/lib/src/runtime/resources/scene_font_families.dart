@@ -1,13 +1,10 @@
 // Path: lib/src/runtime/resources/scene_font_families.dart
 
-import 'package:canvas_core/src/runtime/model/node_model.dart'
-    show IconNode, TextNode;
+import 'package:canvas_core/src/runtime/model/node_model.dart' show TextNode;
 import 'package:canvas_core/src/runtime/model/scene_document.dart'
     show CanvasSceneDocument;
 import 'package:canvas_core/src/runtime/traversal/traversal.dart'
     show visitSceneNodes;
-import 'package:canvas_core/src/services/icon_resolver.dart'
-    show IconResolver, ResolvedIconText;
 
 /// Collects logical font-family dependencies referenced by a scene.
 ///
@@ -17,12 +14,10 @@ import 'package:canvas_core/src/services/icon_resolver.dart'
 /// Hidden nodes are included because resource preflight must account for the
 /// complete logical document rather than only the currently painted subset.
 ///
-/// Font-backed icons contribute their resolved font family. Path-backed and
-/// unresolved icons do not contribute a font family.
+/// Icons contain vector geometry and contribute no font-family dependencies.
 Set<String> collectSceneFontFamilies(
   CanvasSceneDocument scene, {
   Iterable<String> fallbackFontFamilies = const <String>[],
-  IconResolver? icons,
 }) {
   final families = <String>{};
 
@@ -43,15 +38,6 @@ Set<String> collectSceneFontFamilies(
     visit: (node) {
       if (node is TextNode) {
         addFamily(node.data.fontFamily);
-        return;
-      }
-
-      if (node is IconNode) {
-        final resolved = icons?.resolve(node.data.iconRef);
-
-        if (resolved is ResolvedIconText) {
-          addFamily(resolved.fontFamily);
-        }
       }
     },
   );

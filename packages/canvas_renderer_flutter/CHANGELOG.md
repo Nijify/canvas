@@ -1,7 +1,12 @@
-## Unreleased
+## 0.14.0
+
+- **Breaking:** require `canvas_core 0.15.x` and render vector-only icons from
+  `ComputedIcon`. Remove font-backed icon painting.
+- Fill fitted compound icon geometry once with the authored foreground and
+  derive independent shadows from that filled silhouette. Keep gradients and
+  shadow parameters in node-local coordinates.
 
 - Read ordinary-path fill rules and stroke properties directly from `PathData`.
-  Keep the existing vector-icon source behavior until its contract is replaced.
 
 ## 0.13.0
 

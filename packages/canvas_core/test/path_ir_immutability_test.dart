@@ -35,17 +35,14 @@ void main() {
       PathCmd.close(),
     ];
     final expected = List<PathCmd>.of(commands);
-    final path = PathIR(commands, const PathStyle());
+    final path = PathIR(commands);
 
     commands
       ..clear()
       ..add(PathCmd.moveTo(const Vec2(999, 999)));
 
     expect(path.cmds, orderedEquals(expected));
-    expect(
-      path.localBounds(includeStroke: false),
-      const Rect2D(-4, -3, 8, 5),
-    );
+    expect(path.localBounds(), const Rect2D(-4, -3, 8, 5));
   });
 
   test('computed path commands cannot be appended to or replaced', () {
@@ -62,10 +59,7 @@ void main() {
     );
 
     expect(_geometry(path), equals(originalGeometry));
-    expect(
-      path.localBounds(includeStroke: false),
-      const Rect2D(-12, -6, 12, 6),
-    );
+    expect(path.localBounds(), const Rect2D(-12, -6, 12, 6));
   });
 
   test('authored paint preserves geometry and existing stroke bounds', () {

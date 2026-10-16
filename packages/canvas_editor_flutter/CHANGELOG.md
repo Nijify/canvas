@@ -1,4 +1,9 @@
-# Unreleased
+# 0.18.0
+
+- **Breaking:** require `canvas_core 0.15.x` and
+  `canvas_renderer_flutter 0.14.x`.
+- Select icons through their transformed nominal square, including filled-path
+  holes and unused margins. Shadows do not enlarge the selection target.
 
 - Pass fill rules explicitly to path containment tests and use authored
   `PathData` fill rules and stroke widths for ordinary-path picking.

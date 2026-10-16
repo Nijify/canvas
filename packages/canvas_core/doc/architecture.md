@@ -52,7 +52,35 @@ logical sourceRef
 
 Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. `resolveIntrinsicSizes()` provides stable layout-affecting metadata keyed by the logical ref. Both result maps may be partial.
 
-`collectSceneFontFamilies()` discovers logical font-family dependencies from nested and hidden text plus resolved font-backed icons. Discovery does not load or validate fonts.
+`collectSceneFontFamilies()` discovers logical font-family dependencies from
+nested and hidden text plus caller-supplied fallbacks. Icons contribute no fonts.
+Discovery does not load or validate fonts.
+
+## Vector icons and compiled geometry
+
+`IconResolver` returns one concrete `ResolvedIcon`: immutable normalized
+source commands, an explicit finite positive viewBox, and a fill rule.
+Supported primitive sources are normalized at resource construction.
+SVG strings must be converted before resolution; core has no SVG parser.
+Empty geometry is valid. All nonempty icon geometry is used as a filled path,
+with the usual implicit closure of open contours and the declared fill rule.
+
+`ComputedScene.iconById` contains one `ComputedIcon` per resolved instance:
+source-space `PathIR`, `sourceToLocal`, and fill rule. The transform centers
+the declared viewBox with uniform `min(sizePx / width, sizePx / height)` scale.
+Painting consumes this evaluated result without resolver calls. The nominal
+layout square remains stable and does not clip the fitted geometry.
+
+Foreground gradients and shadow offsets/blur use node-local coordinates after
+source fitting. Source-derived shadows remain independent of foreground color,
+alpha, and visibility. Node/group transforms apply to the whole result.
+Intrinsic outlines and multiple source paints are outside this icon contract.
+
+`PathIR` is immutable geometry only; `localBounds()` estimates its geometry
+from endpoints and curve controls. Ordinary path appearance belongs to
+`PathData`, including the existing stroke expansion used for layout and paint
+bounds. The strict SVG exporter keeps its existing supported ordinary-path
+profile and explicitly rejects icons.
 
 ## Serialization boundary
 

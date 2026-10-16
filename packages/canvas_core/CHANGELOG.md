@@ -1,4 +1,14 @@
-## Unreleased
+## 0.15.0
+
+- **Breaking:** make icons filled vectors with one concrete `ResolvedIcon`
+  containing normalized source geometry, viewBox, and fill rule. Remove glyph
+  variants and icon font discovery.
+- **Breaking:** replace the two computed icon maps with `iconById` and
+  `ComputedIcon`, using a centered, uniform viewBox fit.
+- **Breaking:** remove `PathStyle` and style-bearing compilation.
+  `PathIR.localBounds()` now describes geometry only.
+- **Breaking:** remove the icon resolver argument from
+  `collectSceneFontFamilies()`; it discovers text and fallback families.
 
 - Add immutable, geometry-only `CommandPathSource` with strict JSON decoding
   and direct compilation of absolute move/line/quadratic/cubic/close commands.

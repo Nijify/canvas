@@ -1,13 +1,13 @@
 // Path: packages/canvas_editor_flutter/test/interaction/picking/path_hit_test_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show FillRule, PathCmd, PathIR, PathStyle, Vec2;
+    show FillRule, PathCmd, PathIR, Vec2;
 import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('pathContainsClosedArea', () {
-    test('the supplied fill rule overrides compiled style metadata', () {
+    test('the supplied fill rule determines containment', () {
       final ir = PathIR([
         PathCmd.moveTo(const Vec2(-10, -10)),
         PathCmd.lineTo(const Vec2(10, -10)),
@@ -19,7 +19,7 @@ void main() {
         PathCmd.lineTo(const Vec2(4, 4)),
         PathCmd.lineTo(const Vec2(-4, 4)),
         PathCmd.close(),
-      ], const PathStyle(fillRule: FillRule.nonZero));
+      ]);
 
       expect(
         pathContainsClosedArea(ir, Vec2.zero, fillRule: FillRule.evenOdd),
@@ -36,7 +36,7 @@ void main() {
         PathCmd.moveTo(const Vec2(0, 0)),
         PathCmd.lineTo(const Vec2(10, 0)),
         PathCmd.lineTo(const Vec2(0, 10)),
-      ], const PathStyle(fill: 0xFFFFFFFF, fillRule: FillRule.nonZero));
+      ]);
 
       expect(
         pathContainsClosedArea(
@@ -69,7 +69,7 @@ void main() {
         PathCmd.lineTo(const Vec2(4, -4)),
         PathCmd.lineTo(const Vec2(4, 4)),
         PathCmd.lineTo(const Vec2(-4, 4)),
-      ], const PathStyle(fill: 0xFFFFFFFF, fillRule: FillRule.evenOdd));
+      ]);
 
       expect(
         pathContainsClosedArea(
@@ -93,7 +93,7 @@ void main() {
       final ir = PathIR([
         PathCmd.moveTo(const Vec2(0, 0)),
         PathCmd.lineTo(const Vec2(10, 0)),
-      ], const PathStyle(fill: 0xFFFFFFFF, fillRule: FillRule.nonZero));
+      ]);
 
       expect(
         pathContainsClosedArea(
@@ -119,7 +119,7 @@ void main() {
       final ir = PathIR([
         PathCmd.moveTo(const Vec2(0, 0)),
         PathCmd.lineTo(const Vec2(10, 0)),
-      ], const PathStyle(stroke: 0xFF000000, strokeWidth: 1.0));
+      ]);
 
       expect(pathHitsOutline(ir, const Vec2(5, 0.4), radiusLocal: 0.5), isTrue);
     });
@@ -128,7 +128,7 @@ void main() {
       final ir = PathIR([
         PathCmd.moveTo(const Vec2(0, 0)),
         PathCmd.lineTo(const Vec2(10, 0)),
-      ], const PathStyle(stroke: 0xFF000000, strokeWidth: 1.0));
+      ]);
 
       expect(
         pathHitsOutline(ir, const Vec2(5, 0.6), radiusLocal: 0.5),
