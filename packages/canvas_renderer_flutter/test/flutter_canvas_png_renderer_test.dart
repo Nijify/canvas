@@ -587,7 +587,13 @@ void main() {
         fonts: fonts,
         icons: _MapIconResolver({
           'vector': ResolvedIcon(
-            source: const RectSource(24, 24),
+            source: CommandPathSource([
+              PathCmd.moveTo(const Vec2(-12, -12)),
+              PathCmd.lineTo(const Vec2(12, -12)),
+              PathCmd.lineTo(const Vec2(12, 12)),
+              PathCmd.lineTo(const Vec2(-12, 12)),
+              PathCmd.close(),
+            ]),
             viewBox: const Rect2D(-12, -12, 12, 12),
             fillRule: FillRule.nonZero,
           ),
@@ -647,7 +653,13 @@ void main() {
     test('rejects new prepared icon reference', () async {
       final icons = _MapIconResolver(<String, ResolvedIcon>{
         'new-icon': ResolvedIcon(
-          source: const RectSource(16, 16),
+          source: CommandPathSource([
+            PathCmd.moveTo(const Vec2(-8, -8)),
+            PathCmd.lineTo(const Vec2(8, -8)),
+            PathCmd.lineTo(const Vec2(8, 8)),
+            PathCmd.lineTo(const Vec2(-8, 8)),
+            PathCmd.close(),
+          ]),
           viewBox: const Rect2D(-8, -8, 8, 8),
           fillRule: FillRule.nonZero,
         ),

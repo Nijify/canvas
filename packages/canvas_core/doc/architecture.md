@@ -60,8 +60,10 @@ Discovery does not load or validate fonts.
 
 `IconResolver` returns one concrete `ResolvedIcon`: immutable normalized
 source commands, an explicit finite positive viewBox, and a fill rule.
-Supported primitive sources are normalized at resource construction.
-SVG strings must be converted before resolution; core has no SVG parser.
+The resource requires a `CommandPathSource`; hosts normalize geometry before
+construction. The command source validates coordinates and contour order and
+snapshots its commands. SVG strings must be converted before resolution;
+core has no SVG parser.
 Empty geometry is valid. All nonempty icon geometry is used as a filled path,
 with the usual implicit closure of open contours and the declared fill rule.
 
@@ -70,6 +72,8 @@ source-space `PathIR`, `sourceToLocal`, and fill rule. The transform centers
 the declared viewBox with uniform `min(sizePx / width, sizePx / height)` scale.
 Painting consumes this evaluated result without resolver calls. The nominal
 layout square remains stable and does not clip the fitted geometry.
+Instance sizes are checked before layout and lookup, including when the
+resolver is absent or the reference is unresolved.
 
 Foreground gradients and shadow offsets/blur use node-local coordinates after
 source fitting. Source-derived shadows remain independent of foreground color,

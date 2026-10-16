@@ -54,6 +54,13 @@ final class NodeGeometry {
 
       case IconNode(id: final id, data: final d):
         final size = d.sizePx;
+        if (!size.isFinite || size <= 0) {
+          throw ArgumentError.value(
+            size,
+            'sizePx',
+            'Must be finite and positive.',
+          );
+        }
         final layout = Rect2D.fromLTWH(-size / 2, -size / 2, size, size);
         final resolved = s.icons?.resolve(d.iconRef);
 

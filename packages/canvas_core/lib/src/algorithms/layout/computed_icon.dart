@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:canvas_core/src/foundation/style/style_types.dart'
     show FillRule;
-import 'package:canvas_core/src/path/path_compile.dart' show PathCompiler;
 import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 import 'package:canvas_core/src/services/icon_resolver.dart' show ResolvedIcon;
 import 'package:vector_math/vector_math_64.dart' as vm;
@@ -32,7 +31,7 @@ final class ComputedIcon {
       ..translateByDouble(x, y, 0, 1)
       ..scaleByDouble(scale, scale, 1, 1);
     return ComputedIcon._(
-      const PathCompiler().fromSource(icon.source),
+      PathIR(icon.source.commands),
       sourceToLocal,
       icon.fillRule,
     );

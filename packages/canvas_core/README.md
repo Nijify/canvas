@@ -103,13 +103,15 @@ final fontFamilies = collectSceneFontFamilies(
 ```
 
 Icons are filled vector symbols. An `IconResolver` returns a `ResolvedIcon`
-with a supported `PathSource`, a finite positive `viewBox`, and a `FillRule`.
-The resource snapshots normalized geometry and has no font or source paint.
+with a normalized `CommandPathSource`, a finite positive `viewBox`, and a
+`FillRule`. Hosts normalize geometry before constructing the resource.
+The command source is immutable and has no font or source paint.
 The instance's `CanvasAppearance` supplies its foreground and shadows.
 
 Scene evaluation fits the declared viewBox uniformly into the centered
 `sizePx × sizePx` layout square. Source margins are preserved. Non-square
 artwork is centered without stretching, and the square does not clip paint.
+Instance sizes must be finite and positive, including for unresolved icons.
 
 ## File-reference migration (Unreleased)
 

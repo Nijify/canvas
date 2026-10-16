@@ -32,7 +32,7 @@ CommandPathSource _rect(Rect2D box) => CommandPathSource([
 ]);
 
 ResolvedIcon _icon({
-  PathSource? source,
+  CommandPathSource? source,
   Rect2D viewBox = const Rect2D(0, 0, 24, 24),
   FillRule fillRule = FillRule.nonZero,
 }) => ResolvedIcon(
@@ -42,7 +42,7 @@ ResolvedIcon _icon({
 );
 
 ComputedScene _compute(
-  _Icons icons, {
+  _Icons? icons, {
   double size = 96,
   CanvasAppearance appearance = const CanvasAppearance(),
 }) => computeScene(
@@ -72,21 +72,8 @@ void _expectRect(Rect2D? actual, Rect2D expected) {
 }
 
 void main() {
-  test('resource geometry snapshots mutable primitive inputs', () {
-    final points = <Vec2?>[
-      const Vec2(0, 0),
-      const Vec2(24, 0),
-      const Vec2(24, 24),
-    ];
-    final icon = _icon(source: PolylineSource(points));
-    final original = icon.source.toJson();
-    points.clear();
-    expect(icon.source.toJson(), original);
-    expect(() => icon.source.commands.clear(), throwsUnsupportedError);
-    expect(icon.source.commands.last.verb, PathVerb.lineTo);
-  });
-
-  test('rejects invalid viewBoxes and unsupported or nonfinite geometry', () {
+  test('rejects invalid viewBoxes', () {
+    final source = _rect(const Rect2D(0, 0, 24, 24));
     for (final box in [
       const Rect2D(0, 0, 0, 24),
       const Rect2D(24, 0, 0, 24),
@@ -95,18 +82,7 @@ void main() {
       const Rect2D(0, 0, double.infinity, 24),
       const Rect2D(-1e308, 0, 1e308, 24),
     ]) {
-      expect(() => _icon(viewBox: box), throwsArgumentError);
-    }
-    for (final source in <PathSource>[
-      const SvgPathSource('M0 0 L24 24'),
-      const RectSource(double.nan, 24),
-      const CircleSource(double.infinity),
-      const RoundRectSource(24, 24, double.infinity, 2),
-      const RegularPolygonSource(2, 10),
-      const StarSource(5, 10, 20),
-      const PolylineSource([Vec2(0, double.infinity)]),
-    ]) {
-      expect(() => _icon(source: source), throwsArgumentError);
+      expect(() => _icon(source: source, viewBox: box), throwsArgumentError);
     }
   });
 
@@ -186,7 +162,7 @@ void main() {
     final computed = _compute(
       _Icons(
         _icon(
-          source: const RectSource(48, 48),
+          source: _rect(const Rect2D(-24, -24, 24, 24)),
           viewBox: const Rect2D(-12, -12, 12, 12),
         ),
       ),
@@ -202,12 +178,13 @@ void main() {
   });
 
   test('empty and unresolved icons retain layout without paint', () {
-    for (final icon in <ResolvedIcon?>[
-      _icon(source: CommandPathSource([])),
+    for (final icons in <_Icons?>[
+      _Icons(_icon(source: CommandPathSource([]))),
+      _Icons(null),
       null,
     ]) {
       final computed = _compute(
-        _Icons(icon),
+        icons,
         appearance: const CanvasAppearance(
           underlays: [
             ShadowEffect(id: 's', offset: Vec2(100, 100), color: 0xff000000),
@@ -219,13 +196,36 @@ void main() {
         const Rect2D(-48, -48, 48, 48),
       );
       expect(computed.paintBoundsLocalById, isEmpty);
-      expect(computed.iconById.containsKey('icon'), icon != null);
+      expect(computed.iconById.containsKey('icon'), icons?.icon != null);
     }
   });
 
   test('invalid instance sizes fail instead of producing unusable fitting', () {
-    for (final size in [0.0, -1.0, double.nan, double.infinity]) {
+    for (final size in [
+      0.0,
+      -1.0,
+      double.nan,
+      double.infinity,
+      double.negativeInfinity,
+    ]) {
       expect(() => ComputedIcon.fit(_icon(), size), throwsArgumentError);
+    }
+  });
+
+  test('scene rejects invalid sizes before any icon lookup', () {
+    for (final size in [
+      0.0,
+      -1.0,
+      double.nan,
+      double.infinity,
+      double.negativeInfinity,
+    ]) {
+      for (final icon in <ResolvedIcon?>[null, _icon()]) {
+        final icons = _Icons(icon);
+        expect(() => _compute(icons, size: size), throwsArgumentError);
+        expect(icons.calls, 0);
+      }
+      expect(() => _compute(null, size: size), throwsArgumentError);
     }
   });
 }

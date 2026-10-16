@@ -19,7 +19,13 @@ final class _TextMeasurer implements TextMeasurer {
 final class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String ref) => ResolvedIcon(
-    source: const RectSource(24, 24),
+    source: CommandPathSource([
+      PathCmd.moveTo(const Vec2(-12, -12)),
+      PathCmd.lineTo(const Vec2(12, -12)),
+      PathCmd.lineTo(const Vec2(12, 12)),
+      PathCmd.lineTo(const Vec2(-12, 12)),
+      PathCmd.close(),
+    ]),
     viewBox: const Rect2D(-12, -12, 12, 12),
     fillRule: FillRule.nonZero,
   );

@@ -1,8 +1,8 @@
 ## 0.15.0
 
 - **Breaking:** make icons filled vectors with one concrete `ResolvedIcon`
-  containing normalized source geometry, viewBox, and fill rule. Remove glyph
-  variants and icon font discovery.
+  requiring normalized `CommandPathSource` geometry, viewBox, and fill rule.
+  Remove glyph variants and icon font discovery.
 - **Breaking:** replace the two computed icon maps with `iconById` and
   `ComputedIcon`, using a centered, uniform viewBox fit.
 - **Breaking:** remove `PathStyle` and style-bearing compilation.
@@ -12,6 +12,9 @@
 
 - Add immutable, geometry-only `CommandPathSource` with strict JSON decoding
   and direct compilation of absolute move/line/quadratic/cubic/close commands.
+
+- Reject nonfinite or nonpositive icon sizes before layout and resource lookup,
+  including when an icon resolver is absent or the reference is unresolved.
 
 - Use authored `PathData` stroke values for ordinary-path layout and paint
   bounds, preserving the existing stroke expansion and pivot behavior.

@@ -20,7 +20,13 @@ class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String iconRef) => switch (iconRef) {
     'path' => ResolvedIcon(
-      source: const RectSource(160, 30),
+      source: CommandPathSource([
+        PathCmd.moveTo(const Vec2(-80, -15)),
+        PathCmd.lineTo(const Vec2(80, -15)),
+        PathCmd.lineTo(const Vec2(80, 15)),
+        PathCmd.lineTo(const Vec2(-80, 15)),
+        PathCmd.close(),
+      ]),
       viewBox: const Rect2D(-80, -15, 80, 15),
       fillRule: FillRule.nonZero,
     ),
