@@ -61,12 +61,7 @@ Discovery does not load or validate fonts.
 `IconResolver` returns one concrete `ResolvedIcon`: immutable normalized
 source commands, an explicit finite positive viewBox, and a fill rule.
 The resource requires a `CommandPathSource`; hosts normalize geometry before
-construction. The command source validates coordinates and contour order and
-snapshots its commands. SVG strings must be converted before resolution;
-core has no SVG parser.
-The unimplemented `SvgPathSource` runtime input has been removed. Current scene
-decoding rejects `kind: "svg"` with its document location, including after an
-explicit historical scene upgrade. Supported scene migrations remain available.
+construction and prepare resources before synchronous lookup.
 Empty geometry is valid. All nonempty icon geometry is used as a filled path,
 with the usual implicit closure of open contours and the declared fill rule.
 
@@ -85,9 +80,13 @@ Intrinsic outlines and multiple source paints are outside this icon contract.
 
 `PathIR` is immutable geometry only; `localBounds()` estimates its geometry
 from endpoints and curve controls. Ordinary path appearance belongs to
-`PathData`, including the existing stroke expansion used for layout and paint
-bounds. The strict SVG exporter keeps its existing supported ordinary-path
-profile and explicitly rejects icons.
+`PathData`. For nonempty paths with a nonzero `strokeColor` and positive
+`strokeWidth`, layout and paint bounds expand the geometry bound by half the
+stroke width on each side. This is an estimate, not a guaranteed enclosure of
+all stroke pixels.
+
+The [strict SVG exporter](../../canvas_svg_export/README.md) supports its
+documented ordinary-path profile and explicitly rejects icon nodes.
 
 ## Serialization boundary
 
@@ -95,9 +94,10 @@ profile and explicitly rejects icons.
 and close commands through the existing path compiler. It snapshots its command
 list, contains no paint, and preserves contour order and explicit closure.
 Coordinates must be finite. Empty and open contours are supported; each contour
-starts with `moveTo`, including after `close`. Converters normalize SVG arcs
-before constructing the source. Source coordinates are preserved without fitting
-or centering. Ordinary path paint and fill rule remain authored in `PathData`.
+starts with `moveTo`, including after `close`. Importers must convert arcs to
+supported commands before constructing the source. Source coordinates are
+preserved without fitting or centering. Ordinary path paint and fill rule
+remain authored in `PathData`.
 
 Its JSON shape is `{"kind":"commands","commands":[...]}`. Every command has a
 `verb`; move/line require `p`, quadratic requires `c1` and `p`, cubic requires
@@ -111,6 +111,15 @@ External and persisted document JSON crosses the runtime boundary through:
 external JSON -> decodeCanvasScene -> CanvasSceneDocument
 CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
+
+`decodeCanvasScene()` reads scene format v2. Use `upgradeCanvasScene()` before
+decoding supported older documents: v1 or explicitly identified canvas_core
+0.10.x unversioned scenes.
+
+Raw `kind: "svg"` path sources are unsupported. Scene decoding rejects them with
+their document location, including after historical migration. Hosts must
+normalize SVG paths into supported commands before loading; core has no SVG
+parser.
 
 Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
 

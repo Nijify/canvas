@@ -2,7 +2,6 @@
 
 Icons use their transformed nominal layout square for picking. Holes and
 unused viewBox margins are selectable, while shadows do not enlarge the target.
-Group selection and ordinary path contour picking retain their existing rules.
 
 `canvas_editor_flutter` is a complete Flutter editor for `canvas_core` runtime scenes.
 It provides viewport UI, picking, snapping, selection overlays, layers, inspector content, editing actions, history orchestration, runtime resource integration, and composable capability APIs.
