@@ -64,6 +64,9 @@ The resource requires a `CommandPathSource`; hosts normalize geometry before
 construction. The command source validates coordinates and contour order and
 snapshots its commands. SVG strings must be converted before resolution;
 core has no SVG parser.
+The unimplemented `SvgPathSource` runtime input has been removed. Current scene
+decoding rejects `kind: "svg"` with its document location, including after an
+explicit historical scene upgrade. Supported scene migrations remain available.
 Empty geometry is valid. All nonempty icon geometry is used as a filled path,
 with the usual implicit closure of open contours and the declared fill rule.
 

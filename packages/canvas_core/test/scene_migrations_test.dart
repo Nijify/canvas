@@ -60,6 +60,36 @@ Map<String, Object?> _firstNestedTextForeground(Map<String, Object?> scene) {
 
 void main() {
   group('scene migration', () {
+    for (final fixture in ['legacy_v010_nested.json', 'v1_nested.json']) {
+      test('rejects unsupported SVG sources without changing $fixture', () {
+        final input = _loadFixture(fixture);
+        final path = _legacyGroupChildren(
+          input,
+        ).singleWhere((node) => node['runtimeType'] == 'path');
+        final data = path['data'] as Map<String, dynamic>;
+        data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
+        final before = _deepCopy(input);
+
+        expect(
+          () => upgradeCanvasScene(
+            Map<String, Object?>.from(input),
+            legacyUnversioned: fixture == 'legacy_v010_nested.json',
+            resolveLegacyIconWasGlyph: _resolveLegacyIconWasGlyph,
+          ),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains(
+                'children[0].children[3].data.source.kind "svg" is unsupported',
+              ),
+            ),
+          ),
+        );
+        expect(input, equals(before));
+      });
+    }
+
     test('upgrades literal canvas_core 0.10.x JSON through v1 to v2', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);

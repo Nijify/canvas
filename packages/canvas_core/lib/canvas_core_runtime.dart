@@ -96,8 +96,7 @@ export 'src/path/path_source.dart'
         EllipseSource,
         CircleSource,
         RegularPolygonSource,
-        StarSource,
-        SvgPathSource;
+        StarSource;
 
 // ============================================================================
 // 5) Geometry primitives + derived helpers (renderer-agnostic)

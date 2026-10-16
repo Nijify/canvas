@@ -40,6 +40,19 @@ CanvasSceneDocument _scene(CommandPathSource source) => CanvasSceneDocument(
 );
 
 void main() {
+  test('raw SVG source decoding requires prepared commands', () {
+    expect(
+      () => PathSource.fromJson({'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'}),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          contains('Normalize to a commands source'),
+        ),
+      ),
+    );
+  });
+
   group('CommandPathSource', () {
     test('snapshots commands and exposes an unmodifiable list', () {
       final commands = _commands();

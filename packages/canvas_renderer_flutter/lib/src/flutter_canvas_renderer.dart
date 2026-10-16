@@ -227,13 +227,13 @@ class CanvasRenderer {
   void _drawPathStroke(
     ui.Canvas canvas,
     PathIR path, {
-    required Color32? color,
+    required Color32 color,
     required double width,
     required StrokeCap cap,
     required StrokeJoin join,
     required double miterLimit,
   }) {
-    if (color == null || color == 0 || !(width > 0)) return;
+    if (color == 0 || !(width > 0)) return;
     canvas.drawPath(
       _buildUiPath(path),
       ui.Paint()

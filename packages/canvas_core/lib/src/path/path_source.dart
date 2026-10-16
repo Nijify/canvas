@@ -25,7 +25,10 @@ sealed class PathSource {
       case 'ellipse':
         return EllipseSource.fromJson(json);
       case 'svg':
-        return SvgPathSource.fromJson(json);
+        throw const FormatException(
+          'SVG path strings are unsupported. Normalize to a commands source '
+          'before loading.',
+        );
       case 'circle':
         return CircleSource.fromJson(json);
       case 'regularPolygon':
@@ -101,8 +104,11 @@ final class CommandPathSource extends PathSource {
         PathVerb.moveTo => PathCmd.moveTo(point('p')),
         PathVerb.lineTo => PathCmd.lineTo(point('p')),
         PathVerb.quadTo => PathCmd.quadTo(point('c1'), point('p')),
-        PathVerb.cubicTo =>
-          PathCmd.cubicTo(point('c1'), point('c2'), point('p')),
+        PathVerb.cubicTo => PathCmd.cubicTo(
+          point('c1'),
+          point('c2'),
+          point('p'),
+        ),
         PathVerb.close => PathCmd.close(),
       });
     }
@@ -154,6 +160,7 @@ final class CommandPathSource extends PathSource {
       }
       return number.toDouble();
     }
+
     return Vec2(coordinate('x'), coordinate('y'));
   }
 
@@ -291,13 +298,4 @@ class EllipseSource extends PathSource {
       EllipseSource((m['rx'] as num).toDouble(), (m['ry'] as num).toDouble());
   @override
   Map<String, Object?> toJson() => {'kind': 'ellipse', 'rx': rx, 'ry': ry};
-}
-
-class SvgPathSource extends PathSource {
-  final String d; // SVG path string
-  const SvgPathSource(this.d);
-  factory SvgPathSource.fromJson(Map<String, Object?> m) =>
-      SvgPathSource(m['d'] as String);
-  @override
-  Map<String, Object?> toJson() => {'kind': 'svg', 'd': d};
 }

@@ -22,7 +22,6 @@ class PathCompiler {
     PillSource(:final w, :final h) => _roundRect(w, h, h / 2, h / 2),
     UnderlineSource(:final w, :final thickness) => _rect(w, thickness),
     EllipseSource(:final rx, :final ry) => _ellipse(rx, ry),
-    SvgPathSource(:final d) => _svg(d),
     CircleSource(:final r) => _ellipse(r, r),
     RegularPolygonSource(:final sides, :final r, :final rotation) =>
       _regularPolygon(sides, r, rotation),
@@ -155,11 +154,5 @@ class PathCompiler {
       PathCmd.close(),
     ];
     return PathIR(cmds);
-  }
-
-  PathIR _svg(String d) {
-    // Plug in a tiny SVG path parser (you can add later; stub keeps structure)
-    // For now throw to make it obvious at dev time.
-    throw UnimplementedError('SVG path parsing not wired yet: $d');
   }
 }

@@ -1,14 +1,29 @@
 ## 0.15.0
 
-- **Breaking:** make icons filled vectors with one concrete `ResolvedIcon`
-  requiring normalized `CommandPathSource` geometry, viewBox, and fill rule.
-  Remove glyph variants and icon font discovery.
-- **Breaking:** replace the two computed icon maps with `iconById` and
-  `ComputedIcon`, using a centered, uniform viewBox fit.
-- **Breaking:** remove `PathStyle` and style-bearing compilation.
-  `PathIR.localBounds()` now describes geometry only.
-- **Breaking:** remove the icon resolver argument from
-  `collectSceneFontFamilies()`; it discovers text and fallback families.
+- **Breaking:** replace `ResolvedIconText` and `ResolvedIconPath` with one
+  filled-vector `ResolvedIcon`, requiring normalized `CommandPathSource`
+  geometry, viewBox, and fill rule. Hosts prepare vector resources before
+  synchronous lookup and remove icon-only font registration. Instance
+  `CanvasAppearance` supplies foreground paint and shadows.
+- **Breaking:** replace `ComputedScene.iconTextById` and `iconPathIRById` with
+  `iconById`. Each `ComputedIcon` exposes source-space `pathIR`, the centered
+  uniform viewBox fit in `sourceToLocal`, and `fillRule`.
+- **Breaking:** remove `PathStyle`, `PathIR.style`, and style-bearing
+  compilation. Use `PathIR(commands)`; `localBounds()` has no `includeStroke`
+  argument and describes geometry only. Ordinary-path paint, fill rule, and
+  stroke properties remain on `PathData`; evaluated bounds remain in the
+  computed scene.
+- **Breaking:** remove the `icons` argument from `collectSceneFontFamilies()`;
+  it discovers text and supplied fallback families. Icons contribute no fonts.
+- **Breaking:** remove `SvgPathSource`, whose compilation was unimplemented.
+  Raw `kind: "svg"` sources now fail during decoding, including through scene
+  upgrade. Normalize SVG paths to a supported command source before loading.
+- Keep scene format v2 and `upgradeCanvasScene()` for supported v1 and
+  explicitly identified 0.10.x unversioned scenes. The historical icon-rendering
+  callback remains available for legacy shadow migration.
+- Scene JSON compatibility does not promise compatibility with retired icon
+  resources or unchanged artwork, padding, and pixels. Hosts replace font/glyph
+  and styled-path icon resources with the new vector definitions.
 
 - Add immutable, geometry-only `CommandPathSource` with strict JSON decoding
   and direct compilation of absolute move/line/quadratic/cubic/close commands.

@@ -385,8 +385,6 @@ final class _SceneValidator {
       case EllipseSource(:final rx, :final ry):
         _validateFinite(rx, '$path/rx');
         _validateFinite(ry, '$path/ry');
-      case SvgPathSource():
-        break;
     }
   }
 
