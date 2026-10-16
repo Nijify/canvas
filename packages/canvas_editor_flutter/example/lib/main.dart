@@ -9,6 +9,7 @@ import 'package:canvas_editor_flutter/extensions.dart' show EditorShellConfig;
 import 'package:canvas_editor_flutter/image_import.dart';
 import 'package:canvas_editor_flutter/image_tools.dart';
 import 'package:canvas_editor_flutter_example/data_uri_image_metadata.dart';
+import 'package:canvas_editor_flutter_example/example_icon_catalog.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_attribution_session.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_example_ui.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
@@ -59,6 +60,8 @@ class _ExampleEditorPage extends StatefulWidget {
 }
 
 class _ExampleEditorPageState extends State<_ExampleEditorPage> {
+  Future<_DemoRuntime>? _runtime;
+
   final UnsplashAttributionSession _unsplashAttribution =
       UnsplashAttributionSession();
 
@@ -68,18 +71,47 @@ class _ExampleEditorPageState extends State<_ExampleEditorPage> {
       const <String, UnsplashCredit>{};
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _runtime ??= _prepareDemoRuntime(DefaultAssetBundle.of(context));
+  }
+
+  @override
   Widget build(BuildContext context) {
+    return FutureBuilder<_DemoRuntime>(
+      future: _runtime,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(child: Text('Unable to load example icons.')),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: 'Loading example icons',
+              ),
+            ),
+          );
+        }
+        return _buildEditor(snapshot.requireData);
+      },
+    );
+  }
+
+  Widget _buildEditor(_DemoRuntime runtime) {
     return Column(
       children: [
         Expanded(
           child: CanvasSceneEditor(
             initialScene: _demoDocument,
-            resources: _demoResources,
+            resources: runtime.resources,
             shell: EditorShellConfig.standalone,
             onSceneChanged: _handleSceneChanged,
             pngExport: PngExportCapability(
               port: _ExamplePngExportPort(
-                renderer: _demoPngRenderer,
+                renderer: runtime.pngRenderer,
                 navigatorKey: _navigatorKey,
               ),
               canShare: true,
@@ -211,18 +243,28 @@ const _demoPickerFonts = <FontPickerItem>[
 
 final _demoImages = _ExampleCanvasImageAssetResolver();
 
-final _demoResources = CanvasRuntimeResources(
-  fonts: _demoFontLoader,
-  pickerFonts: _demoPickerFonts,
-  icons: const _DemoIconCatalog(),
-  images: _demoImages,
-);
+typedef _DemoRuntime = ({
+  CanvasRuntimeResources resources,
+  CanvasPngRenderer pngRenderer,
+});
 
-final CanvasPngRenderer _demoPngRenderer = FlutterCanvasPngRenderer(
-  fonts: _demoFontLoader,
-  icons: _demoResources.icons,
-  images: _demoImages,
-);
+Future<_DemoRuntime> _prepareDemoRuntime(AssetBundle bundle) async {
+  final icons = await ExampleIconCatalog.load(bundle);
+  final resources = CanvasRuntimeResources(
+    fonts: _demoFontLoader,
+    pickerFonts: _demoPickerFonts,
+    icons: icons,
+    images: _demoImages,
+  );
+  return (
+    resources: resources,
+    pngRenderer: FlutterCanvasPngRenderer(
+      fonts: resources.fonts,
+      icons: resources.icons,
+      images: resources.images,
+    ),
+  );
+}
 
 final CanvasAssetLibrary _demoAssetLibrary = LocalCanvasAssetLibrary(
   <CanvasAssetLibraryItem>[
@@ -295,21 +337,50 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
       name: 'Demo card',
       xf: Transform2D(position: Vec2(370, 210)),
       data: PathData(
-        source: RoundRectSource(520, 220, 32, 32),
+        source: RoundRectSource(600, 280, 32, 32),
         fill: CanvasFill.solid(0xFFFFFFFF),
         strokeColor: 0xFFE0E7FF,
         strokeWidth: 4,
       ),
     ),
+    Node.icon(
+      id: 'demo-icon',
+      name: 'Vector icon',
+      xf: Transform2D(position: Vec2(170, 150)),
+      data: CanvasIconData(
+        iconRef: 'icon.ring',
+        sizePx: 64,
+        appearance: CanvasAppearance(
+          foreground: CanvasFill.gradient(
+            LinearGradientSpec(
+              start: const Vec2(-32, -32),
+              end: const Vec2(32, 32),
+              stops: const [
+                GradientStop(offset: 0, color: 0xFF7C3AED),
+                GradientStop(offset: 1, color: 0xFF0891B2),
+              ],
+            ),
+          ),
+          underlays: const [
+            ShadowEffect(
+              id: 'demo-icon-shadow',
+              offset: Vec2(0, 3),
+              blurSigma: 3,
+              color: 0x332E1065,
+            ),
+          ],
+        ),
+      ),
+    ),
     Node.text(
       id: 'demo-title',
       name: 'Title',
-      xf: Transform2D(position: Vec2(370, 180)),
+      xf: Transform2D(position: Vec2(410, 150)),
       data: TextData(
         text: 'CanvasSceneEditor',
         fontFamily: _demoFontFamily,
         fontWeight: 700,
-        fontSize: 42,
+        fontSize: 32,
         letterSpacing: 0,
         appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF312E81)),
       ),
@@ -317,11 +388,11 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
     Node.text(
       id: 'demo-subtitle',
       name: 'Subtitle',
-      xf: Transform2D(position: Vec2(370, 245)),
+      xf: Transform2D(position: Vec2(370, 255)),
       data: TextData(
         text:
-            'Try Add → Assets → Background removal demo, then use '
-            'Image tools in the inspector.',
+            'Select the ring to change its icon, fill, or shadow.\n'
+            'Try Add → Assets for images and background removal.',
         fontFamily: _demoFontFamily,
         fontWeight: 400,
         fontSize: 18,
@@ -484,19 +555,6 @@ final class _ExampleImageImportPort implements ImageImportPort {
     // The MIME value is best-effort in this lightweight example.
     return 'application/octet-stream';
   }
-}
-
-final class _DemoIconCatalog implements IconCatalogPort {
-  const _DemoIconCatalog();
-
-  @override
-  List<IconCatalogItem> get items => const <IconCatalogItem>[];
-
-  @override
-  Map<String, ResolvedIcon> get resolveMap => const <String, ResolvedIcon>{};
-
-  @override
-  ResolvedIcon? resolve(String iconRef) => null;
 }
 
 final class _ExampleCanvasImageAssetResolver

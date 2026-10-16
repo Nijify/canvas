@@ -1,0 +1,17 @@
+{
+  "source": {
+    "kind": "commands",
+    "commands": [
+      {"verb": "moveTo", "p": {"x": 14, "y": -2}},
+      {"verb": "lineTo", "p": {"x": 36, "y": -2}},
+      {"verb": "lineTo", "p": {"x": 36, "y": -6}},
+      {"verb": "lineTo", "p": {"x": 46, "y": 2}},
+      {"verb": "lineTo", "p": {"x": 36, "y": 10}},
+      {"verb": "lineTo", "p": {"x": 36, "y": 6}},
+      {"verb": "lineTo", "p": {"x": 14, "y": 6}},
+      {"verb": "close"}
+    ]
+  },
+  "viewBox": [10, -8, 40, 20],
+  "fillRule": "nonZero"
+}

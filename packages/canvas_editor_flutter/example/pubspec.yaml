@@ -28,5 +28,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/demo_assets/
+    - assets/icons/
     - assets/fonts/noto_sans_symbols/NotoSansSymbols-Regular.ttf
     - assets/fonts/noto_sans_symbols/OFL.txt

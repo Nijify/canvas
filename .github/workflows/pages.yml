@@ -10,6 +10,7 @@ on:
       - "packages/canvas_core/**"
       - "packages/canvas_renderer_flutter/**"
       - "packages/canvas_editor_flutter/**"
+      - "packages/canvas_svg_export/**"
       - "pubspec.lock"
       - "pubspec.yaml"
   workflow_dispatch:
@@ -37,6 +38,22 @@ jobs:
       - name: Test example
         working-directory: packages/canvas_editor_flutter/example
         run: flutter test
+
+      - name: Test core
+        working-directory: packages/canvas_core
+        run: dart test
+
+      - name: Test Flutter renderer
+        working-directory: packages/canvas_renderer_flutter
+        run: flutter test
+
+      - name: Test Flutter editor
+        working-directory: packages/canvas_editor_flutter
+        run: flutter test
+
+      - name: Test SVG exporter
+        working-directory: packages/canvas_svg_export
+        run: dart test
 
       - name: Test data URI metadata in Chrome
         working-directory: packages/canvas_editor_flutter/example

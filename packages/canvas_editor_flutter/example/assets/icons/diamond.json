@@ -1,0 +1,14 @@
+{
+  "source": {
+    "kind": "commands",
+    "commands": [
+      {"verb": "moveTo", "p": {"x": 12, "y": 2}},
+      {"verb": "lineTo", "p": {"x": 22, "y": 12}},
+      {"verb": "lineTo", "p": {"x": 12, "y": 22}},
+      {"verb": "lineTo", "p": {"x": 2, "y": 12}},
+      {"verb": "close"}
+    ]
+  },
+  "viewBox": [0, 0, 24, 24],
+  "fillRule": "nonZero"
+}
