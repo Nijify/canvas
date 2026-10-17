@@ -203,6 +203,9 @@ other edits. Dash rendering remains solid, so the inspector does not offer dash
 authoring controls.
 
 `CanvasFields.pathStroke` registers the complete optional `CanvasStroke` value.
+Strokes own a snapshot of supplied dash values, so later changes to a caller's
+list cannot alter current or undo/redo scenes.
+
 Use nullable field types and canonical updates to preserve unrelated settings:
 
 ```dart

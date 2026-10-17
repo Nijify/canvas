@@ -13,12 +13,12 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 
 Map<String, Object?> _wire() => encodeCanvasScene(
   _scene([
-    const Node.path(
+    Node.path(
       id: 'path',
       data: PathData(
-        source: RectSource(20, 10),
+        source: const RectSource(20, 10),
         appearance: CanvasAppearance(
-          foreground: CanvasFill.none(),
+          foreground: const CanvasFill.none(),
           stroke: CanvasStroke(color: 0xFF123456, width: 2, dash: [5, 0, 3]),
         ),
       ),
@@ -84,8 +84,8 @@ void main() {
             data: PathData(
               source: source,
               fillRule: FillRule.evenOdd,
-              appearance: const CanvasAppearance(
-                foreground: CanvasFill.none(),
+              appearance: CanvasAppearance(
+                foreground: const CanvasFill.none(),
                 stroke: CanvasStroke(
                   color: 0x00123456,
                   width: 12,
@@ -226,9 +226,9 @@ void main() {
   });
 
   test('unsupported appearance combinations fail on both boundaries', () {
-    const stroke = CanvasStroke(color: 0, width: 0);
+    final stroke = CanvasStroke(color: 0, width: 0);
     final invalid = _scene([
-      const Node.icon(
+      Node.icon(
         id: 'icon',
         data: CanvasIconData(
           iconRef: 'symbol',

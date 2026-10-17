@@ -7,6 +7,8 @@
   settings and existing dash metadata. Opacity drags form one undo step.
 - Register `CanvasFields.pathStroke` as a `CanvasStroke?` aggregate field and
   expose `StrokeEditor` from `extensions.dart` for custom inspector composition.
+- Retain owned stroke dash values across canonical edits and undo/redo; changing
+  a caller-supplied dash list cannot mutate stored editor history.
 - **Breaking:** `FieldCodec` readers, fallback, and writer values now accept
   `Object?`. Explicitly typed custom writer parameters must accept nullable
   values; each field still owns its concrete value type and target policy.

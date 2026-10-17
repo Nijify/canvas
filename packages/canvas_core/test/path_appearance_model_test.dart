@@ -41,11 +41,11 @@ void main() {
   });
 
   test('path model JSON owns styling only through appearance', () {
-    const path = PathData(
-      source: RectSource(20, 10),
+    final path = PathData(
+      source: const RectSource(20, 10),
       fillRule: FillRule.evenOdd,
       appearance: CanvasAppearance(
-        foreground: CanvasFill.solid(0xFF123456),
+        foreground: const CanvasFill.solid(0xFF123456),
         stroke: CanvasStroke(color: 0xFF654321, width: 2, dash: [5, 0, 3]),
       ),
     );
@@ -61,7 +61,7 @@ void main() {
   test(
     'stroke copy and JSON preserve invisible configuration and odd dashes',
     () {
-      const stroke = CanvasStroke(
+      final stroke = CanvasStroke(
         color: 0x00123456,
         width: 12,
         cap: StrokeCap.round,
@@ -78,7 +78,7 @@ void main() {
       expect(restored.copyWith(color: 0xFF123456).width, 12);
       expect(restored.copyWith(color: 0xFF123456).cap, StrokeCap.round);
       expect(
-        const CanvasAppearance(stroke: stroke).copyWith(stroke: null).stroke,
+        CanvasAppearance(stroke: stroke).copyWith(stroke: null).stroke,
         isNull,
       );
       expect(() => restored.dash.add(1), throwsUnsupportedError);
@@ -87,7 +87,7 @@ void main() {
 
   test('stroke paint participation uses alpha and finite positive width', () {
     expect(strokeContributesToPaint(null), isFalse);
-    for (final stroke in const [
+    for (final stroke in [
       CanvasStroke(color: 0x00123456, width: 2),
       CanvasStroke(color: 0xFF123456, width: 0),
       CanvasStroke(color: 0xFF123456, width: -1),
@@ -98,7 +98,7 @@ void main() {
       expect(strokeContributesToPaint(stroke), isFalse);
     }
     expect(
-      strokeContributesToPaint(const CanvasStroke(color: 0x01123456, width: 2)),
+      strokeContributesToPaint(CanvasStroke(color: 0x01123456, width: 2)),
       isTrue,
     );
   });
@@ -111,8 +111,8 @@ void main() {
     final plain = PathData(source: source);
     final painted = plain.copyWith(
       fillRule: FillRule.evenOdd,
-      appearance: const CanvasAppearance(
-        foreground: CanvasFill.solid(0xFF123456),
+      appearance: CanvasAppearance(
+        foreground: const CanvasFill.solid(0xFF123456),
         stroke: CanvasStroke(color: 0xFF654321, width: 8),
       ),
     );
@@ -155,7 +155,7 @@ void main() {
   );
 
   test('inactive stroke numerics are still rejected', () {
-    for (final stroke in const [
+    for (final stroke in [
       CanvasStroke(color: 0, width: double.infinity),
       CanvasStroke(color: 0, width: -1),
       CanvasStroke(color: 0, miterLimit: 0.5),
@@ -178,10 +178,10 @@ void main() {
   });
 
   test('node-specific appearance capabilities are enforced', () {
-    const stroke = CanvasStroke(color: 0, width: 0);
+    final stroke = CanvasStroke(color: 0, width: 0);
     const shadow = ShadowEffect(id: 's', offset: Vec2.zero, color: 0xFF000000);
     final nodes = [
-      const Node.text(
+      Node.text(
         id: 'text',
         data: TextData(
           text: 'A',
@@ -191,7 +191,7 @@ void main() {
           appearance: CanvasAppearance(stroke: stroke),
         ),
       ),
-      const Node.icon(
+      Node.icon(
         id: 'icon',
         data: CanvasIconData(
           iconRef: 'test',

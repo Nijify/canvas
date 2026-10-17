@@ -14,17 +14,29 @@ part 'canvas_stroke.g.dart';
 /// Dash lengths are finite, nonnegative document units; an empty list means
 /// solid. Odd-length lists repeat when evaluated. Dash painting is not yet
 /// supported, but the authored sequence is preserved without normalization.
+/// The constructor snapshots [dash]; later changes to the caller's list cannot
+/// change this stroke, equality, or an editor history entry.
 @freezed
-abstract class CanvasStroke with _$CanvasStroke {
-  const factory CanvasStroke({
-    required Color32 color,
-    @Default(4.0) double width,
-    @Default(StrokeCap.butt) StrokeCap cap,
-    @Default(StrokeJoin.miter) StrokeJoin join,
-    @Default(4.0) double miterLimit,
-    @Default(<double>[]) List<double> dash,
-  }) = _CanvasStroke;
+@JsonSerializable()
+class CanvasStroke with _$CanvasStroke {
+  CanvasStroke({
+    required this.color,
+    this.width = 4.0,
+    this.cap = StrokeCap.butt,
+    this.join = StrokeJoin.miter,
+    this.miterLimit = 4.0,
+    List<double> dash = const <double>[],
+  }) : dash = List<double>.unmodifiable(dash);
+
+  final Color32 color;
+  final double width;
+  final StrokeCap cap;
+  final StrokeJoin join;
+  final double miterLimit;
+  final List<double> dash;
 
   factory CanvasStroke.fromJson(Map<String, dynamic> json) =>
       _$CanvasStrokeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CanvasStrokeToJson(this);
 }

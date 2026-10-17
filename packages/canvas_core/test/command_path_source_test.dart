@@ -82,8 +82,8 @@ void main() {
       final painted = compilePath(
         PathData(
           source: source,
-          appearance: const CanvasAppearance(
-            foreground: CanvasFill.solid(0xffabcdef),
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.solid(0xffabcdef),
             stroke: CanvasStroke(color: 0xff123456, width: 8),
           ),
           fillRule: FillRule.evenOdd,

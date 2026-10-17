@@ -38,8 +38,8 @@ PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
     id: idOverride ?? _genBaseAddId('path'),
     data: PathData(
       source: src,
-      appearance: const CanvasAppearance(
-        foreground: CanvasFill.solid(_baseFill),
+      appearance: CanvasAppearance(
+        foreground: const CanvasFill.solid(_baseFill),
         stroke: CanvasStroke(color: _baseStroke, width: _baseStrokeW),
       ),
     ),

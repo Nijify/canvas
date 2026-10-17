@@ -28,7 +28,7 @@ void main() {
     final source = PolylineSource(const [Vec2(-10, -10), Vec2(10, 10)]);
     for (final (stroke, outset) in <(CanvasStroke, double)>[
       (
-        const CanvasStroke(
+        CanvasStroke(
           color: 0xFF111111,
           width: 6,
           cap: StrokeCap.round,
@@ -37,7 +37,7 @@ void main() {
         3,
       ),
       (
-        const CanvasStroke(
+        CanvasStroke(
           color: 0xFF111111,
           width: 6,
           cap: StrokeCap.square,
@@ -45,9 +45,9 @@ void main() {
         ),
         3 * math.sqrt2,
       ),
-      (const CanvasStroke(color: 0xFF111111, width: 6, miterLimit: 5), 15),
+      (CanvasStroke(color: 0xFF111111, width: 6, miterLimit: 5), 15),
       (
-        const CanvasStroke(
+        CanvasStroke(
           color: 0xFF111111,
           width: 6,
           join: StrokeJoin.bevel,
@@ -80,18 +80,18 @@ void main() {
   });
 
   test('unpainted paths retain layout without contributing content', () {
-    for (final appearance in const [
-      CanvasAppearance(foreground: CanvasFill.none()),
-      CanvasAppearance(foreground: CanvasFill.solid(0x00112233)),
-      CanvasAppearance(
+    for (final appearance in [
+      const CanvasAppearance(foreground: CanvasFill.none()),
+      const CanvasAppearance(foreground: CanvasFill.solid(0x00112233)),
+      const CanvasAppearance(
         foreground: CanvasFill.gradient(LinearGradientSpec.transparent),
       ),
       CanvasAppearance(
-        foreground: CanvasFill.none(),
+        foreground: const CanvasFill.none(),
         stroke: CanvasStroke(color: 0x00112233, width: 100),
       ),
       CanvasAppearance(
-        foreground: CanvasFill.none(),
+        foreground: const CanvasFill.none(),
         stroke: CanvasStroke(color: 0xFF111111, width: 0),
       ),
     ]) {
@@ -126,12 +126,12 @@ void main() {
     }
 
     final filled = _compute([
-      const Node.path(
+      Node.path(
         id: 'path',
         data: PathData(
-          source: RectSource(20, 10),
+          source: const RectSource(20, 10),
           appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF112233),
+            foreground: const CanvasFill.solid(0xFF112233),
             stroke: CanvasStroke(color: 0x00112233, width: 100),
           ),
         ),
@@ -154,8 +154,8 @@ void main() {
             id: 'path',
             data: PathData(
               source: PolylineSource(points),
-              appearance: const CanvasAppearance(
-                foreground: CanvasFill.none(),
+              appearance: CanvasAppearance(
+                foreground: const CanvasFill.none(),
                 stroke: CanvasStroke(
                   color: 0xFF112233,
                   width: 6,
@@ -191,7 +191,7 @@ void main() {
           id: 'path',
           data: PathData(
             source: source,
-            appearance: const CanvasAppearance(
+            appearance: CanvasAppearance(
               stroke: CanvasStroke(color: 0xFF111111, cap: StrokeCap.round),
             ),
           ),
@@ -248,8 +248,8 @@ void main() {
           const CanvasAppearance(foreground: CanvasFill.none()),
         );
         final after = build(
-          const CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF112233),
+          CanvasAppearance(
+            foreground: const CanvasFill.solid(0xFF112233),
             stroke: CanvasStroke(
               color: 0xFF112233,
               width: 40,

@@ -82,8 +82,8 @@ void main() {
         id: 'path',
         data: PathData(
           source: PolylineSource(const [Vec2(-10, 0), Vec2(10, 0)]),
-          appearance: const CanvasAppearance(
-            foreground: CanvasFill.none(),
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.none(),
             stroke: CanvasStroke(color: 0xFF112233, width: 8),
           ),
         ),

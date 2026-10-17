@@ -75,7 +75,7 @@ void main() {
     ]);
     final beforeScene = build(null);
     final afterScene = build(
-      const CanvasStroke(color: 0xFF112233, width: 40, cap: StrokeCap.square),
+      CanvasStroke(color: 0xFF112233, width: 40, cap: StrokeCap.square),
     );
     final before = computeScene(beforeScene, _services());
     final after = computeScene(afterScene, _services());

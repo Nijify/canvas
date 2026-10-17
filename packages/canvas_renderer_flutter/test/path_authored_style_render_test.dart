@@ -80,8 +80,8 @@ void main() {
           Vec2(-5, -5),
         ]),
         fillRule: FillRule.evenOdd,
-        appearance: const CanvasAppearance(
-          foreground: CanvasFill.solid(0xFFFF0000),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.solid(0xFFFF0000),
           stroke: CanvasStroke(color: 0xFF0000FF, width: 4),
         ),
       ),
@@ -97,8 +97,8 @@ void main() {
     final render = await _render(
       PathData(
         source: PolylineSource(const [Vec2(-8, 0), Vec2(8, 0)]),
-        appearance: const CanvasAppearance(
-          foreground: CanvasFill.none(),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.none(),
           stroke: CanvasStroke(
             color: 0xFF203040,
             width: 6,
@@ -118,8 +118,8 @@ void main() {
       'square caps',
       PathData(
         source: PolylineSource(const [Vec2(-8, -8), Vec2(8, 8)]),
-        appearance: const CanvasAppearance(
-          foreground: CanvasFill.none(),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.none(),
           stroke: CanvasStroke(
             color: 0xFF112233,
             width: 8,
@@ -133,8 +133,8 @@ void main() {
       'acute miter',
       PathData(
         source: PolylineSource(const [Vec2(-4, 10), Vec2(0, -10), Vec2(4, 10)]),
-        appearance: const CanvasAppearance(
-          foreground: CanvasFill.none(),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.none(),
           stroke: CanvasStroke(color: 0xFF112233, width: 6, miterLimit: 6),
         ),
       ),

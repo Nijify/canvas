@@ -19,11 +19,11 @@ release reads and writes scene format **3** through the persistence boundary.
 ```dart
 import 'package:canvas_core/canvas_core_runtime.dart';
 
-const path = PathData(
-  source: RectSource(160, 100),
+final path = PathData(
+  source: const RectSource(160, 100),
   fillRule: FillRule.evenOdd,
   appearance: CanvasAppearance(
-    foreground: CanvasFill.solid(0xFF22C55E),
+    foreground: const CanvasFill.solid(0xFF22C55E),
     stroke: CanvasStroke(color: 0xFF111111, width: 2),
   ),
 );
@@ -44,6 +44,13 @@ Construct a `CanvasStroke` when a stroke is configured. Its defaults are width
 configured stroke. Transparent colors and zero width keep the configuration
 available for subsequent edits. Dash values must be finite and nonnegative;
 zero entries and odd-length sequences are retained as authored.
+
+`CanvasStroke` is no longer `const`: its constructor snapshots the supplied
+dash list into owned, unmodifiable storage. Generated `copyWith` and JSON
+decoding use that constructor too. Mutating a list after passing it to a stroke
+or a copy cannot change an existing document, equality/hash value, or undo/redo
+entry. Remove `const` from stroke construction and enclosing constant
+expressions; unrelated constant geometry and fills can remain constant.
 
 Paths default to no foreground and no configured stroke. Text and icons keep
 their dark foreground default. Paths support strokes; text and icons support

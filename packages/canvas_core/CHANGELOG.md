@@ -6,6 +6,11 @@
 - **Breaking:** `PolylineSource` snapshots its points and is no longer `const`.
   Cache compiled geometry by source identity independently of appearance and
   fill rule.
+- **Breaking:** `CanvasStroke` snapshots supplied dash lists and is no longer
+  `const`. Construction, `copyWith`, and JSON decoding retain owned,
+  unmodifiable dash values so caller mutations cannot alter equality, hashes,
+  current documents, or undo/redo history. Stroke defaults and wire data remain
+  unchanged, including transparent/zero-width settings and odd or zero dashes.
 - Add `CanvasFields.pathStroke` as the stable aggregate identity for an optional
   authored path stroke.
 - **Breaking:** ordinary path layout bounds now use geometry alone. Stroke

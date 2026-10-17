@@ -63,11 +63,11 @@ void main() {
   test('authored appearance preserves compiled geometry', () {
     final plain = _computePath(const PathData(source: RectSource(24, 12)));
     final painted = _computePath(
-      const PathData(
-        source: RectSource(24, 12),
+      PathData(
+        source: const RectSource(24, 12),
         fillRule: FillRule.evenOdd,
         appearance: CanvasAppearance(
-          foreground: CanvasFill.solid(0x8044AAFF),
+          foreground: const CanvasFill.solid(0x8044AAFF),
           stroke: CanvasStroke(
             color: 0xFF112233,
             width: 8,

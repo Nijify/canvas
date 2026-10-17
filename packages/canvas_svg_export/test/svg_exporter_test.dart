@@ -67,14 +67,14 @@ void main() {
 
   test('ordinary path paint is supplied by its shared appearance', () {
     final scene = _scene(
-      children: const [
+      children: [
         Node.path(
           id: 'p',
           data: PathData(
-            source: RectSource(20, 10),
+            source: const RectSource(20, 10),
             fillRule: FillRule.evenOdd,
             appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0x80445566),
+              foreground: const CanvasFill.solid(0x80445566),
               stroke: CanvasStroke(
                 color: 0x80112233,
                 width: 4,
@@ -112,16 +112,16 @@ void main() {
     final scene = _scene(
       background: const CanvasFill.solid(0x80445566),
       opacity: 0.5,
-      children: const [
+      children: [
         Node.path(
           id: 'p',
           name: 'unsafe<&',
           role: 'logo:main',
           data: PathData(
-            source: RectSource(20, 10),
+            source: const RectSource(20, 10),
             fillRule: FillRule.evenOdd,
             appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0x80ff0000),
+              foreground: const CanvasFill.solid(0x80ff0000),
               stroke: CanvasStroke(
                 color: 0xff00ff00,
                 width: 2,

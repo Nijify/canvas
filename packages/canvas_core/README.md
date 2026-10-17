@@ -200,6 +200,11 @@ zeros and odd-length sequences, but are not yet rendered as dashes. Stroke
 miter limits must be finite and at least 1. Negative source dimensions/radii
 and nonpositive icon sizes are invalid; zero-sized path geometry is allowed.
 
+`CanvasStroke` snapshots supplied dash lists, including replacements passed to
+`copyWith`. Its dash values are unmodifiable and cannot change when a caller
+later edits the original list. Stroke construction is therefore not `const`;
+its defaults and persisted shape remain unchanged.
+
 Upgrade historical JSON explicitly before decoding:
 
 ```dart

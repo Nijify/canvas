@@ -24,7 +24,7 @@ class _UnusedSelection extends Fake implements EditorSelectionHost {}
 
 class _UnusedResources extends Fake implements CanvasRuntimeResources {}
 
-const _configured = rt.CanvasStroke(
+final _configured = rt.CanvasStroke(
   color: 0x00112233,
   width: 0,
   cap: rt.StrokeCap.square,
@@ -88,7 +88,7 @@ class _Adapter extends EditorDocumentAdapter<rt.CanvasSceneDocument> {
       node.copyWith(
         data: node.data.copyWith(
           appearance: node.data.appearance.copyWith(
-            stroke: const rt.CanvasStroke(
+            stroke: rt.CanvasStroke(
               color: 0xFFFF0000,
               width: 99,
               dash: [99],
@@ -159,6 +159,42 @@ Finder _number(String name) => find.descendant(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('caller dash mutations cannot change current or undo/redo scenes', () {
+    final initialDash = <double>[5, 0, 3];
+    final initial = rt.CanvasStroke(color: 0x00112233, width: 0, dash: initialDash);
+    final runtime = _runtime(_scene(stroke: initial));
+    addTearDown(runtime.dispose);
+    final before = runtime.sourceDocument;
+    final replacement = <double>[7, 0, 5];
+
+    runtime.updateField<rt.CanvasStroke?>(
+      'path',
+      rt.CanvasFields.pathStroke,
+      (current) => current!.copyWith(width: 12, dash: replacement),
+    );
+    final after = runtime.sourceDocument;
+    initialDash.clear();
+    replacement[0] = 99;
+    replacement.clear();
+
+    final beforeStroke = (rt.findById(before, 'path') as rt.PathNode)
+        .data.appearance.stroke!;
+    expect(beforeStroke.dash, [5, 0, 3]);
+    expect(_path(runtime).data.appearance.stroke!.dash, [7, 0, 5]);
+    expect(_path(runtime).data.appearance.stroke!.width, 12);
+
+    runtime.undo();
+    expect(runtime.sourceDocument, before);
+    expect(_path(runtime).data.appearance.stroke!.dash, [5, 0, 3]);
+    expect(_path(runtime).data.appearance.stroke!.width, 0);
+
+    runtime.redo();
+    expect(runtime.sourceDocument, after);
+    expect(_path(runtime).data.appearance.stroke!.dash, [7, 0, 5]);
+    expect(_path(runtime).data.appearance.stroke!.color, 0x00112233);
+    expect(_path(runtime).data.appearance.stroke!.width, 12);
+  });
 
   test(
     'optional stroke commits preserve other fields and support undo and redo',
@@ -296,7 +332,7 @@ void main() {
       await tester.pump();
       expect(
         _path(runtime).data.appearance.stroke,
-        const rt.CanvasStroke(color: 0xFF111111),
+        rt.CanvasStroke(color: 0xFF111111),
       );
       final picker = tester.widget<SwatchPickerRow>(
         find.descendant(
@@ -324,13 +360,13 @@ void main() {
       await tester.pump();
       expect(
         _path(runtime).data.appearance.stroke,
-        const rt.CanvasStroke(color: 0x80111111),
+        rt.CanvasStroke(color: 0x80111111),
       );
       runtime.undo();
       await tester.pump();
       expect(
         _path(runtime).data.appearance.stroke,
-        const rt.CanvasStroke(color: 0xFF111111),
+        rt.CanvasStroke(color: 0xFF111111),
       );
     },
   );

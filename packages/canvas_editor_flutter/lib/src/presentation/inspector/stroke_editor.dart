@@ -71,7 +71,7 @@ class _StrokeEditorState extends State<StrokeEditor> {
     widget.inspector.controller.updateField<rt.CanvasStroke?>(
       widget.nodeId,
       rt.CanvasFields.pathStroke,
-      (current) => current ?? const rt.CanvasStroke(color: 0xFF111111),
+      (current) => current ?? rt.CanvasStroke(color: 0xFF111111),
     );
   }
 
