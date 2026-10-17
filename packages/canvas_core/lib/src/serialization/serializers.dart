@@ -3,47 +3,38 @@
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/validation/scene_document_validation.dart';
 import 'package:canvas_core/src/serialization/scene_format.dart';
-import 'package:canvas_core/src/serialization/scene_format_exception.dart';
+import 'package:canvas_core/src/serialization/formats/scene_v3.dart'
+    show validateSceneV3Json;
 
-export 'package:canvas_core/src/serialization/converters.dart';
-export 'package:canvas_core/src/serialization/path_converters.dart';
-export 'package:canvas_core/src/serialization/scene_format_exception.dart'
-    show CanvasSceneFormatException;
+// Supported annotations for host-owned geometry models.
+export 'package:canvas_core/src/serialization/converters.dart'
+    show
+        Vec2Converter,
+        NullableVec2Converter,
+        Size2DConverter,
+        NullableSize2DConverter;
 export 'package:canvas_core/src/serialization/scene_format.dart'
     show currentCanvasSceneFormatVersion;
 
-/// Decodes current, versioned persisted scene JSON.
+/// Decodes current persisted JSON: strict wire checks, decoding, then integrity.
 ///
-/// Known legacy JSON must be upgraded explicitly before calling this function.
-/// Invalid structure or semantics throw [CanvasSceneFormatException].
-///
-/// The persistence-format version belongs to the wire format and is removed
-/// before constructing the runtime [CanvasSceneDocument].
+/// Upgrade historical JSON explicitly first. Malformed wire data throws
+/// [FormatException]; invalid runtime values throw [ArgumentError]. Error text
+/// is diagnostic context, not a stable code, path, or ordering contract.
 CanvasSceneDocument decodeCanvasScene(Map<String, Object?> json) {
-  validateCurrentCanvasSceneJson(json);
-
+  validateSceneV3Json(json);
   final payload = Map<String, dynamic>.from(json)..remove('sceneFormatVersion');
-
   final scene = CanvasSceneDocument.fromJson(payload);
-  _validateForPersistence(scene);
+  requireCanvasSceneIntegrity(scene);
   return scene;
 }
 
-/// Encodes a runtime scene as current, versioned persisted JSON.
+/// Checks runtime integrity before recursive encoding to the current format.
 ///
-/// `sceneFormatVersion` is persistence metadata and is intentionally not part
-/// of the runtime [CanvasSceneDocument] model.
-/// Invalid runtime data is rejected before serialization.
+/// The guard checks cycles, JSON payloads, and node discriminator consistency.
+/// Package serializers own canonical wire structure; it is not scanned again.
 Map<String, Object?> encodeCanvasScene(CanvasSceneDocument scene) {
-  // Validate before recursive serialization, including cyclic runtime graphs.
-  _validateForPersistence(scene);
-  final json = Map<String, Object?>.from(scene.toJson())
+  requireCanvasSceneIntegrity(scene);
+  return Map<String, Object?>.from(scene.toJson())
     ..['sceneFormatVersion'] = currentCanvasSceneFormatVersion;
-  validateCurrentCanvasSceneJson(json);
-  return json;
-}
-
-void _validateForPersistence(CanvasSceneDocument scene) {
-  final issues = validateCanvasSceneDocument(scene);
-  if (issues.isNotEmpty) throw CanvasSceneFormatException(issues.first);
 }

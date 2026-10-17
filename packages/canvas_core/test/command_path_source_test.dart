@@ -116,7 +116,7 @@ void main() {
       expect(data.source.toJson(), source.toJson());
       expect(data.fillRule, FillRule.evenOdd);
       expect(encodeCanvasScene(decoded), sceneJson);
-      expect(validateCanvasSceneDocument(decoded), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(decoded), returnsNormally);
     });
 
     test('accepts empty, move-only, and open contours', () {

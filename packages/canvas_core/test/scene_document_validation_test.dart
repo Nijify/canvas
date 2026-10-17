@@ -1,464 +1,182 @@
+import 'dart:convert';
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
 CanvasSceneDocument _scene({
   Size2D artboardSize = const Size2D(740, 360),
   CanvasFill backgroundFill = const CanvasFill.none(),
-  double backgroundOpacity = 1.0,
-  List<Node> children = const <Node>[],
-}) {
-  return CanvasSceneDocument(
-    artboardSize: artboardSize,
-    backgroundFill: backgroundFill,
-    backgroundOpacity: backgroundOpacity,
-    children: children,
-  );
-}
+  double backgroundOpacity = 1,
+  List<Node> children = const [],
+}) => CanvasSceneDocument(
+  artboardSize: artboardSize,
+  backgroundFill: backgroundFill,
+  backgroundOpacity: backgroundOpacity,
+  children: children,
+);
 
-Node _text(String id, {String? name, Transform2D xf = const Transform2D()}) {
-  return Node.text(
-    id: id,
-    name: name,
-    xf: xf,
-    data: const TextData(
-      text: 'Hello',
-      fontFamily: 'Inter',
-      fontWeight: 400,
-      fontSize: 16,
-    ),
-  );
-}
+TextData _textData() => const TextData(
+  text: 'Hello', fontFamily: 'Inter', fontWeight: 400, fontSize: 16,
+);
 
-List<String> _signature(List<CanvasSceneValidationIssue> issues) => [
-  for (final issue in issues)
-    '${issue.code.name}|${issue.path}|${issue.relatedPath ?? ''}',
-];
+Node _text(String id, {String? name, Transform2D xf = const Transform2D()}) =>
+    Node.text(id: id, name: name, xf: xf, data: _textData());
+
+Node _path(PathSource source) => Node.path(
+  id: 'path', data: PathData(source: source),
+);
+
+Node _behavior(Map<String, dynamic> data, {String type = 'future', int version = 1}) =>
+    Node.group(id: 'group', behavior: GroupBehaviorRef(
+      type: type, version: version, data: data,
+    ));
 
 void main() {
-  group('validateCanvasSceneDocument', () {
-    test('accepts a valid empty scene', () {
-      expect(validateCanvasSceneDocument(_scene()), isEmpty);
-    });
+  test('accepts empty scenes and unknown well-formed behavior payloads', () {
+    for (final scene in [
+      _scene(),
+      _scene(children: [
+        _text('text', xf: const Transform2D(origin: OriginKind.custom)),
+        _behavior({'nested': [null, true, 3, 0.5, {'label': 'future'}]}, version: 999),
+      ]),
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(scene), returnsNormally);
+      final json = encodeCanvasScene(scene);
+      expect(encodeCanvasScene(decodeCanvasScene(json)), json);
+    }
+  });
 
-    test('accepts unknown well-formed group behavior', () {
-      final scene = _scene(
-        children: <Node>[
-          _text(
-            'text',
-            xf: const Transform2D(
-              origin: OriginKind.custom,
-              customPivotPx: null,
-            ),
-          ),
-          Node.group(
-            id: 'future-component',
-            behavior: GroupBehaviorRef(
-              type: 'canvas.future_component',
-              version: 999,
-              data: <String, dynamic>{
-                'enabled': true,
-                'count': 3,
-                'label': 'Future',
-                'nested': <dynamic>[
-                  null,
-                  <String, dynamic>{'ok': true},
-                ],
-              },
-            ),
-            children: const <Node>[],
-          ),
-        ],
-      );
+  test('rejects invalid document dimensions, opacity, and colors', () {
+    for (final scene in [
+      _scene(artboardSize: const Size2D(0, 360)),
+      _scene(artboardSize: const Size2D(740, double.infinity)),
+      _scene(backgroundOpacity: -0.1),
+      _scene(backgroundOpacity: 1.1),
+      _scene(backgroundOpacity: double.nan),
+      _scene(backgroundFill: const CanvasFill.solid(-1)),
+      _scene(backgroundFill: const CanvasFill.solid(0x100000000)),
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+      expect(() => encodeCanvasScene(scene), throwsArgumentError);
+    }
+  });
 
-      expect(validateCanvasSceneDocument(scene), isEmpty);
-    });
+  test('rejects blank and nested duplicate IDs and oversized names', () {
+    for (final nodes in [
+      [_text(' ')],
+      [_text('duplicate'), Node.group(id: 'group', children: [_text('duplicate')])],
+      [_text('text', name: List.filled(81, '😀').join())],
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(_scene(children: nodes)), throwsArgumentError);
+    }
+    expect(() => requireCanvasSceneIntegrity(_scene(children: [
+      _text('text', name: List.filled(80, '😀').join()),
+    ])), returnsNormally);
+  });
 
-    test('reports nested duplicate node IDs with the first occurrence', () {
-      final scene = _scene(
-        children: <Node>[
-          _text('duplicate'),
-          Node.group(id: 'group', children: <Node>[_text('duplicate')]),
-        ],
-      );
+  test('checks every transform coordinate and optional custom pivots', () {
+    for (final xf in const [
+      Transform2D(position: Vec2(double.nan, 0)),
+      Transform2D(position: Vec2(0, double.infinity)),
+      Transform2D(rotationRad: double.infinity),
+      Transform2D(scale: Vec2(double.nan, 1)),
+      Transform2D(scale: Vec2(1, double.infinity)),
+      Transform2D(customPivotPx: Vec2(double.nan, 0)),
+      Transform2D(customPivotPx: Vec2(0, double.infinity)),
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(_scene(children: [_text('text', xf: xf)])), throwsArgumentError);
+    }
+  });
 
-      final issues = validateCanvasSceneDocument(scene);
+  test('retains path source numeric invariants', () {
+    for (final source in [
+      const CircleSource(-1), const CircleSource(double.infinity),
+      const RectSource(-1, 10), const RectSource(10, double.nan),
+      const RoundRectSource(10, 10, -1, 0),
+      const RoundRectSource(10, 10, 0, double.infinity),
+      const PillSource(-1, 10), const UnderlineSource(10, -1),
+      const EllipseSource(double.nan, 10),
+      const RegularPolygonSource(2, 10),
+      const RegularPolygonSource(3, -1),
+      const RegularPolygonSource(3, 10, rotation: double.infinity),
+      const StarSource(2, 10, 5), const StarSource(5, -1, 0),
+      const StarSource(5, 10, -1), const StarSource(5, 10, 11),
+      const StarSource(5, 10, 5, rotation: double.nan),
+      PolylineSource(const [Vec2(double.nan, 0)]),
+      PolylineSource(const [null, Vec2(0, double.infinity)]),
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(_scene(children: [_path(source)])), throwsArgumentError);
+    }
+  });
 
-      expect(issues, hasLength(1));
-      expect(issues.single.code, CanvasSceneValidationCode.duplicateNodeId);
-      expect(issues.single.path, '/children/1/children/0/id');
-      expect(issues.single.relatedPath, '/children/0/id');
-    });
+  test('checks text, icon, and image numerics', () {
+    for (final node in [
+      Node.text(id: 'text', data: _textData().copyWith(fontSize: double.nan)),
+      Node.text(id: 'text', data: _textData().copyWith(letterSpacing: double.infinity)),
+      const Node.icon(id: 'icon', data: CanvasIconData(iconRef: 'symbol', sizePx: 0)),
+      const Node.icon(id: 'icon', data: CanvasIconData(iconRef: 'symbol', sizePx: double.infinity)),
+      const Node.image(id: 'image', data: ImageData(size: Size2D(-1, 10))),
+      const Node.image(id: 'image', data: ImageData(size: Size2D(10, 0))),
+      const Node.image(id: 'image', data: ImageData(size: Size2D(10, 10), align: Vec2(-0.1, 0.5))),
+      const Node.image(id: 'image', data: ImageData(size: Size2D(10, 10), align: Vec2(0.5, 1.1))),
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(_scene(children: [node])), throwsArgumentError);
+    }
+  });
 
-    test('reports blank IDs and names longer than 80 characters', () {
-      final scene = _scene(
-        children: <Node>[
-          _text('   ', name: List<String>.filled(81, 'x').join()),
-        ],
-      );
+  test('checks the behavior envelope and recursively rejects non-JSON data', () {
+    for (final node in [
+      _behavior({}, type: ' '), _behavior({}, version: 0),
+      _behavior({'value': Object()}),
+      _behavior({'value': double.infinity}),
+      _behavior({'nested': [double.nan]}),
+      _behavior({'nested': <Object, Object>{1: true}}),
+    ]) {
+      final scene = _scene(children: [node]);
+      expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+      expect(() => encodeCanvasScene(scene), throwsArgumentError);
+    }
+  });
 
-      final issues = validateCanvasSceneDocument(scene);
+  test('rejects map, list, and node cycles before recursive encoding', () {
+    final map = <String, dynamic>{};
+    map['self'] = map;
+    final list = <Object?>[];
+    list.add(list);
+    final children = <Node>[];
+    final group = Node.group(id: 'group', children: children);
+    children.add(group);
+    for (final scene in [
+      _scene(children: [_behavior(map)]),
+      _scene(children: [_behavior({'list': list})]),
+      _scene(children: [group]),
+    ]) {
+      expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+      expect(() => encodeCanvasScene(scene), throwsArgumentError);
+    }
+  });
 
-      expect(_signature(issues), <String>[
-        'blankNodeId|/children/0/id|',
-        'nameTooLong|/children/0/name|',
-      ]);
-    });
-
-    test('validates document ranges, colors, and gradient values in order', () {
-      final scene = _scene(
-        artboardSize: const Size2D(0, double.infinity),
-        backgroundFill: CanvasFill.gradient(
-          LinearGradientSpec(
-            start: const Vec2(double.infinity, 0),
-            end: const Vec2(0, double.nan),
-            stops: const <GradientStop>[
-              GradientStop(offset: double.infinity, color: -1),
-              GradientStop(offset: -0.1, color: 0x100000000),
-              GradientStop(offset: -0.2, color: 0),
-            ],
-          ),
-        ),
-        backgroundOpacity: -0.1,
-      );
-
-      final issues = validateCanvasSceneDocument(scene);
-
-      expect(_signature(issues), <String>[
-        'valueOutOfRange|/artboardSize/w|',
-        'nonFiniteNumber|/artboardSize/h|',
-        'nonFiniteNumber|/backgroundFill/grad/start/x|',
-        'nonFiniteNumber|/backgroundFill/grad/end/y|',
-        'nonFiniteNumber|/backgroundFill/grad/stops/0/offset|',
-        'invalidColor|/backgroundFill/grad/stops/0/color|',
-        'valueOutOfRange|/backgroundFill/grad/stops/1/offset|',
-        'invalidColor|/backgroundFill/grad/stops/1/color|',
-        'valueOutOfRange|/backgroundFill/grad/stops/2/offset|',
-        'gradientStopsOutOfOrder|/backgroundFill/grad/stops/2/offset|/backgroundFill/grad/stops/1/offset',
-        'valueOutOfRange|/backgroundOpacity|',
-      ]);
-    });
-
-    test('requires a nondegenerate line and at least two stops', () {
-      final scene = _scene(
-        backgroundFill: CanvasFill.gradient(
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(0, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: 0xFF000000),
-            ],
-          ),
-        ),
-      );
-
-      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
-        'degenerateGradient|/backgroundFill/grad/end|/backgroundFill/grad/start',
-        'invalidGradientStopCount|/backgroundFill/grad/stops|',
-      ]);
-    });
-
-    test('preserves ordered multi-error gradient diagnostics', () {
-      final gradient = LinearGradientSpec(
-        start: const Vec2(double.nan, 1),
-        end: const Vec2(double.infinity, 1),
-        stops: const <GradientStop>[
-          GradientStop(offset: -0.2, color: -1),
-          GradientStop(offset: 0.2, color: 0x100000000),
-          GradientStop(offset: 0.1, color: 0xFFFFFFFF),
-          GradientStop(offset: double.nan, color: 0xFF112233),
-          GradientStop(offset: 0.1, color: 0xFF445566),
-          GradientStop(offset: 1.2, color: 0xFF778899),
-        ],
-      );
-
-      final issues = validateCanvasSceneDocument(
-        _scene(backgroundFill: CanvasFill.gradient(gradient)),
-      );
-
-      expect(_signature(issues), <String>[
-        'nonFiniteNumber|/backgroundFill/grad/start/x|',
-        'nonFiniteNumber|/backgroundFill/grad/end/x|',
-        'valueOutOfRange|/backgroundFill/grad/stops/0/offset|',
-        'invalidColor|/backgroundFill/grad/stops/0/color|',
-        'invalidColor|/backgroundFill/grad/stops/1/color|',
-        'gradientStopsOutOfOrder|/backgroundFill/grad/stops/2/offset|/backgroundFill/grad/stops/1/offset',
-        'nonFiniteNumber|/backgroundFill/grad/stops/3/offset|',
-        'valueOutOfRange|/backgroundFill/grad/stops/5/offset|',
-      ]);
-    });
-
-    test('duplicate stops are permitted for hard transitions', () {
-      final gradient = LinearGradientSpec(
-        start: const Vec2(0, 0),
-        end: const Vec2(20, 0),
-        stops: const <GradientStop>[
-          GradientStop(offset: 0, color: 0xFF000000),
-          GradientStop(offset: 0, color: 0xFFFFFFFF),
-          GradientStop(offset: 1, color: 0xFF445566),
-        ],
-      );
-
-      expect(
-        validateCanvasSceneDocument(
-          _scene(backgroundFill: CanvasFill.gradient(gradient)),
-        ),
-        isEmpty,
-      );
-    });
-
-    test('validates transforms and path numeric values', () {
-      final scene = _scene(
-        children: <Node>[
-          Node.path(
-            id: 'path',
-            xf: const Transform2D(
-              position: Vec2(double.nan, 0),
-              rotationRad: double.infinity,
-              scale: Vec2(1, double.nan),
-              origin: OriginKind.custom,
-              customPivotPx: Vec2(double.infinity, 0),
-            ),
-            data: const PathData(
-              source: CircleSource(double.infinity),
-              appearance: CanvasAppearance(
-                stroke: CanvasStroke(
-                  color: 0,
-                  width: -1,
-                  miterLimit: -1,
-                  dash: <double>[double.infinity, -1],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-
-      final issues = validateCanvasSceneDocument(scene);
-
-      expect(
-        _signature(issues),
-        containsAll(<String>[
-          'nonFiniteNumber|/children/0/xf/position/x|',
-          'nonFiniteNumber|/children/0/xf/rotationRad|',
-          'nonFiniteNumber|/children/0/xf/scale/y|',
-          'nonFiniteNumber|/children/0/xf/customPivotPx/x|',
-          'nonFiniteNumber|/children/0/data/source/r|',
-          'valueOutOfRange|/children/0/data/appearance/stroke/width|',
-          'valueOutOfRange|/children/0/data/appearance/stroke/miterLimit|',
-          'nonFiniteNumber|/children/0/data/appearance/stroke/dash/0|',
-          'valueOutOfRange|/children/0/data/appearance/stroke/dash/1|',
-        ]),
-      );
-    });
-
-    test('custom origin does not require a custom pivot', () {
-      final scene = _scene(
-        children: <Node>[
-          _text('text', xf: const Transform2D(origin: OriginKind.custom)),
-        ],
-      );
-
-      expect(validateCanvasSceneDocument(scene), isEmpty);
-    });
-
-    test('validates a custom pivot when one is present', () {
-      final scene = _scene(
-        children: <Node>[
-          _text(
-            'text',
-            xf: const Transform2D(
-              origin: OriginKind.custom,
-              customPivotPx: Vec2(double.nan, double.infinity),
-            ),
-          ),
-        ],
-      );
-
-      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
-        'nonFiniteNumber|/children/0/xf/customPivotPx/x|',
-        'nonFiniteNumber|/children/0/xf/customPivotPx/y|',
-      ]);
-    });
-
-    test('validates the generic behavior envelope only', () {
-      final scene = _scene(
-        children: <Node>[
-          Node.group(
-            id: 'component',
-            behavior: const GroupBehaviorRef(
-              type: '   ',
-              version: 0,
-              data: <String, dynamic>{},
-            ),
-            children: const <Node>[],
-          ),
-        ],
-      );
-
-      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
-        'invalidBehaviorType|/children/0/behavior/type|',
-        'invalidBehaviorVersion|/children/0/behavior/version|',
-      ]);
-    });
-
-    test('behavior data is JSON-safe and uses sorted escaped paths', () {
-      final scene = _scene(
-        children: <Node>[
-          Node.group(
-            id: 'component',
-            behavior: GroupBehaviorRef(
-              type: 'canvas.future',
-              version: 7,
-              data: <String, dynamic>{
-                'z': double.infinity,
-                'bad': Object(),
-                'a/b~c': double.nan,
-              },
-            ),
-            children: const <Node>[],
-          ),
-        ],
-      );
-
-      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
-        'nonFiniteNumber|/children/0/behavior/data/a~1b~0c|',
-        'nonJsonBehaviorValue|/children/0/behavior/data/bad|',
-        'nonFiniteNumber|/children/0/behavior/data/z|',
-      ]);
-    });
-
-    test('behavior data cycles terminate deterministically', () {
-      final data = <String, dynamic>{};
-      final behavior = GroupBehaviorRef(
-        type: 'canvas.future',
-        version: 1,
-        data: data,
-      );
-
-      data['self'] = data;
-
-      final scene = _scene(
-        children: <Node>[
-          Node.group(
-            id: 'component',
-            behavior: behavior,
-            children: const <Node>[],
-          ),
-        ],
-      );
-
-      final issues = validateCanvasSceneDocument(scene);
-      final cycleIssues = issues
-          .where(
-            (issue) =>
-                issue.code == CanvasSceneValidationCode.cyclicBehaviorData,
-          )
-          .toList();
-
-      expect(cycleIssues, hasLength(1));
-      expect(cycleIssues.single.path, contains('/behavior/data/self'));
-    });
-
-    test('scene graph cycles terminate deterministically', () {
-      final children = <Node>[];
-      final group = Node.group(id: 'group', children: children);
-
-      // Freezed keeps the supplied collection as the underlying collection, so
-      // malformed in-memory callers can still create a cycle after construction.
-      children.add(group);
-
-      final scene = _scene(children: <Node>[group]);
-      final issues = validateCanvasSceneDocument(scene);
-
-      expect(
-        issues.map((issue) => issue.code),
-        contains(CanvasSceneValidationCode.cyclicNodeGraph),
-      );
-    });
-
-    test('node-name limit counts Unicode code points, not UTF-16 units', () {
-      final eightyEmoji = List<String>.filled(80, '😀').join();
-      final eightyOneEmoji = List<String>.filled(81, '😀').join();
-
-      expect(
-        validateCanvasSceneDocument(
-          _scene(children: <Node>[_text('valid', name: eightyEmoji)]),
-        ),
-        isEmpty,
-      );
-
-      expect(
-        _signature(
-          validateCanvasSceneDocument(
-            _scene(children: <Node>[_text('invalid', name: eightyOneEmoji)]),
-          ),
-        ),
-        <String>['nameTooLong|/children/0/name|'],
-      );
-    });
-
-    test('validates explicit image dimensions and alignment', () {
-      final scene = _scene(
-        children: <Node>[
-          Node.image(
-            id: 'image',
-            data: const ImageData(size: Size2D(-1, 0), align: Vec2(-0.1, 1.1)),
-          ),
-        ],
-      );
-
-      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
-        'valueOutOfRange|/children/0/data/size/w|',
-        'valueOutOfRange|/children/0/data/size/h|',
-        'valueOutOfRange|/children/0/data/align/x|',
-        'valueOutOfRange|/children/0/data/align/y|',
-      ]);
-    });
-
-    test('regular polygon requires at least three sides', () {
-      final scene = _scene(
-        children: <Node>[
-          Node.path(
-            id: 'polygon',
-            data: const PathData(source: RegularPolygonSource(2, 10)),
-          ),
-        ],
-      );
-
-      expect(_signature(validateCanvasSceneDocument(scene)), <String>[
-        'valueOutOfRange|/children/0/data/source/sides|',
-      ]);
-    });
-
-    test('multiple errors have deterministic codes, paths, and ordering', () {
-      final scene = _scene(
-        artboardSize: const Size2D(0, 360),
-        backgroundOpacity: 2,
-        children: <Node>[
-          _text('duplicate'),
-          Node.group(
-            id: 'group',
-            behavior: const GroupBehaviorRef(
-              type: '',
-              version: 0,
-              data: <String, dynamic>{},
-            ),
-            children: <Node>[_text('duplicate')],
-          ),
-        ],
-      );
-
-      final first = validateCanvasSceneDocument(scene);
-      final second = validateCanvasSceneDocument(scene);
-
-      expect(_signature(first), _signature(second));
-      expect(_signature(first), <String>[
-        'valueOutOfRange|/artboardSize/w|',
-        'valueOutOfRange|/backgroundOpacity|',
-        'invalidBehaviorType|/children/1/behavior/type|',
-        'invalidBehaviorVersion|/children/1/behavior/version|',
-        'duplicateNodeId|/children/1/children/0/id|/children/0/id',
-      ]);
-    });
+  test('rejects contradictory labels from all generated node constructors', () {
+    final variants = <(String, Node Function(String?))>[
+      ('text', (label) => TextNode(id: 'text', data: _textData(), $type: label)),
+      ('image', (label) => ImageNode(id: 'image', data: const ImageData(size: Size2D(10, 10)), $type: label)),
+      ('path', (label) => PathNode(id: 'path', data: const PathData(source: RectSource(10, 10)), $type: label)),
+      ('icon', (label) => IconNode(id: 'icon', data: const CanvasIconData(iconRef: 'symbol'), $type: label)),
+      ('group', (label) => GroupNode(id: 'group', $type: label)),
+    ];
+    for (final (expected, build) in variants) {
+      for (final label in [null, expected]) {
+        final scene = _scene(children: [build(label)]);
+        final wire = encodeCanvasScene(scene);
+        expect(((wire['children'] as List).single as Map)['runtimeType'], expected);
+        final restored = decodeCanvasScene(jsonDecode(jsonEncode(wire)) as Map<String, Object?>);
+        expect(encodeCanvasScene(restored), wire);
+      }
+      for (final label in ['unknown', expected == 'text' ? 'path' : 'text']) {
+        final scene = _scene(children: [build(label)]);
+        expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+        expect(() => encodeCanvasScene(scene), throwsArgumentError);
+      }
+    }
   });
 }

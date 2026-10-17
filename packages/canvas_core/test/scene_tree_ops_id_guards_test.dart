@@ -108,7 +108,7 @@ void main() {
       expect(findById(updated, 'new-group'), isA<GroupNode>());
       expect(findById(updated, 'new-child'), isNotNull);
       expect(findById(updated, 'nested-child'), isNotNull);
-      expect(validateCanvasSceneDocument(updated), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(updated), returnsNormally);
     });
   });
 
@@ -190,7 +190,7 @@ void main() {
         'first',
       ]);
 
-      expect(validateCanvasSceneDocument(updated), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(updated), returnsNormally);
     });
 
     test('accepts ordinary group property updates', () {
@@ -208,7 +208,7 @@ void main() {
 
       expect(updatedGroup.name, 'Renamed group');
       expect(updatedGroup.children.single.id, 'child');
-      expect(validateCanvasSceneDocument(updated), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(updated), returnsNormally);
     });
 
     test('accepts ordinary leaf property updates', () {
@@ -224,7 +224,7 @@ void main() {
       final updatedLeaf = findById(updated, 'leaf') as TextNode;
 
       expect(updatedLeaf.name, 'Renamed leaf');
-      expect(validateCanvasSceneDocument(updated), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(updated), returnsNormally);
     });
   });
 }

@@ -166,37 +166,19 @@ void main() {
     );
   });
 
-  test('validator requires unique nonblank underlay IDs', () {
-    final scene = _scene([
-      _shadow,
-      _shadow.copyWith(
-        offset: const Vec2(double.nan, double.infinity),
-        blurSigma: -1,
-        color: -1,
-        enabled: false,
-      ),
-      _shadow.copyWith(id: ' '),
-    ]);
-
-    final issues = validateCanvasSceneDocument(scene);
-
-    expect(
-      issues.map((issue) => issue.code),
-      containsAll([
-        CanvasSceneValidationCode.duplicateUnderlayId,
-        CanvasSceneValidationCode.blankUnderlayId,
-        CanvasSceneValidationCode.nonFiniteNumber,
-        CanvasSceneValidationCode.valueOutOfRange,
-        CanvasSceneValidationCode.invalidColor,
-      ]),
-    );
-
-    final duplicate = issues.firstWhere(
-      (issue) => issue.code == CanvasSceneValidationCode.duplicateUnderlayId,
-    );
-
-    expect(duplicate.path, '/children/0/data/appearance/underlays/1/id');
-
-    expect(duplicate.relatedPath, '/children/0/data/appearance/underlays/0/id');
+  test('underlay integrity applies even when effects are disabled', () {
+    for (final underlays in [
+      [_shadow, _shadow],
+      [_shadow.copyWith(id: ' ')],
+      [_shadow.copyWith(offset: const Vec2(double.nan, 0), enabled: false)],
+      [_shadow.copyWith(offset: const Vec2(0, double.infinity), enabled: false)],
+      [_shadow.copyWith(blurSigma: -1, enabled: false)],
+      [_shadow.copyWith(color: -1, enabled: false)],
+    ]) {
+      expect(
+        () => requireCanvasSceneIntegrity(_scene(underlays)),
+        throwsArgumentError,
+      );
+    }
   });
 }

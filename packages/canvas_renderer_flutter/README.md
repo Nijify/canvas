@@ -166,12 +166,12 @@ The supplied scene should already be the host/adapter-resolved canonical runtime
 
 Its render operation performs, in order:
 
-1. canonical structural validation;
+1. canonical scene integrity before resource work;
 2. canonical font, icon, and logical image dependency discovery;
 3. canonical font loading and icon validation;
 4. canonical image-intrinsic resolution;
 5. `ScenePreparer` exactly once, when configured;
-6. prepared-scene validation and resource-preservation checks;
+6. integrity of preparer output, when configured, and resource-preservation checks;
 7. a second prepared image-intrinsic pass for new element IDs that reuse allowed logical sources;
 8. visible raster preload and strict required-image verification;
 9. layout, scene painting, PNG encoding, and operation-scoped cleanup.
@@ -185,7 +185,10 @@ subtype. It exposes the missing `nodeIds` and relevant operation `failures`,
 including original causes when available. Formatted errors omit raw sources and
 original exception text. Persisted dimensions may satisfy metadata needs,
 hidden final images need no raster, and intentionally empty frames are valid.
-Font-loader and preparer exceptions propagate directly.
+Scene-integrity failures propagate as `ArgumentError` from
+`requireCanvasSceneIntegrity`. Checks occur before resource work and again after
+a configured preparer runs, even if it returns the same scene object. Font-loader
+and preparer exceptions propagate directly.
 
 ## Optional ImageProvider helpers
 

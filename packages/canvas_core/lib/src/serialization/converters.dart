@@ -42,19 +42,6 @@ class NullableSize2DConverter
   Map<String, dynamic>? toJson(Size2D? object) => object?.toJson();
 }
 
-/// ---- LinearGradientSpec ----
-class LinearGradientSpecConverter
-    implements JsonConverter<LinearGradientSpec, Map<String, dynamic>> {
-  const LinearGradientSpecConverter();
-
-  @override
-  LinearGradientSpec fromJson(Map<String, dynamic> json) =>
-      LinearGradientSpec.fromJson(json);
-
-  @override
-  Map<String, dynamic> toJson(LinearGradientSpec object) => object.toJson();
-}
-
 class CanvasFillConverter
     implements JsonConverter<CanvasFill, Map<String, dynamic>> {
   const CanvasFillConverter();

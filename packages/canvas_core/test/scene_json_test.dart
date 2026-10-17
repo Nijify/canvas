@@ -77,23 +77,10 @@ void main() {
             : root;
         final data = node['data'] as Map<String, dynamic>;
         data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
-        final location = nested ? '/children/0/children/0' : '/children/0';
 
         expect(
           () => decodeCanvasScene(json),
-          throwsA(
-            isA<CanvasSceneFormatException>()
-                .having(
-                  (error) => error.issue.code,
-                  'code',
-                  CanvasSceneValidationCode.invalidEnumValue,
-                )
-                .having(
-                  (error) => error.issue.path,
-                  'path',
-                  '$location/data/source/kind',
-                ),
-          ),
+          throwsFormatException,
         );
       });
     }
@@ -226,97 +213,71 @@ void main() {
           ),
         ],
       );
-      expect(validateCanvasSceneDocument(validScene), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(validScene), returnsNormally);
       final validJson = encodeCanvasScene(validScene);
       expect(encodeCanvasScene(decodeCanvasScene(validJson)), validJson);
 
-      final invalid = <(LinearGradientSpec, CanvasSceneValidationCode)>[
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(0, 0),
-            stops: valid.stops,
-          ),
-          CanvasSceneValidationCode.degenerateGradient,
+      final invalid = <LinearGradientSpec>[
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(0, 0),
+          stops: valid.stops,
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: 0xFF000000),
-            ],
-          ),
-          CanvasSceneValidationCode.invalidGradientStopCount,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: 0xFF000000),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(double.nan, 0),
-            end: const Vec2(1, 0),
-            stops: valid.stops,
-          ),
-          CanvasSceneValidationCode.nonFiniteNumber,
+        LinearGradientSpec(
+          start: const Vec2(double.nan, 0),
+          end: const Vec2(1, 0),
+          stops: valid.stops,
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: 0xFF000000),
-              GradientStop(offset: double.infinity, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.nonFiniteNumber,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: 0xFF000000),
+            GradientStop(offset: double.infinity, color: 0xFFFFFFFF),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: -0.1, color: 0xFF000000),
-              GradientStop(offset: 1, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.valueOutOfRange,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: -0.1, color: 0xFF000000),
+            GradientStop(offset: 1, color: 0xFFFFFFFF),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0.8, color: 0xFF000000),
-              GradientStop(offset: 0.2, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.gradientStopsOutOfOrder,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0.8, color: 0xFF000000),
+            GradientStop(offset: 0.2, color: 0xFFFFFFFF),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: -1),
-              GradientStop(offset: 1, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.invalidColor,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: -1),
+            GradientStop(offset: 1, color: 0xFFFFFFFF),
+          ],
         ),
       ];
 
-      for (final (gradient, expectedCode) in invalid) {
+      for (final gradient in invalid) {
         final scene = _scene().copyWith(
           backgroundFill: CanvasFill.gradient(gradient),
         );
-        expect(
-          validateCanvasSceneDocument(scene).map((issue) => issue.code),
-          contains(expectedCode),
-          reason: expectedCode.name,
-        );
-        expect(
-          () => decodeCanvasScene(encodeCanvasScene(scene)),
-          throwsA(isA<FormatException>()),
-          reason: expectedCode.name,
-        );
+        expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+        expect(() => encodeCanvasScene(scene), throwsArgumentError);
+        final raw = encodeCanvasScene(_scene());
+        raw['backgroundFill'] = CanvasFill.gradient(gradient).toJson();
+        expect(() => decodeCanvasScene(raw), throwsArgumentError);
       }
     });
 
@@ -467,17 +428,10 @@ void main() {
 
     test('both persistence boundaries enforce runtime semantics', () {
       final json = encodeCanvasScene(_scene())..['backgroundOpacity'] = 2;
-      final failure = isA<CanvasSceneFormatException>()
-          .having(
-            (error) => error.issue.code,
-            'code',
-            CanvasSceneValidationCode.valueOutOfRange,
-          )
-          .having((error) => error.issue.path, 'path', '/backgroundOpacity');
-      expect(() => decodeCanvasScene(json), throwsA(failure));
+      expect(() => decodeCanvasScene(json), throwsArgumentError);
       expect(
         () => encodeCanvasScene(_scene(backgroundOpacity: 2)),
-        throwsA(failure),
+        throwsArgumentError,
       );
     });
   });

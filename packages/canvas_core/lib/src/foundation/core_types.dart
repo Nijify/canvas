@@ -105,8 +105,7 @@ class Size2D {
 /// One color sample along a gradient line.
 ///
 /// [offset] is expressed in the normalized gradient interval `[0, 1]`. Scene
-/// validation owns range and ordering checks so callers can collect all
-/// diagnostics for a document at once.
+/// integrity checks own range and ordering rules.
 final class GradientStop {
   const GradientStop({required this.offset, required this.color});
 

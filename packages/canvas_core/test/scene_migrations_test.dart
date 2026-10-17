@@ -121,9 +121,7 @@ void main() {
       expect(legacy, equals(legacyBefore));
 
       final scene = decodeCanvasScene(migrated);
-      final validationIssues = validateCanvasSceneDocument(scene);
-
-      expect(validationIssues, isEmpty);
+      requireCanvasSceneIntegrity(scene);
     });
 
     test('uses historic default artboard dimensions while migrating v1', () {

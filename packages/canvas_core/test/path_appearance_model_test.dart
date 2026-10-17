@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
+import 'package:canvas_core/src/serialization/path_converters.dart';
 import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:test/test.dart';
 
@@ -153,54 +154,33 @@ void main() {
     },
   );
 
-  test('inactive stroke numerics are validated with deterministic paths', () {
-    final scene = _scene([
-      const Node.path(
-        id: 'path',
-        data: PathData(
-          source: RectSource(20, 10),
-          appearance: CanvasAppearance(
-            stroke: CanvasStroke(
-              color: 0,
-              width: double.infinity,
-              miterLimit: 0.5,
-              dash: [double.nan, -1],
-            ),
+  test('inactive stroke numerics are still rejected', () {
+    for (final stroke in const [
+      CanvasStroke(color: 0, width: double.infinity),
+      CanvasStroke(color: 0, width: -1),
+      CanvasStroke(color: 0, miterLimit: 0.5),
+      CanvasStroke(color: 0, miterLimit: double.nan),
+      CanvasStroke(color: 0, dash: [double.nan]),
+      CanvasStroke(color: 0, dash: [-1]),
+      CanvasStroke(color: -1, width: 0),
+    ]) {
+      final scene = _scene([
+        Node.path(
+          id: 'path',
+          data: PathData(
+            source: const RectSource(20, 10),
+            appearance: CanvasAppearance(stroke: stroke),
           ),
         ),
-      ),
-    ]);
-
-    List<(CanvasSceneValidationCode, String)> issues() => [
-      for (final issue in validateCanvasSceneDocument(scene))
-        (issue.code, issue.path),
-    ];
-
-    expect(issues(), [
-      (
-        CanvasSceneValidationCode.nonFiniteNumber,
-        '/children/0/data/appearance/stroke/width',
-      ),
-      (
-        CanvasSceneValidationCode.valueOutOfRange,
-        '/children/0/data/appearance/stroke/miterLimit',
-      ),
-      (
-        CanvasSceneValidationCode.nonFiniteNumber,
-        '/children/0/data/appearance/stroke/dash/0',
-      ),
-      (
-        CanvasSceneValidationCode.valueOutOfRange,
-        '/children/0/data/appearance/stroke/dash/1',
-      ),
-    ]);
-    expect(issues(), issues());
+      ]);
+      expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+    }
   });
 
   test('node-specific appearance capabilities are enforced', () {
     const stroke = CanvasStroke(color: 0, width: 0);
     const shadow = ShadowEffect(id: 's', offset: Vec2.zero, color: 0xFF000000);
-    final scene = _scene([
+    final nodes = [
       const Node.text(
         id: 'text',
         data: TextData(
@@ -225,17 +205,12 @@ void main() {
           appearance: CanvasAppearance(underlays: [shadow]),
         ),
       ),
-    ]);
-    final issues = validateCanvasSceneDocument(scene);
-
-    expect(
-      issues.map((issue) => issue.code),
-      everyElement(CanvasSceneValidationCode.unsupportedAppearance),
-    );
-    expect(issues.map((issue) => issue.path), [
-      '/children/0/data/appearance/stroke',
-      '/children/1/data/appearance/stroke',
-      '/children/2/data/appearance/underlays',
-    ]);
+    ];
+    for (final node in nodes) {
+      expect(
+        () => requireCanvasSceneIntegrity(_scene([node])),
+        throwsArgumentError,
+      );
+    }
   });
 }

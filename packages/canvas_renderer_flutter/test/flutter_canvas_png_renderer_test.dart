@@ -501,29 +501,41 @@ void main() {
   });
 
   group('FlutterCanvasPngRenderer validation', () {
-    test('rejects invalid canonical scene', () async {
-      final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
-
-      final invalid = CanvasSceneDocument(
-        artboardSize: const Size2D(0, 40),
-        backgroundFill: const CanvasFill.none(),
-        backgroundOpacity: 1,
+    test('rejects invalid input before fonts, images, or preparation', () async {
+      final loader = _RecordingFontLoader();
+      final images = _RecordingImageResolver();
+      var preparations = 0;
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: loader,
+        images: images,
+        scenePreparer: (scene, services) {
+          preparations++;
+          return scene;
+        },
       );
+      final invalid = _imageScene().copyWith(artboardSize: const Size2D(0, 40));
 
       await expectLater(
         renderer.renderPng(
           scene: invalid,
           spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
         ),
-        throwsA(_stateErrorContaining('Invalid canonical canvas scene')),
+        throwsArgumentError,
       );
+      expect(loader.requests, isEmpty);
+      expect(images.sourceRequests, isEmpty);
+      expect(images.intrinsicRequests, isEmpty);
+      expect(preparations, 0);
     });
 
-    test('rejects invalid prepared scene', () async {
+    test('rejects invalid prepared output before loading its resources', () async {
+      final loader = _RecordingFontLoader();
+      final images = _RecordingImageResolver();
       final renderer = FlutterCanvasPngRenderer(
-        fonts: _RecordingFontLoader(),
+        fonts: loader,
+        images: images,
         scenePreparer: (scene, services) {
-          return scene.copyWith(artboardSize: const Size2D(0, 40));
+          return _imageScene().copyWith(artboardSize: const Size2D(0, 40));
         },
       );
 
@@ -532,7 +544,30 @@ void main() {
           scene: _emptyScene(),
           spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
         ),
-        throwsA(_stateErrorContaining('Invalid prepared canvas scene')),
+        throwsArgumentError,
+      );
+      expect(loader.requests, hasLength(1));
+      expect(images.sourceRequests, isEmpty);
+      expect(images.intrinsicRequests.expand((request) => request), isEmpty);
+    });
+
+    test('checks preparer output even when it returns the same scene', () async {
+      final children = <Node>[];
+      final group = Node.group(id: 'group', children: children);
+      final scene = _emptyScene().copyWith(children: [group]);
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: _RecordingFontLoader(),
+        scenePreparer: (input, services) {
+          children.add(group);
+          return input;
+        },
+      );
+      await expectLater(
+        renderer.renderPng(
+          scene: scene,
+          spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
+        ),
+        throwsArgumentError,
       );
     });
 

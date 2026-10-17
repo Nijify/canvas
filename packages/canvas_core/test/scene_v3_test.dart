@@ -36,12 +36,6 @@ Map<String, Object?> _stroke(Map<String, Object?> scene) {
   return appearance['stroke'] as Map<String, Object?>;
 }
 
-Matcher _failure(CanvasSceneValidationCode code, String path) => throwsA(
-  isA<CanvasSceneFormatException>()
-      .having((error) => error.issue.code, 'code', code)
-      .having((error) => error.issue.path, 'path', path),
-);
-
 Map<String, Object?> _fixture(String name) {
   final runtime = Isolate.resolvePackageUriSync(
     Uri.parse('package:canvas_core/canvas_core_runtime.dart'),
@@ -130,10 +124,7 @@ void main() {
       _data(json)[field] = null;
       expect(
         () => decodeCanvasScene(json),
-        _failure(
-          CanvasSceneValidationCode.unexpectedField,
-          '/children/0/data/$field',
-        ),
+        throwsFormatException,
       );
     });
   }
@@ -144,19 +135,13 @@ void main() {
       _data(missing).remove(field);
       expect(
         () => decodeCanvasScene(missing),
-        _failure(
-          CanvasSceneValidationCode.missingField,
-          '/children/0/data/$field',
-        ),
+        throwsFormatException,
       );
       final absent = _wire();
       _data(absent)[field] = null;
       expect(
         () => decodeCanvasScene(absent),
-        _failure(
-          CanvasSceneValidationCode.invalidType,
-          '/children/0/data/$field',
-        ),
+        throwsFormatException,
       );
     });
   }
@@ -166,10 +151,7 @@ void main() {
     _data(unknown)['source'] = {'kind': 'unknown'};
     expect(
       () => decodeCanvasScene(unknown),
-      _failure(
-        CanvasSceneValidationCode.invalidEnumValue,
-        '/children/0/data/source/kind',
-      ),
+      throwsFormatException,
     );
     final invalid = _wire();
     _data(invalid)['source'] = {
@@ -183,10 +165,7 @@ void main() {
     };
     expect(
       () => decodeCanvasScene(invalid),
-      _failure(
-        CanvasSceneValidationCode.invalidPathSource,
-        '/children/0/data/source/commands/0/verb',
-      ),
+      throwsFormatException,
     );
   });
 
@@ -195,10 +174,7 @@ void main() {
     _data(negative)['source'] = {'kind': 'circle', 'r': -1};
     expect(
       () => decodeCanvasScene(negative),
-      _failure(
-        CanvasSceneValidationCode.valueOutOfRange,
-        '/children/0/data/source/r',
-      ),
+      throwsArgumentError,
     );
     final fractional = _wire();
     _data(fractional)['source'] = {
@@ -208,46 +184,43 @@ void main() {
     };
     expect(
       () => decodeCanvasScene(fractional),
-      _failure(
-        CanvasSceneValidationCode.invalidType,
-        '/children/0/data/source/sides',
-      ),
+      throwsFormatException,
     );
   });
 
   test('v3 validates inactive stroke values without numeric coercion', () {
-    final cases = <(String, Object?, CanvasSceneValidationCode)>[
-      ('color', 1.5, CanvasSceneValidationCode.invalidType),
-      ('color', -1, CanvasSceneValidationCode.invalidColor),
-      ('color', 0x100000000, CanvasSceneValidationCode.invalidColor),
-      ('width', '2', CanvasSceneValidationCode.invalidType),
-      ('width', double.infinity, CanvasSceneValidationCode.nonFiniteNumber),
-      ('width', -1, CanvasSceneValidationCode.valueOutOfRange),
-      ('miterLimit', 0.5, CanvasSceneValidationCode.valueOutOfRange),
-      ('miterLimit', double.nan, CanvasSceneValidationCode.nonFiniteNumber),
-      ('cap', 'invalid', CanvasSceneValidationCode.invalidEnumValue),
-      ('join', 'invalid', CanvasSceneValidationCode.invalidEnumValue),
+    final cases = <(String, Object?, Matcher)>[
+      ('color', 1.5, isA<FormatException>()),
+      ('color', -1, isA<ArgumentError>()),
+      ('color', 0x100000000, isA<ArgumentError>()),
+      ('width', '2', isA<FormatException>()),
+      ('width', double.infinity, isA<ArgumentError>()),
+      ('width', -1, isA<ArgumentError>()),
+      ('miterLimit', 0.5, isA<ArgumentError>()),
+      ('miterLimit', double.nan, isA<ArgumentError>()),
+      ('cap', 'invalid', isA<FormatException>()),
+      ('join', 'invalid', isA<FormatException>()),
     ];
-    for (final (field, value, code) in cases) {
+    for (final (field, value, errorType) in cases) {
       final json = _wire();
       _stroke(json)['color'] = 0;
       _stroke(json)[field] = value;
       expect(
         () => decodeCanvasScene(json),
-        _failure(code, '/children/0/data/appearance/stroke/$field'),
+        throwsA(errorType),
       );
     }
-    for (final (value, code) in [
-      (-1, CanvasSceneValidationCode.valueOutOfRange),
-      (double.infinity, CanvasSceneValidationCode.nonFiniteNumber),
-      ('3', CanvasSceneValidationCode.invalidType),
+    for (final (value, errorType) in [
+      (-1, isA<ArgumentError>()),
+      (double.infinity, isA<ArgumentError>()),
+      ('3', isA<FormatException>()),
     ]) {
       final json = _wire();
       _stroke(json)['color'] = 0;
       _stroke(json)['dash'] = [5, value];
       expect(
         () => decodeCanvasScene(json),
-        _failure(code, '/children/0/data/appearance/stroke/dash/1'),
+        throwsA(errorType),
       );
     }
   });
@@ -265,10 +238,7 @@ void main() {
     ]);
     expect(
       () => encodeCanvasScene(invalid),
-      _failure(
-        CanvasSceneValidationCode.unsupportedAppearance,
-        '/children/0/data/appearance/stroke',
-      ),
+      throwsArgumentError,
     );
     final wire = encodeCanvasScene(
       _scene([
@@ -287,10 +257,7 @@ void main() {
     appearance['stroke'] = {'color': 0, 'width': 0};
     expect(
       () => decodeCanvasScene(wire),
-      _failure(
-        CanvasSceneValidationCode.unsupportedAppearance,
-        '/children/0/data/appearance/stroke',
-      ),
+      throwsArgumentError,
     );
 
     final path = _wire();
@@ -305,30 +272,52 @@ void main() {
     ];
     expect(
       () => decodeCanvasScene(path),
-      _failure(
-        CanvasSceneValidationCode.unsupportedAppearance,
-        '/children/0/data/appearance/underlays',
-      ),
+      throwsArgumentError,
     );
   });
 
-  test(
-    'unknown field diagnostics use sorted names and escaped JSON Pointers',
-    () {
+  test('rejects unknown fields including names containing slashes', () {
+    for (final name in ['zzz', 'a~/b']) {
       final json = _wire();
-      _data(json)['zzz'] = true;
-      _data(json)['a~/b'] = true;
-      for (var repeat = 0; repeat < 2; repeat++) {
-        expect(
-          () => decodeCanvasScene(json),
-          _failure(
-            CanvasSceneValidationCode.unexpectedField,
-            '/children/0/data/a~0~1b',
-          ),
-        );
-      }
-    },
-  );
+      _data(json)[name] = true;
+      expect(() => decodeCanvasScene(json), throwsFormatException);
+    }
+  });
+
+  test('command decoding rejects malformed structure without coercion or ignored fields', () {
+    for (final commands in <Object?>[
+      null,
+      'M0 0',
+      [{'verb': 'unknown'}],
+      [{'verb': 'moveTo', 'p': {'x': '0', 'y': 0}}],
+      [{'verb': 'moveTo', 'p': {'x': double.infinity, 'y': 0}}],
+      [{'verb': 'moveTo', 'p': {'x': 0, 'y': 0, 'extra': 1}}],
+      [{'verb': 'moveTo', 'p': {'x': 0, 'y': 0}, 'extra': 1}],
+      [{'verb': 'moveTo'}],
+      [{'verb': 'lineTo', 'p': {'x': 0, 'y': 0}}],
+      [
+        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
+        {'verb': 'quadTo', 'p': {'x': 1, 'y': 1}},
+      ],
+      [
+        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
+        {'verb': 'cubicTo', 'c1': {'x': 1, 'y': 1}, 'p': {'x': 2, 'y': 2}},
+      ],
+      [
+        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
+        {'verb': 'close', 'p': {'x': 0, 'y': 0}},
+      ],
+      [
+        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
+        {'verb': 'close'},
+        {'verb': 'lineTo', 'p': {'x': 1, 'y': 1}},
+      ],
+    ]) {
+      final json = _wire();
+      _data(json)['source'] = {'kind': 'commands', 'commands': commands};
+      expect(() => decodeCanvasScene(json), throwsFormatException);
+    }
+  });
 
   test('v2 fixture migrates without mutation or shared containers', () {
     final v2 = _fixture('v2_paths.json');
@@ -356,29 +345,20 @@ void main() {
       inactive['dash'] = [5, -1];
       expect(
         () => upgradeCanvasScene(v2),
-        _failure(
-          CanvasSceneValidationCode.valueOutOfRange,
-          '/children/0/children/3/data/appearance/stroke/dash/1',
-        ),
+        throwsArgumentError,
       );
       inactive['dash'] = [];
       inactive['miterLimit'] = double.infinity;
       expect(
         () => upgradeCanvasScene(v2),
-        _failure(
-          CanvasSceneValidationCode.nonFiniteNumber,
-          '/children/0/children/3/data/appearance/stroke/miterLimit',
-        ),
+        throwsArgumentError,
       );
       inactive.remove('miterLimit');
       final selected = _nested(v2)[0]['data'] as Map<String, Object?>;
       selected['source'] = {'kind': 'unknown'};
       expect(
         () => upgradeCanvasScene(v2),
-        _failure(
-          CanvasSceneValidationCode.invalidEnumValue,
-          '/children/0/children/0/data/source/kind',
-        ),
+        throwsFormatException,
       );
     },
   );
@@ -389,10 +369,7 @@ void main() {
       final old = _fixture('v2_paths.json');
       expect(
         () => decodeCanvasScene(old),
-        _failure(
-          CanvasSceneValidationCode.unsupportedSceneFormat,
-          '/sceneFormatVersion',
-        ),
+        throwsFormatException,
       );
       for (final version in <Object?>[null, 1.0, 3.0, 99]) {
         final json = _wire()..['sceneFormatVersion'] = version;

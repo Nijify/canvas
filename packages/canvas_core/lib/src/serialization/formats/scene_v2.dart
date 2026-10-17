@@ -167,11 +167,10 @@ void _validateGradient(Object? raw, String path) {
     throw FormatException('$path: ${error.message}');
   }
 
-  final issues = validateLinearGradientSemantics(gradient);
-  if (issues.isNotEmpty) {
-    final issue = issues.first;
-    final field = issue.path.replaceAll('/', '.');
-    throw FormatException('$path$field: ${issue.message}');
+  try {
+    requireLinearGradientIntegrity(gradient, context: path);
+  } on ArgumentError catch (error) {
+    throw FormatException(error.message.toString());
   }
 }
 

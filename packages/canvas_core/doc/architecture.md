@@ -125,7 +125,8 @@ CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
 
 `decodeCanvasScene()` reads scene format v3 and `encodeCanvasScene()` writes v3.
-Both boundaries validate wire structure and runtime semantics. Use
+Reads validate raw structure before decoding and runtime integrity afterward.
+Writes enforce integrity before canonical serialization. Use
 `upgradeCanvasScene()` before decoding supported older documents: v2, v1, or
 explicitly identified canvas_core 0.10.x unversioned scenes. See the
 [scene-v3 upgrade guide](migration-v3.md) for model and persistence changes.
@@ -135,8 +136,17 @@ into supported commands before loading; core has no SVG parser.
 
 Generated model serializers remain implementation-level primitives. Persisted
 documents use the validated encode/decode boundary.
-`validateCanvasSceneDocument()` also collects runtime issues explicitly without
-serializing a scene.
+`requireCanvasSceneIntegrity()` is the shared fail-fast runtime guard. It runs
+before recursive serialization, PNG resource work, and SVG capability checks.
+A PNG preparer produces another value that must pass the guard before output
+resource processing. Generic integrity does not interpret component availability.
+
+The runtime guard owns numeric/appearance constraints, IDs, asset references,
+JSON payload safety, cycles, and node-label consistency. Decoders own strict raw
+structure and type checks, including unknown fields and coercion prevention.
+Command and gradient decoders own their nested structure; runtime gradient
+semantics have one shared implementation. Package serializers own output shape,
+so encoding does not repeat the full raw-wire traversal.
 
 ## Editor boundary
 

@@ -12,16 +12,18 @@ SvgExportResult exportPreparedSvg({
   required CanvasSceneDocument scene,
   required ComputedScene computed,
 }) {
-  final issues = <SvgExportIssue>[
-    for (final issue in validateCanvasSceneDocument(scene))
+  try {
+    requireCanvasSceneIntegrity(scene);
+  } on ArgumentError catch (error) {
+    return SvgExportResult.failure([
       SvgExportIssue(
         code: SvgExportIssueCode.invalidScene,
-        path: issue.path,
-        message: issue.message,
+        message: error.message.toString(),
       ),
-  ];
-  if (issues.isNotEmpty) return SvgExportResult.failure(issues);
+    ]);
+  }
 
+  final issues = <SvgExportIssue>[];
   final paths = <PathNode>[];
 
   void visit(Node node) {

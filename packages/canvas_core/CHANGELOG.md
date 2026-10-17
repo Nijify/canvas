@@ -14,7 +14,7 @@
 - Estimate path paint bounds conservatively for square caps and miter joins;
   retain zero-area line layout while allowing visible strokes to add content.
   Empty/move-only paths and invisible foregrounds/strokes add no paint bounds.
-- Expose `fillContributesToPaint` and `estimatePathPaintBounds`; transparent
+- Expose `fillContributesToPaint`; transparent
   text/icon foregrounds no longer add bounds independently of their underlays.
 - **Breaking:** write/read scene format v3 with required path sources and
   shared appearance. Reject obsolete path fields and unsupported appearance
@@ -22,9 +22,18 @@
 - Upgrade v2 paths explicitly through `upgradeCanvasScene`, retaining v1 and
   identified unversioned 0.10.x migrations and icon-resolution requirements.
   Preserve contour breaks, dash arrays, and nondefault inactive stroke data.
-- Validate both persistence boundaries and expose `CanvasSceneFormatException`
-  with a stable issue code and JSON Pointer path. Runtime validation also
-  rejects negative path dimensions/radii and nonpositive icon sizes.
+- **Breaking:** replace collect-all `validateCanvasSceneDocument`, its issue
+  type/enum, and `CanvasSceneFormatException` with the shared fail-fast
+  `requireCanvasSceneIntegrity` guard and ordinary errors. Diagnostic codes,
+  paths, messages, and ordering are not stable API contracts.
+- Check node labels against their variants before encoding, alongside runtime
+  semantics and cycles; remove the redundant full output-wire scan. Keep strict
+  raw-wire decoding and share command/gradient structure with their decoders.
+- **Breaking:** remove the unused `LinearGradientSpecConverter`; stop exporting
+  internal `CanvasFillConverter`, `PathSourceConverter`, and
+  `estimatePathPaintBounds`. Keep geometry converter annotations public.
+- Preserve path dimensions/radii and icon-size integrity checks, appearance
+  defaults, inactive stroke settings, dash arrays, and historical import routes.
 - Keep historical migration fixtures and update current contract fixtures to
   v3. Historical rendering/editor fidelity is practical rather than exact.
 - Document model, persistence, bounds, and editor adoption in the

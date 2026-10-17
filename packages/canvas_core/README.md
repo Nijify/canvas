@@ -166,10 +166,29 @@ final restored = decodeCanvasScene(json);
 ```
 
 `encodeCanvasScene` writes scene format v3; `decodeCanvasScene` accepts v3.
-Both boundaries validate wire structure and runtime semantics. Invalid data
-throws `CanvasSceneFormatException`, a `FormatException` whose `issue` exposes
-a stable validation `code` and JSON Pointer `path`. Use
-`validateCanvasSceneDocument` to collect all runtime issues before saving.
+Reading checks raw wire structure before decoding, then enforces runtime
+integrity. Writing checks runtime integrity before recursive serialization;
+package serializers emit the canonical wire structure without another scan.
+Malformed wire data throws `FormatException`; integrity failures throw
+`ArgumentError`. Error messages provide context without stable diagnostic codes,
+paths, or ordering guarantees.
+
+Call `requireCanvasSceneIntegrity(document)` before independently usable
+operations that recurse through a scene or begin resource work. It rejects the
+first failure and checks numeric values, appearance, identities, asset references,
+JSON payloads, cycles, and node discriminator consistency. Component availability
+and export capabilities remain separate caller concerns.
+
+| Boundary | Responsibility |
+| --- | --- |
+| Read | Wire checks → decode → runtime integrity |
+| Write | Runtime integrity → canonical encoding |
+| PNG | Integrity before resources/preparation; check output when a preparer runs |
+| SVG | Integrity, then supported export capabilities |
+
+Checks around an actual transformation are necessary even if the same guard
+already ran on its input. Avoid repeating a check on unchanged data within one
+operation; independently usable entry points still enforce their prerequisites.
 
 See the [scene-v3 upgrade guide](doc/migration-v3.md) for compatible package
 versions, Dart model changes, explicit persistence migration, and editor fields.

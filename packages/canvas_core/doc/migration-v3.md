@@ -79,11 +79,30 @@ unversioned canvas_core 0.10.x format. The latter requires
 still applies when an icon has a nonzero historical shadow offset.
 
 Use `encodeCanvasScene()` and `decodeCanvasScene()` for persisted documents.
-Both validate current wire structure and runtime semantics. Invalid current
-documents throw `CanvasSceneFormatException`, whose `issue` exposes a stable
-code and JSON Pointer path. Historical conversion can also throw
-`FormatException`. Generated model `toJson()`/`fromJson()` methods remain
-implementation-level primitives.
+Decoding checks raw structure before constructing and checking the runtime
+scene. Encoding checks integrity before recursive canonical serialization,
+including cycles and contradictory generated node labels, without rescanning the
+output. Malformed raw data throws `FormatException`; invalid runtime semantics
+throw `ArgumentError`. Generated model methods remain implementation primitives.
+
+### Integrity API changes
+
+Replace `validateCanvasSceneDocument()` calls with
+`requireCanvasSceneIntegrity(scene)`. Success returns normally; the first failure
+throws `ArgumentError`. The collect-all issue type and enum and
+`CanvasSceneFormatException` are removed. Error messages remain useful context,
+with no stable diagnostic-code, path, or ordering contract. Historical import
+routes are unchanged; conversion can reject malformed data with ordinary errors.
+
+The guard validates generic scene data. Keep component availability and export
+capability checks separate. Check before recursive work or side effects, and
+check transformed output when a preparer or other transformation runs.
+
+Converter exports are deliberate: `Vec2Converter`, `NullableVec2Converter`,
+`Size2DConverter`, and `NullableSize2DConverter` remain available for host-owned
+models. `LinearGradientSpecConverter` is removed; `CanvasFillConverter`,
+`PathSourceConverter`, and `estimatePathPaintBounds` are implementation details
+and are no longer exported from the runtime entry point.
 
 ## Bounds and interaction
 

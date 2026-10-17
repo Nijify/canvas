@@ -99,13 +99,6 @@ void main() {
 
         final scene = decodeCanvasScene(raw);
 
-        final validationIssues = validateCanvasSceneDocument(scene);
-        expect(
-          validationIssues,
-          isEmpty,
-          reason: '$name should satisfy generic scene validation',
-        );
-
         expect(scene.backgroundFill, const CanvasFillNone());
         expect(scene.backgroundOpacity, 1.0);
 

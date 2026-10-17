@@ -1,6 +1,3 @@
-import 'package:canvas_core/src/runtime/validation/scene_document_validation.dart';
-import 'package:canvas_core/src/serialization/scene_format_exception.dart';
-
 /// Required path sources and shared authored appearance.
 const int canvasSceneFormatV3 = 3;
 
@@ -11,7 +8,6 @@ void validateSceneV3Json(Map<String, Object?> json) {
   if (json['sceneFormatVersion'] is! int ||
       json['sceneFormatVersion'] != canvasSceneFormatV3) {
     _fail(
-      CanvasSceneValidationCode.unsupportedSceneFormat,
       '/sceneFormatVersion',
       'Expected sceneFormatVersion 3. Upgrade historical scenes explicitly.',
     );
@@ -35,9 +31,8 @@ void validateSceneV3Json(Map<String, Object?> json) {
   _number(json['backgroundOpacity'], '/backgroundOpacity');
   if (json['assets'] != null) {
     final assets = _object(json['assets'], '/assets');
-    final ids = assets.keys.toList()..sort();
-    for (final id in ids) {
-      final path = '/assets/${_segment(id)}';
+    for (final id in assets.keys) {
+      final path = '/assets/$id';
       final asset = _object(assets[id], path);
       _keys(
         asset,
@@ -267,29 +262,7 @@ void _fill(Object? raw, String path) {
       _integer(fill['color'], '$path/color');
     case 'gradient':
       _keys(fill, {'type', 'grad'}, path, requiredFields: ['grad']);
-      final gradientPath = '$path/grad';
-      final gradient = _object(fill['grad'], gradientPath);
-      _keys(
-        gradient,
-        {'start', 'end', 'stops'},
-        gradientPath,
-        requiredFields: ['start', 'end', 'stops'],
-      );
-      _point(gradient['start'], '$gradientPath/start');
-      _point(gradient['end'], '$gradientPath/end');
-      final stops = _list(gradient['stops'], '$gradientPath/stops');
-      for (var index = 0; index < stops.length; index++) {
-        final stopPath = '$gradientPath/stops/$index';
-        final stop = _object(stops[index], stopPath);
-        _keys(
-          stop,
-          {'offset', 'color'},
-          stopPath,
-          requiredFields: ['offset', 'color'],
-        );
-        _number(stop['offset'], '$stopPath/offset');
-        _integer(stop['color'], '$stopPath/color');
-      }
+      // The gradient decoder owns its strict structure and primitive types.
   }
 }
 
@@ -308,8 +281,9 @@ void _source(Object? raw, String path) {
     'regularPolygon',
     'star',
   }, '$path/kind');
+  // The strict command decoder owns the complete commands source shape.
+  if (source['kind'] == 'commands') return;
   final parameters = switch (source['kind']) {
-    'commands' => ['commands'],
     'polyline' => ['points'],
     'rect' || 'pill' => ['w', 'h'],
     'roundRect' => ['w', 'h', 'rx', 'ry'],
@@ -330,9 +304,7 @@ void _source(Object? raw, String path) {
   );
   if (hasRotation && source['rotation'] != null)
     _number(source['rotation'], '$path/rotation');
-  if (source['kind'] == 'commands') {
-    _commands(source['commands'], '$path/commands');
-  } else if (source['kind'] == 'polyline') {
+  if (source['kind'] == 'polyline') {
     final points = _list(source['points'], '$path/points');
     for (var index = 0; index < points.length; index++) {
       if (points[index] != null) _point(points[index], '$path/points/$index');
@@ -345,42 +317,6 @@ void _source(Object? raw, String path) {
         _number(source[name], '$path/$name');
       }
     }
-  }
-}
-
-void _commands(Object? raw, String path) {
-  final commands = _list(raw, path);
-  var contourOpen = false;
-  for (var index = 0; index < commands.length; index++) {
-    final itemPath = '$path/$index';
-    final command = _object(commands[index], itemPath);
-    _required(command, 'verb', itemPath);
-    final verb = command['verb'];
-    _enum(verb, {
-      'moveTo',
-      'lineTo',
-      'quadTo',
-      'cubicTo',
-      'close',
-    }, '$itemPath/verb');
-    final points = switch (verb) {
-      'moveTo' || 'lineTo' => ['p'],
-      'quadTo' => ['c1', 'p'],
-      'cubicTo' => ['c1', 'c2', 'p'],
-      _ => <String>[],
-    };
-    _keys(command, {'verb', ...points}, itemPath, requiredFields: points);
-    for (final name in points) _point(command[name], '$itemPath/$name');
-    if (verb == 'moveTo') {
-      contourOpen = true;
-    } else if (!contourOpen) {
-      _fail(
-        CanvasSceneValidationCode.invalidPathSource,
-        '$itemPath/verb',
-        'Drawing requires a preceding moveTo.',
-      );
-    }
-    if (verb == 'close') contourOpen = false;
   }
 }
 
@@ -404,89 +340,59 @@ void _keys(
   String path, {
   List<String> requiredFields = const [],
 }) {
-  final extras = object.keys.where((key) => !allowed.contains(key)).toList()
-    ..sort();
-  if (extras.isNotEmpty) {
-    final key = extras.first;
-    _fail(
-      CanvasSceneValidationCode.unexpectedField,
-      '$path/${_segment(key)}',
-      'This field is not part of scene format v3.',
-    );
+  for (final key in object.keys) {
+    if (!allowed.contains(key)) {
+      _fail('$path/$key', 'This field is not part of scene format v3.');
+    }
   }
   for (final name in requiredFields) _required(object, name, path);
 }
 
 void _required(Map<String, Object?> object, String name, String path) {
   if (!object.containsKey(name)) {
-    _fail(
-      CanvasSceneValidationCode.missingField,
-      '$path/$name',
-      'Required field is missing.',
-    );
+    _fail('$path/$name', 'Required field is missing.');
   }
 }
 
 Map<String, Object?> _object(Object? raw, String path) {
   if (raw is! Map || raw.keys.any((key) => key is! String)) {
-    _fail(
-      CanvasSceneValidationCode.invalidType,
-      path,
-      'Expected an object with string keys.',
-    );
+    _fail(path, 'Expected an object with string keys.');
   }
   return Map<String, Object?>.from(raw);
 }
 
 List<Object?> _list(Object? raw, String path) {
   if (raw is! List)
-    _fail(CanvasSceneValidationCode.invalidType, path, 'Expected a list.');
+    _fail(path, 'Expected a list.');
   return raw;
 }
 
 void _number(Object? raw, String path) {
   if (raw is! num)
-    _fail(CanvasSceneValidationCode.invalidType, path, 'Expected a number.');
-  if (!raw.toDouble().isFinite) {
-    _fail(
-      CanvasSceneValidationCode.nonFiniteNumber,
-      path,
-      'Numeric value must be finite.',
-    );
-  }
+    _fail(path, 'Expected a number.');
 }
 
 void _integer(Object? raw, String path) {
   if (raw is! int)
-    _fail(CanvasSceneValidationCode.invalidType, path, 'Expected an integer.');
+    _fail(path, 'Expected an integer.');
 }
 
 void _string(Object? raw, String path) {
   if (raw is! String)
-    _fail(CanvasSceneValidationCode.invalidType, path, 'Expected a string.');
+    _fail(path, 'Expected a string.');
 }
 
 void _bool(Object? raw, String path) {
   if (raw is! bool)
-    _fail(CanvasSceneValidationCode.invalidType, path, 'Expected a boolean.');
+    _fail(path, 'Expected a boolean.');
 }
 
 void _enum(Object? raw, Set<String> values, String path) {
   _string(raw, path);
   if (!values.contains(raw)) {
-    _fail(
-      CanvasSceneValidationCode.invalidEnumValue,
-      path,
-      'Unsupported value: $raw.',
-    );
+    _fail(path, 'Unsupported value: $raw.');
   }
 }
 
-String _segment(String value) =>
-    value.replaceAll('~', '~0').replaceAll('/', '~1');
-
-Never _fail(CanvasSceneValidationCode code, String path, String message) {
-  throw CanvasSceneFormatException(
-    CanvasSceneValidationIssue(code: code, path: path, message: message),
-  );
-}
+Never _fail(String path, String message) =>
+    throw FormatException('$path: $message');

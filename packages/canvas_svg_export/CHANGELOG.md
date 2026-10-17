@@ -1,5 +1,9 @@
 ## 0.3.0
 
+- Use shared fail-fast scene integrity before capability checks, retaining the
+  `invalidScene` failure result. Remove the unused `SvgExportIssue.path` field;
+  scene errors no longer expose a structured validation path.
+
 - **Breaking:** require `canvas_core 0.16.x` and export authored path paint from
   `CanvasAppearance.foreground` and the optional `CanvasStroke` configuration.
 - Preserve fill rule and active stroke width, caps, joins, miter limit, and

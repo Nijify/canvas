@@ -10,19 +10,16 @@ enum SvgExportIssueCode {
 }
 
 /// [nodeId] is absent for document-level issues such as the background.
-/// [path] points to a source field when reported by scene validation.
 final class SvgExportIssue {
   const SvgExportIssue({
     required this.code,
     required this.message,
     this.nodeId,
-    this.path,
   });
 
   final SvgExportIssueCode code;
   final String message;
   final String? nodeId;
-  final String? path;
 }
 
 /// A strict export returns a complete document or issues, never partial SVG.

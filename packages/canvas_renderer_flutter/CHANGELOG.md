@@ -1,5 +1,9 @@
 ## 0.15.0
 
+- **Breaking:** PNG scene-integrity failures now propagate the shared guard's
+  `ArgumentError` rather than a renderer-specific `StateError` report. Validate
+  before resource work and validate prepared output when a preparer runs.
+
 - **Breaking:** require `canvas_core 0.16.x` and read ordinary-path foreground
   and `CanvasStroke` settings from `PathData.appearance`.
 - Reuse one Flutter path for ordinary-path fill and shared appearance strokes.

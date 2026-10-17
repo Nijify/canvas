@@ -23,30 +23,38 @@ CanvasSceneDocument _scene({
 void main() {
   group('image asset registry validation', () {
     test('accepts an intentionally unfilled image frame', () {
-      expect(validateCanvasSceneDocument(_scene()), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(_scene()), returnsNormally);
     });
 
     test('rejects a dangling image asset reference', () {
-      final issues = validateCanvasSceneDocument(_scene(assetId: 'missing'));
-
-      expect(issues, hasLength(1));
-      expect(issues.single.code, CanvasSceneValidationCode.missingImageAsset);
-      expect(issues.single.path, '/children/0/data/assetId');
+      expect(
+        () => requireCanvasSceneIntegrity(_scene(assetId: 'missing')),
+        throwsArgumentError,
+      );
     });
 
     test('rejects a blank image asset source', () {
-      final issues = validateCanvasSceneDocument(
+      expect(() => requireCanvasSceneIntegrity(
         _scene(
           assets: const <CanvasAssetId, CanvasImageAsset>{
             'asset-1': CanvasImageAsset(sourceRef: '   '),
           },
           assetId: 'asset-1',
         ),
-      );
+      ), throwsArgumentError);
+    });
 
-      expect(issues, hasLength(1));
-      expect(issues.single.code, CanvasSceneValidationCode.blankAssetSourceRef);
-      expect(issues.single.path, '/assets/asset-1/sourceRef');
+    test('checks asset IDs and intrinsic dimensions even when unreferenced', () {
+      for (final assets in const <Map<CanvasAssetId, CanvasImageAsset>>[
+        {' ': CanvasImageAsset(sourceRef: 'media:image')},
+        {'asset': CanvasImageAsset(sourceRef: 'media:image', intrinsicSize: Size2D(0, 10))},
+        {'asset': CanvasImageAsset(sourceRef: 'media:image', intrinsicSize: Size2D(10, double.infinity))},
+      ]) {
+        expect(
+          () => requireCanvasSceneIntegrity(_scene(assets: assets)),
+          throwsArgumentError,
+        );
+      }
     });
   });
 }
