@@ -15,4 +15,4 @@ dependencies:
 
 dev_dependencies:
   test: ^1.30.0
-  xml: ^6.6.1
+  xml: ^7.1.0
