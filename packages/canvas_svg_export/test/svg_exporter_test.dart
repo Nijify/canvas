@@ -16,6 +16,21 @@ final class _TextMeasurer implements TextMeasurer {
   }) => Size2D(text.length * fontSize * 0.6, fontSize);
 }
 
+final class _Icons implements IconResolver {
+  @override
+  ResolvedIcon? resolve(String ref) => ResolvedIcon(
+    source: CommandPathSource([
+      PathCmd.moveTo(const Vec2(-12, -12)),
+      PathCmd.lineTo(const Vec2(12, -12)),
+      PathCmd.lineTo(const Vec2(12, 12)),
+      PathCmd.lineTo(const Vec2(-12, 12)),
+      PathCmd.close(),
+    ]),
+    viewBox: const Rect2D(-12, -12, 12, 12),
+    fillRule: FillRule.nonZero,
+  );
+}
+
 ComputedScene _compute(CanvasSceneDocument scene) =>
     computeScene(scene, const CoreServices(textMeasurer: _TextMeasurer()));
 
@@ -31,6 +46,64 @@ CanvasSceneDocument _scene({
 );
 
 void main() {
+  test('resolved vector icons remain outside the strict SVG profile', () {
+    final scene = _scene(
+      children: const [
+        Node.icon(
+          id: 'icon',
+          data: CanvasIconData(iconRef: 'vector'),
+        ),
+      ],
+    );
+    final computed = computeScene(
+      scene,
+      CoreServices(textMeasurer: const _TextMeasurer(), icons: _Icons()),
+    );
+    expect(computed.iconById, contains('icon'));
+    final result = exportPreparedSvg(scene: scene, computed: computed);
+    expect(result.svg, isNull);
+    expect(result.issues.single.code, SvgExportIssueCode.unsupportedIcon);
+  });
+
+  test('ordinary path appearance is supplied by PathData', () {
+    final scene = _scene(
+      children: const [
+        Node.path(
+          id: 'p',
+          data: PathData(
+            source: RectSource(20, 10),
+            fill: CanvasFill.solid(0x80445566),
+            fillRule: FillRule.evenOdd,
+            strokeColor: 0x80112233,
+            strokeWidth: 4,
+            strokeCap: StrokeCap.round,
+            strokeJoin: StrokeJoin.bevel,
+            miterLimit: 7,
+          ),
+        ),
+      ],
+    );
+    final computed = _compute(scene);
+
+    final result = exportPreparedSvg(scene: scene, computed: computed);
+
+    expect(result.issues, isEmpty);
+    final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
+    expect(path.getAttribute('fill'), '#445566');
+    expect(path.getAttribute('fill-rule'), 'evenodd');
+    expect(path.getAttribute('stroke'), '#112233');
+    expect(path.getAttribute('stroke-width'), '4.0');
+    expect(path.getAttribute('stroke-linecap'), 'round');
+    expect(path.getAttribute('stroke-linejoin'), 'bevel');
+    expect(path.getAttribute('stroke-miterlimit'), '7.0');
+    for (final attribute in ['fill-opacity', 'stroke-opacity']) {
+      expect(
+        double.parse(path.getAttribute(attribute)!),
+        closeTo(128 / 255, 1e-12),
+      );
+    }
+  });
+
   test('emits an artboard, background, path paint, and alpha', () {
     final scene = _scene(
       background: const CanvasFill.solid(0x80445566),
@@ -134,49 +207,36 @@ void main() {
     expect(paths[1].getAttribute('transform'), 'matrix(2.0 0 0 2.0 80.0 30.0)');
   });
 
-  test('writes compiled quadratic and cubic path commands', () {
+  test('exports a command source through scene computation', () {
     final scene = _scene(
-      children: const [
+      children: [
         Node.path(
           id: 'curve',
           data: PathData(
-            source: RectSource(10, 10),
-            fill: CanvasFill.solid(0xff123456),
+            source: CommandPathSource([
+              PathCmd.moveTo(const Vec2(0, 0)),
+              PathCmd.quadTo(const Vec2(2, 3), const Vec2(4, 5)),
+              PathCmd.cubicTo(
+                const Vec2(6, 7),
+                const Vec2(8, 9),
+                const Vec2(10, 11),
+              ),
+              PathCmd.close(),
+              PathCmd.moveTo(const Vec2(20, 30)),
+              PathCmd.lineTo(const Vec2(40, 50)),
+            ]),
+            fill: const CanvasFill.solid(0xff123456),
           ),
         ),
       ],
     );
-    final computed = _compute(scene);
-    final original = computed.pathIRById['curve']!;
-    final withCurves = ComputedScene(
-      drawList: computed.drawList,
-      nodeById: computed.nodeById,
-      worldById: computed.worldById,
-      layoutBoundsLocalById: computed.layoutBoundsLocalById,
-      paintBoundsLocalById: computed.paintBoundsLocalById,
-      paintBoundsWorldById: computed.paintBoundsWorldById,
-      pathIRById: {
-        'curve': PathIR([
-          PathCmd.moveTo(const Vec2(0, 0)),
-          PathCmd.quadTo(const Vec2(2, 3), const Vec2(4, 5)),
-          PathCmd.cubicTo(
-            const Vec2(6, 7),
-            const Vec2(8, 9),
-            const Vec2(10, 11),
-          ),
-          PathCmd.close(),
-        ], original.style),
-      },
-      imagePlacementById: computed.imagePlacementById,
-      iconTextById: computed.iconTextById,
-      iconPathIRById: computed.iconPathIRById,
-    );
-    final result = exportPreparedSvg(scene: scene, computed: withCurves);
+    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    expect(result.issues, isEmpty);
     final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
     expect(
       path.getAttribute('d'),
       'M0 0 Q2.0 3.0 4.0 5.0 '
-      'C6.0 7.0 8.0 9.0 10.0 11.0 Z',
+      'C6.0 7.0 8.0 9.0 10.0 11.0 Z M20.0 30.0 L40.0 50.0',
     );
   });
 
@@ -371,8 +431,7 @@ void main() {
       paintBoundsWorldById: computed.paintBoundsWorldById,
       pathIRById: const {},
       imagePlacementById: computed.imagePlacementById,
-      iconTextById: computed.iconTextById,
-      iconPathIRById: computed.iconPathIRById,
+      iconById: computed.iconById,
     );
     final result = exportPreparedSvg(scene: scene, computed: incomplete);
     expect(result.svg, isNull);

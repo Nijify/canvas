@@ -52,9 +52,58 @@ logical sourceRef
 
 Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. `resolveIntrinsicSizes()` provides stable layout-affecting metadata keyed by the logical ref. Both result maps may be partial.
 
-`collectSceneFontFamilies()` discovers logical font-family dependencies from nested and hidden text plus resolved font-backed icons. Discovery does not load or validate fonts.
+`collectSceneFontFamilies()` discovers logical font-family dependencies from
+nested and hidden text plus caller-supplied fallbacks. Icons contribute no fonts.
+Discovery does not load or validate fonts.
+
+## Vector icons and compiled geometry
+
+`IconResolver` returns one concrete `ResolvedIcon`: immutable normalized
+source commands, an explicit finite positive viewBox, and a fill rule.
+The resource requires a `CommandPathSource`; hosts normalize geometry before
+construction and prepare resources before synchronous lookup.
+Empty geometry is valid. All nonempty icon geometry is used as a filled path,
+with the usual implicit closure of open contours and the declared fill rule.
+
+`ComputedScene.iconById` contains one `ComputedIcon` per resolved instance:
+source-space `PathIR`, `sourceToLocal`, and fill rule. The transform centers
+the declared viewBox with uniform `min(sizePx / width, sizePx / height)` scale.
+Painting consumes this evaluated result without resolver calls. The nominal
+layout square remains stable and does not clip the fitted geometry.
+Instance sizes are checked before layout and lookup, including when the
+resolver is absent or the reference is unresolved.
+
+Foreground gradients and shadow offsets/blur use node-local coordinates after
+source fitting. Source-derived shadows remain independent of foreground color,
+alpha, and visibility. Node/group transforms apply to the whole result.
+Intrinsic outlines and multiple source paints are outside this icon contract.
+
+`PathIR` is immutable geometry only; `localBounds()` estimates its geometry
+from endpoints and curve controls. Ordinary path appearance belongs to
+`PathData`. For nonempty paths with a nonzero `strokeColor` and positive
+`strokeWidth`, layout and paint bounds expand the geometry bound by half the
+stroke width on each side. This is an estimate, not a guaranteed enclosure of
+all stroke pixels.
+
+The [strict SVG exporter](../../canvas_svg_export/README.md) supports its
+documented ordinary-path profile and explicitly rejects icon nodes.
 
 ## Serialization boundary
+
+`CommandPathSource` supplies normalized absolute move, line, quadratic, cubic,
+and close commands through the existing path compiler. It snapshots its command
+list, contains no paint, and preserves contour order and explicit closure.
+Coordinates must be finite. Empty and open contours are supported; each contour
+starts with `moveTo`, including after `close`. Importers must convert arcs to
+supported commands before constructing the source. Source coordinates are
+preserved without fitting or centering. Ordinary path paint and fill rule
+remain authored in `PathData`.
+
+Its JSON shape is `{"kind":"commands","commands":[...]}`. Every command has a
+`verb`; move/line require `p`, quadratic requires `c1` and `p`, cubic requires
+`c1`, `c2`, and `p`, and close has no points. Points contain exactly numeric `x`
+and `y`. Missing or extra fields, unknown verbs, and invalid command order are
+rejected by the decoder.
 
 External and persisted document JSON crosses the runtime boundary through:
 
@@ -62,6 +111,13 @@ External and persisted document JSON crosses the runtime boundary through:
 external JSON -> decodeCanvasScene -> CanvasSceneDocument
 CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
+
+`decodeCanvasScene()` reads scene format v2. Use `upgradeCanvasScene()` before
+decoding supported older documents: v1 or explicitly identified canvas_core
+0.10.x unversioned scenes.
+
+Raw `kind: "svg"` path sources are unsupported. Hosts must normalize SVG paths
+into supported commands before loading; core has no SVG parser.
 
 Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
 

@@ -50,7 +50,6 @@ class EditorAssetCoordinator {
     final families = rt.collectSceneFontFamilies(
       scene,
       fallbackFontFamilies: assets.fonts.fallbackFontFamilies,
-      icons: assets.icons,
     );
 
     final fontsChanged = await assets.fonts.ensureLoaded(families);

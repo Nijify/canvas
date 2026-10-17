@@ -2,6 +2,8 @@
 
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement;
+import 'package:canvas_core/src/algorithms/layout/computed_icon.dart'
+    show ComputedIcon;
 import 'package:canvas_core/src/algorithms/layout/node_geometry.dart';
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
@@ -15,8 +17,6 @@ import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/traversal/stack_order.dart';
-import 'package:canvas_core/src/services/icon_resolver.dart'
-    show ResolvedIconText;
 import 'package:canvas_core/src/services/services_context.dart'
     show CoreServices;
 import 'package:vector_math/vector_math_64.dart' as vm;
@@ -50,8 +50,7 @@ final class ComputedScene {
 
   final Map<ElementId, PathIR> pathIRById;
   final Map<ElementId, ImagePlacement> imagePlacementById;
-  final Map<ElementId, ResolvedIconText> iconTextById;
-  final Map<ElementId, PathIR> iconPathIRById;
+  final Map<ElementId, ComputedIcon> iconById;
 
   const ComputedScene({
     required this.drawList,
@@ -62,8 +61,7 @@ final class ComputedScene {
     required this.paintBoundsWorldById,
     required this.pathIRById,
     required this.imagePlacementById,
-    required this.iconTextById,
-    required this.iconPathIRById,
+    required this.iconById,
   });
 }
 
@@ -92,8 +90,7 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
 
   final pathIRById = <ElementId, PathIR>{};
   final imagePlacementById = <ElementId, ImagePlacement>{};
-  final iconTextById = <ElementId, ResolvedIconText>{};
-  final iconPathIRById = <ElementId, PathIR>{};
+  final iconById = <ElementId, ComputedIcon>{};
 
   vm.Matrix4 localMatrixFromLayout(Node n) {
     final xf = n.xf;
@@ -120,8 +117,7 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
       n,
       pathIRById: pathIRById,
       imagePlacementById: imagePlacementById,
-      iconTextById: iconTextById,
-      iconPathIRById: iconPathIRById,
+      iconById: iconById,
     );
     if (leaf != null) {
       layoutBoundsLocalById[n.id] = leaf.layout;
@@ -231,7 +227,6 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
     paintBoundsWorldById: paintBoundsWorldById,
     pathIRById: pathIRById,
     imagePlacementById: imagePlacementById,
-    iconTextById: iconTextById,
-    iconPathIRById: iconPathIRById,
+    iconById: iconById,
   );
 }

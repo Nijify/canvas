@@ -95,8 +95,17 @@ void _validateNode(Object? raw, String path) {
     throw FormatException('$path.data contains unsupported appearance fields');
   }
 
-  if (kind == 'path' && data['fill'] != null) {
-    _validateFill(data['fill'], '$path.data.fill');
+  if (kind == 'path') {
+    final source = data['source'];
+    if (source is Map && source['kind'] == 'svg') {
+      throw FormatException(
+        '$path.data.source.kind "svg" is unsupported. Normalize SVG paths '
+        'to a commands source before loading.',
+      );
+    }
+    if (data['fill'] != null) {
+      _validateFill(data['fill'], '$path.data.fill');
+    }
   }
 }
 

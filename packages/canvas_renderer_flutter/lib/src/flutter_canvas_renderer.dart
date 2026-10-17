@@ -141,24 +141,14 @@ class CanvasRenderer {
               appearance: data.appearance,
             );
           case IconNode(data: final data):
-            final glyph = computed.iconTextById[id];
-            final path = computed.iconPathIRById[id];
-            if (glyph != null) {
-              _drawText(
-                canvas,
-                textValue: glyph.glyph,
-                family: glyph.fontFamily,
-                weight: glyph.fontWeight,
-                size: data.sizePx,
-                appearance: data.appearance,
-              );
-            } else if (path != null) {
+            final icon = computed.iconById[id];
+            if (icon != null && icon.pathIR.cmds.isNotEmpty) {
+              final path = _buildUiPath(
+                icon.pathIR,
+                fillRule: icon.fillRule,
+              ).transform(icon.sourceToLocal.storage);
               _drawPathUnderlays(canvas, path, data.appearance.underlays);
-              final foreground = data.appearance.foreground;
-              _drawPathFill(canvas, path, foreground);
-              if (foreground is! CanvasFillNone) {
-                _drawPathStroke(canvas, path);
-              }
+              _drawPathFill(canvas, path, data.appearance.foreground);
             }
           case ImageNode(data: final data):
             // A null asset is an intentionally empty frame.
@@ -170,8 +160,20 @@ class CanvasRenderer {
           case PathNode(data: final data):
             final path = computed.pathIRById[id];
             if (path != null) {
-              _drawPathFill(canvas, path, data.fill);
-              _drawPathStroke(canvas, path);
+              _drawPathFill(
+                canvas,
+                _buildUiPath(path, fillRule: data.fillRule),
+                data.fill,
+              );
+              _drawPathStroke(
+                canvas,
+                path,
+                color: data.strokeColor,
+                width: data.strokeWidth,
+                cap: data.strokeCap,
+                join: data.strokeJoin,
+                miterLimit: data.miterLimit,
+              );
             }
           case GroupNode():
             break;
@@ -200,28 +202,21 @@ class CanvasRenderer {
     );
   }
 
-  void _drawPathFill(ui.Canvas canvas, PathIR path, CanvasFill fill) {
-    final uiPath = _buildUiPath(path);
-    uiPath.fillType = switch (path.style.fillRule) {
-      FillRule.evenOdd => ui.PathFillType.evenOdd,
-      FillRule.nonZero => ui.PathFillType.nonZero,
-    };
-
+  void _drawPathFill(ui.Canvas canvas, ui.Path path, CanvasFill fill) {
     switch (fill) {
       case CanvasFillNone():
         break;
       case CanvasFillSolid(:final color):
-        // The scene fill is the paint authority. PathIR supplies only the
-        // compiled outline and source stroke/fill-rule metadata.
+        // Paint and fill participation come from the caller.
         canvas.drawPath(
-          uiPath,
+          path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..color = ui.Color(color),
         );
       case CanvasFillGradient(:final grad):
         canvas.drawPath(
-          uiPath,
+          path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..shader = buildLinearShaderFlutter(grad),
@@ -229,18 +224,25 @@ class CanvasRenderer {
     }
   }
 
-  void _drawPathStroke(ui.Canvas canvas, PathIR path) {
-    final style = path.style;
-    if (style.stroke == null || style.strokeWidth <= 0) return;
+  void _drawPathStroke(
+    ui.Canvas canvas,
+    PathIR path, {
+    required Color32 color,
+    required double width,
+    required StrokeCap cap,
+    required StrokeJoin join,
+    required double miterLimit,
+  }) {
+    if (color == 0 || !(width > 0)) return;
     canvas.drawPath(
       _buildUiPath(path),
       ui.Paint()
         ..style = ui.PaintingStyle.stroke
-        ..color = ui.Color(style.stroke!)
-        ..strokeWidth = style.strokeWidth
-        ..strokeCap = _mapCap(style.strokeCap)
-        ..strokeJoin = _mapJoin(style.strokeJoin)
-        ..strokeMiterLimit = style.miterLimit,
+        ..color = ui.Color(color)
+        ..strokeWidth = width
+        ..strokeCap = _mapCap(cap)
+        ..strokeJoin = _mapJoin(join)
+        ..strokeMiterLimit = miterLimit,
     );
   }
 
@@ -266,8 +268,15 @@ class CanvasRenderer {
 
   // --- helpers --------------------------------------------------------------
 
-  static ui.Path _buildUiPath(PathIR ir) {
-    final p = ui.Path();
+  static ui.Path _buildUiPath(
+    PathIR ir, {
+    FillRule fillRule = FillRule.nonZero,
+  }) {
+    final p = ui.Path()
+      ..fillType = switch (fillRule) {
+        FillRule.evenOdd => ui.PathFillType.evenOdd,
+        FillRule.nonZero => ui.PathFillType.nonZero,
+      };
     for (final cmd in ir.cmds) {
       switch (cmd.verb) {
         case PathVerb.moveTo:
@@ -301,44 +310,20 @@ class CanvasRenderer {
 
   void _drawPathUnderlays(
     ui.Canvas canvas,
-    PathIR ir,
+    ui.Path path,
     List<CanvasSourceUnderlay> underlays,
   ) {
-    if (ir.cmds.isEmpty) return;
-
     paintSourceUnderlays(
       canvas,
       underlays: underlays,
       paintSource: (sourceCanvas) {
-        final path = _buildUiPath(ir);
-        final style = ir.style;
-
-        path.fillType = switch (style.fillRule) {
-          FillRule.evenOdd => ui.PathFillType.evenOdd,
-          FillRule.nonZero => ui.PathFillType.nonZero,
-        };
-
-        // Path-icon source coverage is independent of authored foreground
-        // color, alpha, and visibility.
+        // Fitted filled coverage is independent of foreground visibility.
         sourceCanvas.drawPath(
           path,
           ui.Paint()
             ..style = ui.PaintingStyle.fill
             ..color = const ui.Color(0xFF000000),
         );
-
-        if (style.stroke != null && style.strokeWidth > 0) {
-          sourceCanvas.drawPath(
-            path,
-            ui.Paint()
-              ..style = ui.PaintingStyle.stroke
-              ..color = const ui.Color(0xFF000000)
-              ..strokeWidth = style.strokeWidth
-              ..strokeCap = _mapCap(style.strokeCap)
-              ..strokeJoin = _mapJoin(style.strokeJoin)
-              ..strokeMiterLimit = style.miterLimit,
-          );
-        }
       },
     );
   }

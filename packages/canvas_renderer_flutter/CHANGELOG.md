@@ -1,3 +1,11 @@
+## 0.14.0
+
+- **Breaking:** require `canvas_core 0.15.x` and render vector-only icons from
+  `ComputedIcon`. Remove font-backed icon painting.
+- Fill fitted compound icon geometry once with the authored foreground and
+  derive independent shadows from that filled silhouette. Keep gradients and
+  shadow parameters in node-local coordinates.
+
 ## 0.13.0
 
 - **Breaking:** require `canvas_core 0.14.x`.

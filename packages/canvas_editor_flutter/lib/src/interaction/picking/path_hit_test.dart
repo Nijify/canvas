@@ -9,19 +9,23 @@ class _Contour {
   const _Contour(this.pts, this.closed);
 }
 
-/// True when [p] is inside the fill area of the path, using the path's
-/// fill rule.
+/// True when [p] is inside the path's fill area using [fillRule].
 ///
 /// This is geometry-based and intentionally does NOT depend on whether fill is
 /// currently rendered.
 ///
 /// Important: for fill hit semantics, open subpaths are treated as implicitly
 /// closed for containment testing.
-bool pathContainsClosedArea(PathIR ir, Vec2 p, {int curveSteps = 16}) {
+bool pathContainsClosedArea(
+  PathIR ir,
+  Vec2 p, {
+  required FillRule fillRule,
+  int curveSteps = 16,
+}) {
   final contours = _flattenContours(ir, curveSteps: curveSteps);
   if (contours.isEmpty) return false;
 
-  return switch (ir.style.fillRule) {
+  return switch (fillRule) {
     FillRule.evenOdd => _insideEvenOdd(contours, p, closeImplicitly: true),
     FillRule.nonZero => _insideNonZero(contours, p, closeImplicitly: true),
   };

@@ -54,6 +54,44 @@ CanvasSceneDocument _imageScene() {
 
 void main() {
   group('scene JSON boundary', () {
+    for (final nested in [false, true]) {
+      test('rejects raw SVG sources before decoding (nested: $nested)', () {
+        const path = Node.path(
+          id: 'svg-path',
+          data: PathData(source: RectSource(24, 24)),
+        );
+        final json = encodeCanvasScene(
+          _scene().copyWith(
+            children: [
+              if (nested)
+                const Node.group(id: 'group', children: [path])
+              else
+                path,
+            ],
+          ),
+        );
+        final roots = json['children'] as List<dynamic>;
+        final root = roots.single as Map<String, dynamic>;
+        final node = nested
+            ? (root['children'] as List<dynamic>).single as Map<String, dynamic>
+            : root;
+        final data = node['data'] as Map<String, dynamic>;
+        data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
+        final location = nested ? 'children[0].children[0]' : 'children[0]';
+
+        expect(
+          () => decodeCanvasScene(json),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('$location.data.source.kind "svg" is unsupported'),
+            ),
+          ),
+        );
+      });
+    }
+
     test('encodes the current persisted scene wire format', () {
       final scene = _scene();
 

@@ -1,3 +1,33 @@
+## 0.15.0
+
+- **Breaking:** replace `ResolvedIconText` and `ResolvedIconPath` with one
+  filled-vector `ResolvedIcon`, requiring normalized `CommandPathSource`
+  geometry, viewBox, and fill rule. Hosts prepare vector resources before
+  synchronous lookup and remove icon-only font registration. Instance
+  `CanvasAppearance` supplies foreground paint and shadows.
+- **Breaking:** replace `ComputedScene.iconTextById` and `iconPathIRById` with
+  `iconById`. Each `ComputedIcon` exposes source-space `pathIR`, the centered
+  uniform viewBox fit in `sourceToLocal`, and `fillRule`.
+- **Breaking:** remove `PathStyle`, `PathIR.style`, and style-bearing
+  compilation. Use `PathIR(commands)`; `localBounds()` has no `includeStroke`
+  argument and describes geometry only. Ordinary-path paint, fill rule, and
+  stroke properties remain on `PathData`; evaluated bounds remain in the
+  computed scene.
+- **Breaking:** remove the `icons` argument from `collectSceneFontFamilies()`;
+  it discovers text and supplied fallback families. Icons contribute no fonts.
+- **Breaking:** remove `SvgPathSource`, whose compilation was unimplemented.
+  Raw `kind: "svg"` sources now fail during decoding. Normalize SVG paths to a
+  supported command source before loading.
+- Scene JSON compatibility does not promise compatibility with retired icon
+  resources or unchanged artwork, padding, and pixels. Hosts replace font/glyph
+  and styled-path icon resources with the new vector definitions.
+- Add immutable, geometry-only `CommandPathSource` with strict JSON decoding
+  and direct compilation of absolute move/line/quadratic/cubic/close commands.
+- Reject nonfinite or nonpositive icon sizes before layout and resource lookup,
+  including when an icon resolver is absent or the reference is unresolved.
+- **Breaking:** `PathIR` now snapshots its commands and exposes an unmodifiable
+  list. Its constructor is no longer `const`.
+
 ## 0.14.0
 
 - **Breaking:** replace `CanvasRenderPipeline`, `RenderSnapshot`, and the renderer-neutral `PaintOp` pipeline with `evaluateScene(preparedScene, services)` returning `SceneEvaluation`. The evaluated scene and `ComputedScene` geometry are now the inputs to rendering; `PathIR` remains available for computed path geometry.

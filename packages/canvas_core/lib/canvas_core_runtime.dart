@@ -77,15 +77,17 @@ export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 // 4) Shared path geometry and style
 // ============================================================================
 
-// Shared style enums (used by models and IR)
+// Shared fill and stroke enums used by authored models and icon coverage.
 export 'src/foundation/style/style_types.dart'
     show FillRule, StrokeCap, StrokeJoin;
 
 // Path IR + declarative sources (runtime reads these; compilation is internal)
-export 'src/path/path_ir.dart' show PathCmd, PathIR, PathStyle, PathVerb;
+export 'src/path/path_ir.dart' show PathCmd, PathIR, PathVerb;
+export 'src/algorithms/layout/computed_icon.dart' show ComputedIcon;
 export 'src/path/path_source.dart'
     show
         PathSource,
+        CommandPathSource,
         PolylineSource,
         RectSource,
         RoundRectSource,
@@ -94,8 +96,7 @@ export 'src/path/path_source.dart'
         EllipseSource,
         CircleSource,
         RegularPolygonSource,
-        StarSource,
-        SvgPathSource;
+        StarSource;
 
 // ============================================================================
 // 5) Geometry primitives + derived helpers (renderer-agnostic)
@@ -130,8 +131,7 @@ export 'src/services/services.dart'
     show CanvasImageAssetResolver, ImageIntrinsics, TextMeasurer;
 export 'src/services/services_context.dart' show CoreServices;
 
-export 'src/services/icon_resolver.dart'
-    show IconResolver, ResolvedIcon, ResolvedIconText, ResolvedIconPath;
+export 'src/services/icon_resolver.dart' show IconResolver, ResolvedIcon;
 
 export 'src/runtime/resources/scene_font_families.dart'
     show collectSceneFontFamilies;

@@ -1,36 +1,49 @@
-// Path: lib/src/services/icon_resolver.dart
+import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
+import 'package:canvas_core/src/foundation/style/style_types.dart'
+    show FillRule;
+import 'package:canvas_core/src/path/path_source.dart' show CommandPathSource;
 
-import 'package:canvas_core/src/foundation/core_types.dart' show FontWeightNum;
-import 'package:canvas_core/src/runtime/model/node_model.dart' show PathData;
-
-/// Sync resolver: the core pipeline (layout + paint op build) is synchronous.
-/// Any async download/fetch happens outside core (app/editor layer),
-/// then you provide a resolver that can answer synchronously.
+/// Synchronous lookup into the host's selected resource session.
+/// Downloads and source normalization happen before scene evaluation.
 abstract interface class IconResolver {
   ResolvedIcon? resolve(String iconRef);
 }
 
-sealed class ResolvedIcon {
-  const ResolvedIcon();
-}
+/// A filled, recolorable vector symbol in its declared source viewBox.
+///
+/// Hosts supply normalized [CommandPathSource] geometry, which already validates
+/// coordinates and contour order and snapshots its commands. The resource has
+/// no paint or font dependency.
+/// Open contours use ordinary filled-path implicit closure. Empty geometry is
+/// valid and keeps the instance's layout square without producing paint.
+final class ResolvedIcon {
+  factory ResolvedIcon({
+    required CommandPathSource source,
+    required Rect2D viewBox,
+    required FillRule fillRule,
+  }) {
+    if (![
+          viewBox.left,
+          viewBox.top,
+          viewBox.right,
+          viewBox.bottom,
+          viewBox.width,
+          viewBox.height,
+        ].every((value) => value.isFinite) ||
+        viewBox.width <= 0 ||
+        viewBox.height <= 0) {
+      throw ArgumentError.value(
+        viewBox,
+        'viewBox',
+        'Must be finite and positive.',
+      );
+    }
+    return ResolvedIcon._(source, viewBox, fillRule);
+  }
 
-/// Font-backed icon (glyph in a font family).
-final class ResolvedIconText extends ResolvedIcon {
-  const ResolvedIconText({
-    required this.glyph,
-    required this.fontFamily,
-    this.fontWeight = 900,
-  });
+  const ResolvedIcon._(this.source, this.viewBox, this.fillRule);
 
-  final String glyph;
-  final String fontFamily;
-  final FontWeightNum fontWeight;
-}
-
-/// Vector-backed icon (future-proof). Contract for now:
-/// the returned PathData should be normalized to your icon origin convention
-/// (ideally centered around (0,0) like Text baseline-center behavior).
-final class ResolvedIconPath extends ResolvedIcon {
-  const ResolvedIconPath(this.path);
-  final PathData path;
+  final CommandPathSource source;
+  final Rect2D viewBox;
+  final FillRule fillRule;
 }

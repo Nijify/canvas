@@ -1,3 +1,10 @@
+# 0.18.0
+
+- **Breaking:** require `canvas_core 0.15.x` and
+  `canvas_renderer_flutter 0.14.x`.
+- Select icons through their transformed nominal square, including filled-path
+  holes and unused margins. Shadows do not enlarge the selection target.
+
 # 0.17.0
 
 - **Breaking:** require `canvas_core 0.14.x` and

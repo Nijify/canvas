@@ -112,9 +112,9 @@ The two notification channels have different meanings:
 
 Dispose a pool when its rendering surface or render operation ends. The pool owns and disposes decoded `ui.Image` handles retained by it, including replaced, removed, stale, and late-arriving images.
 
-### Image-loading results (Unreleased)
+### Image-loading results
 
-`resolveSceneIntrinsics()` and `preloadScene()` now return immutable
+`resolveSceneIntrinsics()` and `preloadScene()` return immutable
 `List<FlutterImageLoadFailure>` values. Each result describes only that loading
 operation; the pool retains no diagnostic history. Successful operations return
 an empty list. Superseded or disposed operations also return an empty list, so
@@ -134,7 +134,7 @@ logical resource; `cause` and `stackTrace` retain the original exception and
 available stack trace. These structured fields may contain inline data, private
 paths, or signed-URL credentials; redact them before logging or transmitting.
 
-Interactive callers can continue awaiting these methods and ignore the results.
+Interactive callers may await these methods and ignore the returned failures.
 Metadata remains best-effort and does not gate raster loading. Use a new
 operation to retry; no diagnostic reset is needed. Retained earlier results are
 historical operation results, not a view of the current pool state.
@@ -183,26 +183,24 @@ Preparation may remove dependencies or introduce new element/asset IDs that reus
 Required-image failures throw `CanvasImageRenderException`, a `StateError`
 subtype. It exposes the missing `nodeIds` and relevant operation `failures`,
 including original causes when available. Formatted errors omit raw sources and
-original exception text. The renderer still applies its existing requirements
-before failing: persisted dimensions may satisfy metadata needs, hidden final
-images need no raster, and intentionally empty frames are valid. Font-loader
-and preparer exceptions continue to propagate directly.
+original exception text. Persisted dimensions may satisfy metadata needs,
+hidden final images need no raster, and intentionally empty frames are valid.
+Font-loader and preparer exceptions propagate directly.
 
 ## Optional ImageProvider helpers
 
-### Failure and file-reference migration (Unreleased)
+### Image-provider behavior
 
-`toUiImage()` propagates provider, image-stream, and clone errors rather than
-turning them into null. Direct callers should handle exceptions; dispose any
-successfully returned image as before. `FlutterImagePool` catches these errors
-and returns operation-local failures, preserving best-effort interactive loading.
+`toUiImage()` propagates provider, image-stream, and clone errors. Direct callers
+should handle exceptions and dispose each successfully returned image.
+`FlutterImagePool` catches these errors and returns operation-local failures,
+preserving best-effort interactive loading.
 
 `sourceToProvider()` accepts the unconverted file reference. On native targets,
 its IO adapter converts file URIs using the executing platform's path rules;
-conversion errors propagate instead of falling back to a literal URI filename.
-Raw paths remain unchanged. Unsupported targets reject file-backed loading.
-Pass `CanvasFileAssetRef.raw` rather than the removed `.path` field. This does
-not change stored scene sources or add home-directory expansion.
+conversion errors propagate. Raw paths are passed through unchanged, without
+home-directory expansion. Unsupported targets reject file-backed loading.
+Pass `CanvasFileAssetRef.raw` to the helper.
 
 The optional helpers convert common renderable refs to Flutter `ImageProvider` values:
 
@@ -222,7 +220,7 @@ Support for `blob:` and `file:` depends on the Flutter target platform. App-spec
 - `canvas_renderer_flutter` depends on `canvas_core` and does not depend on editor UI.
 - `canvas_core` owns logical scene/resource contracts; this package owns Flutter resource implementations and drawing.
 - Hosts own storage, authentication, networking, signed-URL refresh, media IDs, persistence, and product concepts.
-- `CanvasRenderer` is a public direct scene paintinger.
+- `CanvasRenderer` is a direct scene renderer.
 - `FlutterCanvasPngRenderer` is the high-level authoritative final PNG boundary.
 - `FlutterTextPipeline` and `FlutterImagePool` own their respective Flutter resources and must be disposed by their creators, except when created internally by `FlutterCanvasPngRenderer`.
 

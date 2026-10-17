@@ -13,16 +13,22 @@ class _TextMeasurer implements TextMeasurer {
     required int fontWeight,
     required double fontSize,
     required double letterSpacing,
-  }) =>
-      fontFamily == 'IconFont' ? const Size2D(140, 120) : const Size2D(100, 20);
+  }) => const Size2D(100, 20);
 }
 
 class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String iconRef) => switch (iconRef) {
-    'glyph' => const ResolvedIconText(glyph: 'X', fontFamily: 'IconFont'),
-    'path' => const ResolvedIconPath(
-      PathData(source: RectSource(160, 30), strokeWidth: 0),
+    'path' => ResolvedIcon(
+      source: CommandPathSource([
+        PathCmd.moveTo(const Vec2(-80, -15)),
+        PathCmd.lineTo(const Vec2(80, -15)),
+        PathCmd.lineTo(const Vec2(80, 15)),
+        PathCmd.lineTo(const Vec2(-80, 15)),
+        PathCmd.close(),
+      ]),
+      viewBox: const Rect2D(-80, -15, 80, 15),
+      fillRule: FillRule.nonZero,
     ),
     _ => null,
   };
@@ -201,33 +207,36 @@ void main() {
     }
   });
 
-  test('glyph layout stays square while paint follows glyph measurements', () {
-    final computed = computeScene(
-      _scene([
-        const Node.icon(
-          id: 'icon',
-          data: CanvasIconData(
-            iconRef: 'glyph',
-            sizePx: 96,
-            appearance: CanvasAppearance(
-              underlays: [
-                ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
-              ],
+  test(
+    'icon layout stays square while paint follows fitted vector geometry',
+    () {
+      final computed = computeScene(
+        _scene([
+          const Node.icon(
+            id: 'icon',
+            data: CanvasIconData(
+              iconRef: 'path',
+              sizePx: 96,
+              appearance: CanvasAppearance(
+                underlays: [
+                  ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
+                ],
+              ),
             ),
           ),
-        ),
-      ]),
-      _services(),
-    );
-    _expectRect(
-      computed.layoutBoundsLocalById['icon'],
-      const Rect2D(-48, -48, 48, 48),
-    );
-    _expectRect(
-      computed.paintBoundsLocalById['icon'],
-      const Rect2D(-70, -60, 78, 68),
-    );
-  });
+        ]),
+        _services(),
+      );
+      _expectRect(
+        computed.layoutBoundsLocalById['icon'],
+        const Rect2D(-48, -48, 48, 48),
+      );
+      _expectRect(
+        computed.paintBoundsLocalById['icon'],
+        const Rect2D(-48, -9, 56, 17),
+      );
+    },
+  );
 
   test('path icon shadows expand paint without changing layout', () {
     ComputedScene build(bool withShadow) => computeScene(

@@ -14,8 +14,8 @@ dependencies:
   canvas_editor_flutter:
     path: ../
 
-  canvas_core: ^0.14.0
-  canvas_renderer_flutter: ^0.13.0
+  canvas_core: ^0.15.0
+  canvas_renderer_flutter: ^0.14.0
   image_picker: ^1.2.1
   share_plus: ^13.3.0
   url_launcher: ^6.3.2
@@ -28,5 +28,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/demo_assets/
+    - assets/icons/
     - assets/fonts/noto_sans_symbols/NotoSansSymbols-Regular.ttf
     - assets/fonts/noto_sans_symbols/OFL.txt

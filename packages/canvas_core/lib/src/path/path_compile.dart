@@ -9,33 +9,27 @@ import 'package:canvas_core/src/foundation/core_types.dart';
 class PathCompiler {
   const PathCompiler();
 
-  PathIR fromSource(PathSource src, PathStyle style) => switch (src) {
-    PolylineSource(:final points) => _polyline(points, style),
-    RectSource(:final w, :final h) => _rect(w, h, style),
+  PathIR fromSource(PathSource src) => switch (src) {
+    CommandPathSource(:final commands) => PathIR(commands),
+    PolylineSource(:final points) => _polyline(points),
+    RectSource(:final w, :final h) => _rect(w, h),
     RoundRectSource(:final w, :final h, :final rx, :final ry) => _roundRect(
       w,
       h,
       rx,
       ry,
-      style,
     ),
-    PillSource(:final w, :final h) => _roundRect(w, h, h / 2, h / 2, style),
-    UnderlineSource(:final w, :final thickness) => _rect(w, thickness, style),
-    EllipseSource(:final rx, :final ry) => _ellipse(rx, ry, style),
-    SvgPathSource(:final d) => _svg(d, style),
-    CircleSource(:final r) => _ellipse(r, r, style),
+    PillSource(:final w, :final h) => _roundRect(w, h, h / 2, h / 2),
+    UnderlineSource(:final w, :final thickness) => _rect(w, thickness),
+    EllipseSource(:final rx, :final ry) => _ellipse(rx, ry),
+    CircleSource(:final r) => _ellipse(r, r),
     RegularPolygonSource(:final sides, :final r, :final rotation) =>
-      _regularPolygon(sides, r, rotation, style),
+      _regularPolygon(sides, r, rotation),
     StarSource(:final points, :final rOuter, :final rInner, :final rotation) =>
-      _star(points, rOuter, rInner, rotation, style),
+      _star(points, rOuter, rInner, rotation),
   };
 
-  PathIR _regularPolygon(
-    int sides,
-    double r,
-    double rotationDeg,
-    PathStyle style,
-  ) {
+  PathIR _regularPolygon(int sides, double r, double rotationDeg) {
     assert(sides >= 3);
     final cmds = <PathCmd>[];
     final cx = 0.0, cy = 0.0;
@@ -48,16 +42,10 @@ class PathCompiler {
       );
     }
     cmds.add(PathCmd.close());
-    return PathIR(cmds, style);
+    return PathIR(cmds);
   }
 
-  PathIR _star(
-    int points,
-    double ro,
-    double ri,
-    double rotationDeg,
-    PathStyle style,
-  ) {
+  PathIR _star(int points, double ro, double ri, double rotationDeg) {
     assert(points >= 3 && ri >= 0 && ri <= ro);
     final cmds = <PathCmd>[];
     final cx = 0.0, cy = 0.0;
@@ -73,10 +61,10 @@ class PathCompiler {
       );
     }
     cmds.add(PathCmd.close());
-    return PathIR(cmds, style);
+    return PathIR(cmds);
   }
 
-  PathIR _polyline(List<Vec2?> pts, PathStyle style) {
+  PathIR _polyline(List<Vec2?> pts) {
     final cmds = <PathCmd>[];
     Vec2? current;
     for (final p in pts) {
@@ -92,10 +80,10 @@ class PathCompiler {
       }
       current = p;
     }
-    return PathIR(cmds, style);
+    return PathIR(cmds);
   }
 
-  PathIR _rect(double w, double h, PathStyle style) {
+  PathIR _rect(double w, double h) {
     final hw = w / 2.0;
     final hh = h / 2.0;
 
@@ -106,10 +94,10 @@ class PathCompiler {
       PathCmd.lineTo(Vec2(-hw, hh)),
       PathCmd.close(),
     ];
-    return PathIR(cmds, style);
+    return PathIR(cmds);
   }
 
-  PathIR _roundRect(double w, double h, double rx, double ry, PathStyle style) {
+  PathIR _roundRect(double w, double h, double rx, double ry) {
     // Clamp radii defensively
     rx = rx.clamp(0.0, w / 2.0);
     ry = ry.clamp(0.0, h / 2.0);
@@ -151,10 +139,10 @@ class PathCompiler {
       PathCmd.close(),
     ];
 
-    return PathIR(cmds, style);
+    return PathIR(cmds);
   }
 
-  PathIR _ellipse(double rx, double ry, PathStyle style) {
+  PathIR _ellipse(double rx, double ry) {
     const k = 0.5522847498307936;
 
     final cmds = <PathCmd>[
@@ -165,12 +153,6 @@ class PathCompiler {
       PathCmd.cubicTo(Vec2(rx * k, -ry), Vec2(rx, -ry * k), Vec2(rx, 0)),
       PathCmd.close(),
     ];
-    return PathIR(cmds, style);
-  }
-
-  PathIR _svg(String d, PathStyle style) {
-    // Plug in a tiny SVG path parser (you can add later; stub keeps structure)
-    // For now throw to make it obvious at dev time.
-    throw UnimplementedError('SVG path parsing not wired yet: $d');
+    return PathIR(cmds);
   }
 }
