@@ -15,7 +15,11 @@ class _NoText implements TextMeasurer {
 }
 
 ComputedScene _compute(List<Node> children) => computeScene(
-  CanvasSceneDocument(backgroundFill: const CanvasFill.none(), children: children),
+  CanvasSceneDocument(
+    backgroundFill: const CanvasFill.none(),
+    backgroundOpacity: 1,
+    children: children,
+  ),
   CoreServices(textMeasurer: _NoText()),
 );
 
@@ -86,6 +90,8 @@ void main() {
       ),
     ]) {
       final scene = CanvasSceneDocument(
+        backgroundFill: const CanvasFill.none(),
+        backgroundOpacity: 1,
         children: [
           Node.path(
             id: 'path',
@@ -131,6 +137,8 @@ void main() {
       [Vec2.zero, Vec2.zero],
     ]) {
       final scene = CanvasSceneDocument(
+        backgroundFill: const CanvasFill.none(),
+        backgroundOpacity: 1,
         children: [
           Node.path(
             id: 'path',
