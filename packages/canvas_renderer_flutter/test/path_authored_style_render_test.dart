@@ -121,8 +121,10 @@ void main() {
         appearance: const CanvasAppearance(
           foreground: CanvasFill.none(),
           stroke: CanvasStroke(
-            color: 0xFF112233, width: 8,
-            cap: StrokeCap.square, join: StrokeJoin.bevel,
+            color: 0xFF112233,
+            width: 8,
+            cap: StrokeCap.square,
+            join: StrokeJoin.bevel,
           ),
         ),
       ),

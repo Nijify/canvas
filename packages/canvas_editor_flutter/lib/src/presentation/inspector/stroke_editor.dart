@@ -45,7 +45,10 @@ class _StrokeEditorState extends State<StrokeEditor> {
   void didUpdateWidget(covariant StrokeEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.nodeId != widget.nodeId ||
-        !identical(oldWidget.inspector.controller, widget.inspector.controller)) {
+        !identical(
+          oldWidget.inspector.controller,
+          widget.inspector.controller,
+        )) {
       _finishOpacitySession();
     }
   }
@@ -91,7 +94,9 @@ class _StrokeEditorState extends State<StrokeEditor> {
     );
     final disabledReason =
         state.disabledReason ??
-        (node is rt.PathNode ? null : 'Missing or incompatible canonical target');
+        (node is rt.PathNode
+            ? null
+            : 'Missing or incompatible canonical target');
     final enabled = disabledReason == null;
 
     if ((!enabled || stroke == null) && _endOpacitySession != null) {
@@ -108,7 +113,10 @@ class _StrokeEditorState extends State<StrokeEditor> {
         Row(
           children: [
             Expanded(
-              child: Text('Stroke', style: Theme.of(context).textTheme.titleSmall),
+              child: Text(
+                'Stroke',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
             ),
             if (stroke != null)
               IconButton(
@@ -118,10 +126,7 @@ class _StrokeEditorState extends State<StrokeEditor> {
               ),
           ],
         ),
-        if (disabledReason != null) ...[
-          const Gap(8),
-          HintText(disabledReason),
-        ],
+        if (disabledReason != null) ...[const Gap(8), HintText(disabledReason)],
         if (stroke == null)
           OutlinedButton.icon(
             onPressed: enabled ? _add : null,
@@ -153,12 +158,13 @@ class _StrokeEditorState extends State<StrokeEditor> {
             fraction: true,
             enabled: enabled,
             onChangeStart: (_) {
-              _endOpacitySession ??=
-                  widget.inspector.controller.beginEditSession();
+              _endOpacitySession ??= widget.inspector.controller
+                  .beginEditSession();
             },
             onChanged: (opacity) => _patch(
               (current) => current.copyWith(
-                color: ((opacity * 255).round().clamp(0, 255).toInt() << 24) |
+                color:
+                    ((opacity * 255).round().clamp(0, 255).toInt() << 24) |
                     (current.color & 0x00FFFFFF),
               ),
             ),
@@ -170,9 +176,8 @@ class _StrokeEditorState extends State<StrokeEditor> {
             value: stroke.width,
             minimum: 0,
             enabled: enabled,
-            onCommit: (width) => _patch(
-              (current) => current.copyWith(width: width),
-            ),
+            onCommit: (width) =>
+                _patch((current) => current.copyWith(width: width)),
           ),
           const Gap(12),
           LabeledDropdown<rt.StrokeCap>(
@@ -200,7 +205,9 @@ class _StrokeEditorState extends State<StrokeEditor> {
           ),
           const Gap(12),
           LabeledDropdown<rt.StrokeJoin>(
-            key: ValueKey<String>('${widget.nodeId}:stroke-join:${stroke.join}'),
+            key: ValueKey<String>(
+              '${widget.nodeId}:stroke-join:${stroke.join}',
+            ),
             value: stroke.join,
             decoration: InspectorUi.inputDecoration(labelText: 'Join'),
             items: [
@@ -230,9 +237,8 @@ class _StrokeEditorState extends State<StrokeEditor> {
               value: stroke.miterLimit,
               minimum: 1,
               enabled: enabled,
-              onCommit: (limit) => _patch(
-                (current) => current.copyWith(miterLimit: limit),
-              ),
+              onCommit: (limit) =>
+                  _patch((current) => current.copyWith(miterLimit: limit)),
             ),
           ],
         ],

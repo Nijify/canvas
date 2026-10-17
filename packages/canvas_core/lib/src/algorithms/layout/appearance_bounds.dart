@@ -15,8 +15,9 @@ bool _colorContributesToPaint(int color) =>
 bool fillContributesToPaint(CanvasFill fill) => switch (fill) {
   CanvasFillNone() => false,
   CanvasFillSolid(:final color) => _colorContributesToPaint(color),
-  CanvasFillGradient(:final grad) =>
-    grad.stops.any((stop) => _colorContributesToPaint(stop.color)),
+  CanvasFillGradient(:final grad) => grad.stops.any(
+    (stop) => _colorContributesToPaint(stop.color),
+  ),
 };
 
 /// Whether the configured stroke can paint pixels. Invalid colors and widths

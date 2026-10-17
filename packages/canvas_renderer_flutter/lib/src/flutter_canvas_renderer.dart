@@ -161,16 +161,8 @@ class CanvasRenderer {
             final ir = computed.pathIRById[id];
             if (ir != null) {
               final path = _buildUiPath(ir, fillRule: data.fillRule);
-              _drawPathFill(
-                canvas,
-                path,
-                data.appearance.foreground,
-              );
-              _drawPathStroke(
-                canvas,
-                path,
-                data.appearance.stroke,
-              );
+              _drawPathFill(canvas, path, data.appearance.foreground);
+              _drawPathStroke(canvas, path, data.appearance.stroke);
             }
           case GroupNode():
             break;
@@ -221,11 +213,7 @@ class CanvasRenderer {
     }
   }
 
-  void _drawPathStroke(
-    ui.Canvas canvas,
-    ui.Path path,
-    CanvasStroke? stroke,
-  ) {
+  void _drawPathStroke(ui.Canvas canvas, ui.Path path, CanvasStroke? stroke) {
     if (stroke == null || !strokeContributesToPaint(stroke)) return;
     // Authored dash metadata is retained; dash painting is not yet supported.
     canvas.drawPath(

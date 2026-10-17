@@ -87,10 +87,14 @@ void main() {
       beforeGeometry.layoutBoundsWorldById,
     );
     final beforeSnaps = sceneObjectKeylines(
-      beforeScene, before, geometry: beforeGeometry,
+      beforeScene,
+      before,
+      geometry: beforeGeometry,
     );
     final afterSnaps = sceneObjectKeylines(
-      afterScene, after, geometry: afterGeometry,
+      afterScene,
+      after,
+      geometry: afterGeometry,
     );
     expect(beforeSnaps, isNotEmpty);
     expect(
