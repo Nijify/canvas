@@ -69,6 +69,8 @@ export 'src/presentation/inspector/inspector_ui.dart'
 export 'src/presentation/inspector/fill_editor.dart'
     show FillEditor, FillFieldIds;
 
+export 'src/presentation/inspector/stroke_editor.dart' show StrokeEditor;
+
 // Actions and default shell widgets.
 export 'src/presentation/actions/editor_actions.dart'
     show

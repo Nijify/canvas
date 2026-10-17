@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Add `CanvasFields.pathStroke` as the stable aggregate identity for an optional
+  authored path stroke.
 - **Breaking:** ordinary path layout bounds now use geometry alone. Stroke
   padding affects paint/content bounds independently of pivots and layout.
   Content fitting and group pivots can differ from earlier stroke-based layout.

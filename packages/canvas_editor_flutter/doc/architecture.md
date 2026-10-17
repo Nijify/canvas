@@ -129,6 +129,16 @@ run through `updateField()` and locate individual underlays by stable ID against
 the latest canonical list, so stale UI callbacks cannot accidentally mutate a
 different list entry.
 
+`CanvasFields.pathStroke` is an aggregate `CanvasStroke?` field. Null means no
+configuration; zero width and transparent color retain configured settings.
+Field codecs and the runtime carry nullable values directly. `StrokeEditor`
+reads authored settings from the editable scene and patches the latest
+canonical stroke through `updateField()`, preserving foreground, source, fill
+rule, and unchanged stroke properties. A stale property callback does nothing
+after removal. RGB edits preserve alpha, opacity edits preserve RGB, and opacity
+drags share one edit session. Numeric stroke and shadow inputs share finite
+number validation with the appropriate lower bounds.
+
 ```text
 Registered literal field
   -> commitField

@@ -1,5 +1,13 @@
 # Unreleased
 
+- Add path stroke authoring for color, opacity, width, caps, joins, and miter
+  limit. Remove a configuration explicitly or retain transparent/zero-width
+  settings and existing dash metadata. Opacity drags form one undo step.
+- Register `CanvasFields.pathStroke` as a `CanvasStroke?` aggregate field and
+  expose `StrokeEditor` from `extensions.dart` for custom inspector composition.
+- **Breaking:** `FieldCodec` readers, fallback, and writer values now accept
+  `Object?`. Explicitly typed custom writer parameters must accept nullable
+  values; each field still owns its concrete value type and target policy.
 - Keep path selection and snap geometry independent of stroke appearance,
   including horizontal and vertical lines. Coarse picking includes stroke
   width as well as the minimum screen-space outline tolerance.

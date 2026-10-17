@@ -94,6 +94,7 @@ class CanvasSceneDocumentAdapter
 /// Typed state for a single inspector field.
 ///
 /// A null [disabledReason] means the field can be edited.
+/// [T] may be nullable for optional authored values, such as a path stroke.
 final class FieldState<T> {
   const FieldState(this.value, {this.disabledReason});
 
@@ -207,6 +208,7 @@ abstract class EditorController {
   /// Literal and functional field mutations share the same runtime-owned
   /// canonical mutation path. The field's `FieldCodec` owns field-specific
   /// normalization and canonical scene storage.
+  /// Use a nullable [T] when null is a valid field value.
   ///
   /// Missing, stale, wrong-kind, or source-document-denied targets are ignored
   /// safely.

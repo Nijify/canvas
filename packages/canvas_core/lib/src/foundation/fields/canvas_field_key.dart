@@ -55,6 +55,9 @@ abstract final class CanvasFields {
   // Path
   static const pathFill = CanvasFieldKey('path.fill');
 
+  /// The complete optional CanvasStroke configuration, including inactive data.
+  static const pathStroke = CanvasFieldKey('path.stroke');
+
   // Scene background
   static const sceneBackgroundFill = CanvasFieldKey('scene.backgroundFill');
   static const sceneBackgroundOpacity = CanvasFieldKey(

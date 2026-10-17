@@ -15,6 +15,7 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_field
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/shadow_editor.dart';
+import 'package:canvas_editor_flutter/src/presentation/inspector/stroke_editor.dart';
 
 Widget _defaultInspectorFieldRowBuilder<T>(
   ElementId nodeId,
@@ -351,6 +352,8 @@ Widget _buildPathPanel({
         ids: FillFieldIds.path,
         header: 'Fill',
       ),
+      const Gap(16),
+      StrokeEditor(nodeId: nodeId, inspector: inspector),
     ],
   );
 }

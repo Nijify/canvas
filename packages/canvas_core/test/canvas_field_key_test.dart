@@ -20,6 +20,7 @@ void main() {
     test('built-in fields expose stable string values', () {
       expect(CanvasFields.textContent.toString(), 'text.content');
       expect(CanvasFields.iconRef.toString(), 'icon.ref');
+      expect(CanvasFields.pathStroke.toString(), 'path.stroke');
     });
   });
 

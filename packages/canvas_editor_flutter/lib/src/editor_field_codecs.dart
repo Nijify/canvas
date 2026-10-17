@@ -3,23 +3,23 @@
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 
 typedef ReadNodeFn =
-    Object Function(rt.CanvasSceneDocument scene, rt.Node node);
+    Object? Function(rt.CanvasSceneDocument scene, rt.Node node);
 
-typedef ReadSceneFn = Object Function(rt.CanvasSceneDocument scene);
+typedef ReadSceneFn = Object? Function(rt.CanvasSceneDocument scene);
 
 typedef CanReadCanonicalNodeFn =
     bool Function(rt.CanvasSceneDocument scene, rt.Node node);
 
 typedef ReadCanonicalNodeFn =
-    Object Function(rt.CanvasSceneDocument scene, rt.Node node);
+    Object? Function(rt.CanvasSceneDocument scene, rt.Node node);
 
-typedef ReadCanonicalSceneFn = Object Function(rt.CanvasSceneDocument scene);
+typedef ReadCanonicalSceneFn = Object? Function(rt.CanvasSceneDocument scene);
 
 typedef WriteCanonicalFn =
     rt.CanvasSceneDocument Function(
       rt.CanvasSceneDocument base,
       rt.ElementId nodeId,
-      Object value,
+      Object? value,
     );
 
 /// Defines presentation reads and canonical mutation behavior for one
@@ -31,6 +31,7 @@ typedef WriteCanonicalFn =
 /// Canonical mutation uses [readCanonicalNode] or [readCanonicalScene] together
 /// with [writeCanonical]. Canonical writers transform the supplied base scene
 /// and return the result. They must not start another editor commit.
+/// Values and fallbacks may be null when null is part of the field's model.
 class FieldCodec {
   const FieldCodec({
     required this.fallback,
@@ -43,7 +44,7 @@ class FieldCodec {
     this.isSceneOnly = false,
   });
 
-  final Object fallback;
+  final Object? fallback;
 
   /// Presentation read from a runtime node and its effective scene context.
   final ReadNodeFn? readNode;
@@ -524,6 +525,27 @@ class FieldCatalog {
           (node as rt.PathNode).data.appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
+      },
+    ),
+
+    rt.CanvasFields.pathStroke: FieldCodec(
+      fallback: null,
+      readNode: (_, node) => (node as rt.PathNode).data.appearance.stroke,
+      canReadCanonicalNode: (_, node) => node is rt.PathNode,
+      readCanonicalNode: (_, node) =>
+          (node as rt.PathNode).data.appearance.stroke,
+      writeCanonical: (base, nodeId, value) {
+        final stroke = value as rt.CanvasStroke?;
+        return _writeNodeUpdate(base, nodeId, (node) {
+          if (node is! rt.PathNode) return node;
+          if (node.data.appearance.stroke == stroke) return node;
+
+          return node.copyWith(
+            data: node.data.copyWith(
+              appearance: node.data.appearance.copyWith(stroke: stroke),
+            ),
+          );
+        });
       },
     ),
 
