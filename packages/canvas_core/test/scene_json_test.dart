@@ -211,7 +211,12 @@ void main() {
         children: <Node>[
           Node.path(
             id: 'gradient-path',
-            data: PathData(fill: CanvasFill.gradient(valid)),
+            data: PathData(
+              source: const RectSource(20, 10),
+              appearance: CanvasAppearance(
+                foreground: CanvasFill.gradient(valid),
+              ),
+            ),
           ),
         ],
       );

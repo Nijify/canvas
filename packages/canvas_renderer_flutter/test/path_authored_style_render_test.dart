@@ -60,10 +60,10 @@ List<int> _rgba(Uint8List pixels, int x, int y) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('ordinary path fill rule and stroke come from PathData', () async {
+  test('ordinary path uses its fill rule and shared appearance', () async {
     final pixels = await _pixels(
-      const PathData(
-        points: [
+      PathData(
+        source: PolylineSource(const [
           Vec2(-12, -12),
           Vec2(12, -12),
           Vec2(12, 12),
@@ -75,11 +75,12 @@ void main() {
           Vec2(5, 5),
           Vec2(-5, 5),
           Vec2(-5, -5),
-        ],
-        fill: CanvasFill.solid(0xFFFF0000),
+        ]),
         fillRule: FillRule.evenOdd,
-        strokeColor: 0xFF0000FF,
-        strokeWidth: 4,
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.solid(0xFFFF0000),
+          stroke: CanvasStroke(color: 0xFF0000FF, width: 4),
+        ),
       ),
     );
 
@@ -89,13 +90,18 @@ void main() {
     expect(_rgba(pixels, 16, 0), [0, 0, 0, 0]);
   });
 
-  test('ordinary path stroke width and cap come from PathData', () async {
+  test('ordinary path stroke width and cap come from CanvasStroke', () async {
     final pixels = await _pixels(
-      const PathData(
-        points: [Vec2(-8, 0), Vec2(8, 0)],
-        strokeColor: 0xFF203040,
-        strokeWidth: 6,
-        strokeCap: StrokeCap.round,
+      PathData(
+        source: PolylineSource(const [Vec2(-8, 0), Vec2(8, 0)]),
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.none(),
+          stroke: CanvasStroke(
+            color: 0xFF203040,
+            width: 6,
+            cap: StrokeCap.round,
+          ),
+        ),
       ),
     );
 

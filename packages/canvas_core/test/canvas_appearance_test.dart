@@ -46,6 +46,7 @@ void main() {
     const appearance = CanvasAppearance();
 
     expect(appearance.foreground, const CanvasFill.solid(0xFF111111));
+    expect(appearance.stroke, isNull);
     expect(appearance.underlays, isEmpty);
   });
 

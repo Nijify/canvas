@@ -2,7 +2,6 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:canvas_core/src/foundation/core_types.dart';
-import 'package:canvas_core/src/serialization/json_vec2.dart';
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 
 /// ---- Vec2 ----
@@ -22,15 +21,6 @@ class NullableVec2Converter
       json == null ? null : Vec2.fromJson(json);
   @override
   Map<String, dynamic>? toJson(Vec2? object) => object?.toJson();
-}
-
-/// ---- Vec2 list (nullable items) ----
-class Vec2ListNullableConverter extends JsonConverter<List<Vec2?>, Object?> {
-  const Vec2ListNullableConverter();
-  @override
-  List<Vec2?> fromJson(Object? json) => vec2ListNullableFromJson(json);
-  @override
-  Object? toJson(List<Vec2?> value) => vec2ListNullableToJson(value);
 }
 
 /// ---- Size2D ----

@@ -17,11 +17,8 @@ const _imageData = ImageData(assetId: 'asset-1', size: Size2D(100, 100));
 
 PathData _rectData() {
   return const PathData(
-    points: <Vec2?>[],
-    fill: CanvasFill.solid(0xFF111111),
-    strokeColor: 0x00000000,
-    strokeWidth: 0,
     source: RectSource(100, 60),
+    appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
   );
 }
 

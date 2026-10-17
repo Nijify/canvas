@@ -1,6 +1,17 @@
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry_ext.dart';
 import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
+import 'package:canvas_core/src/runtime/model/canvas_stroke.dart';
+
+/// Whether the configured stroke can paint pixels. Invalid colors and widths
+/// are skipped defensively; validation still reports them on invisible strokes.
+bool strokeContributesToPaint(CanvasStroke? stroke) =>
+    stroke != null &&
+    stroke.color >= 0 &&
+    stroke.color <= 0xFFFFFFFF &&
+    ((stroke.color >> 24) & 0xFF) != 0 &&
+    stroke.width.isFinite &&
+    stroke.width > 0;
 
 /// Practical Gaussian-tail estimate, not a hard pixel-enclosure guarantee.
 /// Raster padding remains a separate export policy.

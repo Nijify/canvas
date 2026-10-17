@@ -102,8 +102,9 @@ final class NodeGeometry {
         final ir = compilePath(d);
         pathIRById?[id] = ir;
         final geometryBounds = ir.localBounds();
-        final hasStroke = d.strokeColor != 0 && d.strokeWidth > 0;
-        final radius = hasStroke ? d.strokeWidth / 2 : 0.0;
+        final stroke = d.appearance.stroke;
+        final hasStroke = strokeContributesToPaint(stroke);
+        final radius = hasStroke ? stroke!.width / 2 : 0.0;
         final layout = ir.cmds.isEmpty || !hasStroke
             ? geometryBounds
             : Rect2D.fromLTRB(

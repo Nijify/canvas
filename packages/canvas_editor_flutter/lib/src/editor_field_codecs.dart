@@ -124,9 +124,13 @@ rt.CanvasSceneDocument _writeFill(
     }
 
     if (node is rt.PathNode) {
-      if (requestedFill == node.data.fill) return node;
+      if (requestedFill == node.data.appearance.foreground) return node;
 
-      return node.copyWith(data: node.data.copyWith(fill: requestedFill));
+      return node.copyWith(
+        data: node.data.copyWith(
+          appearance: node.data.appearance.copyWith(foreground: requestedFill),
+        ),
+      );
     }
 
     return node;
@@ -514,9 +518,10 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.pathFill: FieldCodec(
       fallback: const rt.CanvasFill.none(),
-      readNode: (_, node) => (node as rt.PathNode).data.fill,
+      readNode: (_, node) => (node as rt.PathNode).data.appearance.foreground,
       canReadCanonicalNode: (_, node) => node is rt.PathNode,
-      readCanonicalNode: (_, node) => (node as rt.PathNode).data.fill,
+      readCanonicalNode: (_, node) =>
+          (node as rt.PathNode).data.appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
       },

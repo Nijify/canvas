@@ -38,10 +38,10 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 void main() {
   test('path picking uses the authored fill rule', () {
     final scene = _scene([
-      const Node.path(
+      Node.path(
         id: 'path',
         data: PathData(
-          points: [
+          source: PolylineSource(const [
             Vec2(-12, -12),
             Vec2(12, -12),
             Vec2(12, 12),
@@ -53,9 +53,8 @@ void main() {
             Vec2(5, 5),
             Vec2(-5, 5),
             Vec2(-5, -5),
-          ],
+          ]),
           fillRule: FillRule.evenOdd,
-          strokeWidth: 0,
         ),
       ),
     ]);
@@ -76,12 +75,14 @@ void main() {
 
   test('path picking uses the authored stroke width', () {
     final scene = _scene([
-      const Node.path(
+      Node.path(
         id: 'path',
         data: PathData(
-          points: [Vec2(-10, 0), Vec2(10, 0)],
-          strokeColor: 0xFF112233,
-          strokeWidth: 8,
+          source: PolylineSource(const [Vec2(-10, 0), Vec2(10, 0)]),
+          appearance: const CanvasAppearance(
+            foreground: CanvasFill.none(),
+            stroke: CanvasStroke(color: 0xFF112233, width: 8),
+          ),
         ),
       ),
     ]);
@@ -103,7 +104,7 @@ void main() {
     final scene = _scene([
       const Node.path(
         id: 'path',
-        data: PathData(source: RectSource(20, 20), strokeWidth: 0),
+        data: PathData(source: RectSource(20, 20)),
       ),
     ]);
     final computed = computeScene(scene, _services());

@@ -4,20 +4,18 @@ import 'package:canvas_core/src/path/path_source.dart';
 
 /// ---- PathSource ----
 /// Use Object? as raw type to avoid brittle generic casts on web.
-class PathSourceConverter extends JsonConverter<PathSource?, Object?> {
+class PathSourceConverter extends JsonConverter<PathSource, Object?> {
   const PathSourceConverter();
 
   @override
-  PathSource? fromJson(Object? json) {
-    if (json == null) return null;
-
+  PathSource fromJson(Object? json) {
     if (json is Map) {
       return PathSource.fromJson(json.cast<String, Object?>());
     }
 
-    throw FormatException('Unsupported PathSource: $json');
+    throw const FormatException('PathSource must be an object.');
   }
 
   @override
-  Object? toJson(PathSource? object) => object?.toJson();
+  Object? toJson(PathSource object) => object.toJson();
 }

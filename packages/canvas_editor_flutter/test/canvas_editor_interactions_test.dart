@@ -40,11 +40,11 @@ CanvasSceneDocument _fixtureScene() {
           customPivotPx: Vec2(40, 30),
         ),
         data: PathData(
-          points: <Vec2?>[],
           source: RectSource(80, 60),
-          fill: CanvasFill.solid(0xFF22C55E),
-          strokeColor: 0xFF111111,
-          strokeWidth: 2,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF22C55E),
+            stroke: CanvasStroke(color: 0xFF111111, width: 2),
+          ),
         ),
       ),
     ],
@@ -65,11 +65,11 @@ CanvasSceneDocument _twoShapeScene() {
           customPivotPx: Vec2(30, 20),
         ),
         data: PathData(
-          points: <Vec2?>[],
           source: RectSource(60, 40),
-          fill: CanvasFill.solid(0xFF3B82F6),
-          strokeColor: 0xFF111111,
-          strokeWidth: 2,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF3B82F6),
+            stroke: CanvasStroke(color: 0xFF111111, width: 2),
+          ),
         ),
       ),
     ],

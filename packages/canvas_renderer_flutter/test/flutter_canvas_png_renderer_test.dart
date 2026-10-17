@@ -135,8 +135,9 @@ CanvasSceneDocument _pathScene() {
         id: 'shape-1',
         data: PathData(
           source: RectSource(20, 10),
-          fill: CanvasFill.solid(0xFF22C55E),
-          strokeWidth: 0,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF22C55E),
+          ),
         ),
       ),
     ],
@@ -804,7 +805,9 @@ void main() {
                 xf: Transform2D(position: Vec2(20, 20)),
                 data: PathData(
                   source: RectSource(20, 20),
-                  fill: CanvasFill.solid(0xFF336699),
+                  appearance: CanvasAppearance(
+                    foreground: CanvasFill.solid(0xFF336699),
+                  ),
                 ),
               ),
             ],

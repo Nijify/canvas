@@ -218,7 +218,7 @@ bool _hitLeafAt(
 
       // Outline proximity remains interactive, with a minimum hit floor.
       final outlineRadius = math.max(
-        _strokeRadiusLocal(color: data.strokeColor, width: data.strokeWidth),
+        _strokeRadiusLocal(data.appearance.stroke),
         localHitSlop,
       );
       return pathHitsOutline(ir, local, radiusLocal: outlineRadius);
@@ -228,9 +228,8 @@ bool _hitLeafAt(
   };
 }
 
-double _strokeRadiusLocal({required Color32? color, required double width}) {
-  final hasStroke = color != null && color != 0 && width > 0;
-  return hasStroke ? width / 2.0 : 0.0;
+double _strokeRadiusLocal(CanvasStroke? stroke) {
+  return strokeContributesToPaint(stroke) ? stroke!.width / 2.0 : 0.0;
 }
 
 double _localHitSlopForLeaf(

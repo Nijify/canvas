@@ -163,16 +163,12 @@ class CanvasRenderer {
               _drawPathFill(
                 canvas,
                 _buildUiPath(path, fillRule: data.fillRule),
-                data.fill,
+                data.appearance.foreground,
               );
               _drawPathStroke(
                 canvas,
                 path,
-                color: data.strokeColor,
-                width: data.strokeWidth,
-                cap: data.strokeCap,
-                join: data.strokeJoin,
-                miterLimit: data.miterLimit,
+                data.appearance.stroke,
               );
             }
           case GroupNode():
@@ -226,23 +222,20 @@ class CanvasRenderer {
 
   void _drawPathStroke(
     ui.Canvas canvas,
-    PathIR path, {
-    required Color32 color,
-    required double width,
-    required StrokeCap cap,
-    required StrokeJoin join,
-    required double miterLimit,
-  }) {
-    if (color == 0 || !(width > 0)) return;
+    PathIR path,
+    CanvasStroke? stroke,
+  ) {
+    if (stroke == null || !strokeContributesToPaint(stroke)) return;
+    // Authored dash metadata is retained; dash painting is not yet supported.
     canvas.drawPath(
       _buildUiPath(path),
       ui.Paint()
         ..style = ui.PaintingStyle.stroke
-        ..color = ui.Color(color)
-        ..strokeWidth = width
-        ..strokeCap = _mapCap(cap)
-        ..strokeJoin = _mapJoin(join)
-        ..strokeMiterLimit = miterLimit,
+        ..color = ui.Color(stroke.color)
+        ..strokeWidth = stroke.width
+        ..strokeCap = _mapCap(stroke.cap)
+        ..strokeJoin = _mapJoin(stroke.join)
+        ..strokeMiterLimit = stroke.miterLimit,
     );
   }
 

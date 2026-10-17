@@ -172,8 +172,11 @@ final class CommandPathSource extends PathSource {
 }
 
 class PolylineSource extends PathSource {
-  final List<Vec2?> points; // same as today; null breaks
-  const PolylineSource(this.points);
+  /// Frozen source coordinates; null separates open contours.
+  final List<Vec2?> points;
+
+  PolylineSource(List<Vec2?> points)
+    : points = List<Vec2?>.unmodifiable(points);
 
   factory PolylineSource.fromJson(Map<String, Object?> m) =>
       PolylineSource(vec2ListNullableFromJson(m['points']));

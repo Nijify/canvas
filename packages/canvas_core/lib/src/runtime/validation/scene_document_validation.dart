@@ -8,6 +8,7 @@ import 'package:canvas_core/src/runtime/validation/linear_gradient_semantics.dar
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
+import 'package:canvas_core/src/runtime/model/canvas_stroke.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
 /// Stable machine-readable categories returned by scene validation.
@@ -25,6 +26,7 @@ enum CanvasSceneValidationCode {
   duplicateNodeId,
   blankUnderlayId,
   duplicateUnderlayId,
+  unsupportedAppearance,
   nameTooLong,
   invalidBehaviorType,
   invalidBehaviorVersion,
@@ -223,9 +225,52 @@ final class _SceneValidator {
     _validateAppearance(data.appearance, '$path/appearance');
   }
 
-  void _validateAppearance(CanvasAppearance appearance, String path) {
+  void _validateAppearance(
+    CanvasAppearance appearance,
+    String path, {
+    bool supportsStroke = false,
+    bool supportsUnderlays = true,
+  }) {
     _validateFill(appearance.foreground, '$path/foreground');
+
+    final stroke = appearance.stroke;
+    if (stroke != null) {
+      if (!supportsStroke) {
+        _add(
+          CanvasSceneValidationCode.unsupportedAppearance,
+          '$path/stroke',
+          'This node does not support stroke.',
+        );
+      }
+      _validateStroke(stroke, '$path/stroke');
+    }
+
+    if (!supportsUnderlays && appearance.underlays.isNotEmpty) {
+      _add(
+        CanvasSceneValidationCode.unsupportedAppearance,
+        '$path/underlays',
+        'This node does not support appearance underlays.',
+      );
+    }
     _validateUnderlays(appearance.underlays, '$path/underlays');
+  }
+
+  void _validateStroke(CanvasStroke stroke, String path) {
+    // Invisible configurations remain authored data and are still validated.
+    _validateColor(stroke.color, '$path/color');
+    _validateNonNegative(stroke.width, '$path/width');
+    if (_validateFinite(stroke.miterLimit, '$path/miterLimit') &&
+        stroke.miterLimit < 1) {
+      _add(
+        CanvasSceneValidationCode.valueOutOfRange,
+        '$path/miterLimit',
+        'Stroke miter limit must be at least 1.',
+      );
+    }
+
+    for (var index = 0; index < stroke.dash.length; index++) {
+      _validateNonNegative(stroke.dash[index], '$path/dash/$index');
+    }
   }
 
   void _validateUnderlays(List<CanvasSourceUnderlay> underlays, String path) {
@@ -292,26 +337,13 @@ final class _SceneValidator {
   }
 
   void _validatePathData(PathData data, String path) {
-    for (var index = 0; index < data.points.length; index++) {
-      final point = data.points[index];
-      if (point == null) continue;
-      _validateFinite(point.x, '$path/points/$index/x');
-      _validateFinite(point.y, '$path/points/$index/y');
-    }
-
-    final source = data.source;
-    if (source != null) {
-      _validatePathSource(source, '$path/source');
-    }
-
-    _validateFill(data.fill, '$path/fill');
-    _validateColor(data.strokeColor, '$path/strokeColor');
-    _validateNonNegative(data.strokeWidth, '$path/strokeWidth');
-    _validateNonNegative(data.miterLimit, '$path/miterLimit');
-
-    for (var index = 0; index < data.dash.length; index++) {
-      _validateNonNegative(data.dash[index], '$path/dash/$index');
-    }
+    _validatePathSource(data.source, '$path/source');
+    _validateAppearance(
+      data.appearance,
+      '$path/appearance',
+      supportsStroke: true,
+      supportsUnderlays: false,
+    );
   }
 
   void _validatePathSource(PathSource source, String path) {

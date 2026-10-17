@@ -219,11 +219,15 @@ void main() {
               customPivotPx: Vec2(double.infinity, 0),
             ),
             data: const PathData(
-              points: <Vec2?>[Vec2(double.nan, 0)],
               source: CircleSource(double.infinity),
-              strokeWidth: -1,
-              miterLimit: -1,
-              dash: <double>[double.infinity, -1],
+              appearance: CanvasAppearance(
+                stroke: CanvasStroke(
+                  color: 0,
+                  width: -1,
+                  miterLimit: -1,
+                  dash: <double>[double.infinity, -1],
+                ),
+              ),
             ),
           ),
         ],
@@ -238,12 +242,11 @@ void main() {
           'nonFiniteNumber|/children/0/xf/rotationRad|',
           'nonFiniteNumber|/children/0/xf/scale/y|',
           'nonFiniteNumber|/children/0/xf/customPivotPx/x|',
-          'nonFiniteNumber|/children/0/data/points/0/x|',
           'nonFiniteNumber|/children/0/data/source/r|',
-          'valueOutOfRange|/children/0/data/strokeWidth|',
-          'valueOutOfRange|/children/0/data/miterLimit|',
-          'nonFiniteNumber|/children/0/data/dash/0|',
-          'valueOutOfRange|/children/0/data/dash/1|',
+          'valueOutOfRange|/children/0/data/appearance/stroke/width|',
+          'valueOutOfRange|/children/0/data/appearance/stroke/miterLimit|',
+          'nonFiniteNumber|/children/0/data/appearance/stroke/dash/0|',
+          'valueOutOfRange|/children/0/data/appearance/stroke/dash/1|',
         ]),
       );
     });

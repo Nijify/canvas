@@ -38,10 +38,12 @@ export 'src/runtime/model/scene_document.dart';
 
 export 'src/runtime/model/canvas_appearance.dart'
     show CanvasAppearance, CanvasSourceUnderlay, ShadowEffect;
+export 'src/runtime/model/canvas_stroke.dart' show CanvasStroke;
 
 export 'src/algorithms/layout/appearance_bounds.dart'
     show
         shadowBlurExtentInSigmas,
+        strokeContributesToPaint,
         shadowContributesToPaint,
         sourceUnderlayContributesToPaint,
         estimateSourceUnderlayPaintBounds,
