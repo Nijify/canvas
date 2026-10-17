@@ -16,15 +16,13 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CanvasStroke {
 
- Color32 get color; double get width; StrokeCap get cap; StrokeJoin get join; double get miterLimit; List<double> get dash;
+
 /// Create a copy of CanvasStroke
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $CanvasStrokeCopyWith<CanvasStroke> get copyWith => _$CanvasStrokeCopyWithImpl<CanvasStroke>(this as CanvasStroke, _$identity);
 
-  /// Serializes this CanvasStroke to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -100,11 +98,10 @@ extension CanvasStrokePatterns on CanvasStroke {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CanvasStroke value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _CanvasStroke() when $default != null:
-return $default(_that);case _:
+case _:
   return orElse();
 
 }
@@ -122,11 +119,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CanvasStroke value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>(){
 final _that = this;
 switch (_that) {
-case _CanvasStroke():
-return $default(_that);case _:
+case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -143,11 +139,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CanvasStroke value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(){
 final _that = this;
 switch (_that) {
-case _CanvasStroke() when $default != null:
-return $default(_that);case _:
+case _:
   return null;
 
 }
@@ -164,10 +159,9 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Color32 color,  double width,  StrokeCap cap,  StrokeJoin join,  double miterLimit,  List<double> dash)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _CanvasStroke() when $default != null:
-return $default(_that.color,_that.width,_that.cap,_that.join,_that.miterLimit,_that.dash);case _:
+case _:
   return orElse();
 
 }
@@ -185,10 +179,9 @@ return $default(_that.color,_that.width,_that.cap,_that.join,_that.miterLimit,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Color32 color,  double width,  StrokeCap cap,  StrokeJoin join,  double miterLimit,  List<double> dash)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>() {final _that = this;
 switch (_that) {
-case _CanvasStroke():
-return $default(_that.color,_that.width,_that.cap,_that.join,_that.miterLimit,_that.dash);case _:
+case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,101 +198,13 @@ return $default(_that.color,_that.width,_that.cap,_that.join,_that.miterLimit,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Color32 color,  double width,  StrokeCap cap,  StrokeJoin join,  double miterLimit,  List<double> dash)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>() {final _that = this;
 switch (_that) {
-case _CanvasStroke() when $default != null:
-return $default(_that.color,_that.width,_that.cap,_that.join,_that.miterLimit,_that.dash);case _:
+case _:
   return null;
 
 }
 }
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _CanvasStroke implements CanvasStroke {
-  const _CanvasStroke({required this.color, this.width = 4.0, this.cap = StrokeCap.butt, this.join = StrokeJoin.miter, this.miterLimit = 4.0,  List<double> dash = const <double>[]}): _dash = dash;
-  factory _CanvasStroke.fromJson(Map<String, dynamic> json) => _$CanvasStrokeFromJson(json);
-
-@override final  Color32 color;
-@override@JsonKey() final  double width;
-@override@JsonKey() final  StrokeCap cap;
-@override@JsonKey() final  StrokeJoin join;
-@override@JsonKey() final  double miterLimit;
- final  List<double> _dash;
-@override@JsonKey() List<double> get dash {
-  if (_dash is EqualUnmodifiableListView) return _dash;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_dash);
-}
-
-
-/// Create a copy of CanvasStroke
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$CanvasStrokeCopyWith<_CanvasStroke> get copyWith => __$CanvasStrokeCopyWithImpl<_CanvasStroke>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$CanvasStrokeToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasStroke&&(identical(other.color, color) || other.color == color)&&(identical(other.width, width) || other.width == width)&&(identical(other.cap, cap) || other.cap == cap)&&(identical(other.join, join) || other.join == join)&&(identical(other.miterLimit, miterLimit) || other.miterLimit == miterLimit)&&const DeepCollectionEquality().equals(other.dash, _dash));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-    return Object.hash(runtimeType,color,width,cap,join,miterLimit,const DeepCollectionEquality().hash(_dash));
-}
-
-@override
-String toString() {
-    return 'CanvasStroke(color: $color, width: $width, cap: $cap, join: $join, miterLimit: $miterLimit, dash: $dash)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$CanvasStrokeCopyWith<$Res> implements $CanvasStrokeCopyWith<$Res> {
-  factory _$CanvasStrokeCopyWith(_CanvasStroke value, $Res Function(_CanvasStroke) _then) = __$CanvasStrokeCopyWithImpl;
-@override @useResult
-$Res call({
- Color32 color, double width, StrokeCap cap, StrokeJoin join, double miterLimit, List<double> dash
-});
-
-
-
-
-}
-/// @nodoc
-class __$CanvasStrokeCopyWithImpl<$Res>
-    implements _$CanvasStrokeCopyWith<$Res> {
-  __$CanvasStrokeCopyWithImpl(this._self, this._then);
-
-  final _CanvasStroke _self;
-  final $Res Function(_CanvasStroke) _then;
-
-/// Create a copy of CanvasStroke
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? color = null,Object? width = null,Object? cap = null,Object? join = null,Object? miterLimit = null,Object? dash = null,}) {
-  return _then(_CanvasStroke(
-color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
-as Color32,width: null == width ? _self.width : width // ignore: cast_nullable_to_non_nullable
-as double,cap: null == cap ? _self.cap : cap // ignore: cast_nullable_to_non_nullable
-as StrokeCap,join: null == join ? _self.join : join // ignore: cast_nullable_to_non_nullable
-as StrokeJoin,miterLimit: null == miterLimit ? _self.miterLimit : miterLimit // ignore: cast_nullable_to_non_nullable
-as double,dash: null == dash ? _self._dash : dash // ignore: cast_nullable_to_non_nullable
-as List<double>,
-  ));
-}
-
 
 }
 

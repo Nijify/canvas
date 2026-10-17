@@ -6,9 +6,7 @@ part of 'canvas_stroke.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_CanvasStroke _$CanvasStrokeFromJson(
-  Map<String, dynamic> json,
-) => _CanvasStroke(
+CanvasStroke _$CanvasStrokeFromJson(Map<String, dynamic> json) => CanvasStroke(
   color: (json['color'] as num).toInt(),
   width: (json['width'] as num?)?.toDouble() ?? 4.0,
   cap: $enumDecodeNullable(_$StrokeCapEnumMap, json['cap']) ?? StrokeCap.butt,
@@ -23,7 +21,7 @@ _CanvasStroke _$CanvasStrokeFromJson(
       const <double>[],
 );
 
-Map<String, dynamic> _$CanvasStrokeToJson(_CanvasStroke instance) =>
+Map<String, dynamic> _$CanvasStrokeToJson(CanvasStroke instance) =>
     <String, dynamic>{
       'color': instance.color,
       'width': instance.width,
