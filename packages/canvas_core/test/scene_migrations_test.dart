@@ -90,7 +90,7 @@ void main() {
       });
     }
 
-    test('upgrades literal canvas_core 0.10.x JSON through v1 to v2', () {
+    test('upgrades literal canvas_core 0.10.x JSON through v1/v2 to v3', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);
 
@@ -103,9 +103,9 @@ void main() {
       expect(migrated['sceneFormatVersion'], currentCanvasSceneFormatVersion);
       final migratedForeground = _firstNestedTextForeground(migrated);
       final gradient = migratedForeground['grad'] as Map<String, Object?>;
-      final start = gradient['start'] as Map<String, double>;
-      final end = gradient['end'] as Map<String, double>;
-      final stops = gradient['stops'] as List<Map<String, Object?>>;
+      final start = gradient['start'] as Map<String, Object?>;
+      final end = gradient['end'] as Map<String, Object?>;
+      final stops = gradient['stops'] as List<Object?>;
 
       expect(migratedForeground['type'], 'gradient');
       expect(start['x'], closeTo(-223.67532368147135, 1e-12));
@@ -121,9 +121,7 @@ void main() {
       expect(legacy, equals(legacyBefore));
 
       final scene = decodeCanvasScene(migrated);
-      final validationIssues = validateCanvasSceneDocument(scene);
-
-      expect(validationIssues, isEmpty);
+      requireCanvasSceneIntegrity(scene);
     });
 
     test('uses historic default artboard dimensions while migrating v1', () {
@@ -138,8 +136,8 @@ void main() {
       final migrated = upgradeCanvasScene(Map<String, Object?>.from(v1));
       final converted =
           _firstNestedTextForeground(migrated)['grad'] as Map<String, Object?>;
-      final start = converted['start'] as Map<String, double>;
-      final end = converted['end'] as Map<String, double>;
+      final start = converted['start'] as Map<String, Object?>;
+      final end = converted['end'] as Map<String, Object?>;
 
       expect(start['x'], -370.0);
       expect(start['y'], 180.0);
@@ -299,7 +297,7 @@ void main() {
       );
     });
 
-    test('upgrades an already-versioned v1 scene to v2', () {
+    test('upgrades an already-versioned v1 scene to v3', () {
       final current = _loadFixture('v1_nested.json');
 
       final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
@@ -308,7 +306,7 @@ void main() {
       expect(upgraded, isNot(equals(current)));
     });
 
-    test('accepts an already-current v2 scene without migration', () {
+    test('accepts an already-current v3 scene without migration', () {
       final v1 = _loadFixture('v1_nested.json');
       final current = upgradeCanvasScene(Map<String, Object?>.from(v1));
 

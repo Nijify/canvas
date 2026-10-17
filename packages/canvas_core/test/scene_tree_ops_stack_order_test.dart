@@ -78,7 +78,7 @@ void main() {
 
       expect(res.primaryId, 'b_copy_1');
       expect(_rootIds(res.doc), ['a', 'b', 'b_copy_1', 'c']);
-      expect(validateCanvasSceneDocument(res.doc), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(res.doc), returnsNormally);
     });
 
     test('addNode defaults to frontmost position', () {
@@ -121,7 +121,7 @@ void main() {
 
       expect(_rootIds(updated), ['g']);
       expect(_groupChildIds(updated, 'g'), ['x', 'a', 'z']);
-      expect(validateCanvasSceneDocument(updated), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(updated), returnsNormally);
     });
   });
 }

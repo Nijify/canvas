@@ -79,11 +79,10 @@ alpha, and visibility. Node/group transforms apply to the whole result.
 Intrinsic outlines and multiple source paints are outside this icon contract.
 
 `PathIR` is immutable geometry only; `localBounds()` estimates its geometry
-from endpoints and curve controls. Ordinary path appearance belongs to
-`PathData`. For nonempty paths with a nonzero `strokeColor` and positive
-`strokeWidth`, layout and paint bounds expand the geometry bound by half the
-stroke width on each side. This is an estimate, not a guaranteed enclosure of
-all stroke pixels.
+from endpoints and curve controls. `PathData.source` owns geometry and
+`PathData.appearance` owns fill and stroke. Layout uses geometry alone; visible
+paint contributes separate bounds that conservatively include stroke caps and
+joins. Compilation is cached by source identity independently of appearance.
 
 The [strict SVG exporter](../../canvas_svg_export/README.md) supports its
 documented ordinary-path profile and explicitly rejects icon nodes.
@@ -112,14 +111,15 @@ external JSON -> decodeCanvasScene -> CanvasSceneDocument
 CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
 
-`decodeCanvasScene()` reads scene format v2. Use `upgradeCanvasScene()` before
-decoding supported older documents: v1 or explicitly identified canvas_core
+Persistence reads and writes scene format v3. Use `upgradeCanvasScene()` before
+decoding supported older documents: v2, v1, or explicitly identified canvas_core
 0.10.x unversioned scenes.
 
 Raw `kind: "svg"` path sources are unsupported. Hosts must normalize SVG paths
 into supported commands before loading; core has no SVG parser.
 
-Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
+Generated model serializers remain implementation-level primitives. Persistence
+checks raw structure before decoding and runtime integrity on both boundaries.
 
 ## Editor boundary
 

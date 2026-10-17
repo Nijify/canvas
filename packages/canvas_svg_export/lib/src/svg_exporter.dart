@@ -12,16 +12,18 @@ SvgExportResult exportPreparedSvg({
   required CanvasSceneDocument scene,
   required ComputedScene computed,
 }) {
-  final issues = <SvgExportIssue>[
-    for (final issue in validateCanvasSceneDocument(scene))
+  try {
+    requireCanvasSceneIntegrity(scene);
+  } on ArgumentError catch (error) {
+    return SvgExportResult.failure([
       SvgExportIssue(
         code: SvgExportIssueCode.invalidScene,
-        path: issue.path,
-        message: issue.message,
+        message: error.message.toString(),
       ),
-  ];
-  if (issues.isNotEmpty) return SvgExportResult.failure(issues);
+    ]);
+  }
 
+  final issues = <SvgExportIssue>[];
   final paths = <PathNode>[];
 
   void visit(Node node) {
@@ -34,9 +36,10 @@ SvgExportResult exportPreparedSvg({
         }
       case PathNode(:final data):
         paths.add(node);
-        if (data.dash.isNotEmpty &&
-            data.strokeColor != 0 &&
-            data.strokeWidth > 0) {
+        final stroke = data.appearance.stroke;
+        if (stroke != null &&
+            stroke.dash.isNotEmpty &&
+            strokeContributesToPaint(stroke)) {
           issues.add(
             SvgExportIssue(
               code: SvgExportIssueCode.unsupportedDashedStroke,
@@ -136,7 +139,7 @@ SvgExportResult exportPreparedSvg({
   }
 
   for (final path in paths) {
-    final fill = path.data.fill;
+    final fill = path.data.appearance.foreground;
     if (fill is CanvasFillGradient) {
       addGradient(fill.grad, (id) => pathGradientIds[path.id] = id);
     }
@@ -186,14 +189,14 @@ SvgExportResult exportPreparedSvg({
       storage[13],
     ].map(_number).join(' ');
     final data = path.data;
-    final authoredFill = data.fill;
+    final authoredFill = data.appearance.foreground;
     final fill = switch (authoredFill) {
       CanvasFillNone() => 'none',
       CanvasFillSolid(:final color) => _rgb(color),
       CanvasFillGradient() => 'url(#${pathGradientIds[path.id]!})',
     };
-    final stroke = data.strokeColor != 0 && data.strokeWidth > 0
-        ? data.strokeColor
+    final stroke = strokeContributesToPaint(data.appearance.stroke)
+        ? data.appearance.stroke
         : null;
     out.write(
       '  <path d="${_pathData(ir)}" transform="matrix($matrix)" '
@@ -203,14 +206,14 @@ SvgExportResult exportPreparedSvg({
     if (authoredFill case CanvasFillSolid(:final color)) {
       out.write(' fill-opacity="${_opacity(color)}"');
     }
-    out.write(' stroke="${stroke == null ? 'none' : _rgb(stroke)}"');
+    out.write(' stroke="${stroke == null ? 'none' : _rgb(stroke.color)}"');
     if (stroke != null) {
       out.write(
-        ' stroke-opacity="${_opacity(stroke)}" '
-        'stroke-width="${_number(data.strokeWidth)}" '
-        'stroke-linecap="${data.strokeCap.name}" '
-        'stroke-linejoin="${data.strokeJoin.name}" '
-        'stroke-miterlimit="${_number(data.miterLimit)}"',
+        ' stroke-opacity="${_opacity(stroke.color)}" '
+        'stroke-width="${_number(stroke.width)}" '
+        'stroke-linecap="${stroke.cap.name}" '
+        'stroke-linejoin="${stroke.join.name}" '
+        'stroke-miterlimit="${_number(stroke.miterLimit)}"',
       );
     }
     out.writeln('/>');

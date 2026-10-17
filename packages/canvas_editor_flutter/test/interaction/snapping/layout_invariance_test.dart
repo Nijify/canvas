@@ -52,6 +52,57 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 );
 
 void main() {
+  test('stroke changes preserve line selection bounds and snap candidates', () {
+    final source = PolylineSource(const [Vec2(-10, 0), Vec2(10, 0)]);
+    CanvasSceneDocument build(CanvasStroke? stroke) => _scene([
+      Node.group(
+        id: 'group',
+        xf: const Transform2D(rotationRad: 0.4, scale: Vec2(1.5, 0.7)),
+        children: [
+          Node.path(
+            id: 'path',
+            xf: const Transform2D(rotationRad: -0.3),
+            data: PathData(
+              source: source,
+              appearance: CanvasAppearance(
+                foreground: const CanvasFill.none(),
+                stroke: stroke,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ]);
+    final beforeScene = build(null);
+    final afterScene = build(
+      CanvasStroke(color: 0xFF112233, width: 40, cap: StrokeCap.square),
+    );
+    final before = computeScene(beforeScene, _services());
+    final after = computeScene(afterScene, _services());
+    final beforeGeometry = EditorGeometryIndex.fromComputed(before);
+    final afterGeometry = EditorGeometryIndex.fromComputed(after);
+    expect(after.layoutBoundsLocalById['path'], const Rect2D(-10, 0, 10, 0));
+    expect(
+      afterGeometry.layoutBoundsWorldById,
+      beforeGeometry.layoutBoundsWorldById,
+    );
+    final beforeSnaps = sceneObjectKeylines(
+      beforeScene,
+      before,
+      geometry: beforeGeometry,
+    );
+    final afterSnaps = sceneObjectKeylines(
+      afterScene,
+      after,
+      geometry: afterGeometry,
+    );
+    expect(beforeSnaps, isNotEmpty);
+    expect(
+      afterSnaps.map((c) => (c.kind, c.axis, c.pos)),
+      orderedEquals(beforeSnaps.map((c) => (c.kind, c.axis, c.pos))),
+    );
+  });
+
   for (final origin in OriginKind.values) {
     test(
       'source-underlay expansion preserves nested snap geometry: $origin',

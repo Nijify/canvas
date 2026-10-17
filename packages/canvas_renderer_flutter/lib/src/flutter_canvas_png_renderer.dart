@@ -62,7 +62,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
     required CanvasSceneDocument scene,
     required CanvasPngSpec spec,
   }) async {
-    _validateScene(scene, stage: 'canonical');
+    requireCanvasSceneIntegrity(scene);
 
     final canonicalIconRefs = _collectIconRefs(scene);
 
@@ -110,7 +110,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // once and failures propagate to the caller.
       final prepared = _scenePreparer?.call(scene, services) ?? scene;
 
-      _validateScene(prepared, stage: 'prepared');
+      if (_scenePreparer != null) requireCanvasSceneIntegrity(prepared);
 
       final preparedIconRefs = _collectIconRefs(prepared);
 
@@ -196,20 +196,6 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       textPipeline.dispose();
     }
   }
-}
-
-void _validateScene(CanvasSceneDocument scene, {required String stage}) {
-  final issues = validateCanvasSceneDocument(scene);
-
-  if (issues.isEmpty) {
-    return;
-  }
-
-  final details = issues
-      .map((issue) => '${issue.code.name} at ${issue.path}: ${issue.message}')
-      .join('\n');
-
-  throw StateError('Invalid $stage canvas scene:\n$details');
 }
 
 Set<String> _collectIconRefs(CanvasSceneDocument scene) {

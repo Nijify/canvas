@@ -338,9 +338,10 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
       xf: Transform2D(position: Vec2(370, 210)),
       data: PathData(
         source: RoundRectSource(600, 280, 32, 32),
-        fill: CanvasFill.solid(0xFFFFFFFF),
-        strokeColor: 0xFFE0E7FF,
-        strokeWidth: 4,
+        appearance: CanvasAppearance(
+          foreground: CanvasFill.solid(0xFFFFFFFF),
+          stroke: CanvasStroke(color: 0xFFE0E7FF, width: 4),
+        ),
       ),
     ),
     Node.icon(

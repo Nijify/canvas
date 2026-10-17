@@ -158,22 +158,11 @@ class CanvasRenderer {
               _drawImage(canvas, id, placement.src, placement.dst);
             }
           case PathNode(data: final data):
-            final path = computed.pathIRById[id];
-            if (path != null) {
-              _drawPathFill(
-                canvas,
-                _buildUiPath(path, fillRule: data.fillRule),
-                data.fill,
-              );
-              _drawPathStroke(
-                canvas,
-                path,
-                color: data.strokeColor,
-                width: data.strokeWidth,
-                cap: data.strokeCap,
-                join: data.strokeJoin,
-                miterLimit: data.miterLimit,
-              );
+            final ir = computed.pathIRById[id];
+            if (ir != null) {
+              final path = _buildUiPath(ir, fillRule: data.fillRule);
+              _drawPathFill(canvas, path, data.appearance.foreground);
+              _drawPathStroke(canvas, path, data.appearance.stroke);
             }
           case GroupNode():
             break;
@@ -203,11 +192,11 @@ class CanvasRenderer {
   }
 
   void _drawPathFill(ui.Canvas canvas, ui.Path path, CanvasFill fill) {
+    if (!fillContributesToPaint(fill)) return;
     switch (fill) {
       case CanvasFillNone():
         break;
       case CanvasFillSolid(:final color):
-        // Paint and fill participation come from the caller.
         canvas.drawPath(
           path,
           ui.Paint()
@@ -224,25 +213,18 @@ class CanvasRenderer {
     }
   }
 
-  void _drawPathStroke(
-    ui.Canvas canvas,
-    PathIR path, {
-    required Color32 color,
-    required double width,
-    required StrokeCap cap,
-    required StrokeJoin join,
-    required double miterLimit,
-  }) {
-    if (color == 0 || !(width > 0)) return;
+  void _drawPathStroke(ui.Canvas canvas, ui.Path path, CanvasStroke? stroke) {
+    if (stroke == null || !strokeContributesToPaint(stroke)) return;
+    // Authored dash metadata is retained; dash painting is not yet supported.
     canvas.drawPath(
-      _buildUiPath(path),
+      path,
       ui.Paint()
         ..style = ui.PaintingStyle.stroke
-        ..color = ui.Color(color)
-        ..strokeWidth = width
-        ..strokeCap = _mapCap(cap)
-        ..strokeJoin = _mapJoin(join)
-        ..strokeMiterLimit = miterLimit,
+        ..color = ui.Color(stroke.color)
+        ..strokeWidth = stroke.width
+        ..strokeCap = _mapCap(stroke.cap)
+        ..strokeJoin = _mapJoin(stroke.join)
+        ..strokeMiterLimit = stroke.miterLimit,
     );
   }
 
@@ -359,6 +341,7 @@ class CanvasRenderer {
       },
     );
 
+    if (!fillContributesToPaint(appearance.foreground)) return;
     switch (appearance.foreground) {
       case CanvasFillNone():
         break;

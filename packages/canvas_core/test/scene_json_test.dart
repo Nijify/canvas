@@ -77,18 +77,8 @@ void main() {
             : root;
         final data = node['data'] as Map<String, dynamic>;
         data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
-        final location = nested ? 'children[0].children[0]' : 'children[0]';
 
-        expect(
-          () => decodeCanvasScene(json),
-          throwsA(
-            isA<FormatException>().having(
-              (error) => error.message,
-              'message',
-              contains('$location.data.source.kind "svg" is unsupported'),
-            ),
-          ),
-        );
+        expect(() => decodeCanvasScene(json), throwsFormatException);
       });
     }
 
@@ -154,7 +144,7 @@ void main() {
       expect(decodeCanvasScene(json), _imageScene());
     });
 
-    test('rejects sourcePath in scene format v2 image data', () {
+    test('rejects sourcePath in scene format v3 image data', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
@@ -174,7 +164,7 @@ void main() {
       );
     });
 
-    test('rejects legacy or invalid gradient geometry in scene format v2', () {
+    test('rejects legacy or invalid gradient geometry in scene format v3', () {
       final legacyGradient = encodeCanvasScene(_scene());
       final legacyFill =
           legacyGradient['backgroundFill'] as Map<String, dynamic>;
@@ -211,104 +201,84 @@ void main() {
         children: <Node>[
           Node.path(
             id: 'gradient-path',
-            data: PathData(fill: CanvasFill.gradient(valid)),
+            data: PathData(
+              source: const RectSource(20, 10),
+              appearance: CanvasAppearance(
+                foreground: CanvasFill.gradient(valid),
+              ),
+            ),
           ),
         ],
       );
-      expect(validateCanvasSceneDocument(validScene), isEmpty);
-      expect(decodeCanvasScene(encodeCanvasScene(validScene)), validScene);
+      expect(() => requireCanvasSceneIntegrity(validScene), returnsNormally);
+      final validJson = encodeCanvasScene(validScene);
+      expect(encodeCanvasScene(decodeCanvasScene(validJson)), validJson);
 
-      final invalid = <(LinearGradientSpec, CanvasSceneValidationCode)>[
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(0, 0),
-            stops: valid.stops,
-          ),
-          CanvasSceneValidationCode.degenerateGradient,
+      final invalid = <LinearGradientSpec>[
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(0, 0),
+          stops: valid.stops,
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: 0xFF000000),
-            ],
-          ),
-          CanvasSceneValidationCode.invalidGradientStopCount,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: 0xFF000000),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(double.nan, 0),
-            end: const Vec2(1, 0),
-            stops: valid.stops,
-          ),
-          CanvasSceneValidationCode.nonFiniteNumber,
+        LinearGradientSpec(
+          start: const Vec2(double.nan, 0),
+          end: const Vec2(1, 0),
+          stops: valid.stops,
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: 0xFF000000),
-              GradientStop(offset: double.infinity, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.nonFiniteNumber,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: 0xFF000000),
+            GradientStop(offset: double.infinity, color: 0xFFFFFFFF),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: -0.1, color: 0xFF000000),
-              GradientStop(offset: 1, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.valueOutOfRange,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: -0.1, color: 0xFF000000),
+            GradientStop(offset: 1, color: 0xFFFFFFFF),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0.8, color: 0xFF000000),
-              GradientStop(offset: 0.2, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.gradientStopsOutOfOrder,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0.8, color: 0xFF000000),
+            GradientStop(offset: 0.2, color: 0xFFFFFFFF),
+          ],
         ),
-        (
-          LinearGradientSpec(
-            start: const Vec2(0, 0),
-            end: const Vec2(1, 0),
-            stops: const <GradientStop>[
-              GradientStop(offset: 0, color: -1),
-              GradientStop(offset: 1, color: 0xFFFFFFFF),
-            ],
-          ),
-          CanvasSceneValidationCode.invalidColor,
+        LinearGradientSpec(
+          start: const Vec2(0, 0),
+          end: const Vec2(1, 0),
+          stops: const <GradientStop>[
+            GradientStop(offset: 0, color: -1),
+            GradientStop(offset: 1, color: 0xFFFFFFFF),
+          ],
         ),
       ];
 
-      for (final (gradient, expectedCode) in invalid) {
+      for (final gradient in invalid) {
         final scene = _scene().copyWith(
           backgroundFill: CanvasFill.gradient(gradient),
         );
-        expect(
-          validateCanvasSceneDocument(scene).map((issue) => issue.code),
-          contains(expectedCode),
-          reason: expectedCode.name,
-        );
-        expect(
-          () => decodeCanvasScene(encodeCanvasScene(scene)),
-          throwsA(isA<FormatException>()),
-          reason: expectedCode.name,
-        );
+        expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+        expect(() => encodeCanvasScene(scene), throwsArgumentError);
+        final raw = encodeCanvasScene(_scene());
+        raw['backgroundFill'] = CanvasFill.gradient(gradient).toJson();
+        expect(() => decodeCanvasScene(raw), throwsArgumentError);
       }
     });
 
-    test('v2 gradient decoding keeps strict shape and numeric types', () {
+    test('v3 gradient decoding keeps strict shape and numeric types', () {
       final mutations = <void Function(Map<String, dynamic>)>[
         (gradient) => gradient['unexpected'] = true,
         (gradient) => gradient.remove('start'),
@@ -453,16 +423,12 @@ void main() {
       );
     });
 
-    test('keeps decoding separate from semantic validation', () {
-      final json = encodeCanvasScene(_scene(backgroundOpacity: 2));
-
-      final scene = decodeCanvasScene(json);
-      final issues = validateCanvasSceneDocument(scene);
-
-      expect(scene.backgroundOpacity, 2);
+    test('both persistence boundaries enforce runtime semantics', () {
+      final json = encodeCanvasScene(_scene())..['backgroundOpacity'] = 2;
+      expect(() => decodeCanvasScene(json), throwsArgumentError);
       expect(
-        issues.map((issue) => issue.code),
-        contains(CanvasSceneValidationCode.valueOutOfRange),
+        () => encodeCanvasScene(_scene(backgroundOpacity: 2)),
+        throwsArgumentError,
       );
     });
   });

@@ -1,3 +1,15 @@
+# 0.19.0
+
+- **Breaking:** require `canvas_core 0.16.x` and
+  `canvas_renderer_flutter 0.15.x`.
+- Add path stroke controls and nullable `CanvasFields.pathStroke`; export
+  `StrokeEditor` from `extensions.dart`. Preserve inactive settings and dash
+  values across edits and undo/redo; opacity drags form one undo step.
+- **Breaking:** `FieldCodec` readers, fallbacks, and writer values accept
+  `Object?`; explicitly typed custom writers must accept nullable values.
+- Keep picking and snapping independent of paint visibility, with zoom-aware
+  outline tolerance under nested rotations and nonuniform scales.
+
 # 0.18.0
 
 - **Breaking:** require `canvas_core 0.15.x` and

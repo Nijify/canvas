@@ -31,9 +31,10 @@ CanvasSceneDocument _scene(CommandPathSource source) => CanvasSceneDocument(
       id: 'commands',
       data: PathData(
         source: source,
-        fill: const CanvasFill.solid(0xff123456),
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.solid(0xff123456),
+        ),
         fillRule: FillRule.evenOdd,
-        strokeWidth: 0,
       ),
     ),
   ],
@@ -81,10 +82,11 @@ void main() {
       final painted = compilePath(
         PathData(
           source: source,
-          fill: const CanvasFill.solid(0xffabcdef),
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.solid(0xffabcdef),
+            stroke: CanvasStroke(color: 0xff123456, width: 8),
+          ),
           fillRule: FillRule.evenOdd,
-          strokeColor: 0xff123456,
-          strokeWidth: 8,
         ),
       );
 
@@ -111,10 +113,10 @@ void main() {
       );
       final data = (decoded.children.single as PathNode).data;
       expect(data.source, isA<CommandPathSource>());
-      expect(data.source!.toJson(), source.toJson());
+      expect(data.source.toJson(), source.toJson());
       expect(data.fillRule, FillRule.evenOdd);
       expect(encodeCanvasScene(decoded), sceneJson);
-      expect(validateCanvasSceneDocument(decoded), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(decoded), returnsNormally);
     });
 
     test('accepts empty, move-only, and open contours', () {

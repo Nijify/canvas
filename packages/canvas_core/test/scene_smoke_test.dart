@@ -45,7 +45,9 @@ void main() {
       id: 'shape1',
       data: PathData(
         source: const RectSource(10, 2),
-        fill: const CanvasFillSolid(0xFF111111),
+        appearance: const CanvasAppearance(
+          foreground: CanvasFill.solid(0xFF111111),
+        ),
       ),
       role: 'shape',
     );

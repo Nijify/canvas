@@ -65,20 +65,24 @@ void main() {
     expect(result.issues.single.code, SvgExportIssueCode.unsupportedIcon);
   });
 
-  test('ordinary path appearance is supplied by PathData', () {
+  test('ordinary path paint is supplied by its shared appearance', () {
     final scene = _scene(
-      children: const [
+      children: [
         Node.path(
           id: 'p',
           data: PathData(
-            source: RectSource(20, 10),
-            fill: CanvasFill.solid(0x80445566),
+            source: const RectSource(20, 10),
             fillRule: FillRule.evenOdd,
-            strokeColor: 0x80112233,
-            strokeWidth: 4,
-            strokeCap: StrokeCap.round,
-            strokeJoin: StrokeJoin.bevel,
-            miterLimit: 7,
+            appearance: CanvasAppearance(
+              foreground: const CanvasFill.solid(0x80445566),
+              stroke: CanvasStroke(
+                color: 0x80112233,
+                width: 4,
+                cap: StrokeCap.round,
+                join: StrokeJoin.bevel,
+                miterLimit: 7,
+              ),
+            ),
           ),
         ),
       ],
@@ -108,19 +112,23 @@ void main() {
     final scene = _scene(
       background: const CanvasFill.solid(0x80445566),
       opacity: 0.5,
-      children: const [
+      children: [
         Node.path(
           id: 'p',
           name: 'unsafe<&',
           role: 'logo:main',
           data: PathData(
-            source: RectSource(20, 10),
-            fill: CanvasFill.solid(0x80ff0000),
+            source: const RectSource(20, 10),
             fillRule: FillRule.evenOdd,
-            strokeColor: 0xff00ff00,
-            strokeWidth: 2,
-            strokeCap: StrokeCap.round,
-            strokeJoin: StrokeJoin.bevel,
+            appearance: CanvasAppearance(
+              foreground: const CanvasFill.solid(0x80ff0000),
+              stroke: CanvasStroke(
+                color: 0xff00ff00,
+                width: 2,
+                cap: StrokeCap.round,
+                join: StrokeJoin.bevel,
+              ),
+            ),
           ),
         ),
       ],
@@ -178,7 +186,9 @@ void main() {
               ),
               data: PathData(
                 source: RectSource(10, 10),
-                fill: CanvasFill.solid(0xffff0000),
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.solid(0xffff0000),
+                ),
               ),
             ),
             Node.path(
@@ -190,7 +200,9 @@ void main() {
               ),
               data: PathData(
                 source: RectSource(20, 10),
-                fill: CanvasFill.solid(0xff0000ff),
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.solid(0xff0000ff),
+                ),
               ),
             ),
           ],
@@ -225,7 +237,9 @@ void main() {
               PathCmd.moveTo(const Vec2(20, 30)),
               PathCmd.lineTo(const Vec2(40, 50)),
             ]),
-            fill: const CanvasFill.solid(0xff123456),
+            appearance: const CanvasAppearance(
+              foreground: CanvasFill.solid(0xff123456),
+            ),
           ),
         ),
       ],
@@ -268,7 +282,9 @@ void main() {
           xf: const Transform2D(position: Vec2(20, 10), rotationRad: 0.5),
           data: PathData(
             source: const RectSource(10, 10),
-            fill: CanvasFill.gradient(pathGradient),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.gradient(pathGradient),
+            ),
           ),
         ),
       ],
@@ -328,14 +344,16 @@ void main() {
           id: 'gradient',
           data: PathData(
             source: RectSource(10, 10),
-            fill: CanvasFill.gradient(
-              LinearGradientSpec(
-                start: Vec2(-5, 0),
-                end: Vec2(5, 0),
-                stops: <GradientStop>[
-                  GradientStop(offset: 0, color: 0xff000000),
-                  GradientStop(offset: 1, color: 0xffffffff),
-                ],
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.gradient(
+                LinearGradientSpec(
+                  start: Vec2(-5, 0),
+                  end: Vec2(5, 0),
+                  stops: <GradientStop>[
+                    GradientStop(offset: 0, color: 0xff000000),
+                    GradientStop(offset: 1, color: 0xffffffff),
+                  ],
+                ),
               ),
             ),
           ),
@@ -344,8 +362,10 @@ void main() {
           id: 'dashed',
           data: PathData(
             source: RectSource(20, 10),
-            strokeColor: 0xff000000,
-            dash: [5, 3],
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.none(),
+              stroke: CanvasStroke(color: 0xff000000, dash: [5, 3]),
+            ),
           ),
         ),
       ],
@@ -416,7 +436,9 @@ void main() {
           id: 'p',
           data: PathData(
             source: RectSource(10, 10),
-            fill: CanvasFill.solid(0xff000000),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xff000000),
+            ),
           ),
         ),
       ],
@@ -448,6 +470,24 @@ void main() {
     final result = exportPreparedSvg(scene: invalid, computed: _compute(valid));
     expect(result.svg, isNull);
     expect(result.issues.single.code, SvgExportIssueCode.invalidScene);
-    expect(result.issues.single.path, '/artboardSize/w');
+    expect(result.issues.single.message, isNotEmpty);
   });
+
+  test(
+    'rejects cyclic scene integrity before traversing export capabilities',
+    () {
+      final valid = _scene();
+      final children = <Node>[];
+      final group = Node.group(id: 'group', children: children);
+      children.add(group);
+      final invalid = valid.copyWith(children: [group]);
+      final result = exportPreparedSvg(
+        scene: invalid,
+        computed: _compute(valid),
+      );
+      expect(result.svg, isNull);
+      expect(result.issues.single.code, SvgExportIssueCode.invalidScene);
+      expect(result.issues.single.message, isNotEmpty);
+    },
+  );
 }

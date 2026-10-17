@@ -2,8 +2,10 @@
 
 import 'package:canvas_core/src/serialization/formats/scene_v1.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
+import 'package:canvas_core/src/serialization/formats/scene_v3.dart';
 import 'package:canvas_core/src/serialization/migrations/legacy_unversioned_to_v1.dart';
 import 'package:canvas_core/src/serialization/migrations/v1_to_v2.dart';
+import 'package:canvas_core/src/serialization/migrations/v2_to_v3.dart';
 import 'package:canvas_core/src/serialization/serializers.dart';
 
 /// Brings persisted scene JSON to the current Canvas scene format.
@@ -27,8 +29,6 @@ Map<String, Object?> upgradeCanvasScene(
   bool legacyUnversioned = false,
   bool? Function(String iconRef)? resolveLegacyIconWasGlyph,
 }) {
-  final Map<String, Object?> result;
-
   if (!json.containsKey('sceneFormatVersion')) {
     if (!legacyUnversioned) {
       throw const FormatException(
@@ -37,10 +37,12 @@ Map<String, Object?> upgradeCanvasScene(
       );
     }
 
-    result = convertCanvasSceneV1ToV2(
-      convertLegacyUnversionedCanvasSceneToV1(
-        json,
-        resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
+    return convertCanvasSceneV2ToV3(
+      convertCanvasSceneV1ToV2(
+        convertLegacyUnversionedCanvasSceneToV1(
+          json,
+          resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
+        ),
       ),
     );
   } else {
@@ -51,22 +53,23 @@ Map<String, Object?> upgradeCanvasScene(
       );
     }
 
-    switch (json['sceneFormatVersion']) {
+    final version = json['sceneFormatVersion'];
+    if (version is! int) {
+      throw const FormatException('sceneFormatVersion must be an integer.');
+    }
+    switch (version) {
       case canvasSceneFormatV1:
-        result = convertCanvasSceneV1ToV2(json);
+        return convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(json));
       case canvasSceneFormatV2:
-        result = Map<String, Object?>.from(json);
+        return convertCanvasSceneV2ToV3(json);
+      case canvasSceneFormatV3:
+        decodeCanvasScene(json);
+        return Map<String, Object?>.from(json);
       default:
         throw FormatException(
           'Unsupported Canvas sceneFormatVersion: '
-          '${json['sceneFormatVersion']}',
+          '$version',
         );
     }
   }
-
-  // The canonical persisted-scene read boundary performs current wire-format
-  // validation and then typed decoding.
-  decodeCanvasScene(result);
-
-  return result;
 }

@@ -1,0 +1,175 @@
+{
+  "sceneFormatVersion": 2,
+  "artboardSize": {
+    "w": 320,
+    "h": 200
+  },
+  "backgroundFill": {
+    "type": "none"
+  },
+  "backgroundOpacity": 1,
+  "assets": {
+    "asset": {
+      "sourceRef": "media:test",
+      "intrinsicSize": {
+        "w": 40,
+        "h": 20
+      }
+    }
+  },
+  "children": [
+    {
+      "runtimeType": "group",
+      "id": "group",
+      "xf": {
+        "position": {
+          "x": 10,
+          "y": 20
+        },
+        "rotationRad": 0.5,
+        "scale": {
+          "x": 1.2,
+          "y": 0.8
+        },
+        "origin": "custom",
+        "customPivotPx": {
+          "x": 2,
+          "y": 4
+        }
+      },
+      "behavior": {
+        "type": "test.component",
+        "version": 1,
+        "data": {
+          "keep": "value"
+        }
+      },
+      "children": [
+        {
+          "runtimeType": "path",
+          "id": "source-wins",
+          "role": "shape",
+          "data": {
+            "source": {
+              "kind": "rect",
+              "w": 20,
+              "h": 10
+            },
+            "points": "ignored obsolete fallback",
+            "fill": {
+              "type": "solid",
+              "color": 4279312947
+            },
+            "fillRule": "evenOdd"
+          }
+        },
+        {
+          "runtimeType": "path",
+          "id": "points",
+          "data": {
+            "source": null,
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                10,
+                0
+              ],
+              null,
+              {
+                "x": 20,
+                "y": 0
+              },
+              {
+                "x": 20,
+                "y": 10
+              }
+            ],
+            "fill": {
+              "type": "none"
+            },
+            "strokeColor": 4278190080,
+            "strokeWidth": 2,
+            "strokeCap": "round",
+            "strokeJoin": "bevel",
+            "dash": [
+              5,
+              0,
+              3
+            ]
+          }
+        },
+        {
+          "runtimeType": "path",
+          "id": "empty",
+          "data": {}
+        },
+        {
+          "runtimeType": "path",
+          "id": "inactive",
+          "data": {
+            "strokeColor": 0,
+            "strokeWidth": 12,
+            "strokeCap": "round"
+          }
+        },
+        {
+          "runtimeType": "text",
+          "id": "text",
+          "data": {
+            "text": "Kept",
+            "fontFamily": "Inter",
+            "fontWeight": 400,
+            "fontSize": 16,
+            "appearance": {
+              "foreground": {
+                "type": "solid",
+                "color": 4279308561
+              },
+              "underlays": [
+                {
+                  "type": "shadow",
+                  "id": "shadow",
+                  "enabled": false,
+                  "offset": {
+                    "x": 2,
+                    "y": 3
+                  },
+                  "blurSigma": 1,
+                  "color": 2147483648
+                }
+              ]
+            }
+          }
+        },
+        {
+          "runtimeType": "icon",
+          "id": "icon",
+          "data": {
+            "iconRef": "test.symbol",
+            "sizePx": 48,
+            "appearance": {
+              "foreground": {
+                "type": "none"
+              },
+              "underlays": []
+            }
+          }
+        },
+        {
+          "runtimeType": "image",
+          "id": "image",
+          "data": {
+            "assetId": "asset",
+            "size": {
+              "w": 20,
+              "h": 10
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

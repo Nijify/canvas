@@ -135,8 +135,9 @@ CanvasSceneDocument _pathScene() {
         id: 'shape-1',
         data: PathData(
           source: RectSource(20, 10),
-          fill: CanvasFill.solid(0xFF22C55E),
-          strokeWidth: 0,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF22C55E),
+          ),
         ),
       ),
     ],
@@ -500,40 +501,86 @@ void main() {
   });
 
   group('FlutterCanvasPngRenderer validation', () {
-    test('rejects invalid canonical scene', () async {
-      final renderer = FlutterCanvasPngRenderer(fonts: _RecordingFontLoader());
+    test(
+      'rejects invalid input before fonts, images, or preparation',
+      () async {
+        final loader = _RecordingFontLoader();
+        final images = _RecordingImageResolver();
+        var preparations = 0;
+        final renderer = FlutterCanvasPngRenderer(
+          fonts: loader,
+          images: images,
+          scenePreparer: (scene, services) {
+            preparations++;
+            return scene;
+          },
+        );
+        final invalid = _imageScene().copyWith(
+          artboardSize: const Size2D(0, 40),
+        );
 
-      final invalid = CanvasSceneDocument(
-        artboardSize: const Size2D(0, 40),
-        backgroundFill: const CanvasFill.none(),
-        backgroundOpacity: 1,
-      );
+        await expectLater(
+          renderer.renderPng(
+            scene: invalid,
+            spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
+          ),
+          throwsArgumentError,
+        );
+        expect(loader.requests, isEmpty);
+        expect(images.sourceRequests, isEmpty);
+        expect(images.intrinsicRequests, isEmpty);
+        expect(preparations, 0);
+      },
+    );
 
-      await expectLater(
-        renderer.renderPng(
-          scene: invalid,
-          spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
-        ),
-        throwsA(_stateErrorContaining('Invalid canonical canvas scene')),
-      );
-    });
+    test(
+      'rejects invalid prepared output before loading its resources',
+      () async {
+        final loader = _RecordingFontLoader();
+        final images = _RecordingImageResolver();
+        final renderer = FlutterCanvasPngRenderer(
+          fonts: loader,
+          images: images,
+          scenePreparer: (scene, services) {
+            return _imageScene().copyWith(artboardSize: const Size2D(0, 40));
+          },
+        );
 
-    test('rejects invalid prepared scene', () async {
-      final renderer = FlutterCanvasPngRenderer(
-        fonts: _RecordingFontLoader(),
-        scenePreparer: (scene, services) {
-          return scene.copyWith(artboardSize: const Size2D(0, 40));
-        },
-      );
+        await expectLater(
+          renderer.renderPng(
+            scene: _emptyScene(),
+            spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
+          ),
+          throwsArgumentError,
+        );
+        expect(loader.requests, hasLength(1));
+        expect(images.sourceRequests, isEmpty);
+        expect(images.intrinsicRequests.expand((request) => request), isEmpty);
+      },
+    );
 
-      await expectLater(
-        renderer.renderPng(
-          scene: _emptyScene(),
-          spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
-        ),
-        throwsA(_stateErrorContaining('Invalid prepared canvas scene')),
-      );
-    });
+    test(
+      'checks preparer output even when it returns the same scene',
+      () async {
+        final children = <Node>[];
+        final group = Node.group(id: 'group', children: children);
+        final scene = _emptyScene().copyWith(children: [group]);
+        final renderer = FlutterCanvasPngRenderer(
+          fonts: _RecordingFontLoader(),
+          scenePreparer: (input, services) {
+            children.add(group);
+            return input;
+          },
+        );
+        await expectLater(
+          renderer.renderPng(
+            scene: scene,
+            spec: const CanvasPngSpec(widthPx: 40, heightPx: 40),
+          ),
+          throwsArgumentError,
+        );
+      },
+    );
 
     test('propagates unknown font failure', () async {
       final loader = _RecordingFontLoader(
@@ -804,7 +851,9 @@ void main() {
                 xf: Transform2D(position: Vec2(20, 20)),
                 data: PathData(
                   source: RectSource(20, 20),
-                  fill: CanvasFill.solid(0xFF336699),
+                  appearance: CanvasAppearance(
+                    foreground: CanvasFill.solid(0xFF336699),
+                  ),
                 ),
               ),
             ],

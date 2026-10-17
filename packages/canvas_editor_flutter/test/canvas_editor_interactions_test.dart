@@ -31,20 +31,20 @@ CanvasSceneDocument _fixtureScene() {
     artboardSize: const Size2D(300, 200),
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
-    children: const <Node>[
+    children: <Node>[
       Node.path(
         id: 'shape-1',
-        xf: Transform2D(
+        xf: const Transform2D(
           position: Vec2(40, 40),
           origin: OriginKind.custom,
           customPivotPx: Vec2(40, 30),
         ),
         data: PathData(
-          points: <Vec2?>[],
-          source: RectSource(80, 60),
-          fill: CanvasFill.solid(0xFF22C55E),
-          strokeColor: 0xFF111111,
-          strokeWidth: 2,
+          source: const RectSource(80, 60),
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.solid(0xFF22C55E),
+            stroke: CanvasStroke(color: 0xFF111111, width: 2),
+          ),
         ),
       ),
     ],
@@ -57,19 +57,19 @@ CanvasSceneDocument _twoShapeScene() {
   return base.copyWith(
     children: <Node>[
       ...base.children,
-      const Node.path(
+      Node.path(
         id: 'shape-2',
-        xf: Transform2D(
+        xf: const Transform2D(
           position: Vec2(180, 100),
           origin: OriginKind.custom,
           customPivotPx: Vec2(30, 20),
         ),
         data: PathData(
-          points: <Vec2?>[],
-          source: RectSource(60, 40),
-          fill: CanvasFill.solid(0xFF3B82F6),
-          strokeColor: 0xFF111111,
-          strokeWidth: 2,
+          source: const RectSource(60, 40),
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.solid(0xFF3B82F6),
+            stroke: CanvasStroke(color: 0xFF111111, width: 2),
+          ),
         ),
       ),
     ],

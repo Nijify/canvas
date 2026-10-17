@@ -8,70 +8,20 @@ import 'package:canvas_core/src/runtime/validation/linear_gradient_semantics.dar
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
+import 'package:canvas_core/src/runtime/model/canvas_stroke.dart';
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 
-/// Stable machine-readable categories returned by scene validation.
-enum CanvasSceneValidationCode {
-  nonFiniteNumber,
-  valueOutOfRange,
-  invalidColor,
-  degenerateGradient,
-  invalidGradientStopCount,
-  gradientStopsOutOfOrder,
-  blankAssetId,
-  blankAssetSourceRef,
-  missingImageAsset,
-  blankNodeId,
-  duplicateNodeId,
-  blankUnderlayId,
-  duplicateUnderlayId,
-  nameTooLong,
-  invalidBehaviorType,
-  invalidBehaviorVersion,
-  nonJsonBehaviorValue,
-  cyclicBehaviorData,
-  cyclicNodeGraph,
-}
-
-/// One deterministic validation diagnostic for a [CanvasSceneDocument].
+/// Rejects invalid generic scene data before recursive processing or resource work.
 ///
-/// [code], [path], and [relatedPath] are suitable for machine consumption.
-/// [message] is human-readable diagnostic text and should not be treated as a
-/// stable API contract.
-final class CanvasSceneValidationIssue {
-  const CanvasSceneValidationIssue({
-    required this.code,
-    required this.path,
-    required this.message,
-    this.relatedPath,
-  });
-
-  final CanvasSceneValidationCode code;
-  final String path;
-  final String message;
-
-  /// A second JSON Pointer location when the issue relates two scene values.
-  final String? relatedPath;
-}
-
-/// Validate generic runtime-scene integrity without interpreting component
-/// semantics.
-///
-/// Validation is pure and accumulates all discoverable issues in deterministic
-/// order. Unknown [GroupBehaviorRef] types and versions are valid as long as
-/// their neutral envelope and JSON data are well formed.
-List<CanvasSceneValidationIssue> validateCanvasSceneDocument(
-  CanvasSceneDocument document,
-) {
-  final validator = _SceneValidator();
-  validator.validate(document);
-  return List<CanvasSceneValidationIssue>.unmodifiable(validator.issues);
+/// Throws [ArgumentError] at the first integrity failure. Error messages provide
+/// context for people; their wording, locations, and traversal order are not a
+/// stable diagnostic API. Component availability is owned by the caller.
+void requireCanvasSceneIntegrity(CanvasSceneDocument document) {
+  _SceneValidator().validate(document);
 }
 
 final class _SceneValidator {
-  final List<CanvasSceneValidationIssue> issues =
-      <CanvasSceneValidationIssue>[];
-  final Map<String, String> _firstNodeIdPath = <String, String>{};
+  final Set<String> _nodeIds = <String>{};
   final HashSet<Node> _activeNodes = HashSet<Node>.identity();
   final HashSet<Object> _activeBehaviorContainers = HashSet<Object>.identity();
   Map<CanvasAssetId, CanvasImageAsset> _assets =
@@ -85,13 +35,8 @@ final class _SceneValidator {
     _validateFill(document.backgroundFill, '/backgroundFill');
     _validateRange(document.backgroundOpacity, '/backgroundOpacity', 0, 1);
 
-    final assetIds = document.assets.keys.toList()..sort();
-    for (final assetId in assetIds) {
-      _validateImageAsset(
-        assetId,
-        document.assets[assetId]!,
-        '/assets/${_pointerSegment(assetId)}',
-      );
+    for (final entry in document.assets.entries) {
+      _validateImageAsset(entry.key, entry.value, '/assets/${entry.key}');
     }
 
     for (var index = 0; index < document.children.length; index++) {
@@ -105,16 +50,11 @@ final class _SceneValidator {
     String path,
   ) {
     if (assetId.trim().isEmpty) {
-      _add(
-        CanvasSceneValidationCode.blankAssetId,
-        path,
-        'Asset ID must be nonblank.',
-      );
+      _fail(path, 'Asset ID must be nonblank.');
     }
 
     if (asset.sourceRef.trim().isEmpty) {
-      _add(
-        CanvasSceneValidationCode.blankAssetSourceRef,
+      _fail(
         '$path/sourceRef',
         'Image asset source reference must be nonblank.',
       );
@@ -129,15 +69,23 @@ final class _SceneValidator {
 
   void _validateNode(Node node, String path) {
     if (!_activeNodes.add(node)) {
-      _add(
-        CanvasSceneValidationCode.cyclicNodeGraph,
-        path,
-        'Scene node graph contains a cycle.',
-      );
-      return;
+      _fail(path, 'Scene node graph contains a cycle.');
     }
 
     try {
+      final (label, expected) = switch (node) {
+        TextNode(:final $type) => ($type, 'text'),
+        ImageNode(:final $type) => ($type, 'image'),
+        PathNode(:final $type) => ($type, 'path'),
+        IconNode(:final $type) => ($type, 'icon'),
+        GroupNode(:final $type) => ($type, 'group'),
+      };
+      if (label != expected) {
+        _fail(
+          '$path/runtimeType',
+          'Expected $expected node label; got $label.',
+        );
+      }
       _validateNodeId(node.id, '$path/id');
       _validateName(node.name, '$path/name');
       _validateTransform(node.xf, '$path/xf');
@@ -166,35 +114,17 @@ final class _SceneValidator {
 
   void _validateNodeId(String id, String path) {
     if (id.trim().isEmpty) {
-      _add(
-        CanvasSceneValidationCode.blankNodeId,
-        path,
-        'Node ID must be nonblank.',
-      );
-      return;
+      _fail(path, 'Node ID must be nonblank.');
     }
 
-    final firstPath = _firstNodeIdPath[id];
-    if (firstPath == null) {
-      _firstNodeIdPath[id] = path;
-      return;
+    if (!_nodeIds.add(id)) {
+      _fail(path, 'Node ID must be globally unique within the document.');
     }
-
-    _add(
-      CanvasSceneValidationCode.duplicateNodeId,
-      path,
-      'Node ID must be globally unique within the document.',
-      relatedPath: firstPath,
-    );
   }
 
   void _validateName(String? name, String path) {
     if (name != null && name.runes.length > 80) {
-      _add(
-        CanvasSceneValidationCode.nameTooLong,
-        path,
-        'Node name must be at most 80 characters.',
-      );
+      _fail(path, 'Node name must be at most 80 characters.');
     }
   }
 
@@ -219,17 +149,51 @@ final class _SceneValidator {
   }
 
   void _validateIconData(CanvasIconData data, String path) {
-    _validateFinite(data.sizePx, '$path/sizePx');
+    _validatePositive(data.sizePx, '$path/sizePx');
     _validateAppearance(data.appearance, '$path/appearance');
   }
 
-  void _validateAppearance(CanvasAppearance appearance, String path) {
+  void _validateAppearance(
+    CanvasAppearance appearance,
+    String path, {
+    bool supportsStroke = false,
+    bool supportsUnderlays = true,
+  }) {
     _validateFill(appearance.foreground, '$path/foreground');
+
+    final stroke = appearance.stroke;
+    if (stroke != null) {
+      if (!supportsStroke) {
+        _fail('$path/stroke', 'This node does not support stroke.');
+      }
+      _validateStroke(stroke, '$path/stroke');
+    }
+
+    if (!supportsUnderlays && appearance.underlays.isNotEmpty) {
+      _fail(
+        '$path/underlays',
+        'This node does not support appearance underlays.',
+      );
+    }
     _validateUnderlays(appearance.underlays, '$path/underlays');
   }
 
+  void _validateStroke(CanvasStroke stroke, String path) {
+    // Invisible configurations remain authored data and are still validated.
+    _validateColor(stroke.color, '$path/color');
+    _validateNonNegative(stroke.width, '$path/width');
+    _validateFinite(stroke.miterLimit, '$path/miterLimit');
+    if (stroke.miterLimit < 1) {
+      _fail('$path/miterLimit', 'Stroke miter limit must be at least 1.');
+    }
+
+    for (var index = 0; index < stroke.dash.length; index++) {
+      _validateNonNegative(stroke.dash[index], '$path/dash/$index');
+    }
+  }
+
   void _validateUnderlays(List<CanvasSourceUnderlay> underlays, String path) {
-    final firstIdPath = <String, String>{};
+    final ids = <String>{};
 
     for (var index = 0; index < underlays.length; index++) {
       final underlay = underlays[index];
@@ -245,24 +209,13 @@ final class _SceneValidator {
           final idPath = '$itemPath/id';
 
           if (id.trim().isEmpty) {
-            _add(
-              CanvasSceneValidationCode.blankUnderlayId,
+            _fail(idPath, 'Appearance underlay ID must be nonblank.');
+          }
+          if (!ids.add(id)) {
+            _fail(
               idPath,
-              'Appearance underlay ID must be nonblank.',
+              'Appearance underlay ID must be unique within its appearance.',
             );
-          } else {
-            final previous = firstIdPath[id];
-
-            if (previous == null) {
-              firstIdPath[id] = idPath;
-            } else {
-              _add(
-                CanvasSceneValidationCode.duplicateUnderlayId,
-                idPath,
-                'Appearance underlay ID must be unique within its appearance.',
-                relatedPath: previous,
-              );
-            }
           }
 
           // Disabled effects remain valid authored data and are still validated.
@@ -280,8 +233,7 @@ final class _SceneValidator {
 
     final assetId = data.assetId;
     if (assetId != null && !_assets.containsKey(assetId)) {
-      _add(
-        CanvasSceneValidationCode.missingImageAsset,
+      _fail(
         '$path/assetId',
         'Image asset reference must resolve in the document asset registry.',
       );
@@ -292,26 +244,13 @@ final class _SceneValidator {
   }
 
   void _validatePathData(PathData data, String path) {
-    for (var index = 0; index < data.points.length; index++) {
-      final point = data.points[index];
-      if (point == null) continue;
-      _validateFinite(point.x, '$path/points/$index/x');
-      _validateFinite(point.y, '$path/points/$index/y');
-    }
-
-    final source = data.source;
-    if (source != null) {
-      _validatePathSource(source, '$path/source');
-    }
-
-    _validateFill(data.fill, '$path/fill');
-    _validateColor(data.strokeColor, '$path/strokeColor');
-    _validateNonNegative(data.strokeWidth, '$path/strokeWidth');
-    _validateNonNegative(data.miterLimit, '$path/miterLimit');
-
-    for (var index = 0; index < data.dash.length; index++) {
-      _validateNonNegative(data.dash[index], '$path/dash/$index');
-    }
+    _validatePathSource(data.source, '$path/source');
+    _validateAppearance(
+      data.appearance,
+      '$path/appearance',
+      supportsStroke: true,
+      supportsUnderlays: false,
+    );
   }
 
   void _validatePathSource(PathSource source, String path) {
@@ -327,16 +266,15 @@ final class _SceneValidator {
           _validateFinite(point.y, '$path/points/$index/y');
         }
       case CircleSource(:final r):
-        _validateFinite(r, '$path/r');
+        _validateNonNegative(r, '$path/r');
       case RegularPolygonSource(:final sides, :final r, :final rotation):
         if (sides < 3) {
-          _add(
-            CanvasSceneValidationCode.valueOutOfRange,
+          _fail(
             '$path/sides',
             'Regular polygon side count must be at least 3.',
           );
         }
-        _validateFinite(r, '$path/r');
+        _validateNonNegative(r, '$path/r');
         _validateFinite(rotation, '$path/rotation');
       case StarSource(
         :final points,
@@ -345,64 +283,47 @@ final class _SceneValidator {
         :final rotation,
       ):
         if (points < 3) {
-          _add(
-            CanvasSceneValidationCode.valueOutOfRange,
-            '$path/points',
-            'Star point count must be at least 3.',
-          );
+          _fail('$path/points', 'Star point count must be at least 3.');
         }
-        final outerFinite = _validateFinite(rOuter, '$path/rOuter');
-        final innerFinite = _validateFinite(rInner, '$path/rInner');
-        if (outerFinite && rOuter < 0) {
-          _add(
-            CanvasSceneValidationCode.valueOutOfRange,
-            '$path/rOuter',
-            'Star outer radius must be nonnegative.',
-          );
+        _validateFinite(rOuter, '$path/rOuter');
+        _validateFinite(rInner, '$path/rInner');
+        if (rOuter < 0) {
+          _fail('$path/rOuter', 'Star outer radius must be nonnegative.');
         }
-        if (innerFinite && outerFinite && (rInner < 0 || rInner > rOuter)) {
-          _add(
-            CanvasSceneValidationCode.valueOutOfRange,
+        if (rInner < 0 || rInner > rOuter) {
+          _fail(
             '$path/rInner',
             'Star inner radius must be between 0 and the outer radius.',
           );
         }
         _validateFinite(rotation, '$path/rotation');
       case RectSource(:final w, :final h):
-        _validateFinite(w, '$path/w');
-        _validateFinite(h, '$path/h');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(h, '$path/h');
       case RoundRectSource(:final w, :final h, :final rx, :final ry):
-        _validateFinite(w, '$path/w');
-        _validateFinite(h, '$path/h');
-        _validateFinite(rx, '$path/rx');
-        _validateFinite(ry, '$path/ry');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(h, '$path/h');
+        _validateNonNegative(rx, '$path/rx');
+        _validateNonNegative(ry, '$path/ry');
       case PillSource(:final w, :final h):
-        _validateFinite(w, '$path/w');
-        _validateFinite(h, '$path/h');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(h, '$path/h');
       case UnderlineSource(:final w, :final thickness):
-        _validateFinite(w, '$path/w');
-        _validateFinite(thickness, '$path/thickness');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(thickness, '$path/thickness');
       case EllipseSource(:final rx, :final ry):
-        _validateFinite(rx, '$path/rx');
-        _validateFinite(ry, '$path/ry');
+        _validateNonNegative(rx, '$path/rx');
+        _validateNonNegative(ry, '$path/ry');
     }
   }
 
   void _validateBehavior(GroupBehaviorRef behavior, String path) {
     if (behavior.type.trim().isEmpty) {
-      _add(
-        CanvasSceneValidationCode.invalidBehaviorType,
-        '$path/type',
-        'Behavior type must be nonblank.',
-      );
+      _fail('$path/type', 'Behavior type must be nonblank.');
     }
 
     if (behavior.version < 1) {
-      _add(
-        CanvasSceneValidationCode.invalidBehaviorVersion,
-        '$path/version',
-        'Behavior version must be at least 1.',
-      );
+      _fail('$path/version', 'Behavior version must be at least 1.');
     }
 
     _validateJsonValue(behavior.data, '$path/data');
@@ -420,12 +341,7 @@ final class _SceneValidator {
 
     if (value is List) {
       if (!_activeBehaviorContainers.add(value)) {
-        _add(
-          CanvasSceneValidationCode.cyclicBehaviorData,
-          path,
-          'Behavior data contains a cyclic list or map.',
-        );
-        return;
+        _fail(path, 'Behavior data contains a cyclic list or map.');
       }
 
       try {
@@ -440,26 +356,16 @@ final class _SceneValidator {
 
     if (value is Map) {
       if (!_activeBehaviorContainers.add(value)) {
-        _add(
-          CanvasSceneValidationCode.cyclicBehaviorData,
-          path,
-          'Behavior data contains a cyclic list or map.',
-        );
-        return;
+        _fail(path, 'Behavior data contains a cyclic list or map.');
       }
 
       try {
         if (value.keys.any((key) => key is! String)) {
-          _add(
-            CanvasSceneValidationCode.nonJsonBehaviorValue,
-            path,
-            'Behavior data maps must contain only string keys.',
-          );
+          _fail(path, 'Behavior data maps must contain only string keys.');
         }
 
-        final keys = value.keys.whereType<String>().toList()..sort();
-        for (final key in keys) {
-          _validateJsonValue(value[key], '$path/${_pointerSegment(key)}');
+        for (final entry in value.entries) {
+          _validateJsonValue(entry.value, '$path/${entry.key}');
         }
       } finally {
         _activeBehaviorContainers.remove(value);
@@ -467,8 +373,7 @@ final class _SceneValidator {
       return;
     }
 
-    _add(
-      CanvasSceneValidationCode.nonJsonBehaviorValue,
+    _fail(
       path,
       'Behavior data contains a non-JSON value of type ${value.runtimeType}.',
     );
@@ -481,103 +386,41 @@ final class _SceneValidator {
       case CanvasFillSolid(:final color):
         _validateColor(color, '$path/color');
       case CanvasFillGradient(:final grad):
-        for (final issue in validateLinearGradientSemantics(grad)) {
-          final code = switch (issue.code) {
-            GradientSemanticCode.nonFiniteNumber =>
-              CanvasSceneValidationCode.nonFiniteNumber,
-            GradientSemanticCode.valueOutOfRange =>
-              CanvasSceneValidationCode.valueOutOfRange,
-            GradientSemanticCode.invalidColor =>
-              CanvasSceneValidationCode.invalidColor,
-            GradientSemanticCode.degenerateGradient =>
-              CanvasSceneValidationCode.degenerateGradient,
-            GradientSemanticCode.invalidGradientStopCount =>
-              CanvasSceneValidationCode.invalidGradientStopCount,
-            GradientSemanticCode.gradientStopsOutOfOrder =>
-              CanvasSceneValidationCode.gradientStopsOutOfOrder,
-          };
-          _add(
-            code,
-            '$path/grad${issue.path}',
-            issue.message,
-            relatedPath: issue.relatedPath == null
-                ? null
-                : '$path/grad${issue.relatedPath}',
-          );
-        }
+        requireLinearGradientIntegrity(grad, context: '$path/grad');
     }
   }
 
   void _validateColor(int color, String path) {
     if (color < 0 || color > 0xFFFFFFFF) {
-      _add(
-        CanvasSceneValidationCode.invalidColor,
-        path,
-        'Color must be a 32-bit ARGB value.',
-      );
+      _fail(path, 'Color must be a 32-bit ARGB value.');
     }
   }
 
-  bool _validateFinite(num value, String path) {
-    if (value.isFinite) return true;
-
-    _add(
-      CanvasSceneValidationCode.nonFiniteNumber,
-      path,
-      'Numeric value must be finite.',
-    );
-    return false;
+  void _validateFinite(num value, String path) {
+    if (!value.isFinite) _fail(path, 'Numeric value must be finite.');
   }
 
   void _validatePositive(num value, String path) {
-    if (!_validateFinite(value, path)) return;
+    _validateFinite(value, path);
     if (value <= 0) {
-      _add(
-        CanvasSceneValidationCode.valueOutOfRange,
-        path,
-        'Numeric value must be greater than zero.',
-      );
+      _fail(path, 'Numeric value must be greater than zero.');
     }
   }
 
   void _validateNonNegative(num value, String path) {
-    if (!_validateFinite(value, path)) return;
+    _validateFinite(value, path);
     if (value < 0) {
-      _add(
-        CanvasSceneValidationCode.valueOutOfRange,
-        path,
-        'Numeric value must be nonnegative.',
-      );
+      _fail(path, 'Numeric value must be nonnegative.');
     }
   }
 
   void _validateRange(num value, String path, num min, num max) {
-    if (!_validateFinite(value, path)) return;
+    _validateFinite(value, path);
     if (value < min || value > max) {
-      _add(
-        CanvasSceneValidationCode.valueOutOfRange,
-        path,
-        'Numeric value must be between $min and $max.',
-      );
+      _fail(path, 'Numeric value must be between $min and $max.');
     }
   }
 
-  void _add(
-    CanvasSceneValidationCode code,
-    String path,
-    String message, {
-    String? relatedPath,
-  }) {
-    issues.add(
-      CanvasSceneValidationIssue(
-        code: code,
-        path: path,
-        message: message,
-        relatedPath: relatedPath,
-      ),
-    );
-  }
+  Never _fail(String path, String message) =>
+      throw ArgumentError('$path: $message');
 }
-
-String _pointerSegment(String value) =>
-    value.replaceAll('~', '~0').replaceAll('/', '~1');

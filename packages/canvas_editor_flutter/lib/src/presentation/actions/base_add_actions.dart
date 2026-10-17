@@ -37,11 +37,11 @@ PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
   return PathNode(
     id: idOverride ?? _genBaseAddId('path'),
     data: PathData(
-      points: const <Vec2?>[],
-      fill: CanvasFill.solid(_baseFill),
-      strokeColor: _baseStroke,
-      strokeWidth: _baseStrokeW,
       source: src,
+      appearance: CanvasAppearance(
+        foreground: const CanvasFill.solid(_baseFill),
+        stroke: CanvasStroke(color: _baseStroke, width: _baseStrokeW),
+      ),
     ),
     xf: const Transform2D(position: _shapePos),
     role: role,

@@ -114,7 +114,12 @@ void main() {
       nodes: <Node>[
         const Node.path(
           id: 'p1',
-          data: PathData(fill: CanvasFill.solid(0xFF010203)),
+          data: PathData(
+            source: RectSource(20, 10),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xFF010203),
+            ),
+          ),
         ),
       ],
     ),
@@ -163,7 +168,12 @@ void main() {
     final initial = _sceneWithChildren([
       const Node.path(
         id: 'p1',
-        data: PathData(fill: CanvasFill.solid(0xFF010203)),
+        data: PathData(
+          source: RectSource(20, 10),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF010203),
+          ),
+        ),
       ),
     ]);
     final runtime = _buildRuntime(initial);
@@ -293,7 +303,12 @@ void main() {
       _sceneWithChildren([
         const Node.path(
           id: 'p1',
-          data: PathData(fill: CanvasFill.solid(0xFF000000)),
+          data: PathData(
+            source: RectSource(20, 10),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xFF000000),
+            ),
+          ),
         ),
       ]),
     );
@@ -306,7 +321,7 @@ void main() {
     );
 
     final node = findById(runtime.sourceDocument, 'p1') as PathNode;
-    expect(node.data.fill, const CanvasFill.none());
+    expect(node.data.appearance.foreground, const CanvasFill.none());
   });
 
   test('text foreground can be set to none', () {

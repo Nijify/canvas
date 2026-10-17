@@ -83,62 +83,24 @@ const _$ImageFitEnumMap = {
 };
 
 _PathData _$PathDataFromJson(Map<String, dynamic> json) => _PathData(
-  points: json['points'] == null
-      ? const <Vec2?>[]
-      : const Vec2ListNullableConverter().fromJson(json['points']),
   source: const PathSourceConverter().fromJson(json['source']),
-  fill: json['fill'] == null
-      ? const CanvasFillNone()
-      : const CanvasFillConverter().fromJson(
-          json['fill'] as Map<String, dynamic>,
-        ),
   fillRule:
       $enumDecodeNullable(_$FillRuleEnumMap, json['fillRule']) ??
       FillRule.nonZero,
-  strokeColor: (json['strokeColor'] as num?)?.toInt() ?? 0x00000000,
-  strokeWidth: (json['strokeWidth'] as num?)?.toDouble() ?? 4.0,
-  strokeCap:
-      $enumDecodeNullable(_$StrokeCapEnumMap, json['strokeCap']) ??
-      StrokeCap.butt,
-  strokeJoin:
-      $enumDecodeNullable(_$StrokeJoinEnumMap, json['strokeJoin']) ??
-      StrokeJoin.miter,
-  miterLimit: (json['miterLimit'] as num?)?.toDouble() ?? 4.0,
-  dash:
-      (json['dash'] as List<dynamic>?)
-          ?.map((e) => (e as num).toDouble())
-          .toList() ??
-      const <double>[],
+  appearance: json['appearance'] == null
+      ? const CanvasAppearance(foreground: CanvasFill.none())
+      : CanvasAppearance.fromJson(json['appearance'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$PathDataToJson(_PathData instance) => <String, dynamic>{
-  'points': const Vec2ListNullableConverter().toJson(instance.points),
   'source': const PathSourceConverter().toJson(instance.source),
-  'fill': const CanvasFillConverter().toJson(instance.fill),
   'fillRule': _$FillRuleEnumMap[instance.fillRule]!,
-  'strokeColor': instance.strokeColor,
-  'strokeWidth': instance.strokeWidth,
-  'strokeCap': _$StrokeCapEnumMap[instance.strokeCap]!,
-  'strokeJoin': _$StrokeJoinEnumMap[instance.strokeJoin]!,
-  'miterLimit': instance.miterLimit,
-  'dash': instance.dash,
+  'appearance': instance.appearance.toJson(),
 };
 
 const _$FillRuleEnumMap = {
   FillRule.nonZero: 'nonZero',
   FillRule.evenOdd: 'evenOdd',
-};
-
-const _$StrokeCapEnumMap = {
-  StrokeCap.butt: 'butt',
-  StrokeCap.square: 'square',
-  StrokeCap.round: 'round',
-};
-
-const _$StrokeJoinEnumMap = {
-  StrokeJoin.miter: 'miter',
-  StrokeJoin.bevel: 'bevel',
-  StrokeJoin.round: 'round',
 };
 
 _CanvasIconData _$CanvasIconDataFromJson(Map<String, dynamic> json) =>

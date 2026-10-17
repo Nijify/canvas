@@ -286,7 +286,8 @@ as Color32,
 /// @nodoc
 mixin _$CanvasAppearance {
 
-@CanvasFillConverter() CanvasFill get foreground;@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays;
+@CanvasFillConverter() CanvasFill get foreground;/// Null means no configured stroke; invisible configurations are retained.
+ CanvasStroke? get stroke;@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays;
 /// Create a copy of CanvasAppearance
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -300,20 +301,20 @@ $CanvasAppearanceCopyWith<CanvasAppearance> get copyWith => _$CanvasAppearanceCo
 @override
 bool operator ==(Object other) {
   final _this = this as CanvasAppearance;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasAppearance&&(identical(other.foreground, _this.foreground) || other.foreground == _this.foreground)&&const DeepCollectionEquality().equals(other.underlays, _this.underlays));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasAppearance&&(identical(other.foreground, _this.foreground) || other.foreground == _this.foreground)&&(identical(other.stroke, _this.stroke) || other.stroke == _this.stroke)&&const DeepCollectionEquality().equals(other.underlays, _this.underlays));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as CanvasAppearance;
-  return Object.hash(runtimeType,_this.foreground,const DeepCollectionEquality().hash(_this.underlays));
+  return Object.hash(runtimeType,_this.foreground,_this.stroke,const DeepCollectionEquality().hash(_this.underlays));
 }
 
 @override
 String toString() {
   final _this = this as CanvasAppearance;
-  return 'CanvasAppearance(foreground: ${_this.foreground}, underlays: ${_this.underlays})';
+  return 'CanvasAppearance(foreground: ${_this.foreground}, stroke: ${_this.stroke}, underlays: ${_this.underlays})';
 }
 
 
@@ -324,11 +325,11 @@ abstract mixin class $CanvasAppearanceCopyWith<$Res>  {
   factory $CanvasAppearanceCopyWith(CanvasAppearance value, $Res Function(CanvasAppearance) _then) = _$CanvasAppearanceCopyWithImpl;
 @useResult
 $Res call({
-@CanvasFillConverter() CanvasFill foreground,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
+@CanvasFillConverter() CanvasFill foreground, CanvasStroke? stroke,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
 });
 
 
-
+$CanvasStrokeCopyWith<$Res>? get stroke;
 
 }
 /// @nodoc
@@ -341,14 +342,27 @@ class _$CanvasAppearanceCopyWithImpl<$Res>
 
 /// Create a copy of CanvasAppearance
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? foreground = null,Object? underlays = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? foreground = null,Object? stroke = freezed,Object? underlays = null,}) {
   return _then(CanvasAppearance(
 foreground: null == foreground ? _self.foreground : foreground // ignore: cast_nullable_to_non_nullable
-as CanvasFill,underlays: null == underlays ? _self.underlays : underlays // ignore: cast_nullable_to_non_nullable
+as CanvasFill,stroke: freezed == stroke ? _self.stroke : stroke // ignore: cast_nullable_to_non_nullable
+as CanvasStroke?,underlays: null == underlays ? _self.underlays : underlays // ignore: cast_nullable_to_non_nullable
 as List<CanvasSourceUnderlay>,
   ));
 }
+/// Create a copy of CanvasAppearance
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CanvasStrokeCopyWith<$Res>? get stroke {
+    if (_self.stroke == null) {
+    return null;
+  }
 
+  return $CanvasStrokeCopyWith<$Res>(_self.stroke!, (value) {
+    return _then(_self.copyWith(stroke: value));
+  });
+}
 }
 
 
@@ -430,10 +444,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground,  CanvasStroke? stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CanvasAppearance() when $default != null:
-return $default(_that.foreground,_that.underlays);case _:
+return $default(_that.foreground,_that.stroke,_that.underlays);case _:
   return orElse();
 
 }
@@ -451,10 +465,10 @@ return $default(_that.foreground,_that.underlays);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground,  CanvasStroke? stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)  $default,) {final _that = this;
 switch (_that) {
 case _CanvasAppearance():
-return $default(_that.foreground,_that.underlays);case _:
+return $default(_that.foreground,_that.stroke,_that.underlays);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -471,10 +485,10 @@ return $default(_that.foreground,_that.underlays);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@CanvasFillConverter()  CanvasFill foreground, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@CanvasFillConverter()  CanvasFill foreground,  CanvasStroke? stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,) {final _that = this;
 switch (_that) {
 case _CanvasAppearance() when $default != null:
-return $default(_that.foreground,_that.underlays);case _:
+return $default(_that.foreground,_that.stroke,_that.underlays);case _:
   return null;
 
 }
@@ -486,10 +500,12 @@ return $default(_that.foreground,_that.underlays);case _:
 @JsonSerializable()
 
 class _CanvasAppearance implements CanvasAppearance {
-  const _CanvasAppearance({@CanvasFillConverter() this.foreground = const CanvasFill.solid(0xFF111111), @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[]}): _underlays = underlays;
+  const _CanvasAppearance({@CanvasFillConverter() this.foreground = const CanvasFill.solid(0xFF111111), this.stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[]}): _underlays = underlays;
   factory _CanvasAppearance.fromJson(Map<String, dynamic> json) => _$CanvasAppearanceFromJson(json);
 
 @override@JsonKey()@CanvasFillConverter() final  CanvasFill foreground;
+/// Null means no configured stroke; invisible configurations are retained.
+@override final  CanvasStroke? stroke;
  final  List<CanvasSourceUnderlay> _underlays;
 @override@JsonKey()@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays {
   if (_underlays is EqualUnmodifiableListView) return _underlays;
@@ -511,18 +527,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasAppearance&&(identical(other.foreground, foreground) || other.foreground == foreground)&&const DeepCollectionEquality().equals(other.underlays, _underlays));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasAppearance&&(identical(other.foreground, foreground) || other.foreground == foreground)&&(identical(other.stroke, stroke) || other.stroke == stroke)&&const DeepCollectionEquality().equals(other.underlays, _underlays));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,foreground,const DeepCollectionEquality().hash(_underlays));
+    return Object.hash(runtimeType,foreground,stroke,const DeepCollectionEquality().hash(_underlays));
 }
 
 @override
 String toString() {
-    return 'CanvasAppearance(foreground: $foreground, underlays: $underlays)';
+    return 'CanvasAppearance(foreground: $foreground, stroke: $stroke, underlays: $underlays)';
 }
 
 
@@ -533,11 +549,11 @@ abstract mixin class _$CanvasAppearanceCopyWith<$Res> implements $CanvasAppearan
   factory _$CanvasAppearanceCopyWith(_CanvasAppearance value, $Res Function(_CanvasAppearance) _then) = __$CanvasAppearanceCopyWithImpl;
 @override @useResult
 $Res call({
-@CanvasFillConverter() CanvasFill foreground,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
+@CanvasFillConverter() CanvasFill foreground, CanvasStroke? stroke,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
 });
 
 
-
+@override $CanvasStrokeCopyWith<$Res>? get stroke;
 
 }
 /// @nodoc
@@ -550,15 +566,28 @@ class __$CanvasAppearanceCopyWithImpl<$Res>
 
 /// Create a copy of CanvasAppearance
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? foreground = null,Object? underlays = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? foreground = null,Object? stroke = freezed,Object? underlays = null,}) {
   return _then(_CanvasAppearance(
 foreground: null == foreground ? _self.foreground : foreground // ignore: cast_nullable_to_non_nullable
-as CanvasFill,underlays: null == underlays ? _self._underlays : underlays // ignore: cast_nullable_to_non_nullable
+as CanvasFill,stroke: freezed == stroke ? _self.stroke : stroke // ignore: cast_nullable_to_non_nullable
+as CanvasStroke?,underlays: null == underlays ? _self._underlays : underlays // ignore: cast_nullable_to_non_nullable
 as List<CanvasSourceUnderlay>,
   ));
 }
 
+/// Create a copy of CanvasAppearance
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CanvasStrokeCopyWith<$Res>? get stroke {
+    if (_self.stroke == null) {
+    return null;
+  }
 
+  return $CanvasStrokeCopyWith<$Res>(_self.stroke!, (value) {
+    return _then(_self.copyWith(stroke: value));
+  });
+}
 }
 
 // dart format on

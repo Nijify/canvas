@@ -21,8 +21,8 @@ are not exported.
 Gradients use their stored local endpoints and stops, emitted as SVG
 `linearGradient` definitions with `userSpaceOnUse` coordinates and `pad`
 spreading. Text, images, icons, and actively dashed strokes fail with structured
-issues. Flutter currently ignores the path model's dash list, so exporting an
-SVG dash would also change the visual result. Hidden nodes do not affect export.
+issues. Flutter currently paints strokes solid, so exporting an SVG dash would
+change the visual result. Hidden nodes do not affect export.
 Invalid scenes or missing computed geometry fail rather than producing
 incomplete output.
 

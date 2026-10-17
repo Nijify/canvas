@@ -7,7 +7,7 @@ import 'package:canvas_core/src/foundation/ids.dart'
     show CanvasAssetId, ElementId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/foundation/style/style_types.dart'
-    show FillRule, StrokeCap, StrokeJoin;
+    show FillRule;
 import 'package:canvas_core/src/path/path_source.dart';
 import 'package:canvas_core/src/serialization/converters.dart';
 import 'package:canvas_core/src/serialization/path_converters.dart';
@@ -80,16 +80,12 @@ abstract class ImageData with _$ImageData {
 @freezed
 abstract class PathData with _$PathData {
   const factory PathData({
-    @Vec2ListNullableConverter() @Default(<Vec2?>[]) List<Vec2?> points,
-    @PathSourceConverter() PathSource? source,
-    @CanvasFillConverter() @Default(CanvasFillNone()) CanvasFill fill,
+    /// The sole authored geometry source. Use an explicit empty source for an
+    /// intentionally empty path.
+    @PathSourceConverter() required PathSource source,
     @Default(FillRule.nonZero) FillRule fillRule,
-    @Default(0x00000000) Color32 strokeColor,
-    @Default(4.0) double strokeWidth,
-    @Default(StrokeCap.butt) StrokeCap strokeCap,
-    @Default(StrokeJoin.miter) StrokeJoin strokeJoin,
-    @Default(4.0) double miterLimit,
-    @Default(<double>[]) List<double> dash,
+    @Default(CanvasAppearance(foreground: CanvasFill.none()))
+    CanvasAppearance appearance,
   }) = _PathData;
 
   factory PathData.fromJson(Map<String, dynamic> json) =>

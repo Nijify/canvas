@@ -46,9 +46,7 @@ void main() {
   });
 
   test('computed path commands cannot be appended to or replaced', () {
-    final computed = _computePath(
-      const PathData(source: RectSource(24, 12), strokeWidth: 0),
-    );
+    final computed = _computePath(const PathData(source: RectSource(24, 12)));
     final path = computed.pathIRById['path']!;
     final originalGeometry = _geometry(path);
 
@@ -62,24 +60,22 @@ void main() {
     expect(path.localBounds(), const Rect2D(-12, -6, 12, 6));
   });
 
-  test('authored paint preserves geometry and existing stroke bounds', () {
-    final plain = _computePath(
-      const PathData(
-        source: RectSource(24, 12),
-        fill: CanvasFill.none(),
-        strokeWidth: 0,
-      ),
-    );
+  test('authored appearance preserves compiled geometry', () {
+    final plain = _computePath(const PathData(source: RectSource(24, 12)));
     final painted = _computePath(
-      const PathData(
-        source: RectSource(24, 12),
-        fill: CanvasFill.solid(0x8044AAFF),
+      PathData(
+        source: const RectSource(24, 12),
         fillRule: FillRule.evenOdd,
-        strokeColor: 0xFF112233,
-        strokeWidth: 8,
-        strokeCap: StrokeCap.round,
-        strokeJoin: StrokeJoin.bevel,
-        miterLimit: 6,
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.solid(0x8044AAFF),
+          stroke: CanvasStroke(
+            color: 0xFF112233,
+            width: 8,
+            cap: StrokeCap.round,
+            join: StrokeJoin.bevel,
+            miterLimit: 6,
+          ),
+        ),
       ),
     );
 
@@ -88,12 +84,9 @@ void main() {
       equals(_geometry(plain.pathIRById['path']!)),
     );
 
-    const geometryBounds = Rect2D(-12, -6, 12, 6);
-    const strokeBounds = Rect2D(-16, -10, 16, 10);
-
-    expect(plain.layoutBoundsLocalById['path'], geometryBounds);
-    expect(plain.paintBoundsLocalById['path'], geometryBounds);
-    expect(painted.layoutBoundsLocalById['path'], strokeBounds);
-    expect(painted.paintBoundsLocalById['path'], strokeBounds);
+    expect(
+      painted.pathIRById['path']!.localBounds(),
+      const Rect2D(-12, -6, 12, 6),
+    );
   });
 }

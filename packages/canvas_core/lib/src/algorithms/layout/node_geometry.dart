@@ -5,7 +5,6 @@ import 'package:canvas_core/src/algorithms/layout/computed_icon.dart'
     show ComputedIcon;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
 import 'package:canvas_core/src/algorithms/layout/appearance_bounds.dart';
-import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
 import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
@@ -18,8 +17,8 @@ final class NodeGeometry {
 
   final CoreServices services;
 
-  /// Layout preserves existing pivot and interaction geometry.
-  /// Paint is an estimate; null means no resolved source will be drawn.
+  /// Layout describes intrinsic geometry independently of appearance.
+  /// Paint is an estimate; null means no visible paint is expected.
   /// Text estimates use layout metrics, not guaranteed glyph-pixel bounds.
   ({Rect2D layout, Rect2D? paint})? leafBounds(
     Node n, {
@@ -47,7 +46,7 @@ final class NodeGeometry {
           layout: layout,
           paint: estimateAppearancePaintBounds(
             sourceBounds: sourceBounds,
-            foregroundPresent: appearance.foreground is! CanvasFillNone,
+            foregroundPresent: fillContributesToPaint(appearance.foreground),
             underlays: appearance.underlays,
           ),
         );
@@ -78,7 +77,7 @@ final class NodeGeometry {
           layout: layout,
           paint: estimateAppearancePaintBounds(
             sourceBounds: sourceBounds,
-            foregroundPresent: appearance.foreground is! CanvasFillNone,
+            foregroundPresent: fillContributesToPaint(appearance.foreground),
             underlays: appearance.underlays,
           ),
         );
@@ -102,18 +101,16 @@ final class NodeGeometry {
         final ir = compilePath(d);
         pathIRById?[id] = ir;
         final geometryBounds = ir.localBounds();
-        final hasStroke = d.strokeColor != 0 && d.strokeWidth > 0;
-        final radius = hasStroke ? d.strokeWidth / 2 : 0.0;
-        final layout = ir.cmds.isEmpty || !hasStroke
-            ? geometryBounds
-            : Rect2D.fromLTRB(
-                geometryBounds.left - radius,
-                geometryBounds.top - radius,
-                geometryBounds.right + radius,
-                geometryBounds.bottom + radius,
-              );
-        // Layout and paint bounds share the stroke-expanded geometry estimate.
-        return (layout: layout, paint: ir.cmds.isEmpty ? null : layout);
+        final hasSegments = ir.cmds.any(
+          (cmd) => cmd.verb != PathVerb.moveTo && cmd.verb != PathVerb.close,
+        );
+        return (
+          layout: geometryBounds,
+          paint: estimatePathPaintBounds(
+            sourceBounds: hasSegments ? geometryBounds : null,
+            appearance: d.appearance,
+          ),
+        );
 
       default:
         return null;

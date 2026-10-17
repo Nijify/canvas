@@ -73,7 +73,7 @@ void main() {
       // Only the duplicate root receives the standard position shift.
       expect(duplicate.xf.position, const Vec2(26, 36));
 
-      expect(validateCanvasSceneDocument(result.doc), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(result.doc), returnsNormally);
     });
 
     test(
@@ -103,7 +103,7 @@ void main() {
         final ids = _allIds(third.doc);
         expect(ids.toSet(), hasLength(ids.length));
 
-        expect(validateCanvasSceneDocument(third.doc), isEmpty);
+        expect(() => requireCanvasSceneIntegrity(third.doc), returnsNormally);
       },
     );
 
@@ -120,7 +120,7 @@ void main() {
       final duplicate = findById(result.doc, 'g_copy_2') as GroupNode;
       expect(duplicate.children.single.id, 'a_copy_4');
 
-      expect(validateCanvasSceneDocument(result.doc), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(result.doc), returnsNormally);
     });
 
     test('same input document and operation produce the same IDs', () {
@@ -142,8 +142,8 @@ void main() {
       expect(first.idMap, second.idMap);
       expect(_allIds(first.doc), _allIds(second.doc));
 
-      expect(validateCanvasSceneDocument(first.doc), isEmpty);
-      expect(validateCanvasSceneDocument(second.doc), isEmpty);
+      expect(() => requireCanvasSceneIntegrity(first.doc), returnsNormally);
+      expect(() => requireCanvasSceneIntegrity(second.doc), returnsNormally);
     });
   });
 }

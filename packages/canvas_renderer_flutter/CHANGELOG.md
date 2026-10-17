@@ -1,3 +1,12 @@
+## 0.15.0
+
+- **Breaking:** require `canvas_core 0.16.x` and read path fill/stroke from
+  `PathData.appearance`.
+- **Breaking:** PNG scene-integrity failures propagate `ArgumentError`. Check
+  input before resource work and output after a configured preparer runs.
+- Reuse one path for fill/stroke; skip invisible foregrounds while retaining
+  independent source underlays.
+
 ## 0.14.0
 
 - **Breaking:** require `canvas_core 0.15.x` and render vector-only icons from

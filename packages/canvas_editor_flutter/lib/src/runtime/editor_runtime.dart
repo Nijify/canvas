@@ -417,7 +417,7 @@ final class EditorRuntime<TSourceDocument>
   void _mutateField(
     rt.ElementId nodeId,
     rt.CanvasFieldKey fieldKey,
-    Object Function(Object currentCanonicalValue) update,
+    Object? Function(Object? currentCanonicalValue) update,
   ) {
     final codec = FieldCatalog.of(fieldKey, extra: _extraFieldCodecs);
 
@@ -536,7 +536,7 @@ final class EditorRuntime<TSourceDocument>
     final effective = rt.findById(sceneNow, nodeId);
     final base = rt.findById(presentBase, nodeId);
 
-    final value = _readEffectiveOrBase<Object>(
+    final value = _readEffectiveOrBase<Object?>(
       effectiveScene: sceneNow,
       effective: effective,
       baseScene: presentBase,
@@ -568,7 +568,7 @@ final class EditorRuntime<TSourceDocument>
     rt.CanvasFieldKey fieldKey,
     T value,
   ) {
-    _mutateField(nodeId, fieldKey, (_) => value as Object);
+    _mutateField(nodeId, fieldKey, (_) => value);
   }
 
   @override
@@ -578,7 +578,7 @@ final class EditorRuntime<TSourceDocument>
     T Function(T currentCanonicalValue) update,
   ) {
     _mutateField(nodeId, fieldKey, (currentCanonicalValue) {
-      return update(currentCanonicalValue as T) as Object;
+      return update(currentCanonicalValue as T);
     });
   }
 }

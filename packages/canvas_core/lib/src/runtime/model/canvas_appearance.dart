@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
+import 'package:canvas_core/src/runtime/model/canvas_stroke.dart';
 import 'package:canvas_core/src/serialization/converters.dart';
 
 part 'canvas_appearance.freezed.dart';
@@ -122,19 +123,26 @@ final class _CanvasSourceUnderlayJsonConverter
   }
 }
 
-/// Appearance shared by text and icon sources.
+/// Authored appearance shared by path, text, and icon sources.
 ///
 /// [foreground] controls whether/how the authored source itself is painted.
 /// `CanvasFill.none()` is valid: the source silhouette still exists and may be
 /// consumed by [underlays].
 ///
-/// Underlays are painted back-to-front before the foreground.
+/// Underlays are painted back-to-front before the foreground. A configured
+/// stroke is painted after the foreground where the node supports it.
+///
+/// Paths support stroke but not underlays. Text and icons support underlays
+/// but not stroke. Scene validation reports unsupported combinations.
 @freezed
 abstract class CanvasAppearance with _$CanvasAppearance {
   const factory CanvasAppearance({
     @CanvasFillConverter()
     @Default(CanvasFill.solid(0xFF111111))
     CanvasFill foreground,
+
+    /// Null means no configured stroke; invisible configurations are retained.
+    CanvasStroke? stroke,
 
     @_CanvasSourceUnderlayJsonConverter()
     @Default(<CanvasSourceUnderlay>[])

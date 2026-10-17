@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'package:canvas_core/canvas_core_runtime.dart'
     show
         CanvasSceneDocument,
-        Color32,
+        CanvasStroke,
         ComputedScene,
         DrawItem,
         ElementId,
@@ -16,7 +16,8 @@ import 'package:canvas_core/canvas_core_runtime.dart'
         PathNode,
         Rect2D,
         TextNode,
-        Vec2;
+        Vec2,
+        strokeContributesToPaint;
 import 'package:vector_math/vector_math_64.dart' as vm;
 
 import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart'
@@ -29,7 +30,7 @@ typedef NodeHitTest = bool Function(Node leaf);
 /// Pick the topmost node at [worldPos] (canvas/world space).
 ///
 /// Selection rule:
-/// - default: select nearest group ancestor (LogoNode/GroupNode) if selectable
+/// - default: select nearest group ancestor if selectable
 /// - selectLeaf=true: select the leaf if selectable (else fallback to group)
 ///
 /// Filtering:
@@ -190,15 +191,18 @@ bool _hitLeafAt(
 
   final localHitSlop = isVectorLeaf
       ? _localHitSlopForLeaf(
-          leafId,
-          computed,
+          inv,
           viewportZoom: viewportZoom,
           screenPx: minPathHitSlopScreenPx,
         )
       : 0.0;
+  final outlineRadius = leaf is PathNode
+      ? math.max(_strokeRadiusLocal(leaf.data.appearance.stroke), localHitSlop)
+      : 0.0;
 
-  // Cheap reject only; for vector content it must be slop-aware.
-  if (!_containsWithPadding(localRect, local, localHitSlop)) return false;
+  // Layout is geometry only, so coarse rejection must include both stroke
+  // width and the selection tolerance, including for zero-area line bounds.
+  if (!_containsWithPadding(localRect, local, outlineRadius)) return false;
 
   return switch (leaf) {
     TextNode() => true,
@@ -217,10 +221,6 @@ bool _hitLeafAt(
       }
 
       // Outline proximity remains interactive, with a minimum hit floor.
-      final outlineRadius = math.max(
-        _strokeRadiusLocal(color: data.strokeColor, width: data.strokeWidth),
-        localHitSlop,
-      );
       return pathHitsOutline(ir, local, radiusLocal: outlineRadius);
     }(),
 
@@ -228,45 +228,36 @@ bool _hitLeafAt(
   };
 }
 
-double _strokeRadiusLocal({required Color32? color, required double width}) {
-  final hasStroke = color != null && color != 0 && width > 0;
-  return hasStroke ? width / 2.0 : 0.0;
+double _strokeRadiusLocal(CanvasStroke? stroke) {
+  return strokeContributesToPaint(stroke) ? stroke!.width / 2.0 : 0.0;
 }
 
 double _localHitSlopForLeaf(
-  ElementId leafId,
-  ComputedScene computed, {
+  vm.Matrix4 inverseWorld, {
   required double viewportZoom,
   required double screenPx,
 }) {
-  if (viewportZoom <= 0 || screenPx <= 0) return 0.0;
+  if (!viewportZoom.isFinite ||
+      viewportZoom <= 0 ||
+      !screenPx.isFinite ||
+      screenPx <= 0) {
+    return 0.0;
+  }
 
-  final world = computed.worldById[leafId];
-  if (world == null) return 0.0;
-
-  final o = vm.Vector3.zero();
-  final x = vm.Vector3(1, 0, 0);
-  final y = vm.Vector3(0, 1, 0);
-
-  world.transform3(o);
-  world.transform3(x);
-  world.transform3(y);
-
-  final sxWorld = math.sqrt(
-    (x.x - o.x) * (x.x - o.x) + (x.y - o.y) * (x.y - o.y),
+  final m = inverseWorld.storage;
+  final scale = math.max(
+    math.max(m[0].abs(), m[4].abs()),
+    math.max(m[1].abs(), m[5].abs()),
   );
-  final syWorld = math.sqrt(
-    (y.x - o.x) * (y.x - o.x) + (y.y - o.y) * (y.y - o.y),
-  );
-
-  // Conservative under non-uniform scale: use the smaller axis so hit slop
-  // never becomes too small in local space.
-  final screenPxPerLocalUnit = math.max(
-    1e-6,
-    math.min(sxWorld, syWorld) * viewportZoom,
-  );
-
-  return screenPx / screenPxPerLocalUnit;
+  if (!scale.isFinite || scale == 0) return 0.0;
+  final a = m[0] / scale, b = m[4] / scale;
+  final c = m[1] / scale, d = m[5] / scale;
+  // Largest singular value of the inverse linear transform. Unlike column
+  // lengths, it preserves the screen-space floor under nested nonuniform
+  // scales and rotations, which can compose into shear.
+  final sum = math.sqrt((a + d) * (a + d) + (c - b) * (c - b));
+  final difference = math.sqrt((a - d) * (a - d) + (c + b) * (c + b));
+  return screenPx / viewportZoom * scale * (sum + difference) / 2;
 }
 
 bool _containsWithPadding(Rect2D r, Vec2 p, double pad) {

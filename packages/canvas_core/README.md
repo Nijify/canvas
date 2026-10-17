@@ -157,6 +157,12 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
+Persistence uses scene format v3. Call `upgradeCanvasScene()` explicitly for
+supported historical JSON before decoding. Both persistence functions enforce
+scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
+check. Malformed wire structure throws `FormatException`; runtime integrity
+failures throw `ArgumentError`.
+
 ## Rendering pipeline
 
 The canonical runtime flow is:

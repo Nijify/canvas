@@ -38,10 +38,13 @@ export 'src/runtime/model/scene_document.dart';
 
 export 'src/runtime/model/canvas_appearance.dart'
     show CanvasAppearance, CanvasSourceUnderlay, ShadowEffect;
+export 'src/runtime/model/canvas_stroke.dart' show CanvasStroke;
 
 export 'src/algorithms/layout/appearance_bounds.dart'
     show
         shadowBlurExtentInSigmas,
+        fillContributesToPaint,
+        strokeContributesToPaint,
         shadowContributesToPaint,
         sourceUnderlayContributesToPaint,
         estimateSourceUnderlayPaintBounds,
@@ -153,10 +156,7 @@ export 'src/runtime/traversal/stack_order.dart'
 // 9) Validation (headless, deterministic, domain-neutral)
 // ============================================================================
 export 'src/runtime/validation/scene_document_validation.dart'
-    show
-        CanvasSceneValidationCode,
-        CanvasSceneValidationIssue,
-        validateCanvasSceneDocument;
+    show requireCanvasSceneIntegrity;
 
 // ============================================================================
 // 10) Viewport + export helpers (renderer-agnostic)

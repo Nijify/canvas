@@ -282,21 +282,27 @@ void main() {
     expect(after.layoutBoundsLocalById['icon']!.width, 96);
   });
 
-  test('shadow-only text excludes unpainted foreground from paint bounds', () {
-    final computed = computeScene(
-      _scene([_text(shadow: 40, foreground: const CanvasFill.none())]),
-      _services(),
-    );
+  for (final foreground in const [
+    CanvasFill.none(),
+    CanvasFill.solid(0x00112233),
+    CanvasFill.gradient(LinearGradientSpec.transparent),
+  ]) {
+    test('shadow-only text excludes unpainted foreground: $foreground', () {
+      final computed = computeScene(
+        _scene([_text(shadow: 40, foreground: foreground)]),
+        _services(),
+      );
 
-    _expectRect(computed.layoutBoundsLocalById['text'], layout);
+      _expectRect(computed.layoutBoundsLocalById['text'], layout);
 
-    // Source is (-50,-10)-(50,10). The only visible paint is the shadow
-    // translated by (+40,+40).
-    _expectRect(
-      computed.paintBoundsLocalById['text'],
-      const Rect2D(-10, 30, 90, 50),
-    );
-  });
+      // Source is (-50,-10)-(50,10). The only visible paint is the shadow
+      // translated by (+40,+40).
+      _expectRect(
+        computed.paintBoundsLocalById['text'],
+        const Rect2D(-10, 30, 90, 50),
+      );
+    });
+  }
 
   test('contain-fit image retains its existing destination geometry', () {
     final computed = computeScene(

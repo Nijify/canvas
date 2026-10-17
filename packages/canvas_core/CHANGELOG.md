@@ -1,3 +1,23 @@
+## 0.16.0
+
+- **Breaking:** require `PathData.source` and use `CanvasAppearance` for path
+  fill/stroke. Paths default to no foreground or configured stroke.
+- **Breaking:** `PolylineSource` and `CanvasStroke` snapshot caller-supplied
+  lists and are no longer `const`. Stroke copies preserve owned dash values.
+- **Breaking:** use geometry-only path layout, independent paint bounds, and
+  conservative stroke caps/joins. Pivots and content fitting may change from
+  earlier stroke-expanded layout; invisible paint contributes no bounds.
+- **Breaking:** persist scene format v3. Use `upgradeCanvasScene()` for v2, v1,
+  and explicitly identified unversioned 0.10.x inputs, retaining existing icon
+  resolution requirements. Preserve contour breaks and inactive stroke/dash data.
+- **Breaking:** replace `validateCanvasSceneDocument`, its issue type/enum, and
+  `CanvasSceneFormatException` with fail-fast `requireCanvasSceneIntegrity` and
+  ordinary errors. Diagnostic codes, paths, and ordering are no longer contracts.
+- **Breaking:** remove `LinearGradientSpecConverter` and stop exporting internal
+  `CanvasFillConverter`, `PathSourceConverter`, and `estimatePathPaintBounds`.
+  Geometry converter annotations remain public.
+- Add `CanvasFields.pathStroke` and `fillContributesToPaint`.
+
 ## 0.15.0
 
 - **Breaking:** replace `ResolvedIconText` and `ResolvedIconPath` with one
