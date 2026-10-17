@@ -1,9 +1,12 @@
 // Path: packages/canvas_editor_flutter/test/interaction/picking/hit_test_scene_test.dart
 
+import 'dart:math' as math;
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dart';
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vector_math/vector_math_64.dart' as vm;
 
 class _TextMeasurer implements TextMeasurer {
   @override
@@ -98,6 +101,88 @@ void main() {
     );
 
     expect(hit?.id, 'path');
+    expect(computed.layoutBoundsLocalById['path'], const Rect2D(-10, 0, 10, 0));
+    expect(
+      pickLeafTopAtScene(
+        scene,
+        const Vec2(0, 5),
+        computed: computed,
+        geometry: geometry,
+        minPathHitSlopScreenPx: 0,
+      ),
+      isNull,
+    );
+  });
+
+  for (final vertical in [false, true]) {
+    test(
+      'unpainted ${vertical ? 'vertical' : 'horizontal'} line uses zoom slop',
+      () {
+        final scene = _scene([
+          Node.path(
+            id: 'path',
+            data: PathData(
+              source: PolylineSource(
+                vertical
+                    ? const [Vec2(0, -10), Vec2(0, 10)]
+                    : const [Vec2(-10, 0), Vec2(10, 0)],
+              ),
+            ),
+          ),
+        ]);
+        final computed = computeScene(scene, _services());
+        final geometry = EditorGeometryIndex.fromComputed(computed);
+        expect(computed.paintBoundsWorldById, isEmpty);
+        for (final zoom in [0.5, 1.0, 4.0]) {
+          Node? pick(double screenDistance) => pickLeafTopAtScene(
+            scene,
+            vertical
+                ? Vec2(screenDistance / zoom, 0)
+                : Vec2(0, screenDistance / zoom),
+            computed: computed,
+            geometry: geometry,
+            viewportZoom: zoom,
+          );
+          expect(pick(5.5)?.id, 'path');
+          expect(pick(6.5), isNull);
+        }
+      },
+    );
+  }
+
+  test('nested transforms preserve the minimum screen-space hit floor', () {
+    final scene = _scene([
+      Node.group(
+        id: 'group',
+        xf: const Transform2D(scale: Vec2(4, 0.25)),
+        children: [
+          Node.path(
+            id: 'path',
+            xf: Transform2D(rotationRad: math.pi / 4),
+            data: PathData(
+              source: PolylineSource(const [Vec2(-10, 0), Vec2(10, 0)]),
+            ),
+          ),
+        ],
+      ),
+    ]);
+    final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
+    final world = computed.worldById['path']!;
+    final origin = world.transform3(vm.Vector3.zero());
+    final tangent = world.transform3(vm.Vector3(1, 0, 0)) - origin;
+    final normal = vm.Vector3(-tangent.y, tangent.x, 0)..normalize();
+    for (final zoom in [0.5, 1.0, 4.0]) {
+      final point = origin + normal * (5.5 / zoom);
+      final hit = pickLeafTopAtScene(
+        scene,
+        Vec2(point.x, point.y),
+        computed: computed,
+        geometry: geometry,
+        viewportZoom: zoom,
+      );
+      expect(hit?.id, 'path');
+    }
   });
 
   test('an unfilled ordinary path remains selectable inside its geometry', () {

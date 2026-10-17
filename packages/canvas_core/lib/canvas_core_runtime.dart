@@ -43,7 +43,9 @@ export 'src/runtime/model/canvas_stroke.dart' show CanvasStroke;
 export 'src/algorithms/layout/appearance_bounds.dart'
     show
         shadowBlurExtentInSigmas,
+        fillContributesToPaint,
         strokeContributesToPaint,
+        estimatePathPaintBounds,
         shadowContributesToPaint,
         sourceUnderlayContributesToPaint,
         estimateSourceUnderlayPaintBounds,

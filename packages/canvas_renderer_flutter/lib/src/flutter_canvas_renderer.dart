@@ -158,11 +158,12 @@ class CanvasRenderer {
               _drawImage(canvas, id, placement.src, placement.dst);
             }
           case PathNode(data: final data):
-            final path = computed.pathIRById[id];
-            if (path != null) {
+            final ir = computed.pathIRById[id];
+            if (ir != null) {
+              final path = _buildUiPath(ir, fillRule: data.fillRule);
               _drawPathFill(
                 canvas,
-                _buildUiPath(path, fillRule: data.fillRule),
+                path,
                 data.appearance.foreground,
               );
               _drawPathStroke(
@@ -199,11 +200,11 @@ class CanvasRenderer {
   }
 
   void _drawPathFill(ui.Canvas canvas, ui.Path path, CanvasFill fill) {
+    if (!fillContributesToPaint(fill)) return;
     switch (fill) {
       case CanvasFillNone():
         break;
       case CanvasFillSolid(:final color):
-        // Paint and fill participation come from the caller.
         canvas.drawPath(
           path,
           ui.Paint()
@@ -222,13 +223,13 @@ class CanvasRenderer {
 
   void _drawPathStroke(
     ui.Canvas canvas,
-    PathIR path,
+    ui.Path path,
     CanvasStroke? stroke,
   ) {
     if (stroke == null || !strokeContributesToPaint(stroke)) return;
     // Authored dash metadata is retained; dash painting is not yet supported.
     canvas.drawPath(
-      _buildUiPath(path),
+      path,
       ui.Paint()
         ..style = ui.PaintingStyle.stroke
         ..color = ui.Color(stroke.color)
@@ -352,6 +353,7 @@ class CanvasRenderer {
       },
     );
 
+    if (!fillContributesToPaint(appearance.foreground)) return;
     switch (appearance.foreground) {
       case CanvasFillNone():
         break;

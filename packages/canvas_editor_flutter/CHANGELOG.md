@@ -1,3 +1,11 @@
+# Unreleased
+
+- Keep path selection and snap geometry independent of stroke appearance,
+  including horizontal and vertical lines. Coarse picking includes stroke
+  width as well as the minimum screen-space outline tolerance.
+- Preserve that minimum tolerance under nested rotations and nonuniform scales.
+- Fix the picking imports for the shared `CanvasStroke` model.
+
 # 0.18.0
 
 - **Breaking:** require `canvas_core 0.15.x` and

@@ -79,11 +79,23 @@ alpha, and visibility. Node/group transforms apply to the whole result.
 Intrinsic outlines and multiple source paints are outside this icon contract.
 
 `PathIR` is immutable geometry only; `localBounds()` estimates its geometry
-from endpoints and curve controls. Ordinary path appearance belongs to
-`PathData`. For nonempty paths with a nonzero `strokeColor` and positive
-`strokeWidth`, layout and paint bounds expand the geometry bound by half the
-stroke width on each side. This is an estimate, not a guaranteed enclosure of
-all stroke pixels.
+from endpoints and curve controls. `PathData.source` supplies the geometry;
+`fillRule` and `appearance` remain authored on the node. Compilation is cached
+by source identity independently of appearance.
+
+Path layout uses geometry alone, including zero-width or zero-height lines.
+Paint bounds include visible foreground and active strokes. The stroke
+estimate expands by half the width, multiplied by the largest applicable
+factor: one, sqrt(2) for square caps, or the miter limit for miter joins.
+This is conservative and may include unused space; raster antialiasing padding
+remains an export policy. Empty and move-only paths have no paint bounds.
+Transparent foregrounds and inactive strokes do not contribute paint bounds.
+
+Stroke edits leave pivots, selection handles, and snap geometry unchanged.
+Historical content fitting and group pivots can differ when stroke padding
+previously participated in layout. Authored transforms use geometry directly.
+Editor picking remains a separate selection policy: unfilled geometry and
+open outlines remain selectable, with a zoom-aware minimum outline tolerance.
 
 The [strict SVG exporter](../../canvas_svg_export/README.md) supports its
 documented ordinary-path profile and explicitly rejects icon nodes.

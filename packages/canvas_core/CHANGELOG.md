@@ -1,5 +1,13 @@
 ## Unreleased
 
+- **Breaking:** ordinary path layout bounds now use geometry alone. Stroke
+  padding affects paint/content bounds independently of pivots and layout.
+  Content fitting and group pivots can differ from earlier stroke-based layout.
+- Estimate path paint bounds conservatively for square caps and miter joins;
+  retain zero-area line layout while allowing visible strokes to add content.
+  Empty/move-only paths and invisible foregrounds/strokes add no paint bounds.
+- Expose `fillContributesToPaint` and `estimatePathPaintBounds`; transparent
+  text/icon foregrounds no longer add bounds independently of their underlays.
 - **Breaking:** write/read scene format v3 with required path sources and
   shared appearance. Reject obsolete path fields and unsupported appearance
   combinations rather than silently discarding them.

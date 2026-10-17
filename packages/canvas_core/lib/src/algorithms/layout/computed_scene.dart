@@ -32,9 +32,11 @@ final class DrawItem {
 /// serialized.
 ///
 /// Local layout bounds determine pivots and authored transform semantics.
+/// Paths use geometry alone, retaining zero-width or zero-height bounds.
 /// Paint bounds estimate rendered content for fitting and cropping; they must
-/// not affect transforms. Text metrics and the existing path-stroke estimate
-/// are not guaranteed pixel enclosures, so these are not hard clip bounds.
+/// not affect transforms. Path stroke bounds conservatively include caps and
+/// joins. Text metrics, blur tails, and raster antialiasing are estimates or
+/// export padding policies, so these are not hard clip bounds.
 ///
 /// Groups union child bounds independently in local layout space and world
 /// paint space. Editor-only world interaction geometry is derived by

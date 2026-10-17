@@ -88,6 +88,14 @@ final computed = evaluation.computed;
 `FlutterTextPipeline` from `canvas_renderer_flutter`; a server or CLI can
 implement `TextMeasurer` directly.
 
+Path layout bounds describe geometry independently of appearance, including
+horizontal and vertical lines. Stroke edits expand paint bounds for content
+fitting without changing pivots, selection geometry, or snapping. Paint bounds
+account conservatively for square caps and miter joins; raster padding remains
+separate. Invisible foregrounds and strokes retain their authored settings
+without contributing paint bounds. Text/icon source underlays remain
+independent of foreground visibility.
+
 ## Runtime resource discovery
 
 Core discovers logical resource requirements without loading platform resources.

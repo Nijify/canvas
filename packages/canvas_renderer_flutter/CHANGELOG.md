@@ -1,3 +1,10 @@
+## Unreleased
+
+- Reuse one Flutter path for ordinary-path fill and shared appearance strokes.
+- Skip invisible foregrounds while retaining independent source underlays.
+- Cover square-cap and acute-miter pixels against computed paint bounds with
+  separate raster padding.
+
 ## 0.14.0
 
 - **Breaking:** require `canvas_core 0.15.x` and render vector-only icons from
