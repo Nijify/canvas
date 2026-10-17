@@ -1,14 +1,11 @@
 ## 0.3.0
 
-- Use shared fail-fast scene integrity before capability checks, retaining the
-  `invalidScene` failure result. Remove the unused `SvgExportIssue.path` field;
-  scene errors no longer expose a structured validation path.
-
-- **Breaking:** require `canvas_core 0.16.x` and export authored path paint from
-  `CanvasAppearance.foreground` and the optional `CanvasStroke` configuration.
-- Preserve fill rule and active stroke width, caps, joins, miter limit, and
-  alpha. Reject active dash metadata because Flutter currently paints it solid;
-  inactive stroke configurations do not introduce unsupported-dash issues.
+- **Breaking:** require `canvas_core 0.16.x` and export path paint from
+  `CanvasAppearance` and `CanvasStroke`.
+- Preserve active stroke settings and alpha. Reject active dash metadata to
+  match Flutter's solid rendering; inactive configurations add no dash issue.
+- **Breaking:** use shared scene integrity and remove `SvgExportIssue.path`;
+  invalid input still returns an `invalidScene` failure.
 
 ## 0.2.0
 

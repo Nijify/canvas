@@ -2,21 +2,13 @@
 
 - **Breaking:** require `canvas_core 0.16.x` and
   `canvas_renderer_flutter 0.15.x`.
-- Add path stroke authoring for color, opacity, width, caps, joins, and miter
-  limit. Remove a configuration explicitly or retain transparent/zero-width
-  settings and existing dash metadata. Opacity drags form one undo step.
-- Register `CanvasFields.pathStroke` as a `CanvasStroke?` aggregate field and
-  expose `StrokeEditor` from `extensions.dart` for custom inspector composition.
-- Retain owned stroke dash values across canonical edits and undo/redo; changing
-  a caller-supplied dash list cannot mutate stored editor history.
-- **Breaking:** `FieldCodec` readers, fallback, and writer values now accept
-  `Object?`. Explicitly typed custom writer parameters must accept nullable
-  values; each field still owns its concrete value type and target policy.
-- Keep path selection and snap geometry independent of stroke appearance,
-  including horizontal and vertical lines. Coarse picking includes stroke
-  width as well as the minimum screen-space outline tolerance.
-- Preserve that minimum tolerance under nested rotations and nonuniform scales.
-- Fix the picking imports for the shared `CanvasStroke` model.
+- Add path stroke controls and nullable `CanvasFields.pathStroke`; export
+  `StrokeEditor` from `extensions.dart`. Preserve inactive settings and dash
+  values across edits and undo/redo; opacity drags form one undo step.
+- **Breaking:** `FieldCodec` readers, fallbacks, and writer values accept
+  `Object?`; explicitly typed custom writers must accept nullable values.
+- Keep picking and snapping independent of paint visibility, with zoom-aware
+  outline tolerance under nested rotations and nonuniform scales.
 
 # 0.18.0
 

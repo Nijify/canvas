@@ -185,10 +185,8 @@ subtype. It exposes the missing `nodeIds` and relevant operation `failures`,
 including original causes when available. Formatted errors omit raw sources and
 original exception text. Persisted dimensions may satisfy metadata needs,
 hidden final images need no raster, and intentionally empty frames are valid.
-Scene-integrity failures propagate as `ArgumentError` from
-`requireCanvasSceneIntegrity`. Checks occur before resource work and again after
-a configured preparer runs, even if it returns the same scene object. Font-loader
-and preparer exceptions propagate directly.
+Scene-integrity failures throw `ArgumentError`. Font-loader and preparer
+exceptions propagate directly.
 
 ## Optional ImageProvider helpers
 

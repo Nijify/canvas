@@ -194,33 +194,6 @@ An extension may contribute `scenePreparer`, field codecs, surface features, act
 
 `EditorRuntime` itself remains unaware of extension composition. It receives the selected preparer and field codecs as plain constructor inputs.
 
-## Path stroke authoring
-
-Path inspectors include stroke controls for color, opacity, width, caps, joins,
-and miter limit. Removing a stroke stores `null`; transparent and zero-width
-strokes keep their configuration. Existing dash sequences are preserved during
-other edits. Dash rendering remains solid, so the inspector does not offer dash
-authoring controls.
-
-`CanvasFields.pathStroke` registers the complete optional `CanvasStroke` value.
-Strokes own a snapshot of supplied dash values, so later changes to a caller's
-list cannot alter current or undo/redo scenes.
-
-Use nullable field types and canonical updates to preserve unrelated settings:
-
-```dart
-controller.updateField<CanvasStroke?>(
-  nodeId,
-  CanvasFields.pathStroke,
-  (stroke) => stroke?.copyWith(width: 8),
-);
-controller.commitField<CanvasStroke?>(nodeId, CanvasFields.pathStroke, null);
-```
-
-`StrokeEditor` is available from `extensions.dart` for custom inspectors.
-`FieldCodec` supports nullable readers, fallbacks, and writer values; custom
-codecs remain responsible for their field's type and canonical storage.
-
 ## Architecture
 
 See [doc/architecture.md](doc/architecture.md) for package layering, mutation flow, runtime-resource ownership, and the interactive/final-output boundary.

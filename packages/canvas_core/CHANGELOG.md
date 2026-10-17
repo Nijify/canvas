@@ -1,48 +1,22 @@
 ## 0.16.0
 
-- **Breaking:** require one `PathData.source` and move path fill/stroke fields
-  into `CanvasAppearance`. Paths default to no foreground and no configured
-  stroke. Add `CanvasStroke` with independent inactive settings.
-- **Breaking:** `PolylineSource` snapshots its points and is no longer `const`.
-  Cache compiled geometry by source identity independently of appearance and
-  fill rule.
-- **Breaking:** `CanvasStroke` snapshots supplied dash lists and is no longer
-  `const`. Construction, `copyWith`, and JSON decoding retain owned,
-  unmodifiable dash values so caller mutations cannot alter equality, hashes,
-  current documents, or undo/redo history. Stroke defaults and wire data remain
-  unchanged, including transparent/zero-width settings and odd or zero dashes.
-- Add `CanvasFields.pathStroke` as the stable aggregate identity for an optional
-  authored path stroke.
-- **Breaking:** ordinary path layout bounds now use geometry alone. Stroke
-  padding affects paint/content bounds independently of pivots and layout.
-  Content fitting and group pivots can differ from earlier stroke-based layout.
-- Estimate path paint bounds conservatively for square caps and miter joins;
-  retain zero-area line layout while allowing visible strokes to add content.
-  Empty/move-only paths and invisible foregrounds/strokes add no paint bounds.
-- Expose `fillContributesToPaint`; transparent
-  text/icon foregrounds no longer add bounds independently of their underlays.
-- **Breaking:** write/read scene format v3 with required path sources and
-  shared appearance. Reject obsolete path fields and unsupported appearance
-  combinations rather than silently discarding them.
-- Upgrade v2 paths explicitly through `upgradeCanvasScene`, retaining v1 and
-  identified unversioned 0.10.x migrations and icon-resolution requirements.
-  Preserve contour breaks, dash arrays, and nondefault inactive stroke data.
-- **Breaking:** replace collect-all `validateCanvasSceneDocument`, its issue
-  type/enum, and `CanvasSceneFormatException` with the shared fail-fast
-  `requireCanvasSceneIntegrity` guard and ordinary errors. Diagnostic codes,
-  paths, messages, and ordering are not stable API contracts.
-- Check node labels against their variants before encoding, alongside runtime
-  semantics and cycles; remove the redundant full output-wire scan. Keep strict
-  raw-wire decoding and share command/gradient structure with their decoders.
-- **Breaking:** remove the unused `LinearGradientSpecConverter`; stop exporting
-  internal `CanvasFillConverter`, `PathSourceConverter`, and
-  `estimatePathPaintBounds`. Keep geometry converter annotations public.
-- Preserve path dimensions/radii and icon-size integrity checks, appearance
-  defaults, inactive stroke settings, dash arrays, and historical import routes.
-- Keep historical migration fixtures and update current contract fixtures to
-  v3. Historical rendering/editor fidelity is practical rather than exact.
-- Document model, persistence, bounds, and editor adoption in the
-  [scene-v3 upgrade guide](doc/migration-v3.md).
+- **Breaking:** require `PathData.source` and use `CanvasAppearance` for path
+  fill/stroke. Paths default to no foreground or configured stroke.
+- **Breaking:** `PolylineSource` and `CanvasStroke` snapshot caller-supplied
+  lists and are no longer `const`. Stroke copies preserve owned dash values.
+- **Breaking:** use geometry-only path layout, independent paint bounds, and
+  conservative stroke caps/joins. Pivots and content fitting may change from
+  earlier stroke-expanded layout; invisible paint contributes no bounds.
+- **Breaking:** persist scene format v3. Use `upgradeCanvasScene()` for v2, v1,
+  and explicitly identified unversioned 0.10.x inputs, retaining existing icon
+  resolution requirements. Preserve contour breaks and inactive stroke/dash data.
+- **Breaking:** replace `validateCanvasSceneDocument`, its issue type/enum, and
+  `CanvasSceneFormatException` with fail-fast `requireCanvasSceneIntegrity` and
+  ordinary errors. Diagnostic codes, paths, and ordering are no longer contracts.
+- **Breaking:** remove `LinearGradientSpecConverter` and stop exporting internal
+  `CanvasFillConverter`, `PathSourceConverter`, and `estimatePathPaintBounds`.
+  Geometry converter annotations remain public.
+- Add `CanvasFields.pathStroke` and `fillContributesToPaint`.
 
 ## 0.15.0
 

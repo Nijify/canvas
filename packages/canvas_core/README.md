@@ -88,14 +88,6 @@ final computed = evaluation.computed;
 `FlutterTextPipeline` from `canvas_renderer_flutter`; a server or CLI can
 implement `TextMeasurer` directly.
 
-Path layout bounds describe geometry independently of appearance, including
-horizontal and vertical lines. Stroke edits expand paint bounds for content
-fitting without changing pivots, selection geometry, or snapping. Paint bounds
-account conservatively for square caps and miter joins; raster padding remains
-separate. Invisible foregrounds and strokes retain their authored settings
-without contributing paint bounds. Text/icon source underlays remain
-independent of foreground visibility.
-
 ## Runtime resource discovery
 
 Core discovers logical resource requirements without loading platform resources.
@@ -165,64 +157,11 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-`encodeCanvasScene` writes scene format v3; `decodeCanvasScene` accepts v3.
-Reading checks raw wire structure before decoding, then enforces runtime
-integrity. Writing checks runtime integrity before recursive serialization;
-package serializers emit the canonical wire structure without another scan.
-Malformed wire data throws `FormatException`; integrity failures throw
-`ArgumentError`. Error messages provide context without stable diagnostic codes,
-paths, or ordering guarantees.
-
-Call `requireCanvasSceneIntegrity(document)` before independently usable
-operations that recurse through a scene or begin resource work. It rejects the
-first failure and checks numeric values, appearance, identities, asset references,
-JSON payloads, cycles, and node discriminator consistency. Component availability
-and export capabilities remain separate caller concerns.
-
-| Boundary | Responsibility |
-| --- | --- |
-| Read | Wire checks → decode → runtime integrity |
-| Write | Runtime integrity → canonical encoding |
-| PNG | Integrity before resources/preparation; check output when a preparer runs |
-| SVG | Integrity, then supported export capabilities |
-
-Checks around an actual transformation are necessary even if the same guard
-already ran on its input. Avoid repeating a check on unchanged data within one
-operation; independently usable entry points still enforce their prerequisites.
-
-See the [scene-v3 upgrade guide](doc/migration-v3.md) for compatible package
-versions, Dart model changes, explicit persistence migration, and editor fields.
-
-Paths require a `source` and persist fill/stroke through `appearance`.
-`stroke: null` means no configuration; transparent and zero-width stroke
-configurations retain their settings. Dash arrays are preserved, including
-zeros and odd-length sequences, but are not yet rendered as dashes. Stroke
-miter limits must be finite and at least 1. Negative source dimensions/radii
-and nonpositive icon sizes are invalid; zero-sized path geometry is allowed.
-
-`CanvasStroke` snapshots supplied dash lists, including replacements passed to
-`copyWith`. Its dash values are unmodifiable and cannot change when a caller
-later edits the original list. Stroke construction is therefore not `const`;
-its defaults and persisted shape remain unchanged.
-
-Upgrade historical JSON explicitly before decoding:
-
-```dart
-final restored = decodeCanvasScene(upgradeCanvasScene(historicalJson));
-```
-
-The public upgrader supports v2, v1 through v2, and explicitly identified
-unversioned `canvas_core` 0.10.x through the existing migration chain. Only that
-known unversioned format uses `legacyUnversioned: true`, with
-`resolveLegacyIconWasGlyph` when historical icon shadows require it. Missing
-version metadata does not select a historical format automatically.
-
-The v2 conversion prefers a non-null `source` over obsolete `points`, preserves
-points-only contour breaks, and uses explicit empty commands for empty fallback
-geometry. It combines fill/stroke fields into appearance, preserving dash
-metadata and nondefault inactive stroke settings. Unsupported or malformed
-input fails explicitly. Migration preserves content where practical without
-reproducing every historical rendering or editor behavior.
+Persistence uses scene format v3. Call `upgradeCanvasScene()` explicitly for
+supported historical JSON before decoding. Both persistence functions enforce
+scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
+check. Malformed wire structure throws `FormatException`; runtime integrity
+failures throw `ArgumentError`.
 
 ## Rendering pipeline
 

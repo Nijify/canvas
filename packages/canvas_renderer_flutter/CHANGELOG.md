@@ -1,15 +1,11 @@
 ## 0.15.0
 
-- **Breaking:** PNG scene-integrity failures now propagate the shared guard's
-  `ArgumentError` rather than a renderer-specific `StateError` report. Validate
-  before resource work and validate prepared output when a preparer runs.
-
-- **Breaking:** require `canvas_core 0.16.x` and read ordinary-path foreground
-  and `CanvasStroke` settings from `PathData.appearance`.
-- Reuse one Flutter path for ordinary-path fill and shared appearance strokes.
-- Skip invisible foregrounds while retaining independent source underlays.
-- Cover square-cap and acute-miter pixels against computed paint bounds with
-  separate raster padding.
+- **Breaking:** require `canvas_core 0.16.x` and read path fill/stroke from
+  `PathData.appearance`.
+- **Breaking:** PNG scene-integrity failures propagate `ArgumentError`. Check
+  input before resource work and output after a configured preparer runs.
+- Reuse one path for fill/stroke; skip invisible foregrounds while retaining
+  independent source underlays.
 
 ## 0.14.0
 

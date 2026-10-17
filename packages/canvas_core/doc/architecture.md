@@ -79,23 +79,10 @@ alpha, and visibility. Node/group transforms apply to the whole result.
 Intrinsic outlines and multiple source paints are outside this icon contract.
 
 `PathIR` is immutable geometry only; `localBounds()` estimates its geometry
-from endpoints and curve controls. `PathData.source` supplies the geometry;
-`fillRule` and `appearance` remain authored on the node. Compilation is cached
-by source identity independently of appearance.
-
-Path layout uses geometry alone, including zero-width or zero-height lines.
-Paint bounds include visible foreground and active strokes. The stroke
-estimate expands by half the width, multiplied by the largest applicable
-factor: one, sqrt(2) for square caps, or the miter limit for miter joins.
-This is conservative and may include unused space; raster antialiasing padding
-remains an export policy. Empty and move-only paths have no paint bounds.
-Transparent foregrounds and inactive strokes do not contribute paint bounds.
-
-Stroke edits leave pivots, selection handles, and snap geometry unchanged.
-Historical content fitting and group pivots can differ when stroke padding
-previously participated in layout. Authored transforms use geometry directly.
-Editor picking remains a separate selection policy: unfilled geometry and
-open outlines remain selectable, with a zoom-aware minimum outline tolerance.
+from endpoints and curve controls. `PathData.source` owns geometry and
+`PathData.appearance` owns fill and stroke. Layout uses geometry alone; visible
+paint contributes separate bounds that conservatively include stroke caps and
+joins. Compilation is cached by source identity independently of appearance.
 
 The [strict SVG exporter](../../canvas_svg_export/README.md) supports its
 documented ordinary-path profile and explicitly rejects icon nodes.
@@ -124,29 +111,15 @@ external JSON -> decodeCanvasScene -> CanvasSceneDocument
 CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
 
-`decodeCanvasScene()` reads scene format v3 and `encodeCanvasScene()` writes v3.
-Reads validate raw structure before decoding and runtime integrity afterward.
-Writes enforce integrity before canonical serialization. Use
-`upgradeCanvasScene()` before decoding supported older documents: v2, v1, or
-explicitly identified canvas_core 0.10.x unversioned scenes. See the
-[scene-v3 upgrade guide](migration-v3.md) for model and persistence changes.
+Persistence reads and writes scene format v3. Use `upgradeCanvasScene()` before
+decoding supported older documents: v2, v1, or explicitly identified canvas_core
+0.10.x unversioned scenes.
 
 Raw `kind: "svg"` path sources are unsupported. Hosts must normalize SVG paths
 into supported commands before loading; core has no SVG parser.
 
-Generated model serializers remain implementation-level primitives. Persisted
-documents use the validated encode/decode boundary.
-`requireCanvasSceneIntegrity()` is the shared fail-fast runtime guard. It runs
-before recursive serialization, PNG resource work, and SVG capability checks.
-A PNG preparer produces another value that must pass the guard before output
-resource processing. Generic integrity does not interpret component availability.
-
-The runtime guard owns numeric/appearance constraints, IDs, asset references,
-JSON payload safety, cycles, and node-label consistency. Decoders own strict raw
-structure and type checks, including unknown fields and coercion prevention.
-Command and gradient decoders own their nested structure; runtime gradient
-semantics have one shared implementation. Package serializers own output shape,
-so encoding does not repeat the full raw-wire traversal.
+Generated model serializers remain implementation-level primitives. Persistence
+checks raw structure before decoding and runtime integrity on both boundaries.
 
 ## Editor boundary
 
