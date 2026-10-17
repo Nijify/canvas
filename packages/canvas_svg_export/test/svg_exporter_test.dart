@@ -473,15 +473,21 @@ void main() {
     expect(result.issues.single.message, isNotEmpty);
   });
 
-  test('rejects cyclic scene integrity before traversing export capabilities', () {
-    final valid = _scene();
-    final children = <Node>[];
-    final group = Node.group(id: 'group', children: children);
-    children.add(group);
-    final invalid = valid.copyWith(children: [group]);
-    final result = exportPreparedSvg(scene: invalid, computed: _compute(valid));
-    expect(result.svg, isNull);
-    expect(result.issues.single.code, SvgExportIssueCode.invalidScene);
-    expect(result.issues.single.message, isNotEmpty);
-  });
+  test(
+    'rejects cyclic scene integrity before traversing export capabilities',
+    () {
+      final valid = _scene();
+      final children = <Node>[];
+      final group = Node.group(id: 'group', children: children);
+      children.add(group);
+      final invalid = valid.copyWith(children: [group]);
+      final result = exportPreparedSvg(
+        scene: invalid,
+        computed: _compute(valid),
+      );
+      expect(result.svg, isNull);
+      expect(result.issues.single.code, SvgExportIssueCode.invalidScene);
+      expect(result.issues.single.message, isNotEmpty);
+    },
+  );
 }

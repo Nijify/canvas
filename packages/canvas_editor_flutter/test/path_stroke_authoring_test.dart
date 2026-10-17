@@ -88,11 +88,7 @@ class _Adapter extends EditorDocumentAdapter<rt.CanvasSceneDocument> {
       node.copyWith(
         data: node.data.copyWith(
           appearance: node.data.appearance.copyWith(
-            stroke: rt.CanvasStroke(
-              color: 0xFFFF0000,
-              width: 99,
-              dash: [99],
-            ),
+            stroke: rt.CanvasStroke(color: 0xFFFF0000, width: 99, dash: [99]),
           ),
         ),
       ),
@@ -162,7 +158,11 @@ void main() {
 
   test('caller dash mutations cannot change current or undo/redo scenes', () {
     final initialDash = <double>[5, 0, 3];
-    final initial = rt.CanvasStroke(color: 0x00112233, width: 0, dash: initialDash);
+    final initial = rt.CanvasStroke(
+      color: 0x00112233,
+      width: 0,
+      dash: initialDash,
+    );
     final runtime = _runtime(_scene(stroke: initial));
     addTearDown(runtime.dispose);
     final before = runtime.sourceDocument;
@@ -178,8 +178,8 @@ void main() {
     replacement[0] = 99;
     replacement.clear();
 
-    final beforeStroke = (rt.findById(before, 'path') as rt.PathNode)
-        .data.appearance.stroke!;
+    final beforeStroke =
+        (rt.findById(before, 'path') as rt.PathNode).data.appearance.stroke!;
     expect(beforeStroke.dash, [5, 0, 3]);
     expect(_path(runtime).data.appearance.stroke!.dash, [7, 0, 5]);
     expect(_path(runtime).data.appearance.stroke!.width, 12);

@@ -171,7 +171,12 @@ void main() {
       [_shadow, _shadow],
       [_shadow.copyWith(id: ' ')],
       [_shadow.copyWith(offset: const Vec2(double.nan, 0), enabled: false)],
-      [_shadow.copyWith(offset: const Vec2(0, double.infinity), enabled: false)],
+      [
+        _shadow.copyWith(
+          offset: const Vec2(0, double.infinity),
+          enabled: false,
+        ),
+      ],
       [_shadow.copyWith(blurSigma: -1, enabled: false)],
       [_shadow.copyWith(color: -1, enabled: false)],
     ]) {

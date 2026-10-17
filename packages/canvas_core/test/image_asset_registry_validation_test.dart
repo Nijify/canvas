@@ -34,27 +34,43 @@ void main() {
     });
 
     test('rejects a blank image asset source', () {
-      expect(() => requireCanvasSceneIntegrity(
-        _scene(
-          assets: const <CanvasAssetId, CanvasImageAsset>{
-            'asset-1': CanvasImageAsset(sourceRef: '   '),
-          },
-          assetId: 'asset-1',
+      expect(
+        () => requireCanvasSceneIntegrity(
+          _scene(
+            assets: const <CanvasAssetId, CanvasImageAsset>{
+              'asset-1': CanvasImageAsset(sourceRef: '   '),
+            },
+            assetId: 'asset-1',
+          ),
         ),
-      ), throwsArgumentError);
+        throwsArgumentError,
+      );
     });
 
-    test('checks asset IDs and intrinsic dimensions even when unreferenced', () {
-      for (final assets in const <Map<CanvasAssetId, CanvasImageAsset>>[
-        {' ': CanvasImageAsset(sourceRef: 'media:image')},
-        {'asset': CanvasImageAsset(sourceRef: 'media:image', intrinsicSize: Size2D(0, 10))},
-        {'asset': CanvasImageAsset(sourceRef: 'media:image', intrinsicSize: Size2D(10, double.infinity))},
-      ]) {
-        expect(
-          () => requireCanvasSceneIntegrity(_scene(assets: assets)),
-          throwsArgumentError,
-        );
-      }
-    });
+    test(
+      'checks asset IDs and intrinsic dimensions even when unreferenced',
+      () {
+        for (final assets in const <Map<CanvasAssetId, CanvasImageAsset>>[
+          {' ': CanvasImageAsset(sourceRef: 'media:image')},
+          {
+            'asset': CanvasImageAsset(
+              sourceRef: 'media:image',
+              intrinsicSize: Size2D(0, 10),
+            ),
+          },
+          {
+            'asset': CanvasImageAsset(
+              sourceRef: 'media:image',
+              intrinsicSize: Size2D(10, double.infinity),
+            ),
+          },
+        ]) {
+          expect(
+            () => requireCanvasSceneIntegrity(_scene(assets: assets)),
+            throwsArgumentError,
+          );
+        }
+      },
+    );
   });
 }

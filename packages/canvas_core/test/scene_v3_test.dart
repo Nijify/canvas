@@ -122,10 +122,7 @@ void main() {
     test('v3 rejects obsolete path field $field', () {
       final json = _wire();
       _data(json)[field] = null;
-      expect(
-        () => decodeCanvasScene(json),
-        throwsFormatException,
-      );
+      expect(() => decodeCanvasScene(json), throwsFormatException);
     });
   }
 
@@ -133,26 +130,17 @@ void main() {
     test('v3 requires path $field and rejects explicit null', () {
       final missing = _wire();
       _data(missing).remove(field);
-      expect(
-        () => decodeCanvasScene(missing),
-        throwsFormatException,
-      );
+      expect(() => decodeCanvasScene(missing), throwsFormatException);
       final absent = _wire();
       _data(absent)[field] = null;
-      expect(
-        () => decodeCanvasScene(absent),
-        throwsFormatException,
-      );
+      expect(() => decodeCanvasScene(absent), throwsFormatException);
     });
   }
 
   test('v3 rejects unknown source kinds and invalid command structure', () {
     final unknown = _wire();
     _data(unknown)['source'] = {'kind': 'unknown'};
-    expect(
-      () => decodeCanvasScene(unknown),
-      throwsFormatException,
-    );
+    expect(() => decodeCanvasScene(unknown), throwsFormatException);
     final invalid = _wire();
     _data(invalid)['source'] = {
       'kind': 'commands',
@@ -163,29 +151,20 @@ void main() {
         },
       ],
     };
-    expect(
-      () => decodeCanvasScene(invalid),
-      throwsFormatException,
-    );
+    expect(() => decodeCanvasScene(invalid), throwsFormatException);
   });
 
   test('source semantics and integer parameters are checked before use', () {
     final negative = _wire();
     _data(negative)['source'] = {'kind': 'circle', 'r': -1};
-    expect(
-      () => decodeCanvasScene(negative),
-      throwsArgumentError,
-    );
+    expect(() => decodeCanvasScene(negative), throwsArgumentError);
     final fractional = _wire();
     _data(fractional)['source'] = {
       'kind': 'regularPolygon',
       'sides': 3.5,
       'r': 10,
     };
-    expect(
-      () => decodeCanvasScene(fractional),
-      throwsFormatException,
-    );
+    expect(() => decodeCanvasScene(fractional), throwsFormatException);
   });
 
   test('v3 validates inactive stroke values without numeric coercion', () {
@@ -205,10 +184,7 @@ void main() {
       final json = _wire();
       _stroke(json)['color'] = 0;
       _stroke(json)[field] = value;
-      expect(
-        () => decodeCanvasScene(json),
-        throwsA(errorType),
-      );
+      expect(() => decodeCanvasScene(json), throwsA(errorType));
     }
     for (final (value, errorType) in [
       (-1, isA<ArgumentError>()),
@@ -218,10 +194,7 @@ void main() {
       final json = _wire();
       _stroke(json)['color'] = 0;
       _stroke(json)['dash'] = [5, value];
-      expect(
-        () => decodeCanvasScene(json),
-        throwsA(errorType),
-      );
+      expect(() => decodeCanvasScene(json), throwsA(errorType));
     }
   });
 
@@ -236,10 +209,7 @@ void main() {
         ),
       ),
     ]);
-    expect(
-      () => encodeCanvasScene(invalid),
-      throwsArgumentError,
-    );
+    expect(() => encodeCanvasScene(invalid), throwsArgumentError);
     final wire = encodeCanvasScene(
       _scene([
         const Node.text(
@@ -255,10 +225,7 @@ void main() {
     );
     final appearance = _data(wire)['appearance'] as Map<String, Object?>;
     appearance['stroke'] = {'color': 0, 'width': 0};
-    expect(
-      () => decodeCanvasScene(wire),
-      throwsArgumentError,
-    );
+    expect(() => decodeCanvasScene(wire), throwsArgumentError);
 
     final path = _wire();
     final pathAppearance = _data(path)['appearance'] as Map<String, Object?>;
@@ -270,10 +237,7 @@ void main() {
         'color': 0,
       },
     ];
-    expect(
-      () => decodeCanvasScene(path),
-      throwsArgumentError,
-    );
+    expect(() => decodeCanvasScene(path), throwsArgumentError);
   });
 
   test('rejects unknown fields including names containing slashes', () {
@@ -284,40 +248,98 @@ void main() {
     }
   });
 
-  test('command decoding rejects malformed structure without coercion or ignored fields', () {
-    for (final commands in <Object?>[
-      null,
-      'M0 0',
-      [{'verb': 'unknown'}],
-      [{'verb': 'moveTo', 'p': {'x': '0', 'y': 0}}],
-      [{'verb': 'moveTo', 'p': {'x': double.infinity, 'y': 0}}],
-      [{'verb': 'moveTo', 'p': {'x': 0, 'y': 0, 'extra': 1}}],
-      [{'verb': 'moveTo', 'p': {'x': 0, 'y': 0}, 'extra': 1}],
-      [{'verb': 'moveTo'}],
-      [{'verb': 'lineTo', 'p': {'x': 0, 'y': 0}}],
-      [
-        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
-        {'verb': 'quadTo', 'p': {'x': 1, 'y': 1}},
-      ],
-      [
-        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
-        {'verb': 'cubicTo', 'c1': {'x': 1, 'y': 1}, 'p': {'x': 2, 'y': 2}},
-      ],
-      [
-        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
-        {'verb': 'close', 'p': {'x': 0, 'y': 0}},
-      ],
-      [
-        {'verb': 'moveTo', 'p': {'x': 0, 'y': 0}},
-        {'verb': 'close'},
-        {'verb': 'lineTo', 'p': {'x': 1, 'y': 1}},
-      ],
-    ]) {
-      final json = _wire();
-      _data(json)['source'] = {'kind': 'commands', 'commands': commands};
-      expect(() => decodeCanvasScene(json), throwsFormatException);
-    }
-  });
+  test(
+    'command decoding rejects malformed structure without coercion or ignored fields',
+    () {
+      for (final commands in <Object?>[
+        null,
+        'M0 0',
+        [
+          {'verb': 'unknown'},
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': '0', 'y': 0},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': double.infinity, 'y': 0},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': 0, 'y': 0, 'extra': 1},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': 0, 'y': 0},
+            'extra': 1,
+          },
+        ],
+        [
+          {'verb': 'moveTo'},
+        ],
+        [
+          {
+            'verb': 'lineTo',
+            'p': {'x': 0, 'y': 0},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': 0, 'y': 0},
+          },
+          {
+            'verb': 'quadTo',
+            'p': {'x': 1, 'y': 1},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': 0, 'y': 0},
+          },
+          {
+            'verb': 'cubicTo',
+            'c1': {'x': 1, 'y': 1},
+            'p': {'x': 2, 'y': 2},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': 0, 'y': 0},
+          },
+          {
+            'verb': 'close',
+            'p': {'x': 0, 'y': 0},
+          },
+        ],
+        [
+          {
+            'verb': 'moveTo',
+            'p': {'x': 0, 'y': 0},
+          },
+          {'verb': 'close'},
+          {
+            'verb': 'lineTo',
+            'p': {'x': 1, 'y': 1},
+          },
+        ],
+      ]) {
+        final json = _wire();
+        _data(json)['source'] = {'kind': 'commands', 'commands': commands};
+        expect(() => decodeCanvasScene(json), throwsFormatException);
+      }
+    },
+  );
 
   test('v2 fixture migrates without mutation or shared containers', () {
     final v2 = _fixture('v2_paths.json');
@@ -343,23 +365,14 @@ void main() {
       final v2 = _fixture('v2_paths.json');
       final inactive = _nested(v2)[3]['data'] as Map<String, Object?>;
       inactive['dash'] = [5, -1];
-      expect(
-        () => upgradeCanvasScene(v2),
-        throwsArgumentError,
-      );
+      expect(() => upgradeCanvasScene(v2), throwsArgumentError);
       inactive['dash'] = [];
       inactive['miterLimit'] = double.infinity;
-      expect(
-        () => upgradeCanvasScene(v2),
-        throwsArgumentError,
-      );
+      expect(() => upgradeCanvasScene(v2), throwsArgumentError);
       inactive.remove('miterLimit');
       final selected = _nested(v2)[0]['data'] as Map<String, Object?>;
       selected['source'] = {'kind': 'unknown'};
-      expect(
-        () => upgradeCanvasScene(v2),
-        throwsFormatException,
-      );
+      expect(() => upgradeCanvasScene(v2), throwsFormatException);
     },
   );
 
@@ -367,10 +380,7 @@ void main() {
     'historical versions require explicit upgrade and unknown versions fail',
     () {
       final old = _fixture('v2_paths.json');
-      expect(
-        () => decodeCanvasScene(old),
-        throwsFormatException,
-      );
+      expect(() => decodeCanvasScene(old), throwsFormatException);
       for (final version in <Object?>[null, 1.0, 3.0, 99]) {
         final json = _wire()..['sceneFormatVersion'] = version;
         expect(() => upgradeCanvasScene(json), throwsFormatException);

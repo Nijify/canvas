@@ -82,7 +82,8 @@ void main() {
       'miterLimit': 7,
       'dash': input,
     });
-    final wire = jsonDecode(jsonEncode(stroke.toJson())) as Map<String, dynamic>;
+    final wire =
+        jsonDecode(jsonEncode(stroke.toJson())) as Map<String, dynamic>;
     input.clear();
 
     expect(stroke.dash, [5, 0, 3]);

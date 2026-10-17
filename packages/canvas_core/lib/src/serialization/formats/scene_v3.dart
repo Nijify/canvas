@@ -262,7 +262,7 @@ void _fill(Object? raw, String path) {
       _integer(fill['color'], '$path/color');
     case 'gradient':
       _keys(fill, {'type', 'grad'}, path, requiredFields: ['grad']);
-      // The gradient decoder owns its strict structure and primitive types.
+    // The gradient decoder owns its strict structure and primitive types.
   }
 }
 
@@ -362,29 +362,24 @@ Map<String, Object?> _object(Object? raw, String path) {
 }
 
 List<Object?> _list(Object? raw, String path) {
-  if (raw is! List)
-    _fail(path, 'Expected a list.');
+  if (raw is! List) _fail(path, 'Expected a list.');
   return raw;
 }
 
 void _number(Object? raw, String path) {
-  if (raw is! num)
-    _fail(path, 'Expected a number.');
+  if (raw is! num) _fail(path, 'Expected a number.');
 }
 
 void _integer(Object? raw, String path) {
-  if (raw is! int)
-    _fail(path, 'Expected an integer.');
+  if (raw is! int) _fail(path, 'Expected an integer.');
 }
 
 void _string(Object? raw, String path) {
-  if (raw is! String)
-    _fail(path, 'Expected a string.');
+  if (raw is! String) _fail(path, 'Expected a string.');
 }
 
 void _bool(Object? raw, String path) {
-  if (raw is! bool)
-    _fail(path, 'Expected a boolean.');
+  if (raw is! bool) _fail(path, 'Expected a boolean.');
 }
 
 void _enum(Object? raw, Set<String> values, String path) {

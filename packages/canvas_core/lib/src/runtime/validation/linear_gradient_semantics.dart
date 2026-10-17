@@ -32,7 +32,10 @@ void requireLinearGradientIntegrity(
       fail('stops/$index/offset', 'Stop offset must be between 0 and 1.');
     }
     if (previousOffset != null && stop.offset < previousOffset) {
-      fail('stops/$index/offset', 'Gradient stop offsets must be nondecreasing.');
+      fail(
+        'stops/$index/offset',
+        'Gradient stop offsets must be nondecreasing.',
+      );
     }
     if (stop.color < 0 || stop.color > 0xFFFFFFFF) {
       fail('stops/$index/color', 'Color must be a 32-bit ARGB value.');

@@ -78,10 +78,7 @@ void main() {
         final data = node['data'] as Map<String, dynamic>;
         data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
 
-        expect(
-          () => decodeCanvasScene(json),
-          throwsFormatException,
-        );
+        expect(() => decodeCanvasScene(json), throwsFormatException);
       });
     }
 
