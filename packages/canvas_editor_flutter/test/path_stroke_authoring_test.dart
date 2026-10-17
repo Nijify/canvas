@@ -34,6 +34,8 @@ const _configured = rt.CanvasStroke(
 
 rt.CanvasSceneDocument _scene({rt.CanvasStroke? stroke}) =>
     rt.CanvasSceneDocument(
+      backgroundFill: const rt.CanvasFill.none(),
+      backgroundOpacity: 1,
       children: [
         rt.Node.path(
           id: 'path',
