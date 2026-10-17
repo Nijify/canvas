@@ -113,12 +113,12 @@ Scene evaluation fits the declared viewBox uniformly into the centered
 artwork is centered without stretching, and the square does not clip paint.
 Instance sizes must be finite and positive, including for unresolved icons.
 
-## File-reference migration (Unreleased)
+## File references
 
 `parseCanvasAssetRef()` classifies reference syntax without interpreting files
-for an operating system. `CanvasFileAssetRef.path` has been removed. Use `raw`
-for the original trimmed reference and `uri` for parsed file-URI syntax; `uri`
-is null for a path-like string.
+for an operating system. `CanvasFileAssetRef.raw` contains the original trimmed
+reference, and `uri` contains parsed file-URI syntax. For a path-like string,
+`uri` is null.
 
 ```dart
 final ref = parseCanvasAssetRef('file:///tmp/a%20b.png') as CanvasFileAssetRef;
@@ -133,10 +133,8 @@ consumers can pass `ref.raw` to `sourceToProvider()` from
 that conversion. Unsupported hosts must resolve file references to a supported
 runtime source instead.
 
-`canonicalKey` now equals `raw`: an escaped file URI and its decoded native path
-are distinct logical keys. Review host caches that previously relied on their
-implicit equivalence. This change does not rewrite persisted `sourceRef` values
-or require a scene-format migration. Custom schemes remain host-owned.
+`canonicalKey` equals `raw`: an escaped file URI and its decoded native path
+are distinct logical keys. Hosts own custom schemes.
 
 ## Immutable node editing
 

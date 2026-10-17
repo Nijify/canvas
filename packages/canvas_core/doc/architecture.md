@@ -116,10 +116,8 @@ CanvasSceneDocument -> encodeCanvasScene -> external JSON
 decoding supported older documents: v1 or explicitly identified canvas_core
 0.10.x unversioned scenes.
 
-Raw `kind: "svg"` path sources are unsupported. Scene decoding rejects them with
-their document location, including after historical migration. Hosts must
-normalize SVG paths into supported commands before loading; core has no SVG
-parser.
+Raw `kind: "svg"` path sources are unsupported. Hosts must normalize SVG paths
+into supported commands before loading; core has no SVG parser.
 
 Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
 

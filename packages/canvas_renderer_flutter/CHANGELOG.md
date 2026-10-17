@@ -6,8 +6,6 @@
   derive independent shadows from that filled silhouette. Keep gradients and
   shadow parameters in node-local coordinates.
 
-- Read ordinary-path fill rules and stroke properties directly from `PathData`.
-
 ## 0.13.0
 
 - **Breaking:** require `canvas_core 0.14.x`.

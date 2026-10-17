@@ -6,7 +6,7 @@ import 'svg_export_result.dart';
 ///
 /// The caller computes [computed] from this exact [scene] with `computeScene`.
 /// This exporter does not consume paint operations or resolve host resources.
-/// Its first profile supports none, solid, and linear-gradient backgrounds,
+/// The supported profile includes none, solid, and linear-gradient backgrounds,
 /// plus undashed path geometry with those same fill variants.
 SvgExportResult exportPreparedSvg({
   required CanvasSceneDocument scene,

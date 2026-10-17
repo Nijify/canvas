@@ -112,7 +112,7 @@ final class NodeGeometry {
                 geometryBounds.right + radius,
                 geometryBounds.bottom + radius,
               );
-        // Preserve the existing ordinary-path stroke estimate and pivots.
+        // Layout and paint bounds share the stroke-expanded geometry estimate.
         return (layout: layout, paint: ir.cmds.isEmpty ? null : layout);
 
       default:

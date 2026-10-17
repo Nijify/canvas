@@ -16,24 +16,15 @@
 - **Breaking:** remove the `icons` argument from `collectSceneFontFamilies()`;
   it discovers text and supplied fallback families. Icons contribute no fonts.
 - **Breaking:** remove `SvgPathSource`, whose compilation was unimplemented.
-  Raw `kind: "svg"` sources now fail during decoding, including through scene
-  upgrade. Normalize SVG paths to a supported command source before loading.
-- Keep scene format v2 and `upgradeCanvasScene()` for supported v1 and
-  explicitly identified 0.10.x unversioned scenes. The historical icon-rendering
-  callback remains available for legacy shadow migration.
+  Raw `kind: "svg"` sources now fail during decoding. Normalize SVG paths to a
+  supported command source before loading.
 - Scene JSON compatibility does not promise compatibility with retired icon
   resources or unchanged artwork, padding, and pixels. Hosts replace font/glyph
   and styled-path icon resources with the new vector definitions.
-
 - Add immutable, geometry-only `CommandPathSource` with strict JSON decoding
   and direct compilation of absolute move/line/quadratic/cubic/close commands.
-
 - Reject nonfinite or nonpositive icon sizes before layout and resource lookup,
   including when an icon resolver is absent or the reference is unresolved.
-
-- Use authored `PathData` stroke values for ordinary-path layout and paint
-  bounds, preserving the existing stroke expansion and pivot behavior.
-
 - **Breaking:** `PathIR` now snapshots its commands and exposes an unmodifiable
   list. Its constructor is no longer `const`.
 
