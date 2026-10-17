@@ -124,14 +124,19 @@ external JSON -> decodeCanvasScene -> CanvasSceneDocument
 CanvasSceneDocument -> encodeCanvasScene -> external JSON
 ```
 
-`decodeCanvasScene()` reads scene format v2. Use `upgradeCanvasScene()` before
-decoding supported older documents: v1 or explicitly identified canvas_core
-0.10.x unversioned scenes.
+`decodeCanvasScene()` reads scene format v3 and `encodeCanvasScene()` writes v3.
+Both boundaries validate wire structure and runtime semantics. Use
+`upgradeCanvasScene()` before decoding supported older documents: v2, v1, or
+explicitly identified canvas_core 0.10.x unversioned scenes. See the
+[scene-v3 upgrade guide](migration-v3.md) for model and persistence changes.
 
 Raw `kind: "svg"` path sources are unsupported. Hosts must normalize SVG paths
 into supported commands before loading; core has no SVG parser.
 
-Generated model serializers remain implementation-level primitives. Semantic document validation stays explicit and follows decoding when a caller requires it.
+Generated model serializers remain implementation-level primitives. Persisted
+documents use the validated encode/decode boundary.
+`validateCanvasSceneDocument()` also collects runtime issues explicitly without
+serializing a scene.
 
 ## Editor boundary
 

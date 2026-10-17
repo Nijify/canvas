@@ -83,6 +83,10 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
+Current persistence uses scene format v3. Use the
+[scene-v3 upgrade guide](packages/canvas_core/doc/migration-v3.md) to migrate
+older documents and adopt shared path appearance across compatible packages.
+
 See the [`canvas_core` README](packages/canvas_core/README.md) for scene computation, serialization, geometry, and resource contracts.
 
 ## Render with Flutter

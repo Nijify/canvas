@@ -1,5 +1,7 @@
-# Unreleased
+# 0.19.0
 
+- **Breaking:** require `canvas_core 0.16.x` and
+  `canvas_renderer_flutter 0.15.x`.
 - Add path stroke authoring for color, opacity, width, caps, joins, and miter
   limit. Remove a configuration explicitly or retain transparent/zero-width
   settings and existing dash metadata. Opacity drags form one undo step.

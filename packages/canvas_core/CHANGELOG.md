@@ -1,5 +1,11 @@
-## Unreleased
+## 0.16.0
 
+- **Breaking:** require one `PathData.source` and move path fill/stroke fields
+  into `CanvasAppearance`. Paths default to no foreground and no configured
+  stroke. Add `CanvasStroke` with independent inactive settings.
+- **Breaking:** `PolylineSource` snapshots its points and is no longer `const`.
+  Cache compiled geometry by source identity independently of appearance and
+  fill rule.
 - Add `CanvasFields.pathStroke` as the stable aggregate identity for an optional
   authored path stroke.
 - **Breaking:** ordinary path layout bounds now use geometry alone. Stroke
@@ -21,6 +27,8 @@
   rejects negative path dimensions/radii and nonpositive icon sizes.
 - Keep historical migration fixtures and update current contract fixtures to
   v3. Historical rendering/editor fidelity is practical rather than exact.
+- Document model, persistence, bounds, and editor adoption in the
+  [scene-v3 upgrade guide](doc/migration-v3.md).
 
 ## 0.15.0
 

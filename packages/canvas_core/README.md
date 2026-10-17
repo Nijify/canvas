@@ -171,6 +171,9 @@ throws `CanvasSceneFormatException`, a `FormatException` whose `issue` exposes
 a stable validation `code` and JSON Pointer `path`. Use
 `validateCanvasSceneDocument` to collect all runtime issues before saving.
 
+See the [scene-v3 upgrade guide](doc/migration-v3.md) for compatible package
+versions, Dart model changes, explicit persistence migration, and editor fields.
+
 Paths require a `source` and persist fill/stroke through `appearance`.
 `stroke: null` means no configuration; transparent and zero-width stroke
 configurations retain their settings. Dash arrays are preserved, including

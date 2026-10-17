@@ -1,5 +1,7 @@
-## Unreleased
+## 0.15.0
 
+- **Breaking:** require `canvas_core 0.16.x` and read ordinary-path foreground
+  and `CanvasStroke` settings from `PathData.appearance`.
 - Reuse one Flutter path for ordinary-path fill and shared appearance strokes.
 - Skip invisible foregrounds while retaining independent source underlays.
 - Cover square-cap and acute-miter pixels against computed paint bounds with

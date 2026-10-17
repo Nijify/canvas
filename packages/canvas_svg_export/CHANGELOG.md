@@ -1,3 +1,11 @@
+## 0.3.0
+
+- **Breaking:** require `canvas_core 0.16.x` and export authored path paint from
+  `CanvasAppearance.foreground` and the optional `CanvasStroke` configuration.
+- Preserve fill rule and active stroke width, caps, joins, miter limit, and
+  alpha. Reject active dash metadata because Flutter currently paints it solid;
+  inactive stroke configurations do not introduce unsupported-dash issues.
+
 ## 0.2.0
 
 - **Breaking:** require `canvas_core 0.15.x` and consume geometry-only
