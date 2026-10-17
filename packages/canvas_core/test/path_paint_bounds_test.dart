@@ -29,23 +29,29 @@ void main() {
     for (final (stroke, outset) in <(CanvasStroke, double)>[
       (
         const CanvasStroke(
-          color: 0xFF111111, width: 6,
-          cap: StrokeCap.round, join: StrokeJoin.round,
+          color: 0xFF111111,
+          width: 6,
+          cap: StrokeCap.round,
+          join: StrokeJoin.round,
         ),
         3,
       ),
       (
         const CanvasStroke(
-          color: 0xFF111111, width: 6,
-          cap: StrokeCap.square, join: StrokeJoin.bevel,
+          color: 0xFF111111,
+          width: 6,
+          cap: StrokeCap.square,
+          join: StrokeJoin.bevel,
         ),
         3 * math.sqrt2,
       ),
       (const CanvasStroke(color: 0xFF111111, width: 6, miterLimit: 5), 15),
       (
         const CanvasStroke(
-          color: 0xFF111111, width: 6,
-          join: StrokeJoin.bevel, miterLimit: 100,
+          color: 0xFF111111,
+          width: 6,
+          join: StrokeJoin.bevel,
+          miterLimit: 100,
         ),
         3,
       ),
@@ -103,7 +109,8 @@ void main() {
         ],
       );
       final computed = computeScene(
-        scene, CoreServices(textMeasurer: _NoText()),
+        scene,
+        CoreServices(textMeasurer: _NoText()),
       );
       expect(
         computed.layoutBoundsLocalById['path'],
@@ -112,7 +119,10 @@ void main() {
       expect(computed.pathIRById['path'], isNotNull);
       expect(computed.paintBoundsLocalById, isEmpty);
       expect(computed.paintBoundsWorldById, isEmpty);
-      expect(computePaddedContentBounds(scene: scene, computed: computed), isNull);
+      expect(
+        computePaddedContentBounds(scene: scene, computed: computed),
+        isNull,
+      );
     }
 
     final filled = _compute([
@@ -147,8 +157,10 @@ void main() {
               appearance: const CanvasAppearance(
                 foreground: CanvasFill.none(),
                 stroke: CanvasStroke(
-                  color: 0xFF112233, width: 6,
-                  cap: StrokeCap.round, join: StrokeJoin.round,
+                  color: 0xFF112233,
+                  width: 6,
+                  cap: StrokeCap.round,
+                  join: StrokeJoin.round,
                 ),
               ),
             ),
@@ -156,7 +168,8 @@ void main() {
         ],
       );
       final computed = computeScene(
-        scene, CoreServices(textMeasurer: _NoText()),
+        scene,
+        CoreServices(textMeasurer: _NoText()),
       );
       final layout = computed.layoutBoundsLocalById['path']!;
       expect(layout.width == 0 || layout.height == 0, isTrue);
@@ -191,66 +204,74 @@ void main() {
   });
 
   for (final origin in OriginKind.values) {
-    test('path appearance preserves nested geometry and transforms: $origin', () {
-      final source = PolylineSource(const [
-        Vec2(10, 20),
-        Vec2(40, 20),
-        Vec2(40, 70),
-      ]);
-      ComputedScene build(CanvasAppearance appearance) => _compute([
-        Node.group(
-          id: 'outer',
-          xf: const Transform2D(rotationRad: 0.4, scale: Vec2(1.4, 0.8)),
-          children: [
-            Node.group(
-              id: 'inner',
-              xf: const Transform2D(
-                position: Vec2(15, -20),
-                rotationRad: -0.7,
-              ),
-              children: [
-                Node.path(
-                  id: 'path',
-                  xf: Transform2D(
-                    origin: origin,
-                    customPivotPx: const Vec2(7, -3),
-                    rotationRad: 0.3,
-                    scale: const Vec2(-2, 0.5),
+    test(
+      'path appearance preserves nested geometry and transforms: $origin',
+      () {
+        final source = PolylineSource(const [
+          Vec2(10, 20),
+          Vec2(40, 20),
+          Vec2(40, 70),
+        ]);
+        ComputedScene build(CanvasAppearance appearance) => _compute([
+          Node.group(
+            id: 'outer',
+            xf: const Transform2D(rotationRad: 0.4, scale: Vec2(1.4, 0.8)),
+            children: [
+              Node.group(
+                id: 'inner',
+                xf: const Transform2D(
+                  position: Vec2(15, -20),
+                  rotationRad: -0.7,
+                ),
+                children: [
+                  Node.path(
+                    id: 'path',
+                    xf: Transform2D(
+                      origin: origin,
+                      customPivotPx: const Vec2(7, -3),
+                      rotationRad: 0.3,
+                      scale: const Vec2(-2, 0.5),
+                    ),
+                    data: PathData(source: source, appearance: appearance),
                   ),
-                  data: PathData(source: source, appearance: appearance),
-                ),
-                const Node.path(
-                  id: 'sibling',
-                  xf: Transform2D(position: Vec2(150, 30)),
-                  data: PathData(source: RectSource(20, 10)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ]);
-      final before = build(
-        const CanvasAppearance(foreground: CanvasFill.none()),
-      );
-      final after = build(
-        const CanvasAppearance(
-          foreground: CanvasFill.solid(0xFF112233),
-          stroke: CanvasStroke(
-            color: 0xFF112233, width: 40,
-            cap: StrokeCap.square, miterLimit: 8,
+                  const Node.path(
+                    id: 'sibling',
+                    xf: Transform2D(position: Vec2(150, 30)),
+                    data: PathData(source: RectSource(20, 10)),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
-      );
-      expect(after.pathIRById['path'], same(before.pathIRById['path']));
-      for (final id in ['path', 'sibling', 'inner', 'outer']) {
-        expect(after.layoutBoundsLocalById[id], before.layoutBoundsLocalById[id]);
-        expect(
-          after.worldById[id]!.storage,
-          orderedEquals(before.worldById[id]!.storage),
+        ]);
+        final before = build(
+          const CanvasAppearance(foreground: CanvasFill.none()),
         );
-      }
-      expect(before.paintBoundsWorldById, isEmpty);
-      expect(after.paintBoundsWorldById.containsKey('outer'), isTrue);
-    });
+        final after = build(
+          const CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF112233),
+            stroke: CanvasStroke(
+              color: 0xFF112233,
+              width: 40,
+              cap: StrokeCap.square,
+              miterLimit: 8,
+            ),
+          ),
+        );
+        expect(after.pathIRById['path'], same(before.pathIRById['path']));
+        for (final id in ['path', 'sibling', 'inner', 'outer']) {
+          expect(
+            after.layoutBoundsLocalById[id],
+            before.layoutBoundsLocalById[id],
+          );
+          expect(
+            after.worldById[id]!.storage,
+            orderedEquals(before.worldById[id]!.storage),
+          );
+        }
+        expect(before.paintBoundsWorldById, isEmpty);
+        expect(after.paintBoundsWorldById.containsKey('outer'), isTrue);
+      },
+    );
   }
 }
