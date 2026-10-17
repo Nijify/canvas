@@ -33,6 +33,12 @@ enum CanvasSceneValidationCode {
   nonJsonBehaviorValue,
   cyclicBehaviorData,
   cyclicNodeGraph,
+  missingField,
+  unexpectedField,
+  invalidType,
+  invalidEnumValue,
+  invalidPathSource,
+  unsupportedSceneFormat,
 }
 
 /// One deterministic validation diagnostic for a [CanvasSceneDocument].
@@ -221,7 +227,7 @@ final class _SceneValidator {
   }
 
   void _validateIconData(CanvasIconData data, String path) {
-    _validateFinite(data.sizePx, '$path/sizePx');
+    _validatePositive(data.sizePx, '$path/sizePx');
     _validateAppearance(data.appearance, '$path/appearance');
   }
 
@@ -359,7 +365,7 @@ final class _SceneValidator {
           _validateFinite(point.y, '$path/points/$index/y');
         }
       case CircleSource(:final r):
-        _validateFinite(r, '$path/r');
+        _validateNonNegative(r, '$path/r');
       case RegularPolygonSource(:final sides, :final r, :final rotation):
         if (sides < 3) {
           _add(
@@ -368,7 +374,7 @@ final class _SceneValidator {
             'Regular polygon side count must be at least 3.',
           );
         }
-        _validateFinite(r, '$path/r');
+        _validateNonNegative(r, '$path/r');
         _validateFinite(rotation, '$path/rotation');
       case StarSource(
         :final points,
@@ -401,22 +407,22 @@ final class _SceneValidator {
         }
         _validateFinite(rotation, '$path/rotation');
       case RectSource(:final w, :final h):
-        _validateFinite(w, '$path/w');
-        _validateFinite(h, '$path/h');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(h, '$path/h');
       case RoundRectSource(:final w, :final h, :final rx, :final ry):
-        _validateFinite(w, '$path/w');
-        _validateFinite(h, '$path/h');
-        _validateFinite(rx, '$path/rx');
-        _validateFinite(ry, '$path/ry');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(h, '$path/h');
+        _validateNonNegative(rx, '$path/rx');
+        _validateNonNegative(ry, '$path/ry');
       case PillSource(:final w, :final h):
-        _validateFinite(w, '$path/w');
-        _validateFinite(h, '$path/h');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(h, '$path/h');
       case UnderlineSource(:final w, :final thickness):
-        _validateFinite(w, '$path/w');
-        _validateFinite(thickness, '$path/thickness');
+        _validateNonNegative(w, '$path/w');
+        _validateNonNegative(thickness, '$path/thickness');
       case EllipseSource(:final rx, :final ry):
-        _validateFinite(rx, '$path/rx');
-        _validateFinite(ry, '$path/ry');
+        _validateNonNegative(rx, '$path/rx');
+        _validateNonNegative(ry, '$path/ry');
     }
   }
 

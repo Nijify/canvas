@@ -77,16 +77,16 @@ void main() {
             : root;
         final data = node['data'] as Map<String, dynamic>;
         data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
-        final location = nested ? 'children[0].children[0]' : 'children[0]';
+        final location = nested ? '/children/0/children/0' : '/children/0';
 
         expect(
           () => decodeCanvasScene(json),
           throwsA(
-            isA<FormatException>().having(
-              (error) => error.message,
-              'message',
-              contains('$location.data.source.kind "svg" is unsupported'),
-            ),
+            isA<CanvasSceneFormatException>()
+                .having((error) => error.issue.code, 'code',
+                    CanvasSceneValidationCode.invalidEnumValue)
+                .having((error) => error.issue.path, 'path',
+                    '$location/data/source/kind'),
           ),
         );
       });
@@ -154,7 +154,7 @@ void main() {
       expect(decodeCanvasScene(json), _imageScene());
     });
 
-    test('rejects sourcePath in scene format v2 image data', () {
+    test('rejects sourcePath in scene format v3 image data', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
@@ -174,7 +174,7 @@ void main() {
       );
     });
 
-    test('rejects legacy or invalid gradient geometry in scene format v2', () {
+    test('rejects legacy or invalid gradient geometry in scene format v3', () {
       final legacyGradient = encodeCanvasScene(_scene());
       final legacyFill =
           legacyGradient['backgroundFill'] as Map<String, dynamic>;
@@ -221,7 +221,8 @@ void main() {
         ],
       );
       expect(validateCanvasSceneDocument(validScene), isEmpty);
-      expect(decodeCanvasScene(encodeCanvasScene(validScene)), validScene);
+      final validJson = encodeCanvasScene(validScene);
+      expect(encodeCanvasScene(decodeCanvasScene(validJson)), validJson);
 
       final invalid = <(LinearGradientSpec, CanvasSceneValidationCode)>[
         (
@@ -313,7 +314,7 @@ void main() {
       }
     });
 
-    test('v2 gradient decoding keeps strict shape and numeric types', () {
+    test('v3 gradient decoding keeps strict shape and numeric types', () {
       final mutations = <void Function(Map<String, dynamic>)>[
         (gradient) => gradient['unexpected'] = true,
         (gradient) => gradient.remove('start'),
@@ -458,17 +459,14 @@ void main() {
       );
     });
 
-    test('keeps decoding separate from semantic validation', () {
-      final json = encodeCanvasScene(_scene(backgroundOpacity: 2));
-
-      final scene = decodeCanvasScene(json);
-      final issues = validateCanvasSceneDocument(scene);
-
-      expect(scene.backgroundOpacity, 2);
-      expect(
-        issues.map((issue) => issue.code),
-        contains(CanvasSceneValidationCode.valueOutOfRange),
-      );
+    test('both persistence boundaries enforce runtime semantics', () {
+      final json = encodeCanvasScene(_scene())..['backgroundOpacity'] = 2;
+      final failure = isA<CanvasSceneFormatException>()
+          .having((error) => error.issue.code, 'code',
+              CanvasSceneValidationCode.valueOutOfRange)
+          .having((error) => error.issue.path, 'path', '/backgroundOpacity');
+      expect(() => decodeCanvasScene(json), throwsA(failure));
+      expect(() => encodeCanvasScene(_scene(backgroundOpacity: 2)), throwsA(failure));
     });
   });
 }

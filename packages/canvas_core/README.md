@@ -157,6 +157,38 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
+`encodeCanvasScene` writes scene format v3; `decodeCanvasScene` accepts v3.
+Both boundaries validate wire structure and runtime semantics. Invalid data
+throws `CanvasSceneFormatException`, a `FormatException` whose `issue` exposes
+a stable validation `code` and JSON Pointer `path`. Use
+`validateCanvasSceneDocument` to collect all runtime issues before saving.
+
+Paths require a `source` and persist fill/stroke through `appearance`.
+`stroke: null` means no configuration; transparent and zero-width stroke
+configurations retain their settings. Dash arrays are preserved, including
+zeros and odd-length sequences, but are not yet rendered as dashes. Stroke
+miter limits must be finite and at least 1. Negative source dimensions/radii
+and nonpositive icon sizes are invalid; zero-sized path geometry is allowed.
+
+Upgrade historical JSON explicitly before decoding:
+
+```dart
+final restored = decodeCanvasScene(upgradeCanvasScene(historicalJson));
+```
+
+The public upgrader supports v2, v1 through v2, and explicitly identified
+unversioned `canvas_core` 0.10.x through the existing migration chain. Only that
+known unversioned format uses `legacyUnversioned: true`, with
+`resolveLegacyIconWasGlyph` when historical icon shadows require it. Missing
+version metadata does not select a historical format automatically.
+
+The v2 conversion prefers a non-null `source` over obsolete `points`, preserves
+points-only contour breaks, and uses explicit empty commands for empty fallback
+geometry. It combines fill/stroke fields into appearance, preserving dash
+metadata and nondefault inactive stroke settings. Unsupported or malformed
+input fails explicitly. Migration preserves content where practical without
+reproducing every historical rendering or editor behavior.
+
 ## Rendering pipeline
 
 The canonical runtime flow is:

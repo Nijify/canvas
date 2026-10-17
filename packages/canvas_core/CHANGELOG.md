@@ -1,3 +1,17 @@
+## Unreleased
+
+- **Breaking:** write/read scene format v3 with required path sources and
+  shared appearance. Reject obsolete path fields and unsupported appearance
+  combinations rather than silently discarding them.
+- Upgrade v2 paths explicitly through `upgradeCanvasScene`, retaining v1 and
+  identified unversioned 0.10.x migrations and icon-resolution requirements.
+  Preserve contour breaks, dash arrays, and nondefault inactive stroke data.
+- Validate both persistence boundaries and expose `CanvasSceneFormatException`
+  with a stable issue code and JSON Pointer path. Runtime validation also
+  rejects negative path dimensions/radii and nonpositive icon sizes.
+- Keep historical migration fixtures and update current contract fixtures to
+  v3. Historical rendering/editor fidelity is practical rather than exact.
+
 ## 0.15.0
 
 - **Breaking:** replace `ResolvedIconText` and `ResolvedIconPath` with one

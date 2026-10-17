@@ -16,6 +16,10 @@ const _forbiddenLegacyKeys = {
   'shadowOffset',
   'shadows',
   'locked',
+  'strokeColor',
+  'strokeWidth',
+  'strokeCap',
+  'strokeJoin',
 };
 
 const _fixtureNames = <String>[
