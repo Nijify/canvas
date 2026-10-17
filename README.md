@@ -15,7 +15,7 @@ Use the complete stack or depend only on the packages your application needs.
 | [`canvas_core`](packages/canvas_core) | Scene documents, document/render geometry, layout, serialization, logical resource contracts, and computed scene geometry | Pure Dart |
 | [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text/font resources, image management, and canonical PNG output | Flutter |
 | [`canvas_editor_flutter`](packages/canvas_editor_flutter) | Turnkey and composable visual editor UI | Flutter |
-| [`canvas_svg_export`](packages/canvas_svg_export) | Strict SVG export proof for prepared path scenes (experimental) | Pure Dart |
+| [`canvas_svg_export`](packages/canvas_svg_export) | Strict SVG export for prepared path scenes (experimental) | Pure Dart |
 
 The dependency direction is one-way:
 

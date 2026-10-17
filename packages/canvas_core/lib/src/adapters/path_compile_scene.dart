@@ -1,10 +1,7 @@
 // Path: lib/src/adapters/path_compile_scene.dart
 //
-// Scene-level adapter: PathData (scene model) -> PathIR (path subsystem)
-//
-// This must live under /scene because it depends on PathData from node_model.dart.
-// Keeping /path pure makes the dependency direction clearer:
-// core -> path -> scene -> algorithms/pipeline.
+// Adapts authored PathData to geometry-only PathIR.
+// Scene-model dependencies stay here so the path compiler is independent of nodes.
 
 import 'package:canvas_core/src/path/path_compile.dart';
 import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
