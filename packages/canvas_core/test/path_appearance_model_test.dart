@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_core/src/adapters/path_compile_scene.dart';
-import 'package:canvas_core/src/serialization/path_converters.dart';
 import 'package:test/test.dart';
 
 CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
@@ -58,29 +57,32 @@ void main() {
     expect(restored.appearance, path.appearance);
   });
 
-  test('stroke copy and JSON preserve invisible configuration and odd dashes', () {
-    const stroke = CanvasStroke(
-      color: 0x00123456,
-      width: 12,
-      cap: StrokeCap.round,
-      join: StrokeJoin.bevel,
-      miterLimit: 6,
-      dash: [5, 0, 3],
-    );
-    final restored = CanvasStroke.fromJson(
-      jsonDecode(jsonEncode(stroke.toJson())) as Map<String, dynamic>,
-    );
+  test(
+    'stroke copy and JSON preserve invisible configuration and odd dashes',
+    () {
+      const stroke = CanvasStroke(
+        color: 0x00123456,
+        width: 12,
+        cap: StrokeCap.round,
+        join: StrokeJoin.bevel,
+        miterLimit: 6,
+        dash: [5, 0, 3],
+      );
+      final restored = CanvasStroke.fromJson(
+        jsonDecode(jsonEncode(stroke.toJson())) as Map<String, dynamic>,
+      );
 
-    expect(restored, stroke);
-    expect(restored.dash, [5, 0, 3]);
-    expect(restored.copyWith(color: 0xFF123456).width, 12);
-    expect(restored.copyWith(color: 0xFF123456).cap, StrokeCap.round);
-    expect(
-      const CanvasAppearance(stroke: stroke).copyWith(stroke: null).stroke,
-      isNull,
-    );
-    expect(() => restored.dash.add(1), throwsUnsupportedError);
-  });
+      expect(restored, stroke);
+      expect(restored.dash, [5, 0, 3]);
+      expect(restored.copyWith(color: 0xFF123456).width, 12);
+      expect(restored.copyWith(color: 0xFF123456).cap, StrokeCap.round);
+      expect(
+        const CanvasAppearance(stroke: stroke).copyWith(stroke: null).stroke,
+        isNull,
+      );
+      expect(() => restored.dash.add(1), throwsUnsupportedError);
+    },
+  );
 
   test('stroke paint participation uses alpha and finite positive width', () {
     expect(strokeContributesToPaint(null), isFalse);
@@ -120,30 +122,36 @@ void main() {
     expect(compilePath(changed).localBounds(), const Rect2D(-10, -5, 10, 5));
   });
 
-  test('polyline source freezes caller points and preserves contour breaks', () {
-    final points = <Vec2?>[
-      Vec2.zero,
-      const Vec2(10, 0),
-      null,
-      const Vec2(20, 0),
-      const Vec2(30, 0),
-    ];
-    final source = PolylineSource(points);
-    final path = PathData(source: source);
-    final compiled = compilePath(path);
-    points.clear();
+  test(
+    'polyline source freezes caller points and preserves contour breaks',
+    () {
+      final points = <Vec2?>[
+        Vec2.zero,
+        const Vec2(10, 0),
+        null,
+        const Vec2(20, 0),
+        const Vec2(30, 0),
+      ];
+      final source = PolylineSource(points);
+      final path = PathData(source: source);
+      final compiled = compilePath(path);
+      points.clear();
 
-    expect(source.points, hasLength(5));
-    expect(() => source.points.clear(), throwsUnsupportedError);
-    expect(identical(compilePath(path.copyWith()), compiled), isTrue);
-    expect(compiled.cmds.map((command) => command.verb), [
-      PathVerb.moveTo,
-      PathVerb.lineTo,
-      PathVerb.moveTo,
-      PathVerb.lineTo,
-    ]);
-    expect(compilePath(PathData(source: CommandPathSource([]))).cmds, isEmpty);
-  });
+      expect(source.points, hasLength(5));
+      expect(() => source.points.clear(), throwsUnsupportedError);
+      expect(identical(compilePath(path.copyWith()), compiled), isTrue);
+      expect(compiled.cmds.map((command) => command.verb), [
+        PathVerb.moveTo,
+        PathVerb.lineTo,
+        PathVerb.moveTo,
+        PathVerb.lineTo,
+      ]);
+      expect(
+        compilePath(PathData(source: CommandPathSource([]))).cmds,
+        isEmpty,
+      );
+    },
+  );
 
   test('inactive stroke numerics are validated with deterministic paths', () {
     final scene = _scene([

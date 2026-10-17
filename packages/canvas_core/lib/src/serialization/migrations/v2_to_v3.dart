@@ -21,7 +21,10 @@ Map<String, Object?> convertCanvasSceneV2ToV3(Map<String, Object?> v2) {
     if (node['runtimeType'] == 'group') {
       final children = node['children'] as List<Object?>;
       for (var index = 0; index < children.length; index++) {
-        convertNode(_object(children[index], '$path/children/$index'), '$path/children/$index');
+        convertNode(
+          _object(children[index], '$path/children/$index'),
+          '$path/children/$index',
+        );
       }
       return;
     }
@@ -33,7 +36,10 @@ Map<String, Object?> convertCanvasSceneV2ToV3(Map<String, Object?> v2) {
     if (source != null) {
       final selected = _object(source, '$dataPath/source');
       if (selected['kind'] == 'polyline') {
-        selected['points'] = _points(selected['points'], '$dataPath/source/points');
+        selected['points'] = _points(
+          selected['points'],
+          '$dataPath/source/points',
+        );
       }
       data['source'] = selected;
     } else {
@@ -52,13 +58,15 @@ Map<String, Object?> convertCanvasSceneV2ToV3(Map<String, Object?> v2) {
       'dash': data['dash'] ?? <Object?>[],
     };
     final dash = stroke['dash'];
-    final isDefault = stroke['color'] is int &&
+    final isDefault =
+        stroke['color'] is int &&
         stroke['color'] == 0 &&
         stroke['width'] == 4.0 &&
         stroke['cap'] == 'butt' &&
         stroke['join'] == 'miter' &&
         stroke['miterLimit'] == 4.0 &&
-        dash is List && dash.isEmpty;
+        dash is List &&
+        dash.isEmpty;
     data['appearance'] = <String, Object?>{
       'foreground': data['fill'] ?? <String, Object?>{'type': 'none'},
       'stroke': isDefault ? null : stroke,
@@ -66,8 +74,14 @@ Map<String, Object?> convertCanvasSceneV2ToV3(Map<String, Object?> v2) {
     };
     data['fillRule'] ??= 'nonZero';
     for (final name in [
-      'points', 'fill', 'strokeColor', 'strokeWidth', 'strokeCap',
-      'strokeJoin', 'miterLimit', 'dash',
+      'points',
+      'fill',
+      'strokeColor',
+      'strokeWidth',
+      'strokeCap',
+      'strokeJoin',
+      'miterLimit',
+      'dash',
     ]) {
       data.remove(name);
     }
@@ -76,7 +90,10 @@ Map<String, Object?> convertCanvasSceneV2ToV3(Map<String, Object?> v2) {
 
   final children = result['children'] as List<Object?>;
   for (var index = 0; index < children.length; index++) {
-    convertNode(_object(children[index], '/children/$index'), '/children/$index');
+    convertNode(
+      _object(children[index], '/children/$index'),
+      '/children/$index',
+    );
   }
 
   decodeCanvasScene(result);
@@ -87,9 +104,7 @@ List<Object?> _points(Object? raw, String path) {
   try {
     // Historical point sources accepted object and tuple coordinates. Write
     // only canonical point objects in v3, keeping null contour separators.
-    return [
-      for (final point in vec2ListNullableFromJson(raw)) point?.toJson(),
-    ];
+    return [for (final point in vec2ListNullableFromJson(raw)) point?.toJson()];
   } on FormatException catch (error) {
     throw FormatException('$path: ${error.message}');
   } on TypeError {
@@ -110,7 +125,8 @@ Object? _copy(Object? value) {
       throw const FormatException('Scene objects require string keys.');
     }
     return <String, Object?>{
-      for (final entry in value.entries) (entry.key as String): _copy(entry.value),
+      for (final entry in value.entries)
+        (entry.key as String): _copy(entry.value),
     };
   }
   if (value is List) return <Object?>[for (final item in value) _copy(item)];

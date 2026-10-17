@@ -13,6 +13,9 @@ _CanvasAppearance _$CanvasAppearanceFromJson(Map<String, dynamic> json) =>
           : const CanvasFillConverter().fromJson(
               json['foreground'] as Map<String, dynamic>,
             ),
+      stroke: json['stroke'] == null
+          ? null
+          : CanvasStroke.fromJson(json['stroke'] as Map<String, dynamic>),
       underlays:
           (json['underlays'] as List<dynamic>?)
               ?.map(
@@ -27,6 +30,7 @@ _CanvasAppearance _$CanvasAppearanceFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$CanvasAppearanceToJson(_CanvasAppearance instance) =>
     <String, dynamic>{
       'foreground': const CanvasFillConverter().toJson(instance.foreground),
+      'stroke': instance.stroke?.toJson(),
       'underlays': instance.underlays
           .map(const _CanvasSourceUnderlayJsonConverter().toJson)
           .toList(),

@@ -83,10 +83,16 @@ void main() {
           () => decodeCanvasScene(json),
           throwsA(
             isA<CanvasSceneFormatException>()
-                .having((error) => error.issue.code, 'code',
-                    CanvasSceneValidationCode.invalidEnumValue)
-                .having((error) => error.issue.path, 'path',
-                    '$location/data/source/kind'),
+                .having(
+                  (error) => error.issue.code,
+                  'code',
+                  CanvasSceneValidationCode.invalidEnumValue,
+                )
+                .having(
+                  (error) => error.issue.path,
+                  'path',
+                  '$location/data/source/kind',
+                ),
           ),
         );
       });
@@ -462,11 +468,17 @@ void main() {
     test('both persistence boundaries enforce runtime semantics', () {
       final json = encodeCanvasScene(_scene())..['backgroundOpacity'] = 2;
       final failure = isA<CanvasSceneFormatException>()
-          .having((error) => error.issue.code, 'code',
-              CanvasSceneValidationCode.valueOutOfRange)
+          .having(
+            (error) => error.issue.code,
+            'code',
+            CanvasSceneValidationCode.valueOutOfRange,
+          )
           .having((error) => error.issue.path, 'path', '/backgroundOpacity');
       expect(() => decodeCanvasScene(json), throwsA(failure));
-      expect(() => encodeCanvasScene(_scene(backgroundOpacity: 2)), throwsA(failure));
+      expect(
+        () => encodeCanvasScene(_scene(backgroundOpacity: 2)),
+        throwsA(failure),
+      );
     });
   });
 }

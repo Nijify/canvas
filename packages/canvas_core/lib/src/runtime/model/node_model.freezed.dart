@@ -900,7 +900,9 @@ as Vec2,
 /// @nodoc
 mixin _$PathData {
 
-@Vec2ListNullableConverter() List<Vec2?> get points;@PathSourceConverter() PathSource? get source;@CanvasFillConverter() CanvasFill get fill; FillRule get fillRule; Color32 get strokeColor; double get strokeWidth; StrokeCap get strokeCap; StrokeJoin get strokeJoin; double get miterLimit; List<double> get dash;
+/// The sole authored geometry source. Use an explicit empty source for an
+/// intentionally empty path.
+@PathSourceConverter() PathSource get source; FillRule get fillRule; CanvasAppearance get appearance;
 /// Create a copy of PathData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -914,20 +916,20 @@ $PathDataCopyWith<PathData> get copyWith => _$PathDataCopyWithImpl<PathData>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as PathData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PathData&&const DeepCollectionEquality().equals(other.points, _this.points)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.fill, _this.fill) || other.fill == _this.fill)&&(identical(other.fillRule, _this.fillRule) || other.fillRule == _this.fillRule)&&(identical(other.strokeColor, _this.strokeColor) || other.strokeColor == _this.strokeColor)&&(identical(other.strokeWidth, _this.strokeWidth) || other.strokeWidth == _this.strokeWidth)&&(identical(other.strokeCap, _this.strokeCap) || other.strokeCap == _this.strokeCap)&&(identical(other.strokeJoin, _this.strokeJoin) || other.strokeJoin == _this.strokeJoin)&&(identical(other.miterLimit, _this.miterLimit) || other.miterLimit == _this.miterLimit)&&const DeepCollectionEquality().equals(other.dash, _this.dash));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PathData&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.fillRule, _this.fillRule) || other.fillRule == _this.fillRule)&&(identical(other.appearance, _this.appearance) || other.appearance == _this.appearance));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as PathData;
-  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.points),_this.source,_this.fill,_this.fillRule,_this.strokeColor,_this.strokeWidth,_this.strokeCap,_this.strokeJoin,_this.miterLimit,const DeepCollectionEquality().hash(_this.dash));
+  return Object.hash(runtimeType,_this.source,_this.fillRule,_this.appearance);
 }
 
 @override
 String toString() {
   final _this = this as PathData;
-  return 'PathData(points: ${_this.points}, source: ${_this.source}, fill: ${_this.fill}, fillRule: ${_this.fillRule}, strokeColor: ${_this.strokeColor}, strokeWidth: ${_this.strokeWidth}, strokeCap: ${_this.strokeCap}, strokeJoin: ${_this.strokeJoin}, miterLimit: ${_this.miterLimit}, dash: ${_this.dash})';
+  return 'PathData(source: ${_this.source}, fillRule: ${_this.fillRule}, appearance: ${_this.appearance})';
 }
 
 
@@ -938,11 +940,11 @@ abstract mixin class $PathDataCopyWith<$Res>  {
   factory $PathDataCopyWith(PathData value, $Res Function(PathData) _then) = _$PathDataCopyWithImpl;
 @useResult
 $Res call({
-@Vec2ListNullableConverter() List<Vec2?> points,@PathSourceConverter() PathSource? source,@CanvasFillConverter() CanvasFill fill, FillRule fillRule, Color32 strokeColor, double strokeWidth, StrokeCap strokeCap, StrokeJoin strokeJoin, double miterLimit, List<double> dash
+@PathSourceConverter() PathSource source, FillRule fillRule, CanvasAppearance appearance
 });
 
 
-
+$CanvasAppearanceCopyWith<$Res> get appearance;
 
 }
 /// @nodoc
@@ -955,22 +957,24 @@ class _$PathDataCopyWithImpl<$Res>
 
 /// Create a copy of PathData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? points = null,Object? source = freezed,Object? fill = null,Object? fillRule = null,Object? strokeColor = null,Object? strokeWidth = null,Object? strokeCap = null,Object? strokeJoin = null,Object? miterLimit = null,Object? dash = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? source = null,Object? fillRule = null,Object? appearance = null,}) {
   return _then(PathData(
-points: null == points ? _self.points : points // ignore: cast_nullable_to_non_nullable
-as List<Vec2?>,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
-as PathSource?,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
-as CanvasFill,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
-as FillRule,strokeColor: null == strokeColor ? _self.strokeColor : strokeColor // ignore: cast_nullable_to_non_nullable
-as Color32,strokeWidth: null == strokeWidth ? _self.strokeWidth : strokeWidth // ignore: cast_nullable_to_non_nullable
-as double,strokeCap: null == strokeCap ? _self.strokeCap : strokeCap // ignore: cast_nullable_to_non_nullable
-as StrokeCap,strokeJoin: null == strokeJoin ? _self.strokeJoin : strokeJoin // ignore: cast_nullable_to_non_nullable
-as StrokeJoin,miterLimit: null == miterLimit ? _self.miterLimit : miterLimit // ignore: cast_nullable_to_non_nullable
-as double,dash: null == dash ? _self.dash : dash // ignore: cast_nullable_to_non_nullable
-as List<double>,
+source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as PathSource,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
+as FillRule,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
+as CanvasAppearance,
   ));
 }
-
+/// Create a copy of PathData
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CanvasAppearanceCopyWith<$Res> get appearance {
+  
+  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
+    return _then(_self.copyWith(appearance: value));
+  });
+}
 }
 
 
@@ -1052,10 +1056,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@Vec2ListNullableConverter()  List<Vec2?> points, @PathSourceConverter()  PathSource? source, @CanvasFillConverter()  CanvasFill fill,  FillRule fillRule,  Color32 strokeColor,  double strokeWidth,  StrokeCap strokeCap,  StrokeJoin strokeJoin,  double miterLimit,  List<double> dash)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@PathSourceConverter()  PathSource source,  FillRule fillRule,  CanvasAppearance appearance)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PathData() when $default != null:
-return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.strokeColor,_that.strokeWidth,_that.strokeCap,_that.strokeJoin,_that.miterLimit,_that.dash);case _:
+return $default(_that.source,_that.fillRule,_that.appearance);case _:
   return orElse();
 
 }
@@ -1073,10 +1077,10 @@ return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.stroke
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@Vec2ListNullableConverter()  List<Vec2?> points, @PathSourceConverter()  PathSource? source, @CanvasFillConverter()  CanvasFill fill,  FillRule fillRule,  Color32 strokeColor,  double strokeWidth,  StrokeCap strokeCap,  StrokeJoin strokeJoin,  double miterLimit,  List<double> dash)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@PathSourceConverter()  PathSource source,  FillRule fillRule,  CanvasAppearance appearance)  $default,) {final _that = this;
 switch (_that) {
 case _PathData():
-return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.strokeColor,_that.strokeWidth,_that.strokeCap,_that.strokeJoin,_that.miterLimit,_that.dash);case _:
+return $default(_that.source,_that.fillRule,_that.appearance);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1093,10 +1097,10 @@ return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.stroke
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@Vec2ListNullableConverter()  List<Vec2?> points, @PathSourceConverter()  PathSource? source, @CanvasFillConverter()  CanvasFill fill,  FillRule fillRule,  Color32 strokeColor,  double strokeWidth,  StrokeCap strokeCap,  StrokeJoin strokeJoin,  double miterLimit,  List<double> dash)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@PathSourceConverter()  PathSource source,  FillRule fillRule,  CanvasAppearance appearance)?  $default,) {final _that = this;
 switch (_that) {
 case _PathData() when $default != null:
-return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.strokeColor,_that.strokeWidth,_that.strokeCap,_that.strokeJoin,_that.miterLimit,_that.dash);case _:
+return $default(_that.source,_that.fillRule,_that.appearance);case _:
   return null;
 
 }
@@ -1108,31 +1112,14 @@ return $default(_that.points,_that.source,_that.fill,_that.fillRule,_that.stroke
 @JsonSerializable()
 
 class _PathData implements PathData {
-  const _PathData({@Vec2ListNullableConverter()  List<Vec2?> points = const <Vec2?>[], @PathSourceConverter() this.source, @CanvasFillConverter() this.fill = const CanvasFillNone(), this.fillRule = FillRule.nonZero, this.strokeColor = 0x00000000, this.strokeWidth = 4.0, this.strokeCap = StrokeCap.butt, this.strokeJoin = StrokeJoin.miter, this.miterLimit = 4.0,  List<double> dash = const <double>[]}): _points = points,_dash = dash;
+  const _PathData({@PathSourceConverter() required this.source, this.fillRule = FillRule.nonZero, this.appearance = const CanvasAppearance(foreground: CanvasFill.none())});
   factory _PathData.fromJson(Map<String, dynamic> json) => _$PathDataFromJson(json);
 
- final  List<Vec2?> _points;
-@override@JsonKey()@Vec2ListNullableConverter() List<Vec2?> get points {
-  if (_points is EqualUnmodifiableListView) return _points;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_points);
-}
-
-@override@PathSourceConverter() final  PathSource? source;
-@override@JsonKey()@CanvasFillConverter() final  CanvasFill fill;
+/// The sole authored geometry source. Use an explicit empty source for an
+/// intentionally empty path.
+@override@PathSourceConverter() final  PathSource source;
 @override@JsonKey() final  FillRule fillRule;
-@override@JsonKey() final  Color32 strokeColor;
-@override@JsonKey() final  double strokeWidth;
-@override@JsonKey() final  StrokeCap strokeCap;
-@override@JsonKey() final  StrokeJoin strokeJoin;
-@override@JsonKey() final  double miterLimit;
- final  List<double> _dash;
-@override@JsonKey() List<double> get dash {
-  if (_dash is EqualUnmodifiableListView) return _dash;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_dash);
-}
-
+@override@JsonKey() final  CanvasAppearance appearance;
 
 /// Create a copy of PathData
 /// with the given fields replaced by the non-null parameter values.
@@ -1147,18 +1134,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PathData&&const DeepCollectionEquality().equals(other.points, _points)&&(identical(other.source, source) || other.source == source)&&(identical(other.fill, fill) || other.fill == fill)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.strokeColor, strokeColor) || other.strokeColor == strokeColor)&&(identical(other.strokeWidth, strokeWidth) || other.strokeWidth == strokeWidth)&&(identical(other.strokeCap, strokeCap) || other.strokeCap == strokeCap)&&(identical(other.strokeJoin, strokeJoin) || other.strokeJoin == strokeJoin)&&(identical(other.miterLimit, miterLimit) || other.miterLimit == miterLimit)&&const DeepCollectionEquality().equals(other.dash, _dash));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PathData&&(identical(other.source, source) || other.source == source)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.appearance, appearance) || other.appearance == appearance));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_points),source,fill,fillRule,strokeColor,strokeWidth,strokeCap,strokeJoin,miterLimit,const DeepCollectionEquality().hash(_dash));
+    return Object.hash(runtimeType,source,fillRule,appearance);
 }
 
 @override
 String toString() {
-    return 'PathData(points: $points, source: $source, fill: $fill, fillRule: $fillRule, strokeColor: $strokeColor, strokeWidth: $strokeWidth, strokeCap: $strokeCap, strokeJoin: $strokeJoin, miterLimit: $miterLimit, dash: $dash)';
+    return 'PathData(source: $source, fillRule: $fillRule, appearance: $appearance)';
 }
 
 
@@ -1169,11 +1156,11 @@ abstract mixin class _$PathDataCopyWith<$Res> implements $PathDataCopyWith<$Res>
   factory _$PathDataCopyWith(_PathData value, $Res Function(_PathData) _then) = __$PathDataCopyWithImpl;
 @override @useResult
 $Res call({
-@Vec2ListNullableConverter() List<Vec2?> points,@PathSourceConverter() PathSource? source,@CanvasFillConverter() CanvasFill fill, FillRule fillRule, Color32 strokeColor, double strokeWidth, StrokeCap strokeCap, StrokeJoin strokeJoin, double miterLimit, List<double> dash
+@PathSourceConverter() PathSource source, FillRule fillRule, CanvasAppearance appearance
 });
 
 
-
+@override $CanvasAppearanceCopyWith<$Res> get appearance;
 
 }
 /// @nodoc
@@ -1186,23 +1173,25 @@ class __$PathDataCopyWithImpl<$Res>
 
 /// Create a copy of PathData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? points = null,Object? source = freezed,Object? fill = null,Object? fillRule = null,Object? strokeColor = null,Object? strokeWidth = null,Object? strokeCap = null,Object? strokeJoin = null,Object? miterLimit = null,Object? dash = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? source = null,Object? fillRule = null,Object? appearance = null,}) {
   return _then(_PathData(
-points: null == points ? _self._points : points // ignore: cast_nullable_to_non_nullable
-as List<Vec2?>,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
-as PathSource?,fill: null == fill ? _self.fill : fill // ignore: cast_nullable_to_non_nullable
-as CanvasFill,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
-as FillRule,strokeColor: null == strokeColor ? _self.strokeColor : strokeColor // ignore: cast_nullable_to_non_nullable
-as Color32,strokeWidth: null == strokeWidth ? _self.strokeWidth : strokeWidth // ignore: cast_nullable_to_non_nullable
-as double,strokeCap: null == strokeCap ? _self.strokeCap : strokeCap // ignore: cast_nullable_to_non_nullable
-as StrokeCap,strokeJoin: null == strokeJoin ? _self.strokeJoin : strokeJoin // ignore: cast_nullable_to_non_nullable
-as StrokeJoin,miterLimit: null == miterLimit ? _self.miterLimit : miterLimit // ignore: cast_nullable_to_non_nullable
-as double,dash: null == dash ? _self._dash : dash // ignore: cast_nullable_to_non_nullable
-as List<double>,
+source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as PathSource,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
+as FillRule,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
+as CanvasAppearance,
   ));
 }
 
-
+/// Create a copy of PathData
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CanvasAppearanceCopyWith<$Res> get appearance {
+  
+  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
+    return _then(_self.copyWith(appearance: value));
+  });
+}
 }
 
 
