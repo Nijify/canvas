@@ -1,6 +1,6 @@
 # ISNet Android benchmark harness
 
-This app is development-only evidence tooling for `bg_remover_isnet`. It is not part of Nijify production composition and it does not bundle or download a model.
+This app is development-only evidence tooling for `canvas_background_removal_isnet`. It is not part of Nijify production composition and it does not bundle or download a model.
 
 ## Decision reached
 

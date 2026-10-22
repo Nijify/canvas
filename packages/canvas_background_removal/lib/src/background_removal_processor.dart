@@ -1,4 +1,4 @@
-// Path: flutter_frontend/lib/features/design_editor/application/background_removal_processor.dart
+// Path: packages/canvas_background_removal/lib/src/background_removal_processor.dart
 
 import 'dart:typed_data';
 

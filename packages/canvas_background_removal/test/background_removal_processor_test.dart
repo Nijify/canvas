@@ -1,10 +1,9 @@
-// Path: flutter_frontend/test/features/design_editor/application/background_removal_processor_test.dart
+// Path: packages/canvas_background_removal/test/background_removal_processor_test.dart
 
 import 'dart:typed_data';
 
 import 'package:canvas_background_removal/background_removal.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 
 
 void main() {

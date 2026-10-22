@@ -1,4 +1,4 @@
-// Path: flutter_frontend/test/features/design_editor/application/encoded_raster_inspector_test.dart
+// Path: packages/canvas_background_removal/test/encoded_raster_inspector_test.dart
 
 import 'dart:convert';
 import 'dart:typed_data';

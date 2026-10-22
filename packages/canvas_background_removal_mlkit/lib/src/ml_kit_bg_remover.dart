@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_mlkit/lib/src/ml_kit_bg_remover.dart
+// Path: packages/canvas_background_removal_mlkit/lib/src/ml_kit_bg_remover.dart
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -24,7 +24,7 @@ final class _MlKitBackgroundRemovalByteProcessor implements BackgroundRemovalByt
 
     try {
       final temporaryDirectory = await Directory.systemTemp.createTemp(
-        'nijify-bg-remover-',
+        'canvas-bg-remover-',
       );
 
       try {

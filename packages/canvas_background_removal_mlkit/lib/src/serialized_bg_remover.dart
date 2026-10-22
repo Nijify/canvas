@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_mlkit/lib/src/serialized_bg_remover.dart
+// Path: packages/canvas_background_removal_mlkit/lib/src/serialized_bg_remover.dart
 
 import 'dart:async';
 import 'dart:typed_data';

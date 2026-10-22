@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_mlkit/lib/src/unsupported_bg_remover.dart
+// Path: packages/canvas_background_removal_mlkit/lib/src/unsupported_bg_remover.dart
 
 import 'dart:typed_data';
 

@@ -1,3 +1,4 @@
+import 'package:canvas_background_removal/background_removal.dart';
 // Path: private_packages/bg_remover_mlkit/test/serialized_bg_remover_test.dart
 
 import 'dart:typed_data';

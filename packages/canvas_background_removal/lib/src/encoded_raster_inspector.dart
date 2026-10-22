@@ -1,4 +1,4 @@
-// Path: flutter_frontend/lib/features/design_editor/application/encoded_raster_inspector.dart
+// Path: packages/canvas_background_removal/lib/src/encoded_raster_inspector.dart
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
