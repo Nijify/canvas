@@ -36,7 +36,10 @@ void main() {
   test('provider failure preserves diagnostic cause', () {
     final cause = StateError('native diagnostic');
 
-    final error = BackgroundRemovalProviderException(BackgroundRemovalProviderFailureKind.failed, cause: cause);
+    final error = BackgroundRemovalProviderException(
+      BackgroundRemovalProviderFailureKind.failed,
+      cause: cause,
+    );
 
     expect(error.kind, BackgroundRemovalProviderFailureKind.failed);
     expect(identical(error.cause, cause), isTrue);

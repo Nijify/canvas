@@ -12,10 +12,13 @@ BackgroundRemovalByteProcessor createBackgroundRemovalByteProcessor() {
     return const _UnsupportedBackgroundRemovalByteProcessor();
   }
 
-  return SerializedBackgroundRemovalByteProcessor(_MlKitBackgroundRemovalByteProcessor());
+  return SerializedBackgroundRemovalByteProcessor(
+    _MlKitBackgroundRemovalByteProcessor(),
+  );
 }
 
-final class _MlKitBackgroundRemovalByteProcessor implements BackgroundRemovalByteProcessor {
+final class _MlKitBackgroundRemovalByteProcessor
+    implements BackgroundRemovalByteProcessor {
   @override
   Future<Uint8List> remove(Uint8List inputBytes) async {
     if (inputBytes.isEmpty) {
@@ -77,19 +80,25 @@ final class _MlKitBackgroundRemovalByteProcessor implements BackgroundRemovalByt
       rethrow;
     } catch (error, stackTrace) {
       Error.throwWithStackTrace(
-        BackgroundRemovalProviderException(BackgroundRemovalProviderFailureKind.failed, cause: error),
+        BackgroundRemovalProviderException(
+          BackgroundRemovalProviderFailureKind.failed,
+          cause: error,
+        ),
         stackTrace,
       );
     }
   }
 }
 
-final class _UnsupportedBackgroundRemovalByteProcessor implements BackgroundRemovalByteProcessor {
+final class _UnsupportedBackgroundRemovalByteProcessor
+    implements BackgroundRemovalByteProcessor {
   const _UnsupportedBackgroundRemovalByteProcessor();
 
   @override
   Future<Uint8List> remove(Uint8List inputBytes) async {
-    throw const BackgroundRemovalProviderException(BackgroundRemovalProviderFailureKind.unsupported);
+    throw const BackgroundRemovalProviderException(
+      BackgroundRemovalProviderFailureKind.unsupported,
+    );
   }
 }
 

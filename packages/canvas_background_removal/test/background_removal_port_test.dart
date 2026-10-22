@@ -34,12 +34,17 @@ void main() {
     var writes = 0;
     final port = CanvasBackgroundRemovalPort(
       readSource: (_) async => input,
-      persistPng: (_) async { writes++; return 'media:new'; },
+      persistPng: (_) async {
+        writes++;
+        return 'media:new';
+      },
       processor: _Processor(Uint8List.fromList([1, 2, 3])),
     );
     final result = await port.removeBackground(sourceRef: 'media:old');
-    expect((result as BackgroundRemovalFailure).kind,
-        BackgroundRemovalFailureKind.failed);
+    expect(
+      (result as BackgroundRemovalFailure).kind,
+      BackgroundRemovalFailureKind.failed,
+    );
     expect(writes, 0);
   });
 
@@ -53,8 +58,10 @@ void main() {
         return input;
       }),
     );
-    expect(await port.removeBackground(sourceRef: 'media:missing'),
-        isA<BackgroundRemovalFailure>());
+    expect(
+      await port.removeBackground(sourceRef: 'media:missing'),
+      isA<BackgroundRemovalFailure>(),
+    );
     expect(providerCalls, 0);
   });
 
@@ -62,12 +69,15 @@ void main() {
     final port = CanvasBackgroundRemovalPort(
       readSource: (_) async => input,
       persistPng: (_) async => 'media:new',
-      processor: _CallbackProcessor((_) => throw
-          const BackgroundRemovalProviderException(
-            BackgroundRemovalProviderFailureKind.temporarilyUnavailable)),
+      processor: _CallbackProcessor(
+        (_) => throw const BackgroundRemovalProviderException(
+          BackgroundRemovalProviderFailureKind.temporarilyUnavailable,
+        ),
+      ),
     );
-    final failure = await port.removeBackground(sourceRef: 'media:old')
-        as BackgroundRemovalFailure;
+    final failure =
+        await port.removeBackground(sourceRef: 'media:old')
+            as BackgroundRemovalFailure;
     expect(failure.kind, BackgroundRemovalFailureKind.temporarilyUnavailable);
     expect(failure.message, isNot(contains('Exception')));
   });
@@ -78,8 +88,9 @@ void main() {
       persistPng: (_) async => throw StateError('secret storage error'),
       processor: _Processor(input),
     );
-    final failure = await port.removeBackground(sourceRef: 'media:old')
-        as BackgroundRemovalFailure;
+    final failure =
+        await port.removeBackground(sourceRef: 'media:old')
+            as BackgroundRemovalFailure;
     expect(failure.kind, BackgroundRemovalFailureKind.failed);
     expect(failure.message, isNot(contains('secret')));
   });

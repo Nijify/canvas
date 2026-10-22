@@ -5,7 +5,8 @@ import 'dart:typed_data';
 
 import 'package:canvas_background_removal/background_removal.dart';
 
-final class SerializedBackgroundRemovalByteProcessor implements BackgroundRemovalByteProcessor {
+final class SerializedBackgroundRemovalByteProcessor
+    implements BackgroundRemovalByteProcessor {
   SerializedBackgroundRemovalByteProcessor(this._delegate);
 
   final BackgroundRemovalByteProcessor _delegate;

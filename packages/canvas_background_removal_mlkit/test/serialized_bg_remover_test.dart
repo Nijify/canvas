@@ -45,7 +45,8 @@ void main() {
   });
 }
 
-final class _RecordingConcurrentBackgroundRemovalByteProcessor implements BackgroundRemovalByteProcessor {
+final class _RecordingConcurrentBackgroundRemovalByteProcessor
+    implements BackgroundRemovalByteProcessor {
   _RecordingConcurrentBackgroundRemovalByteProcessor({this.firstCallError});
 
   final Object? firstCallError;

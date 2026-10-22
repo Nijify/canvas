@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:canvas_background_removal/background_removal.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 void main() {
   group('ValidatedBackgroundRemovalProcessor', () {
     test('rejects empty input before provider invocation', () async {
@@ -102,7 +101,9 @@ void main() {
     ]) {
       test('accepts static ${format.name} input', () async {
         final output = _alphaPngBytes();
-        final remover = _RecordingBackgroundRemovalByteProcessor(output: output);
+        final remover = _RecordingBackgroundRemovalByteProcessor(
+          output: output,
+        );
         final processor = ValidatedBackgroundRemovalProcessor(
           remover: remover,
           rasterInspector: _QueueRasterInspector(<Object>[
@@ -151,7 +152,9 @@ void main() {
       'does not confuse provider unsupported with unsupported input',
       () async {
         final remover = _RecordingBackgroundRemovalByteProcessor(
-          error: const BackgroundRemovalProviderException(BackgroundRemovalProviderFailureKind.unsupported),
+          error: const BackgroundRemovalProviderException(
+            BackgroundRemovalProviderFailureKind.unsupported,
+          ),
         );
 
         final processor = ValidatedBackgroundRemovalProcessor(
@@ -169,7 +172,9 @@ void main() {
 
     test('maps typed generic provider failure to failed', () async {
       final remover = _RecordingBackgroundRemovalByteProcessor(
-        error: const BackgroundRemovalProviderException(BackgroundRemovalProviderFailureKind.failed),
+        error: const BackgroundRemovalProviderException(
+          BackgroundRemovalProviderFailureKind.failed,
+        ),
       );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
@@ -201,7 +206,9 @@ void main() {
     });
 
     test('rejects empty provider output', () async {
-      final remover = _RecordingBackgroundRemovalByteProcessor(output: Uint8List(0));
+      final remover = _RecordingBackgroundRemovalByteProcessor(
+        output: Uint8List(0),
+      );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
         rasterInspector: _QueueRasterInspector(<Object>[_validInputRaster]),
@@ -234,7 +241,9 @@ void main() {
     });
 
     test('rejects non-PNG provider output', () async {
-      final remover = _RecordingBackgroundRemovalByteProcessor(output: _alphaPngBytes());
+      final remover = _RecordingBackgroundRemovalByteProcessor(
+        output: _alphaPngBytes(),
+      );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
         rasterInspector: _QueueRasterInspector(<Object>[
@@ -256,7 +265,9 @@ void main() {
     });
 
     test('rejects animated provider output', () async {
-      final remover = _RecordingBackgroundRemovalByteProcessor(output: _alphaPngBytes());
+      final remover = _RecordingBackgroundRemovalByteProcessor(
+        output: _alphaPngBytes(),
+      );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
         rasterInspector: _QueueRasterInspector(<Object>[
@@ -278,7 +289,9 @@ void main() {
     });
 
     test('rejects PNG output without transparency capability', () async {
-      final remover = _RecordingBackgroundRemovalByteProcessor(output: _rgbPngBytes());
+      final remover = _RecordingBackgroundRemovalByteProcessor(
+        output: _rgbPngBytes(),
+      );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
         rasterInspector: _QueueRasterInspector(<Object>[
@@ -295,7 +308,9 @@ void main() {
     });
 
     test('rejects width-changing provider output', () async {
-      final remover = _RecordingBackgroundRemovalByteProcessor(output: _alphaPngBytes());
+      final remover = _RecordingBackgroundRemovalByteProcessor(
+        output: _alphaPngBytes(),
+      );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
         rasterInspector: _QueueRasterInspector(<Object>[
@@ -317,7 +332,9 @@ void main() {
     });
 
     test('rejects height-changing provider output', () async {
-      final remover = _RecordingBackgroundRemovalByteProcessor(output: _alphaPngBytes());
+      final remover = _RecordingBackgroundRemovalByteProcessor(
+        output: _alphaPngBytes(),
+      );
       final processor = ValidatedBackgroundRemovalProcessor(
         remover: remover,
         rasterInspector: _QueueRasterInspector(<Object>[
@@ -394,7 +411,8 @@ void _expectFailure(
   );
 }
 
-final class _RecordingBackgroundRemovalByteProcessor implements BackgroundRemovalByteProcessor {
+final class _RecordingBackgroundRemovalByteProcessor
+    implements BackgroundRemovalByteProcessor {
   _RecordingBackgroundRemovalByteProcessor({Uint8List? output, this.error})
     : output = output ?? _alphaPngBytes();
 

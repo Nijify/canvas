@@ -97,7 +97,8 @@ final class ValidatedBackgroundRemovalProcessor
 
         // Provider/platform availability is not the same thing as an
         // unsupported encoded input.
-        BackgroundRemovalProviderFailureKind.unsupported || BackgroundRemovalProviderFailureKind.failed =>
+        BackgroundRemovalProviderFailureKind.unsupported ||
+        BackgroundRemovalProviderFailureKind.failed =>
           BackgroundRemovalProcessFailureKind.failed,
       });
     } catch (_) {

@@ -1,8 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:canvas_editor_flutter/image_tools.dart'
-    show BackgroundRemovalPort, BackgroundRemovalResult,
-        BackgroundRemovalFailure, BackgroundRemovalFailureKind,
+    show
+        BackgroundRemovalPort,
+        BackgroundRemovalResult,
+        BackgroundRemovalFailure,
+        BackgroundRemovalFailureKind,
         BackgroundRemovalSuccess;
 
 import 'background_removal_processor.dart';
@@ -10,9 +13,8 @@ import 'background_removal_provider.dart';
 import 'encoded_raster_inspector.dart';
 
 typedef BackgroundRemovalRead = Future<Uint8List?> Function(String sourceRef);
-typedef BackgroundRemovalPersist = Future<String?> Function(
-  BackgroundRemovalProcessedImage image,
-);
+typedef BackgroundRemovalPersist =
+    Future<String?> Function(BackgroundRemovalProcessedImage image);
 
 /// Host-supplied source/storage adapters and a native/model byte provider.
 /// The port never interprets source refs or imports an application repository.
@@ -75,12 +77,14 @@ final class CanvasBackgroundRemovalPort implements BackgroundRemovalPort {
         BackgroundRemovalProcessFailureKind.unsupportedInput =>
           const BackgroundRemovalFailure(
             kind: BackgroundRemovalFailureKind.unsupported,
-            message: 'Background removal supports static PNG, JPEG, and WebP images.',
+            message:
+                'Background removal supports static PNG, JPEG, and WebP images.',
           ),
         BackgroundRemovalProcessFailureKind.temporarilyUnavailable =>
           const BackgroundRemovalFailure(
             kind: BackgroundRemovalFailureKind.temporarilyUnavailable,
-            message: 'Background removal is still preparing. Try again shortly.',
+            message:
+                'Background removal is still preparing. Try again shortly.',
           ),
         BackgroundRemovalProcessFailureKind.failed =>
           const BackgroundRemovalFailure(
