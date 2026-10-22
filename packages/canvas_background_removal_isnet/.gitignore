@@ -1,0 +1,7 @@
+# Local model artifacts must never be committed.
+*.tflite
+*.onnx
+
+# Optional local model/benchmark directories.
+.models/
+.benchmark/
