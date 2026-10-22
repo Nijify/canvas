@@ -10,3 +10,7 @@ workspace:
   - packages/canvas_editor_flutter
   - packages/canvas_editor_flutter/example
   - packages/canvas_svg_export
+  - packages/canvas_background_removal
+  - packages/canvas_background_removal_mlkit
+  - packages/canvas_background_removal_isnet
+  - packages/canvas_background_removal_isnet/example
