@@ -1,6 +1,6 @@
 // Path: private_packages/bg_remover_isnet/test/isnet_model_contract_test.dart
 
-import 'package:canvas_background_removal_isnet/bg_remover_isnet.dart';
+import 'package:canvas_background_removal_isnet/background_removal_isnet.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

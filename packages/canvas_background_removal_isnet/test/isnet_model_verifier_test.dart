@@ -2,7 +2,7 @@
 
 import 'dart:io';
 
-import 'package:canvas_background_removal_isnet/bg_remover_isnet.dart';
+import 'package:canvas_background_removal_isnet/background_removal_isnet.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 
