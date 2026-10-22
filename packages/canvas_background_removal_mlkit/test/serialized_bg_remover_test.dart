@@ -3,7 +3,6 @@ import 'package:canvas_background_removal/background_removal.dart';
 
 import 'dart:typed_data';
 
-import 'package:canvas_background_removal_mlkit/background_removal_mlkit.dart';
 import 'package:canvas_background_removal_mlkit/src/serialized_bg_remover.dart';
 import 'package:flutter_test/flutter_test.dart';
 
