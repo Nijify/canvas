@@ -26,6 +26,7 @@ Map<String, Object?> convertCanvasSceneV3ToV4(Map<String, Object?> v3) {
       }
     }
   }
+
   visit(result['children'] as List);
   decodeCanvasScene(result);
   return result;
@@ -40,25 +41,48 @@ Map<String, Object?> _source(Map<String, Object?> source) {
     }
     return value.toDouble();
   }
-  Map<String, Object?> rect(double width, double height, [double? rx, double? ry]) => {
-    'kind': 'rect', 'x': -width / 2, 'y': -height / 2,
-    'width': width, 'height': height,
-    if (rx != null) 'rx': rx, if (ry != null) 'ry': ry,
+
+  Map<String, Object?> rect(
+    double width,
+    double height, [
+    double? rx,
+    double? ry,
+  ]) => {
+    'kind': 'rect',
+    'x': -width / 2,
+    'y': -height / 2,
+    'width': width,
+    'height': height,
+    if (rx != null) 'rx': rx,
+    if (ry != null) 'ry': ry,
   };
   switch (source['kind']) {
-    case 'rect': return rect(n('w'), n('h'));
-    case 'roundRect': return rect(n('w'), n('h'), n('rx'), n('ry'));
-    case 'pill': return rect(n('w'), n('h'), n('h') / 2, n('h') / 2);
-    case 'underline': return rect(n('w'), n('thickness'));
-    case 'circle': return {'kind': 'circle', 'cx': 0, 'cy': 0, 'r': n('r')};
-    case 'ellipse': return {'kind': 'ellipse', 'cx': 0, 'cy': 0,
-      'rx': n('rx'), 'ry': n('ry')};
+    case 'rect':
+      return rect(n('w'), n('h'));
+    case 'roundRect':
+      return rect(n('w'), n('h'), n('rx'), n('ry'));
+    case 'pill':
+      return rect(n('w'), n('h'), n('h') / 2, n('h') / 2);
+    case 'underline':
+      return rect(n('w'), n('thickness'));
+    case 'circle':
+      return {'kind': 'circle', 'cx': 0, 'cy': 0, 'r': n('r')};
+    case 'ellipse':
+      return {
+        'kind': 'ellipse',
+        'cx': 0,
+        'cy': 0,
+        'rx': n('rx'),
+        'ry': n('ry'),
+      };
     case 'regularPolygon':
     case 'star':
       final star = source['kind'] == 'star';
       final count = source[star ? 'points' : 'sides'];
       if (count is! int || count < 3) {
-        throw const FormatException('v3 polygon/star count must be at least 3.');
+        throw const FormatException(
+          'v3 polygon/star count must be at least 3.',
+        );
       }
       final outer = n(star ? 'rOuter' : 'r');
       final inner = star ? n('rInner') : outer;
@@ -69,8 +93,12 @@ Map<String, Object?> _source(Map<String, Object?> source) {
       final total = star ? count * 2 : count;
       final points = <Vec2>[
         for (var i = 0; i < total; i++)
-          Vec2((star && i.isOdd ? inner : outer) * math.cos(rotation + i * 2 * math.pi / total),
-            (star && i.isOdd ? inner : outer) * math.sin(rotation + i * 2 * math.pi / total)),
+          Vec2(
+            (star && i.isOdd ? inner : outer) *
+                math.cos(rotation + i * 2 * math.pi / total),
+            (star && i.isOdd ? inner : outer) *
+                math.sin(rotation + i * 2 * math.pi / total),
+          ),
       ];
       return {'kind': 'polygon', 'points': writeSvgPoints(points)};
     case 'polyline':
@@ -87,20 +115,31 @@ Map<String, Object?> _source(Map<String, Object?> source) {
       if (current.isNotEmpty) contours.add(current);
       if (contours.length == 1) {
         final points = contours.single;
-        if (points.length == 2) return {'kind': 'line',
-          'x1': points[0].x, 'y1': points[0].y,
-          'x2': points[1].x, 'y2': points[1].y};
+        if (points.length == 2)
+          return {
+            'kind': 'line',
+            'x1': points[0].x,
+            'y1': points[0].y,
+            'x2': points[1].x,
+            'y2': points[1].y,
+          };
         return {'kind': 'polyline', 'points': writeSvgPoints(points)};
       }
-      return {'kind': 'path', 'd': writeSvgPathData(PathIR([
-        for (final points in contours) ...[
-          PathCmd.moveTo(points.first),
-          for (final point in points.skip(1)) PathCmd.lineTo(point),
-        ],
-      ]))};
+      return {
+        'kind': 'path',
+        'd': writeSvgPathData(
+          PathIR([
+            for (final points in contours) ...[
+              PathCmd.moveTo(points.first),
+              for (final point in points.skip(1)) PathCmd.lineTo(point),
+            ],
+          ]),
+        ),
+      };
     case 'commands':
       return {'kind': 'path', 'd': writeSvgPathData(_commands(source))};
-    default: throw FormatException('Unsupported v3 source: ${source['kind']}');
+    default:
+      throw FormatException('Unsupported v3 source: ${source['kind']}');
   }
 }
 
@@ -121,7 +160,8 @@ PathIR _commands(Map<String, Object?> source) {
       'close' => const <String>[],
       _ => throw const FormatException('Unsupported v3 command.'),
     };
-    if (raw.length != names.length + 1 || names.any((key) => !raw.containsKey(key))) {
+    if (raw.length != names.length + 1 ||
+        names.any((key) => !raw.containsKey(key))) {
       throw const FormatException('Invalid v3 command fields.');
     }
     final end = raw['verb'] == 'close' ? Vec2.zero : _point(raw['p']);
@@ -130,20 +170,27 @@ PathIR _commands(Map<String, Object?> source) {
       'lineTo' => PathCmd.lineTo(end),
       'quadTo' => PathCmd.cubicTo(
         current + (_point(raw['c1']) - current) * (2 / 3),
-        end + (_point(raw['c1']) - end) * (2 / 3), end),
+        end + (_point(raw['c1']) - end) * (2 / 3),
+        end,
+      ),
       'cubicTo' => PathCmd.cubicTo(_point(raw['c1']), _point(raw['c2']), end),
       'close' => PathCmd.close(),
       _ => throw StateError('Validated v3 verb.'),
     });
     current = end;
   }
-  try { return PathIR(commands); }
-  on ArgumentError catch (error) { throw FormatException('Invalid v3 commands: ${error.message}'); }
+  try {
+    return PathIR(commands);
+  } on ArgumentError catch (error) {
+    throw FormatException('Invalid v3 commands: ${error.message}');
+  }
 }
 
 Vec2 _point(Object? raw) {
-  if (raw is! Map || raw.length != 2 ||
-      !raw.containsKey('x') || !raw.containsKey('y')) {
+  if (raw is! Map ||
+      raw.length != 2 ||
+      !raw.containsKey('x') ||
+      !raw.containsKey('y')) {
     throw const FormatException('Expected a v3 point object.');
   }
   double number(String key) {
@@ -153,13 +200,16 @@ Vec2 _point(Object? raw) {
     }
     return value.toDouble();
   }
+
   return Vec2(number('x'), number('y'));
 }
 
 Object? _copy(Object? value) {
-  if (value is Map) return <String, Object?>{
-    for (final entry in value.entries) entry.key as String: _copy(entry.value),
-  };
+  if (value is Map)
+    return <String, Object?>{
+      for (final entry in value.entries)
+        entry.key as String: _copy(entry.value),
+    };
   if (value is List) return <Object?>[for (final item in value) _copy(item)];
   return value;
 }

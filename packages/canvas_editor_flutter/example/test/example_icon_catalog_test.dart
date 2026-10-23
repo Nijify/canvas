@@ -46,8 +46,9 @@ void main() {
   });
 
   test('invalid SVG path data fails during resource preparation', () async {
-    final json = jsonDecode(await rootBundle.loadString('assets/icons/ring.json'))
-        as Map<String, dynamic>;
+    final json =
+        jsonDecode(await rootBundle.loadString('assets/icons/ring.json'))
+            as Map<String, dynamic>;
     json['source'] = {'kind': 'path', 'd': 'M0 0L'};
     await expectLater(
       ExampleIconCatalog.load(_ReplacingRingBundle(jsonEncode(json))),

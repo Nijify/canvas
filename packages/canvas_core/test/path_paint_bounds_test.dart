@@ -237,7 +237,9 @@ void main() {
                   const Node.path(
                     id: 'sibling',
                     xf: Transform2D(position: Vec2(150, 30)),
-                    data: PathData(source: RectSource(x: -10, y: -5, width: 20, height: 10)),
+                    data: PathData(
+                      source: RectSource(x: -10, y: -5, width: 20, height: 10),
+                    ),
                   ),
                 ],
               ),

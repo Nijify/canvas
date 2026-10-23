@@ -46,8 +46,8 @@ final class PathIR {
   }
 
   bool get hasSegments => cmds.any(
-    (command) => command.verb == PathVerb.lineTo ||
-        command.verb == PathVerb.cubicTo,
+    (command) =>
+        command.verb == PathVerb.lineTo || command.verb == PathVerb.cubicTo,
   );
 
   /// Conservative source-space AABB from endpoints and curve controls.
@@ -61,6 +61,7 @@ final class PathIR {
       if (v.y < minY) minY = v.y;
       if (v.y > maxY) maxY = v.y;
     }
+
     for (final command in cmds) {
       if (command.verb == PathVerb.close) continue;
       acc(command.p);

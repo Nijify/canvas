@@ -53,7 +53,11 @@ void validateSceneJsonWire(
   }
 }
 
-void _node(Object? raw, String path, void Function(Object?, String) validateSource) {
+void _node(
+  Object? raw,
+  String path,
+  void Function(Object?, String) validateSource,
+) {
   final node = _object(raw, path);
   _keys(
     node,

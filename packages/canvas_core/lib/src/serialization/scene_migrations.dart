@@ -39,14 +39,16 @@ Map<String, Object?> upgradeCanvasScene(
       );
     }
 
-    return convertCanvasSceneV3ToV4(convertCanvasSceneV2ToV3(
-      convertCanvasSceneV1ToV2(
-        convertLegacyUnversionedCanvasSceneToV1(
-          json,
-          resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
+    return convertCanvasSceneV3ToV4(
+      convertCanvasSceneV2ToV3(
+        convertCanvasSceneV1ToV2(
+          convertLegacyUnversionedCanvasSceneToV1(
+            json,
+            resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
+          ),
         ),
       ),
-    ));
+    );
   } else {
     if (legacyUnversioned) {
       throw const FormatException(
@@ -61,7 +63,9 @@ Map<String, Object?> upgradeCanvasScene(
     }
     switch (version) {
       case canvasSceneFormatV1:
-        return convertCanvasSceneV3ToV4(convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(json)));
+        return convertCanvasSceneV3ToV4(
+          convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(json)),
+        );
       case canvasSceneFormatV2:
         return convertCanvasSceneV3ToV4(convertCanvasSceneV2ToV3(json));
       case canvasSceneFormatV3:

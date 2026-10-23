@@ -30,11 +30,7 @@ final class ComputedIcon {
     final sourceToLocal = vm.Matrix4.identity()
       ..translateByDouble(x, y, 0, 1)
       ..scaleByDouble(scale, scale, 1, 1);
-    return ComputedIcon._(
-      icon.pathIR,
-      sourceToLocal,
-      icon.fillRule,
-    );
+    return ComputedIcon._(icon.pathIR, sourceToLocal, icon.fillRule);
   }
 
   const ComputedIcon._(this.pathIR, this.sourceToLocal, this.fillRule);

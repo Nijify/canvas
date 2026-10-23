@@ -58,7 +58,9 @@ void main() {
       test('rejects raw SVG sources before decoding (nested: $nested)', () {
         const path = Node.path(
           id: 'svg-path',
-          data: PathData(source: RectSource(x: -12, y: -12, width: 24, height: 24)),
+          data: PathData(
+            source: RectSource(x: -12, y: -12, width: 24, height: 24),
+          ),
         );
         final json = encodeCanvasScene(
           _scene().copyWith(

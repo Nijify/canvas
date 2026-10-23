@@ -149,9 +149,7 @@ void main() {
           Node.path(
             id: 'path',
             xf: Transform2D(rotationRad: math.pi / 4),
-            data: PathData(
-              source: const LineSource(x1: -10, x2: 10),
-            ),
+            data: PathData(source: const LineSource(x1: -10, x2: 10)),
           ),
         ],
       ),
@@ -179,7 +177,9 @@ void main() {
     final scene = _scene([
       const Node.path(
         id: 'path',
-        data: PathData(source: RectSource(x: -10, y: -10, width: 20, height: 20)),
+        data: PathData(
+          source: RectSource(x: -10, y: -10, width: 20, height: 20),
+        ),
       ),
     ]);
     final computed = computeScene(scene, _services());

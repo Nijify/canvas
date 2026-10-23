@@ -168,7 +168,9 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
     // per distinct corner instead of stacking multiple gesture handlers.
     final scaleHandleIndices = <int>[];
     for (var i = 0; i < cornersS.length; i++) {
-      if (!scaleHandleIndices.any((j) => (cornersS[i] - cornersS[j]).distance < 0.01)) {
+      if (!scaleHandleIndices.any(
+        (j) => (cornersS[i] - cornersS[j]).distance < 0.01,
+      )) {
         scaleHandleIndices.add(i);
       }
     }

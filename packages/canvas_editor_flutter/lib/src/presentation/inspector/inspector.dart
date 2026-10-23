@@ -348,14 +348,14 @@ Widget _buildPathPanel({
     leadingSections: leadingSections,
     children: [
       if (!isLine) ...[
-      const Gap(4),
-      FillEditor(
-        nodeId: nodeId,
-        inspector: inspector,
-        ids: FillFieldIds.path,
-        header: 'Fill',
-      ),
-      const Gap(16),
+        const Gap(4),
+        FillEditor(
+          nodeId: nodeId,
+          inspector: inspector,
+          ids: FillFieldIds.path,
+          header: 'Fill',
+        ),
+        const Gap(16),
       ],
       StrokeEditor(nodeId: nodeId, inspector: inspector),
     ],

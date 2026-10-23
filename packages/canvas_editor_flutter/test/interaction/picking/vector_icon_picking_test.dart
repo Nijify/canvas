@@ -44,7 +44,9 @@ CanvasSceneDocument _scene({Transform2D group = const Transform2D()}) =>
       children: [
         const Node.path(
           id: 'under',
-          data: PathData(source: RectSource(x: -200, y: -200, width: 400, height: 400)),
+          data: PathData(
+            source: RectSource(x: -200, y: -200, width: 400, height: 400),
+          ),
         ),
         Node.group(
           id: 'group',

@@ -4,7 +4,9 @@ import 'scene_json_wire.dart';
 const int canvasSceneFormatV3 = 3;
 
 void validateSceneV3Json(Map<String, Object?> json) => validateSceneJsonWire(
-  json, version: canvasSceneFormatV3, validateSource: _source,
+  json,
+  version: canvasSceneFormatV3,
+  validateSource: _source,
 );
 
 void _source(Object? raw, String path) {

@@ -62,7 +62,10 @@ ResolvedIcon _decodeIcon(Object? json) {
   }
 
   final source = json['source'];
-  if (source is! Map || source.length != 2 || source['kind'] != 'path' || source['d'] is! String) {
+  if (source is! Map ||
+      source.length != 2 ||
+      source['kind'] != 'path' ||
+      source['d'] is! String) {
     throw const FormatException('Expected an SVG path source.');
   }
   final fillRule = switch (json['fillRule']) {

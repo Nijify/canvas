@@ -225,18 +225,24 @@ void main() {
         Node.path(
           id: 'curve',
           data: PathData(
-            source: GeneralPathSource(PathIR([
-              PathCmd.moveTo(const Vec2(0, 0)),
-              PathCmd.cubicTo(const Vec2(1, 2), const Vec2(3, 4), const Vec2(4, 5)),
-              PathCmd.cubicTo(
-                const Vec2(6, 7),
-                const Vec2(8, 9),
-                const Vec2(10, 11),
-              ),
-              PathCmd.close(),
-              PathCmd.moveTo(const Vec2(20, 30)),
-              PathCmd.lineTo(const Vec2(40, 50)),
-            ])),
+            source: GeneralPathSource(
+              PathIR([
+                PathCmd.moveTo(const Vec2(0, 0)),
+                PathCmd.cubicTo(
+                  const Vec2(1, 2),
+                  const Vec2(3, 4),
+                  const Vec2(4, 5),
+                ),
+                PathCmd.cubicTo(
+                  const Vec2(6, 7),
+                  const Vec2(8, 9),
+                  const Vec2(10, 11),
+                ),
+                PathCmd.close(),
+                PathCmd.moveTo(const Vec2(20, 30)),
+                PathCmd.lineTo(const Vec2(40, 50)),
+              ]),
+            ),
             appearance: const CanvasAppearance(
               foreground: CanvasFill.solid(0xff123456),
             ),

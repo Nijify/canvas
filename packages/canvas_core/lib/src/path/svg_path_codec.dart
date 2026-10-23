@@ -29,16 +29,18 @@ PathIR parseSvgPathData(String d) {
 
 /// Writes absolute, explicit M/L/C/Z commands with deterministic double spelling.
 /// This writes geometry only, without XML, transforms, fill, or stroke.
-String writeSvgPathData(PathIR geometry) => geometry.cmds.map((command) {
-  String point(Vec2 p) => '${_number(p.x)} ${_number(p.y)}';
-  return switch (command.verb) {
-    PathVerb.moveTo => 'M${point(command.p)}',
-    PathVerb.lineTo => 'L${point(command.p)}',
-    PathVerb.cubicTo =>
-      'C${point(command.c1!)} ${point(command.c2!)} ${point(command.p)}',
-    PathVerb.close => 'Z',
-  };
-}).join(' ');
+String writeSvgPathData(PathIR geometry) => geometry.cmds
+    .map((command) {
+      String point(Vec2 p) => '${_number(p.x)} ${_number(p.y)}';
+      return switch (command.verb) {
+        PathVerb.moveTo => 'M${point(command.p)}',
+        PathVerb.lineTo => 'L${point(command.p)}',
+        PathVerb.cubicTo =>
+          'C${point(command.c1!)} ${point(command.c2!)} ${point(command.p)}',
+        PathVerb.close => 'Z',
+      };
+    })
+    .join(' ');
 
 final class _PathCollector extends svg.PathProxy {
   final commands = <PathCmd>[];
@@ -119,12 +121,12 @@ List<Vec2> parseSvgPoints(String text) {
   ]);
 }
 
-String writeSvgPoints(List<Vec2> points) => points.map(
-  (point) => '${_number(point.x)},${_number(point.y)}',
-).join(' ');
+String writeSvgPoints(List<Vec2> points) =>
+    points.map((point) => '${_number(point.x)},${_number(point.y)}').join(' ');
 
 String _number(double value) {
-  if (!value.isFinite) throw ArgumentError.value(value, 'coordinate', 'Must be finite.');
+  if (!value.isFinite)
+    throw ArgumentError.value(value, 'coordinate', 'Must be finite.');
   if (value == 0) return '0';
   final text = value.toString();
   final parts = text.split('e');
