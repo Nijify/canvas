@@ -110,4 +110,38 @@ void main() {
       expect(writeSvgPathData(ir), d);
     },
   );
+
+  test('fractional paths stay stable across repeated JSON save/load', () {
+    List<Vec2> points(PathIR path) => [
+      for (final command in path.cmds) ...[
+        command.p,
+        if (command.c1 != null) command.c1!,
+        if (command.c2 != null) command.c2!,
+      ],
+    ];
+
+    for (final d in [
+      'M0.3 0.29L12.345 -6.789Z',
+      'M0.1 0.2Q30.7 60.4 60.3 0.6T120.9 0.8',
+      'M10.3 0.7A10.1 15.2 30 0 1 0.9 10.4Z',
+    ]) {
+      final original = GeneralPathSource.fromSvg(d);
+      var restored = original;
+      for (var cycle = 0; cycle < 100; cycle++) {
+        restored = PathSource.fromJson(restored.toJson()) as GeneralPathSource;
+      }
+
+      expect(
+        restored.geometry.cmds.map((command) => command.verb),
+        original.geometry.cmds.map((command) => command.verb),
+      );
+      final expected = points(original.geometry);
+      final actual = points(restored.geometry);
+      expect(actual, hasLength(expected.length));
+      for (var i = 0; i < expected.length; i++) {
+        expect(actual[i].x, closeTo(expected[i].x, 1e-9), reason: d);
+        expect(actual[i].y, closeTo(expected[i].y, 1e-9), reason: d);
+      }
+    }
+  });
 }

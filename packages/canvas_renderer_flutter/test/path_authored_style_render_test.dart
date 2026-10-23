@@ -66,19 +66,10 @@ void main() {
   test('ordinary path uses its fill rule and shared appearance', () async {
     final render = await _render(
       PathData(
-        source: PolylineSource(const [
-          Vec2(-12, -12),
-          Vec2(12, -12),
-          Vec2(12, 12),
-          Vec2(-12, 12),
-          Vec2(-12, -12),
-          null,
-          Vec2(-5, -5),
-          Vec2(5, -5),
-          Vec2(5, 5),
-          Vec2(-5, 5),
-          Vec2(-5, -5),
-        ]),
+        source: GeneralPathSource.fromSvg(
+          'M-12 -12 L12 -12 L12 12 L-12 12 L-12 -12 '
+          'M-5 -5 L5 -5 L5 5 L-5 5 L-5 -5',
+        ),
         fillRule: FillRule.evenOdd,
         appearance: CanvasAppearance(
           foreground: const CanvasFill.solid(0xFFFF0000),
