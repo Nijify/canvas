@@ -23,7 +23,7 @@ class _Icons implements IconResolver {
   }
 }
 
-CommandPathSource _rect(Rect2D box) => CommandPathSource([
+PathIR _rect(Rect2D box) => PathIR([
   PathCmd.moveTo(Vec2(box.left, box.top)),
   PathCmd.lineTo(Vec2(box.right, box.top)),
   PathCmd.lineTo(Vec2(box.right, box.bottom)),
@@ -32,11 +32,11 @@ CommandPathSource _rect(Rect2D box) => CommandPathSource([
 ]);
 
 ResolvedIcon _icon({
-  CommandPathSource? source,
+  PathIR? source,
   Rect2D viewBox = const Rect2D(0, 0, 24, 24),
   FillRule fillRule = FillRule.nonZero,
 }) => ResolvedIcon(
-  source: source ?? _rect(viewBox),
+  pathIR: source ?? _rect(viewBox),
   viewBox: viewBox,
   fillRule: fillRule,
 );
@@ -88,14 +88,15 @@ void main() {
 
   test('24-square source fits to 96 without changing its commands', () {
     final icon = _icon(fillRule: FillRule.evenOdd);
-    final original = icon.source.toJson();
+    final original = writeSvgPathData(icon.pathIR);
     final icons = _Icons(icon);
     final computed = _compute(icons);
     final result = computed.iconById['icon']!;
     expect(icons.calls, 1);
     expect(result.fillRule, FillRule.evenOdd);
-    expect(result.pathIR.cmds, orderedEquals(icon.source.commands));
-    expect(icon.source.toJson(), original);
+    expect(identical(result.pathIR, icon.pathIR), isTrue);
+    expect(identical(ComputedIcon.fit(icon, 48).pathIR, icon.pathIR), isTrue);
+    expect(writeSvgPathData(icon.pathIR), original);
     expect(result.pathIR.cmds.first.p, const Vec2(0, 0));
     _expectRect(
       aabbOfTransformedRect(result.pathIR.localBounds(), result.sourceToLocal),
@@ -179,7 +180,7 @@ void main() {
 
   test('empty and unresolved icons retain layout without paint', () {
     for (final icons in <_Icons?>[
-      _Icons(_icon(source: CommandPathSource([]))),
+      _Icons(_icon(source: PathIR([]))),
       _Icons(null),
       null,
     ]) {

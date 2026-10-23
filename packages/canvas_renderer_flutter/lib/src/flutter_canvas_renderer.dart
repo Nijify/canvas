@@ -265,9 +265,6 @@ class CanvasRenderer {
           p.moveTo(cmd.p.x, cmd.p.y);
         case PathVerb.lineTo:
           p.lineTo(cmd.p.x, cmd.p.y);
-        case PathVerb.quadTo:
-          final c = cmd.c1!;
-          p.quadraticBezierTo(c.x, c.y, cmd.p.x, cmd.p.y);
         case PathVerb.cubicTo:
           final c1 = cmd.c1!, c2 = cmd.c2!;
           p.cubicTo(c1.x, c1.y, c2.x, c2.y, cmd.p.x, cmd.p.y);

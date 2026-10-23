@@ -30,7 +30,7 @@ the ring uses cubic curves and an even-odd hole; the arrow has a non-square
 viewBox with a nonzero origin and authored margins.
 
 `example_icon_catalog.dart` owns the short ref/label/asset list and loads the
-files through `AssetBundle`. It constructs public `CommandPathSource` and
+files through `AssetBundle`. It parses SVG d through the public core codec and constructs prepared `PathIR` /
 `ResolvedIcon` values before creating the editor session, then exposes
 synchronous lookup. Scene JSON stores icon references; reopening it requires
 the same catalog. Text continues to use the bundled typography font.

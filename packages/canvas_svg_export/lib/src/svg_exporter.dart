@@ -108,7 +108,6 @@ SvgExportResult exportPreparedSvg({
     if (computed.nodeById[id] != path ||
         ir == null ||
         matrix == null ||
-        !_validPath(ir) ||
         !_validMatrix(matrix.storage)) {
       issues.add(
         SvgExportIssue(
@@ -199,7 +198,7 @@ SvgExportResult exportPreparedSvg({
         ? data.appearance.stroke
         : null;
     out.write(
-      '  <path d="${_pathData(ir)}" transform="matrix($matrix)" '
+      '  <path d="${writeSvgPathData(ir)}" transform="matrix($matrix)" '
       'fill="$fill" '
       'fill-rule="${data.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
     );
@@ -248,36 +247,6 @@ final class _SvgLinearGradient {
   final LinearGradientSpec spec;
 }
 
-bool _validPath(PathIR path) {
-  var hasStart = false;
-  for (final cmd in path.cmds) {
-    if (!cmd.p.x.isFinite || !cmd.p.y.isFinite) return false;
-    switch (cmd.verb) {
-      case PathVerb.moveTo:
-        hasStart = true;
-      case PathVerb.lineTo:
-      case PathVerb.close:
-        if (!hasStart) return false;
-      case PathVerb.quadTo:
-        if (!hasStart ||
-            cmd.c1 == null ||
-            !cmd.c1!.x.isFinite ||
-            !cmd.c1!.y.isFinite)
-          return false;
-      case PathVerb.cubicTo:
-        if (!hasStart ||
-            cmd.c1 == null ||
-            cmd.c2 == null ||
-            !cmd.c1!.x.isFinite ||
-            !cmd.c1!.y.isFinite ||
-            !cmd.c2!.x.isFinite ||
-            !cmd.c2!.y.isFinite)
-          return false;
-    }
-  }
-  return true;
-}
-
 bool _validMatrix(List<double> m) {
   if (m.length != 16 || m.any((v) => !v.isFinite)) return false;
   const zero = <int>[2, 3, 6, 7, 8, 9, 11, 14];
@@ -285,29 +254,6 @@ bool _validMatrix(List<double> m) {
       (m[10] - 1).abs() < 1e-9 &&
       (m[15] - 1).abs() < 1e-9;
 }
-
-String _pathData(PathIR path) => path.cmds
-    .map((cmd) {
-      final p = cmd.p;
-      switch (cmd.verb) {
-        case PathVerb.moveTo:
-          return 'M${_number(p.x)} ${_number(p.y)}';
-        case PathVerb.lineTo:
-          return 'L${_number(p.x)} ${_number(p.y)}';
-        case PathVerb.quadTo:
-          final c = cmd.c1!;
-          return 'Q${_number(c.x)} ${_number(c.y)} '
-              '${_number(p.x)} ${_number(p.y)}';
-        case PathVerb.cubicTo:
-          final c1 = cmd.c1!, c2 = cmd.c2!;
-          return 'C${_number(c1.x)} ${_number(c1.y)} '
-              '${_number(c2.x)} ${_number(c2.y)} '
-              '${_number(p.x)} ${_number(p.y)}';
-        case PathVerb.close:
-          return 'Z';
-      }
-    })
-    .join(' ');
 
 String _number(double value) => value == 0 ? '0' : value.toString();
 String _rgb(int argb) =>

@@ -62,8 +62,11 @@ ResolvedIcon _decodeIcon(Object? json) {
   }
 
   final source = json['source'];
-  if (source is! Map || source.keys.any((key) => key is! String)) {
-    throw const FormatException('Expected a command source.');
+  if (source is! Map ||
+      source.length != 2 ||
+      source['kind'] != 'path' ||
+      source['d'] is! String) {
+    throw const FormatException('Expected an SVG path source.');
   }
   final fillRule = switch (json['fillRule']) {
     'nonZero' => FillRule.nonZero,
@@ -72,7 +75,7 @@ ResolvedIcon _decodeIcon(Object? json) {
   };
   try {
     return ResolvedIcon(
-      source: CommandPathSource.fromJson(Map<String, Object?>.from(source)),
+      pathIR: parseSvgPathData(source['d'] as String),
       viewBox: Rect2D.fromLTWH(
         coordinate(0),
         coordinate(1),

@@ -56,7 +56,7 @@ void main() {
               Node.path(
                 id: 'red',
                 data: PathData(
-                  source: RectSource(32, 32),
+                  source: RectSource(x: -16, y: -16, width: 32, height: 32),
                   appearance: CanvasAppearance(
                     foreground: CanvasFill.solid(0xFFFF0000),
                   ),
@@ -65,7 +65,7 @@ void main() {
               Node.path(
                 id: 'blue',
                 data: PathData(
-                  source: RectSource(12, 12),
+                  source: RectSource(x: -6, y: -6, width: 12, height: 12),
                   appearance: CanvasAppearance(
                     foreground: CanvasFill.solid(0xFF0000FF),
                   ),

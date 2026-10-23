@@ -103,9 +103,9 @@ final fontFamilies = collectSceneFontFamilies(
 ```
 
 Icons are filled vector symbols. An `IconResolver` returns a `ResolvedIcon`
-with a normalized `CommandPathSource`, a finite positive `viewBox`, and a
-`FillRule`. Hosts normalize geometry before constructing the resource.
-The command source is immutable and has no font or source paint.
+with validated immutable `PathIR` geometry, a finite positive `viewBox`, and a
+`FillRule`. Hosts parse SVG path data through `parseSvgPathData()` before constructing the resource.
+The geometry has no font or source paint and is reused during evaluation.
 The instance's `CanvasAppearance` supplies its foreground and shadows.
 
 Scene evaluation fits the declared viewBox uniformly into the centered
@@ -157,7 +157,7 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-Persistence uses scene format v3. Call `upgradeCanvasScene()` explicitly for
+Persistence uses scene format v4. Call `upgradeCanvasScene()` explicitly for
 supported historical JSON before decoding. Both persistence functions enforce
 scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
 check. Malformed wire structure throws `FormatException`; runtime integrity
@@ -219,3 +219,39 @@ See [VERSIONING.md](VERSIONING.md) for the full policy.
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
 
 Copyright 2026 Nijify.
+
+## SVG-aligned geometry
+
+`PathNode` uses one of `RectSource`, `CircleSource`, `EllipseSource`, `LineSource`,
+`PolylineSource`, `PolygonSource`, or `GeneralPathSource`. Rectangles use numeric
+local x/y/width/height with optional rx/ry. Circle/ellipse centers default to zero.
+Dimensions and radii are nonnegative; zero dimensions/radii disable basic shapes.
+
+```dart
+final rectangle = RectSource(x: -80, y: -50, width: 160, height: 100, rx: 12);
+final arbitrary = GeneralPathSource.fromSvg('M0 0Q30 60 60 0Z');
+final resource = ResolvedIcon(
+  pathIR: parseSvgPathData('M0 0L24 0L12 24Z'),
+  viewBox: const Rect2D(0, 0, 24, 24),
+  fillRule: FillRule.nonZero,
+);
+```
+
+General paths write `{"kind":"path","d":"..."}`. Points write SVG numeric strings.
+Runtime geometry uses validated immutable absolute move/line/cubic/close commands.
+The shared codec handles path data, not complete SVG documents, CSS, or percentage
+lengths. Coordinate spelling is canonicalized; parsing and arc conversion use
+floating-point arithmetic and arc approximation. Source coordinates are retained
+without implicit centering. Existing transforms and host application placement
+remain separate from geometry.
+
+The `path_parsing` dependency currently limits explicit exponents to -37 through
+38; the writer expands its own output outside that exponent range.
+Nonfinite/unsupported numeric input fails with `FormatException`; original
+SVG spelling and bit-exact decimal save/load round trips are not preserved.
+`writeSvgPathData` is deterministic for unchanged geometry and does not round it.
+
+Use `convertCanvasSceneV3ToV4()` for v3 input or `upgradeCanvasScene()` for the
+retained historical routes. Migration does not restore star-generation parameters
+or compensate for quadratic control-hull/pivot changes. Historical underline bars
+become rectangles; new Line actions create stroke-based geometry.

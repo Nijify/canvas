@@ -269,7 +269,8 @@ abstract final class EditorActionIds {
   static const addPill = EditorActionId('editor.add.pill');
   static const addCircle = EditorActionId('editor.add.circle');
   static const addEllipse = EditorActionId('editor.add.ellipse');
-  static const addUnderline = EditorActionId('editor.add.underline');
+  static const addPolyline = EditorActionId('editor.add.polyline');
+  static const addLine = EditorActionId('editor.add.line');
   static const addPolygon = EditorActionId('editor.add.polygon');
   static const addStar = EditorActionId('editor.add.star');
 

@@ -42,7 +42,7 @@ rt.CanvasSceneDocument _scene({rt.CanvasStroke? stroke}) =>
           name: 'Shape',
           xf: const rt.Transform2D(position: rt.Vec2(20, 30)),
           data: rt.PathData(
-            source: const rt.RectSource(40, 20),
+            source: const rt.RectSource(x: -20, y: -10, width: 40, height: 20),
             fillRule: rt.FillRule.evenOdd,
             appearance: rt.CanvasAppearance(
               foreground: const rt.CanvasFill.solid(0xFF334455),

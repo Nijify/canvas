@@ -60,7 +60,7 @@ Discovery does not load or validate fonts.
 
 `IconResolver` returns one concrete `ResolvedIcon`: immutable normalized
 source commands, an explicit finite positive viewBox, and a fill rule.
-The resource requires a `CommandPathSource`; hosts normalize geometry before
+The resource requires a validated immutable `PathIR`; hosts prepare geometry before
 construction and prepare resources before synchronous lookup.
 Empty geometry is valid. All nonempty icon geometry is used as a filled path,
 with the usual implicit closure of open contours and the declared fill rule.
@@ -89,34 +89,28 @@ documented ordinary-path profile and explicitly rejects icon nodes.
 
 ## Serialization boundary
 
-`CommandPathSource` supplies normalized absolute move, line, quadratic, cubic,
-and close commands through the existing path compiler. It snapshots its command
-list, contains no paint, and preserves contour order and explicit closure.
-Coordinates must be finite. Empty and open contours are supported; each contour
-starts with `moveTo`, including after `close`. Importers must convert arcs to
-supported commands before constructing the source. Source coordinates are
-preserved without fitting or centering. Ordinary path paint and fill rule
-remain authored in `PathData`.
+Scene format v4 retains the scene tree and authored appearance model. Paths have
+one of seven geometry sources: rect, circle, ellipse, line, polyline, polygon,
+or path. General paths persist as SVG d and hold one immutable PathIR snapshot.
+Polyline/polygon sources freeze numeric points and persist SVG point strings.
 
-Its JSON shape is `{"kind":"commands","commands":[...]}`. Every command has a
-`verb`; move/line require `p`, quadratic requires `c1` and `p`, cubic requires
-`c1`, `c2`, and `p`, and close has no points. Points contain exactly numeric `x`
-and `y`. Missing or extra fields, unknown verbs, and invalid command order are
-rejected by the decoder.
+The shared core SVG path codec delegates syntax, shorthand, quadratics, and arcs
+to path_parsing. Its PathProxy collector produces absolute M/L/C/Z geometry and
+normalizes drawing after close into explicit contours. No SVG/XML document or
+CSS model is introduced. The exporter shares the path writer while owning XML
+and supported-export policy. Hosts use the same codec for icon preparation.
 
-External and persisted document JSON crosses the runtime boundary through:
+PathIR validates command structure and finite geometry at construction. General
+paths and icons reuse it directly, without independently editable raw text or
+command copies during evaluation. Shape compilation remains cached by immutable
+source identity independently of appearance. Basic shapes use local numeric
+coordinates; existing transforms and host application placement are unchanged.
 
-```text
-external JSON -> decodeCanvasScene -> CanvasSceneDocument
-CanvasSceneDocument -> encodeCanvasScene -> external JSON
-```
-
-Persistence reads and writes scene format v3. Use `upgradeCanvasScene()` before
-decoding supported older documents: v2, v1, or explicitly identified canvas_core
-0.10.x unversioned scenes.
-
-Raw `kind: "svg"` path sources are unsupported. Hosts must normalize SVG paths
-into supported commands before loading; core has no SVG parser.
+Persistence validates common scene wire structure, delegates exact geometry
+structure and parsing to the source codec, then checks runtime integrity. Reads
+and writes use v4 only. upgradeCanvasScene retains explicit JSON routes through
+v1/v2/v3 to v4; intermediate steps validate historical wire formats independently
+of the current runtime. Migration contains no retired runtime source classes.
 
 Generated model serializers remain implementation-level primitives. Persistence
 checks raw structure before decoding and runtime integrity on both boundaries.

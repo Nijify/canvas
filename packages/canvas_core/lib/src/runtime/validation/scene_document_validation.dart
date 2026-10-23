@@ -254,66 +254,10 @@ final class _SceneValidator {
   }
 
   void _validatePathSource(PathSource source, String path) {
-    switch (source) {
-      case CommandPathSource():
-        // Commands are finite, structurally valid, and frozen at construction.
-        break;
-      case PolylineSource(:final points):
-        for (var index = 0; index < points.length; index++) {
-          final point = points[index];
-          if (point == null) continue;
-          _validateFinite(point.x, '$path/points/$index/x');
-          _validateFinite(point.y, '$path/points/$index/y');
-        }
-      case CircleSource(:final r):
-        _validateNonNegative(r, '$path/r');
-      case RegularPolygonSource(:final sides, :final r, :final rotation):
-        if (sides < 3) {
-          _fail(
-            '$path/sides',
-            'Regular polygon side count must be at least 3.',
-          );
-        }
-        _validateNonNegative(r, '$path/r');
-        _validateFinite(rotation, '$path/rotation');
-      case StarSource(
-        :final points,
-        :final rOuter,
-        :final rInner,
-        :final rotation,
-      ):
-        if (points < 3) {
-          _fail('$path/points', 'Star point count must be at least 3.');
-        }
-        _validateFinite(rOuter, '$path/rOuter');
-        _validateFinite(rInner, '$path/rInner');
-        if (rOuter < 0) {
-          _fail('$path/rOuter', 'Star outer radius must be nonnegative.');
-        }
-        if (rInner < 0 || rInner > rOuter) {
-          _fail(
-            '$path/rInner',
-            'Star inner radius must be between 0 and the outer radius.',
-          );
-        }
-        _validateFinite(rotation, '$path/rotation');
-      case RectSource(:final w, :final h):
-        _validateNonNegative(w, '$path/w');
-        _validateNonNegative(h, '$path/h');
-      case RoundRectSource(:final w, :final h, :final rx, :final ry):
-        _validateNonNegative(w, '$path/w');
-        _validateNonNegative(h, '$path/h');
-        _validateNonNegative(rx, '$path/rx');
-        _validateNonNegative(ry, '$path/ry');
-      case PillSource(:final w, :final h):
-        _validateNonNegative(w, '$path/w');
-        _validateNonNegative(h, '$path/h');
-      case UnderlineSource(:final w, :final thickness):
-        _validateNonNegative(w, '$path/w');
-        _validateNonNegative(thickness, '$path/thickness');
-      case EllipseSource(:final rx, :final ry):
-        _validateNonNegative(rx, '$path/rx');
-        _validateNonNegative(ry, '$path/ry');
+    try {
+      requirePathSourceIntegrity(source);
+    } on ArgumentError catch (error) {
+      _fail(path, error.message.toString());
     }
   }
 

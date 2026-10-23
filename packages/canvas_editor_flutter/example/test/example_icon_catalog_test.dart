@@ -21,7 +21,7 @@ void main() {
     ]);
     for (final item in catalog.items) {
       expect(catalog.resolve(item.ref), same(item.resolved));
-      expect(item.resolved.source.commands, isNotEmpty);
+      expect(item.resolved.pathIR.cmds, isNotEmpty);
     }
     expect(catalog.resolve('icon.missing'), isNull);
   });
@@ -39,6 +39,17 @@ void main() {
             as Map<String, dynamic>;
     json['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
 
+    await expectLater(
+      ExampleIconCatalog.load(_ReplacingRingBundle(jsonEncode(json))),
+      throwsFormatException,
+    );
+  });
+
+  test('invalid SVG path data fails during resource preparation', () async {
+    final json =
+        jsonDecode(await rootBundle.loadString('assets/icons/ring.json'))
+            as Map<String, dynamic>;
+    json['source'] = {'kind': 'path', 'd': 'M0 0L'};
     await expectLater(
       ExampleIconCatalog.load(_ReplacingRingBundle(jsonEncode(json))),
       throwsFormatException,

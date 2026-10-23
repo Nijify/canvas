@@ -66,19 +66,10 @@ void main() {
   test('ordinary path uses its fill rule and shared appearance', () async {
     final render = await _render(
       PathData(
-        source: PolylineSource(const [
-          Vec2(-12, -12),
-          Vec2(12, -12),
-          Vec2(12, 12),
-          Vec2(-12, 12),
-          Vec2(-12, -12),
-          null,
-          Vec2(-5, -5),
-          Vec2(5, -5),
-          Vec2(5, 5),
-          Vec2(-5, 5),
-          Vec2(-5, -5),
-        ]),
+        source: GeneralPathSource.fromSvg(
+          'M-12 -12 L12 -12 L12 12 L-12 12 L-12 -12 '
+          'M-5 -5 L5 -5 L5 5 L-5 5 L-5 -5',
+        ),
         fillRule: FillRule.evenOdd,
         appearance: CanvasAppearance(
           foreground: const CanvasFill.solid(0xFFFF0000),
@@ -96,7 +87,7 @@ void main() {
   test('ordinary path stroke width and cap come from CanvasStroke', () async {
     final render = await _render(
       PathData(
-        source: PolylineSource(const [Vec2(-8, 0), Vec2(8, 0)]),
+        source: const LineSource(x1: -8, x2: 8),
         appearance: CanvasAppearance(
           foreground: const CanvasFill.none(),
           stroke: CanvasStroke(
@@ -147,7 +138,7 @@ void main() {
       final points = (data.source as PolylineSource).points;
       final geometry = PathIR([
         for (final (index, point) in points.indexed)
-          index == 0 ? PathCmd.moveTo(point!) : PathCmd.lineTo(point!),
+          index == 0 ? PathCmd.moveTo(point) : PathCmd.lineTo(point),
       ]).localBounds();
       final halfWidthBounds = geometry.inflate(
         data.appearance.stroke!.width / 2,

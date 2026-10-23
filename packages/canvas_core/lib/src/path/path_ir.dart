@@ -1,30 +1,54 @@
-// Path: lib/src/path/path_ir.dart
-
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 
-enum PathVerb { moveTo, lineTo, quadTo, cubicTo, close }
+/// Absolute, normalized geometry operations. Paint belongs to the authored node.
+enum PathVerb { moveTo, lineTo, cubicTo, close }
 
-class PathCmd {
+final class PathCmd {
   final PathVerb verb;
-  final Vec2 p; // for moveTo/lineTo/close (p ignored for close)
-  final Vec2? c1; // quad: c1 is control; cubic: c1/c2
+  final Vec2 p;
+  final Vec2? c1;
   final Vec2? c2;
   const PathCmd._(this.verb, this.p, [this.c1, this.c2]);
 
   factory PathCmd.moveTo(Vec2 p) => PathCmd._(PathVerb.moveTo, p);
   factory PathCmd.lineTo(Vec2 p) => PathCmd._(PathVerb.lineTo, p);
-  factory PathCmd.quadTo(Vec2 c, Vec2 p) => PathCmd._(PathVerb.quadTo, p, c);
   factory PathCmd.cubicTo(Vec2 c1, Vec2 c2, Vec2 p) =>
       PathCmd._(PathVerb.cubicTo, p, c1, c2);
   factory PathCmd.close() => const PathCmd._(PathVerb.close, Vec2.zero);
 }
 
-/// Immutable compiled geometry. Paint belongs to the authored node.
-class PathIR {
-  /// An immutable snapshot of the commands supplied to the constructor.
+/// Validated, immutable geometry shared by paths and prepared icon resources.
+/// Each contour starts with moveTo. A close ends that contour; SVG input that
+/// continues drawing after close is normalized by the SVG codec.
+final class PathIR {
   final List<PathCmd> cmds;
-  PathIR(List<PathCmd> cmds) : cmds = List<PathCmd>.unmodifiable(cmds);
+
+  PathIR(List<PathCmd> commands) : cmds = List.unmodifiable(commands) {
+    var open = false;
+    for (var i = 0; i < cmds.length; i++) {
+      final command = cmds[i];
+      if (command.verb == PathVerb.moveTo) {
+        open = true;
+      } else if (!open) {
+        throw ArgumentError('commands[$i] requires a preceding moveTo.');
+      }
+      if (command.verb == PathVerb.close) {
+        open = false;
+        continue;
+      }
+      for (final point in [command.p, command.c1, command.c2]) {
+        if (point != null && (!point.x.isFinite || !point.y.isFinite)) {
+          throw ArgumentError('commands[$i] must have finite coordinates.');
+        }
+      }
+    }
+  }
+
+  bool get hasSegments => cmds.any(
+    (command) =>
+        command.verb == PathVerb.lineTo || command.verb == PathVerb.cubicTo,
+  );
 
   /// Conservative source-space AABB from endpoints and curve controls.
   Rect2D localBounds() {
@@ -38,24 +62,11 @@ class PathIR {
       if (v.y > maxY) maxY = v.y;
     }
 
-    for (final c in cmds) {
-      switch (c.verb) {
-        case PathVerb.moveTo:
-        case PathVerb.lineTo:
-          acc(c.p);
-          break;
-        case PathVerb.quadTo:
-          acc(c.p);
-          acc(c.c1!);
-          break;
-        case PathVerb.cubicTo:
-          acc(c.p);
-          acc(c.c1!);
-          acc(c.c2!);
-          break;
-        case PathVerb.close:
-          break;
-      }
+    for (final command in cmds) {
+      if (command.verb == PathVerb.close) continue;
+      acc(command.p);
+      if (command.c1 != null) acc(command.c1!);
+      if (command.c2 != null) acc(command.c2!);
     }
     return Rect2D.fromLTRB(minX, minY, maxX, maxY);
   }

@@ -125,18 +125,12 @@ String _fallbackTextLabel(String text) {
   return '${cleaned.substring(0, 32)}…';
 }
 
-String _fallbackPathLabel(rt.PathSource? source) {
-  return switch (source) {
-    rt.RectSource() => 'Rectangle',
-    rt.RoundRectSource() => 'Rounded Rectangle',
-    rt.PillSource() => 'Pill',
-    rt.CircleSource() => 'Circle',
-    rt.EllipseSource() => 'Ellipse',
-    rt.UnderlineSource() => 'Underline',
-    rt.RegularPolygonSource() => 'Polygon',
-    rt.StarSource() => 'Star',
-    rt.CommandPathSource() => 'Path',
-    null => 'Shape',
-    _ => 'Shape',
-  };
-}
+String _fallbackPathLabel(rt.PathSource source) => switch (source) {
+  rt.RectSource() => 'Rectangle',
+  rt.CircleSource() => 'Circle',
+  rt.EllipseSource() => 'Ellipse',
+  rt.LineSource() => 'Line',
+  rt.PolylineSource() => 'Polyline',
+  rt.PolygonSource() => 'Polygon',
+  rt.GeneralPathSource() => 'Path',
+};

@@ -17,7 +17,7 @@ const _imageData = ImageData(assetId: 'asset-1', size: Size2D(100, 100));
 
 PathData _rectData() {
   return const PathData(
-    source: RectSource(100, 60),
+    source: RectSource(x: -50, y: -30, width: 100, height: 60),
     appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
   );
 }

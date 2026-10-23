@@ -134,7 +134,7 @@ CanvasSceneDocument _pathScene() {
       Node.path(
         id: 'shape-1',
         data: PathData(
-          source: RectSource(20, 10),
+          source: RectSource(x: -10, y: -5, width: 20, height: 10),
           appearance: CanvasAppearance(
             foreground: CanvasFill.solid(0xFF22C55E),
           ),
@@ -634,7 +634,7 @@ void main() {
         fonts: fonts,
         icons: _MapIconResolver({
           'vector': ResolvedIcon(
-            source: CommandPathSource([
+            pathIR: PathIR([
               PathCmd.moveTo(const Vec2(-12, -12)),
               PathCmd.lineTo(const Vec2(12, -12)),
               PathCmd.lineTo(const Vec2(12, 12)),
@@ -700,7 +700,7 @@ void main() {
     test('rejects new prepared icon reference', () async {
       final icons = _MapIconResolver(<String, ResolvedIcon>{
         'new-icon': ResolvedIcon(
-          source: CommandPathSource([
+          pathIR: PathIR([
             PathCmd.moveTo(const Vec2(-8, -8)),
             PathCmd.lineTo(const Vec2(8, -8)),
             PathCmd.lineTo(const Vec2(8, 8)),
@@ -850,7 +850,7 @@ void main() {
                 id: 'generated-shape',
                 xf: Transform2D(position: Vec2(20, 20)),
                 data: PathData(
-                  source: RectSource(20, 20),
+                  source: RectSource(x: -10, y: -10, width: 20, height: 20),
                   appearance: CanvasAppearance(
                     foreground: CanvasFill.solid(0xFF336699),
                   ),

@@ -1,3 +1,12 @@
+## 0.20.0
+
+- **Breaking:** require canvas_core 0.17.x and canvas_renderer_flutter 0.16.x.
+- Shape presets construct SVG-aligned sources; stars and regular polygons create
+  explicit polygons. Add Line and Polyline actions; Line replaces Underline.
+- Lines use stroke controls; default layer labels follow canonical geometry kinds.
+- Collapse coincident selection scale handles for zero-width/height geometry.
+- Prepare example icon SVG path data once through the public core codec.
+
 # 0.19.0
 
 - **Breaking:** require `canvas_core 0.16.x` and

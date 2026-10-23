@@ -90,16 +90,17 @@ export 'src/algorithms/layout/computed_icon.dart' show ComputedIcon;
 export 'src/path/path_source.dart'
     show
         PathSource,
-        CommandPathSource,
-        PolylineSource,
+        GeneralPathSource,
         RectSource,
-        RoundRectSource,
-        PillSource,
-        UnderlineSource,
-        EllipseSource,
         CircleSource,
-        RegularPolygonSource,
-        StarSource;
+        EllipseSource,
+        LineSource,
+        PolylineSource,
+        PolygonSource;
+export 'src/path/svg_path_codec.dart'
+    show parseSvgPathData, writeSvgPathData, parseSvgPoints, writeSvgPoints;
+export 'src/serialization/migrations/v3_to_v4.dart'
+    show convertCanvasSceneV3ToV4;
 
 // ============================================================================
 // 5) Geometry primitives + derived helpers (renderer-agnostic)
