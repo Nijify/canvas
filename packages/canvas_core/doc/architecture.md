@@ -104,7 +104,7 @@ PathIR validates command structure and finite geometry at construction. General
 paths and icons reuse it directly, without independently editable raw text or
 command copies during evaluation. Shape compilation remains cached by immutable
 source identity independently of appearance. Basic shapes use local numeric
-coordinates; transforms and private placement are unchanged.
+coordinates; existing transforms and host application placement are unchanged.
 
 Persistence validates common scene wire structure, delegates exact geometry
 structure and parsing to the source codec, then checks runtime integrity. Reads

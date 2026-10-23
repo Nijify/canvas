@@ -242,7 +242,7 @@ Runtime geometry uses validated immutable absolute move/line/cubic/close command
 The shared codec handles path data, not complete SVG documents, CSS, or percentage
 lengths. Coordinate spelling is canonicalized; parsing and arc conversion use
 floating-point arithmetic and arc approximation. Source coordinates are retained
-without implicit centering. Existing transforms and private authoring placement
+without implicit centering. Existing transforms and host application placement
 remain separate from geometry.
 
 The `path_parsing` dependency currently limits explicit exponents to -37 through
