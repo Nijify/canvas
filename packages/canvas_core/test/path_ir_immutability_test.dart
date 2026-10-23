@@ -46,7 +46,7 @@ void main() {
   });
 
   test('computed path commands cannot be appended to or replaced', () {
-    final computed = _computePath(const PathData(source: RectSource(24, 12)));
+    final computed = _computePath(const PathData(source: RectSource(x: -12, y: -6, width: 24, height: 12)));
     final path = computed.pathIRById['path']!;
     final originalGeometry = _geometry(path);
 
@@ -61,10 +61,10 @@ void main() {
   });
 
   test('authored appearance preserves compiled geometry', () {
-    final plain = _computePath(const PathData(source: RectSource(24, 12)));
+    final plain = _computePath(const PathData(source: RectSource(x: -12, y: -6, width: 24, height: 12)));
     final painted = _computePath(
       PathData(
-        source: const RectSource(24, 12),
+        source: const RectSource(x: -12, y: -6, width: 24, height: 12),
         fillRule: FillRule.evenOdd,
         appearance: CanvasAppearance(
           foreground: const CanvasFill.solid(0x8044AAFF),

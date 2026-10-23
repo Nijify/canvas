@@ -13,7 +13,7 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 
 void main() {
   test('node defaults preserve their foreground and have no stroke', () {
-    const path = PathData(source: RectSource(20, 10));
+    const path = PathData(source: RectSource(x: -10, y: -5, width: 20, height: 10));
     const text = TextData(
       text: 'A',
       fontFamily: 'Test',
@@ -42,7 +42,7 @@ void main() {
 
   test('path model JSON owns styling only through appearance', () {
     final path = PathData(
-      source: const RectSource(20, 10),
+      source: const RectSource(x: -10, y: -5, width: 20, height: 10),
       fillRule: FillRule.evenOdd,
       appearance: CanvasAppearance(
         foreground: const CanvasFill.solid(0xFF123456),
@@ -104,10 +104,10 @@ void main() {
   });
 
   test('appearance and fill-rule edits reuse compiled source geometry', () {
-    final source = CommandPathSource([
+    final source = GeneralPathSource(PathIR([
       PathCmd.moveTo(Vec2.zero),
       PathCmd.lineTo(const Vec2(10, 0)),
-    ]);
+    ]));
     final plain = PathData(source: source);
     final painted = plain.copyWith(
       fillRule: FillRule.evenOdd,
@@ -118,18 +118,17 @@ void main() {
     );
 
     expect(identical(compilePath(plain), compilePath(painted)), isTrue);
-    final changed = plain.copyWith(source: const RectSource(20, 10));
+    final changed = plain.copyWith(source: const RectSource(x: -10, y: -5, width: 20, height: 10));
     expect(identical(compilePath(plain), compilePath(changed)), isFalse);
     expect(compilePath(changed).localBounds(), const Rect2D(-10, -5, 10, 5));
   });
 
   test(
-    'polyline source freezes caller points and preserves contour breaks',
+    'polyline source freezes caller points',
     () {
-      final points = <Vec2?>[
+      final points = <Vec2>[
         Vec2.zero,
         const Vec2(10, 0),
-        null,
         const Vec2(20, 0),
         const Vec2(30, 0),
       ];
@@ -138,17 +137,17 @@ void main() {
       final compiled = compilePath(path);
       points.clear();
 
-      expect(source.points, hasLength(5));
+      expect(source.points, hasLength(4));
       expect(() => source.points.clear(), throwsUnsupportedError);
       expect(identical(compilePath(path.copyWith()), compiled), isTrue);
       expect(compiled.cmds.map((command) => command.verb), [
         PathVerb.moveTo,
         PathVerb.lineTo,
-        PathVerb.moveTo,
+        PathVerb.lineTo,
         PathVerb.lineTo,
       ]);
       expect(
-        compilePath(PathData(source: CommandPathSource([]))).cmds,
+        compilePath(PathData(source: GeneralPathSource(PathIR([])))).cmds,
         isEmpty,
       );
     },
@@ -168,7 +167,7 @@ void main() {
         Node.path(
           id: 'path',
           data: PathData(
-            source: const RectSource(20, 10),
+            source: const RectSource(x: -10, y: -5, width: 20, height: 10),
             appearance: CanvasAppearance(stroke: stroke),
           ),
         ),
@@ -201,7 +200,7 @@ void main() {
       const Node.path(
         id: 'path',
         data: PathData(
-          source: RectSource(20, 10),
+          source: RectSource(x: -10, y: -5, width: 20, height: 10),
           appearance: CanvasAppearance(underlays: [shadow]),
         ),
       ),

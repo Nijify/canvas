@@ -1,14 +1,13 @@
 {
   "source": {
-    "kind": "commands",
-    "commands": [
-      {"verb": "moveTo", "p": {"x": 12, "y": 2}},
-      {"verb": "lineTo", "p": {"x": 22, "y": 12}},
-      {"verb": "lineTo", "p": {"x": 12, "y": 22}},
-      {"verb": "lineTo", "p": {"x": 2, "y": 12}},
-      {"verb": "close"}
-    ]
+    "kind": "path",
+    "d": "M12.0 2.0 L22.0 12.0 L12.0 22.0 L2.0 12.0 Z"
   },
-  "viewBox": [0, 0, 24, 24],
+  "viewBox": [
+    0,
+    0,
+    24,
+    24
+  ],
   "fillRule": "nonZero"
 }

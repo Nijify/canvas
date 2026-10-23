@@ -115,7 +115,7 @@ void main() {
         const Node.path(
           id: 'p1',
           data: PathData(
-            source: RectSource(20, 10),
+            source: RectSource(x: -10, y: -5, width: 20, height: 10),
             appearance: CanvasAppearance(
               foreground: CanvasFill.solid(0xFF010203),
             ),
@@ -169,7 +169,7 @@ void main() {
       const Node.path(
         id: 'p1',
         data: PathData(
-          source: RectSource(20, 10),
+          source: RectSource(x: -10, y: -5, width: 20, height: 10),
           appearance: CanvasAppearance(
             foreground: CanvasFill.solid(0xFF010203),
           ),
@@ -304,7 +304,7 @@ void main() {
         const Node.path(
           id: 'p1',
           data: PathData(
-            source: RectSource(20, 10),
+            source: RectSource(x: -10, y: -5, width: 20, height: 10),
             appearance: CanvasAppearance(
               foreground: CanvasFill.solid(0xFF000000),
             ),

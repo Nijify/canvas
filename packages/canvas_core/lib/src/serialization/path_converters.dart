@@ -9,7 +9,7 @@ class PathSourceConverter extends JsonConverter<PathSource, Object?> {
 
   @override
   PathSource fromJson(Object? json) {
-    if (json is Map) {
+    if (json is Map && json.keys.every((key) => key is String)) {
       return PathSource.fromJson(json.cast<String, Object?>());
     }
 

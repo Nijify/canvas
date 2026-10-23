@@ -3,6 +3,8 @@
 import 'package:canvas_core/src/serialization/formats/scene_v1.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v3.dart';
+import 'package:canvas_core/src/serialization/formats/scene_v4.dart';
+import 'package:canvas_core/src/serialization/migrations/v3_to_v4.dart';
 import 'package:canvas_core/src/serialization/migrations/legacy_unversioned_to_v1.dart';
 import 'package:canvas_core/src/serialization/migrations/v1_to_v2.dart';
 import 'package:canvas_core/src/serialization/migrations/v2_to_v3.dart';
@@ -37,14 +39,14 @@ Map<String, Object?> upgradeCanvasScene(
       );
     }
 
-    return convertCanvasSceneV2ToV3(
+    return convertCanvasSceneV3ToV4(convertCanvasSceneV2ToV3(
       convertCanvasSceneV1ToV2(
         convertLegacyUnversionedCanvasSceneToV1(
           json,
           resolveLegacyIconWasGlyph: resolveLegacyIconWasGlyph,
         ),
       ),
-    );
+    ));
   } else {
     if (legacyUnversioned) {
       throw const FormatException(
@@ -59,10 +61,12 @@ Map<String, Object?> upgradeCanvasScene(
     }
     switch (version) {
       case canvasSceneFormatV1:
-        return convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(json));
+        return convertCanvasSceneV3ToV4(convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(json)));
       case canvasSceneFormatV2:
-        return convertCanvasSceneV2ToV3(json);
+        return convertCanvasSceneV3ToV4(convertCanvasSceneV2ToV3(json));
       case canvasSceneFormatV3:
+        return convertCanvasSceneV3ToV4(json);
+      case canvasSceneFormatV4:
         decodeCanvasScene(json);
         return Map<String, Object?>.from(json);
       default:

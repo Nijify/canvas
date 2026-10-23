@@ -164,6 +164,14 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
     );
 
     final cornersS = cornersWorld.map(w2s).toList(growable: false);
+    // Zero-width/height geometry has coincident corners. Keep one scale target
+    // per distinct corner instead of stacking multiple gesture handlers.
+    final scaleHandleIndices = <int>[];
+    for (var i = 0; i < cornersS.length; i++) {
+      if (!scaleHandleIndices.any((j) => (cornersS[i] - cornersS[j]).distance < 0.01)) {
+        scaleHandleIndices.add(i);
+      }
+    }
 
     const gap = 24.0;
     const knob = 10.0;
@@ -216,7 +224,7 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
               },
             ),
 
-            for (var i = 0; i < cornersS.length; i++)
+            for (final i in scaleHandleIndices)
               _hitCircle(
                 overlayCtx,
                 cornersS[i],

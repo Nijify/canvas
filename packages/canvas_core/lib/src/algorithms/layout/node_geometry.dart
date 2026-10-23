@@ -66,7 +66,7 @@ final class NodeGeometry {
         if (resolved == null) return (layout: layout, paint: null);
         final icon = ComputedIcon.fit(resolved, size);
         iconById?[id] = icon;
-        final sourceBounds = icon.pathIR.cmds.isEmpty
+        final sourceBounds = !icon.pathIR.hasSegments
             ? null
             : aabbOfTransformedRect(
                 icon.pathIR.localBounds(),
@@ -101,13 +101,10 @@ final class NodeGeometry {
         final ir = compilePath(d);
         pathIRById?[id] = ir;
         final geometryBounds = ir.localBounds();
-        final hasSegments = ir.cmds.any(
-          (cmd) => cmd.verb != PathVerb.moveTo && cmd.verb != PathVerb.close,
-        );
         return (
           layout: geometryBounds,
           paint: estimatePathPaintBounds(
-            sourceBounds: hasSegments ? geometryBounds : null,
+            sourceBounds: ir.hasSegments ? geometryBounds : null,
             appearance: d.appearance,
           ),
         );

@@ -341,10 +341,13 @@ Widget _buildPathPanel({
   required ElementId nodeId,
   List<Widget> leadingSections = const <Widget>[],
 }) {
+  final node = findById(inspector.editableScene, nodeId);
+  final isLine = node is PathNode && node.data.source is LineSource;
   return _buildInspectorPanel(
-    title: 'Path',
+    title: isLine ? 'Line' : 'Path',
     leadingSections: leadingSections,
     children: [
+      if (!isLine) ...[
       const Gap(4),
       FillEditor(
         nodeId: nodeId,
@@ -353,6 +356,7 @@ Widget _buildPathPanel({
         header: 'Fill',
       ),
       const Gap(16),
+      ],
       StrokeEditor(nodeId: nodeId, inspector: inspector),
     ],
   );

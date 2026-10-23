@@ -44,7 +44,7 @@ void main() {
     final shape = Node.path(
       id: 'shape1',
       data: PathData(
-        source: const RectSource(10, 2),
+        source: const RectSource(x: -5, y: -1, width: 10, height: 2),
         appearance: const CanvasAppearance(
           foreground: CanvasFill.solid(0xFF111111),
         ),

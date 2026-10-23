@@ -1,158 +1,69 @@
-// Path: lib/src/path/path_compile.dart
-
 import 'dart:math' as math;
-
+import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/path/path_source.dart';
-import 'package:canvas_core/src/foundation/core_types.dart';
 
 class PathCompiler {
   const PathCompiler();
 
-  PathIR fromSource(PathSource src) => switch (src) {
-    CommandPathSource(:final commands) => PathIR(commands),
-    PolylineSource(:final points) => _polyline(points),
-    RectSource(:final w, :final h) => _rect(w, h),
-    RoundRectSource(:final w, :final h, :final rx, :final ry) => _roundRect(
-      w,
-      h,
-      rx,
-      ry,
-    ),
-    PillSource(:final w, :final h) => _roundRect(w, h, h / 2, h / 2),
-    UnderlineSource(:final w, :final thickness) => _rect(w, thickness),
-    EllipseSource(:final rx, :final ry) => _ellipse(rx, ry),
-    CircleSource(:final r) => _ellipse(r, r),
-    RegularPolygonSource(:final sides, :final r, :final rotation) =>
-      _regularPolygon(sides, r, rotation),
-    StarSource(:final points, :final rOuter, :final rInner, :final rotation) =>
-      _star(points, rOuter, rInner, rotation),
-  };
-
-  PathIR _regularPolygon(int sides, double r, double rotationDeg) {
-    assert(sides >= 3);
-    final cmds = <PathCmd>[];
-    final cx = 0.0, cy = 0.0;
-    final rot = rotationDeg * math.pi / 180.0;
-    for (var i = 0; i < sides; i++) {
-      final a = rot + i * 2 * math.pi / sides;
-      final x = cx + r * math.cos(a), y = cy + r * math.sin(a);
-      cmds.add(
-        i == 0 ? PathCmd.moveTo(Vec2(x, y)) : PathCmd.lineTo(Vec2(x, y)),
-      );
-    }
-    cmds.add(PathCmd.close());
-    return PathIR(cmds);
+  PathIR fromSource(PathSource source) {
+    requirePathSourceIntegrity(source);
+    return switch (source) {
+      GeneralPathSource(:final geometry) => geometry,
+      RectSource() => _rect(source),
+      CircleSource(:final cx, :final cy, :final r) => _ellipse(cx, cy, r, r),
+      EllipseSource(:final cx, :final cy, :final rx, :final ry) => _ellipse(cx, cy, rx, ry),
+      LineSource(:final x1, :final y1, :final x2, :final y2) => PathIR([
+        PathCmd.moveTo(Vec2(x1, y1)), PathCmd.lineTo(Vec2(x2, y2)),
+      ]),
+      PolylineSource(:final points) => _points(points, closed: false),
+      PolygonSource(:final points) => _points(points, closed: true),
+    };
   }
 
-  PathIR _star(int points, double ro, double ri, double rotationDeg) {
-    assert(points >= 3 && ri >= 0 && ri <= ro);
-    final cmds = <PathCmd>[];
-    final cx = 0.0, cy = 0.0;
-    final rot = rotationDeg * math.pi / 180.0;
-    final total = points * 2;
-    for (var i = 0; i < total; i++) {
-      final isOuter = i.isEven;
-      final r = isOuter ? ro : ri;
-      final a = rot + i * math.pi / points;
-      final x = cx + r * math.cos(a), y = cy + r * math.sin(a);
-      cmds.add(
-        i == 0 ? PathCmd.moveTo(Vec2(x, y)) : PathCmd.lineTo(Vec2(x, y)),
-      );
-    }
-    cmds.add(PathCmd.close());
-    return PathIR(cmds);
-  }
+  PathIR _points(List<Vec2> points, {required bool closed}) => PathIR([
+    if (points.isNotEmpty) PathCmd.moveTo(points.first),
+    for (final point in points.skip(1)) PathCmd.lineTo(point),
+    if (closed && points.isNotEmpty) PathCmd.close(),
+  ]);
 
-  PathIR _polyline(List<Vec2?> pts) {
-    final cmds = <PathCmd>[];
-    Vec2? current;
-    for (final p in pts) {
-      if (p == null) {
-        // contour break: lift pen
-        current = null;
-        continue;
-      }
-      if (current == null) {
-        cmds.add(PathCmd.moveTo(p));
-      } else {
-        cmds.add(PathCmd.lineTo(p));
-      }
-      current = p;
-    }
-    return PathIR(cmds);
-  }
-
-  PathIR _rect(double w, double h) {
-    final hw = w / 2.0;
-    final hh = h / 2.0;
-
-    final cmds = <PathCmd>[
-      PathCmd.moveTo(Vec2(-hw, -hh)),
-      PathCmd.lineTo(Vec2(hw, -hh)),
-      PathCmd.lineTo(Vec2(hw, hh)),
-      PathCmd.lineTo(Vec2(-hw, hh)),
-      PathCmd.close(),
-    ];
-    return PathIR(cmds);
-  }
-
-  PathIR _roundRect(double w, double h, double rx, double ry) {
-    // Clamp radii defensively
-    rx = rx.clamp(0.0, w / 2.0);
-    ry = ry.clamp(0.0, h / 2.0);
-
-    const k = 0.5522847498307936; // circle magic constant
+  PathIR _rect(RectSource source) {
+    if (source.width == 0 || source.height == 0) return PathIR([]);
+    final l = source.x, t = source.y;
+    final r = l + source.width, b = t + source.height;
+    final rx = math.min(source.rx ?? source.ry ?? 0, source.width / 2);
+    final ry = math.min(source.ry ?? source.rx ?? 0, source.height / 2);
+    if (rx == 0 || ry == 0) return PathIR([
+      PathCmd.moveTo(Vec2(l, t)), PathCmd.lineTo(Vec2(r, t)),
+      PathCmd.lineTo(Vec2(r, b)), PathCmd.lineTo(Vec2(l, b)), PathCmd.close(),
+    ]);
+    const k = 0.5522847498307936;
     final kx = rx * k, ky = ry * k;
-
-    final l = -w / 2.0;
-    final r = w / 2.0;
-    final t = -h / 2.0;
-    final b = h / 2.0;
-
-    final cmds = <PathCmd>[
+    return PathIR([
       PathCmd.moveTo(Vec2(l + rx, t)),
       PathCmd.lineTo(Vec2(r - rx, t)),
-      PathCmd.cubicTo(
-        Vec2(r - rx + kx, t),
-        Vec2(r, t + ry - ky),
-        Vec2(r, t + ry),
-      ),
+      PathCmd.cubicTo(Vec2(r - rx + kx, t), Vec2(r, t + ry - ky), Vec2(r, t + ry)),
       PathCmd.lineTo(Vec2(r, b - ry)),
-      PathCmd.cubicTo(
-        Vec2(r, b - ry + ky),
-        Vec2(r - rx + kx, b),
-        Vec2(r - rx, b),
-      ),
+      PathCmd.cubicTo(Vec2(r, b - ry + ky), Vec2(r - rx + kx, b), Vec2(r - rx, b)),
       PathCmd.lineTo(Vec2(l + rx, b)),
-      PathCmd.cubicTo(
-        Vec2(l + rx - kx, b),
-        Vec2(l, b - ry + ky),
-        Vec2(l, b - ry),
-      ),
+      PathCmd.cubicTo(Vec2(l + rx - kx, b), Vec2(l, b - ry + ky), Vec2(l, b - ry)),
       PathCmd.lineTo(Vec2(l, t + ry)),
-      PathCmd.cubicTo(
-        Vec2(l, t + ry - ky),
-        Vec2(l + rx - kx, t),
-        Vec2(l + rx, t),
-      ),
+      PathCmd.cubicTo(Vec2(l, t + ry - ky), Vec2(l + rx - kx, t), Vec2(l + rx, t)),
       PathCmd.close(),
-    ];
-
-    return PathIR(cmds);
+    ]);
   }
 
-  PathIR _ellipse(double rx, double ry) {
+  PathIR _ellipse(double cx, double cy, double rx, double ry) {
+    if (rx == 0 || ry == 0) return PathIR([]);
     const k = 0.5522847498307936;
-
-    final cmds = <PathCmd>[
-      PathCmd.moveTo(Vec2(rx, 0)),
-      PathCmd.cubicTo(Vec2(rx, ry * k), Vec2(rx * k, ry), Vec2(0, ry)),
-      PathCmd.cubicTo(Vec2(-rx * k, ry), Vec2(-rx, ry * k), Vec2(-rx, 0)),
-      PathCmd.cubicTo(Vec2(-rx, -ry * k), Vec2(-rx * k, -ry), Vec2(0, -ry)),
-      PathCmd.cubicTo(Vec2(rx * k, -ry), Vec2(rx, -ry * k), Vec2(rx, 0)),
+    Vec2 p(double x, double y) => Vec2(cx + x, cy + y);
+    return PathIR([
+      PathCmd.moveTo(p(rx, 0)),
+      PathCmd.cubicTo(p(rx, ry * k), p(rx * k, ry), p(0, ry)),
+      PathCmd.cubicTo(p(-rx * k, ry), p(-rx, ry * k), p(-rx, 0)),
+      PathCmd.cubicTo(p(-rx, -ry * k), p(-rx * k, -ry), p(0, -ry)),
+      PathCmd.cubicTo(p(rx * k, -ry), p(rx, -ry * k), p(rx, 0)),
       PathCmd.close(),
-    ];
-    return PathIR(cmds);
+    ]);
   }
 }

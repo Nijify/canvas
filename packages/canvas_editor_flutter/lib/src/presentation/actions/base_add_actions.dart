@@ -5,6 +5,8 @@
 // This file intentionally now contributes normal EditorActionSpec values instead
 // of maintaining a separate add-menu/add-handler pipeline.
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
@@ -24,14 +26,22 @@ const _addMenuGroupShapes = 'Shapes';
 const _textPos = Vec2(120, 220);
 const _shapePos = Vec2(60, 60);
 
-const RectSource _rect = RectSource(160, 100);
-const RoundRectSource _roundRect = RoundRectSource(180, 110, 16, 16);
-const PillSource _pill = PillSource(220, 60);
+const RectSource _rect = RectSource(x: -80, y: -50, width: 160, height: 100);
+const RectSource _roundRect = RectSource(x: -90, y: -55, width: 180, height: 110, rx: 16, ry: 16);
+const RectSource _pill = RectSource(x: -110, y: -30, width: 220, height: 60, rx: (60) / 2, ry: (60) / 2);
 const CircleSource _circle = CircleSource(60);
 const EllipseSource _ellipse = EllipseSource(100, 60);
-const UnderlineSource _underline = UnderlineSource(220, 6);
-const RegularPolygonSource _polygon = RegularPolygonSource(6, 64, rotation: 0);
-const StarSource _star = StarSource(5, 72, 36, rotation: -90);
+const LineSource _line = LineSource(x1: -110, y1: 0, x2: 110, y2: 0);
+final PolylineSource _polyline = PolylineSource(const [Vec2(-80, 20), Vec2(0, -20), Vec2(80, 20)]);
+final PolygonSource _polygon = _polygonPreset(6, 64, 64, 0);
+final PolygonSource _star = _polygonPreset(10, 72, 36, -90);
+
+PolygonSource _polygonPreset(int vertices, double outer, double inner, double degrees) =>
+    PolygonSource([
+      for (var i = 0; i < vertices; i++)
+        Vec2((i.isEven ? outer : inner) * math.cos(degrees * math.pi / 180 + i * 2 * math.pi / vertices),
+          (i.isEven ? outer : inner) * math.sin(degrees * math.pi / 180 + i * 2 * math.pi / vertices)),
+    ]);
 
 PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
   return PathNode(
@@ -39,8 +49,8 @@ PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
     data: PathData(
       source: src,
       appearance: CanvasAppearance(
-        foreground: const CanvasFill.solid(_baseFill),
-        stroke: CanvasStroke(color: _baseStroke, width: _baseStrokeW),
+        foreground: (src is LineSource || src is PolylineSource) ? const CanvasFill.none() : const CanvasFill.solid(_baseFill),
+        stroke: CanvasStroke(color: _baseStroke, width: src is LineSource ? 6 : _baseStrokeW),
       ),
     ),
     xf: const Transform2D(position: _shapePos),
@@ -163,12 +173,20 @@ final List<EditorActionSpec> baseAddActions = [
     invoke: (ctx) => _addBaseShape(ctx, source: _polygon),
   ),
   _addAction(
-    id: EditorActionIds.addUnderline,
-    label: 'Underline',
+    id: EditorActionIds.addPolyline,
+    label: 'Polyline',
+    icon: Icons.timeline,
+    priority: 15,
+    menuGroup: _addMenuGroupShapes,
+    invoke: (ctx) => _addBaseShape(ctx, source: _polyline),
+  ),
+  _addAction(
+    id: EditorActionIds.addLine,
+    label: 'Line',
     icon: Icons.border_bottom,
     priority: 10,
     menuGroup: _addMenuGroupShapes,
-    invoke: (ctx) => _addBaseShape(ctx, source: _underline),
+    invoke: (ctx) => _addBaseShape(ctx, source: _line),
   ),
 ];
 

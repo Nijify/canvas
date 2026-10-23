@@ -44,19 +44,9 @@ void main() {
       Node.path(
         id: 'path',
         data: PathData(
-          source: PolylineSource(const [
-            Vec2(-12, -12),
-            Vec2(12, -12),
-            Vec2(12, 12),
-            Vec2(-12, 12),
-            Vec2(-12, -12),
-            null,
-            Vec2(-5, -5),
-            Vec2(5, -5),
-            Vec2(5, 5),
-            Vec2(-5, 5),
-            Vec2(-5, -5),
-          ]),
+          source: GeneralPathSource.fromSvg(
+            'M-12 -12L12 -12L12 12L-12 12Z M-5 -5L5 -5L5 5L-5 5Z',
+          ),
           fillRule: FillRule.evenOdd,
         ),
       ),
@@ -81,7 +71,7 @@ void main() {
       Node.path(
         id: 'path',
         data: PathData(
-          source: PolylineSource(const [Vec2(-10, 0), Vec2(10, 0)]),
+          source: const LineSource(x1: -10, x2: 10),
           appearance: CanvasAppearance(
             foreground: const CanvasFill.none(),
             stroke: CanvasStroke(color: 0xFF112233, width: 8),
@@ -160,7 +150,7 @@ void main() {
             id: 'path',
             xf: Transform2D(rotationRad: math.pi / 4),
             data: PathData(
-              source: PolylineSource(const [Vec2(-10, 0), Vec2(10, 0)]),
+              source: const LineSource(x1: -10, x2: 10),
             ),
           ),
         ],
@@ -189,7 +179,7 @@ void main() {
     final scene = _scene([
       const Node.path(
         id: 'path',
-        data: PathData(source: RectSource(20, 20)),
+        data: PathData(source: RectSource(x: -10, y: -10, width: 20, height: 20)),
       ),
     ]);
     final computed = computeScene(scene, _services());

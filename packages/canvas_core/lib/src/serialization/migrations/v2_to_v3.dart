@@ -1,7 +1,6 @@
 import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v3.dart';
 import 'package:canvas_core/src/serialization/json_vec2.dart';
-import 'package:canvas_core/src/serialization/serializers.dart';
 
 /// Converts historical path fields into the scene-v3 source/appearance model.
 ///
@@ -96,7 +95,7 @@ Map<String, Object?> convertCanvasSceneV2ToV3(Map<String, Object?> v2) {
     );
   }
 
-  decodeCanvasScene(result);
+  validateSceneV3Json(result);
   return result;
 }
 

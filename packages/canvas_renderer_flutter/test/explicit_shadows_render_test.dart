@@ -10,7 +10,7 @@ class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String ref) => switch (ref) {
     'path' => ResolvedIcon(
-      source: CommandPathSource([
+      pathIR: PathIR([
         PathCmd.moveTo(const Vec2(-12, -12)),
         PathCmd.lineTo(const Vec2(12, -12)),
         PathCmd.lineTo(const Vec2(12, 12)),

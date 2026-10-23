@@ -1,3 +1,20 @@
+## 0.17.0
+
+- **Breaking:** adopt scene format v4 with seven SVG-aligned geometry sources.
+  Rectangles use explicit x/y/width/height and optional rx/ry; circles and ellipses
+  expose centers. Line, polyline, polygon, and general path share M/L/C/Z PathIR.
+- General paths persist as SVG d; polygon/polyline points persist as SVG numeric
+  strings. Export shared parseSvgPathData/writeSvgPathData and points codecs.
+- **Breaking:** remove custom rounded-rectangle, pill, underline, star, regular
+  polygon, structured-command sources, and quadratic runtime commands.
+- ResolvedIcon now accepts validated immutable PathIR via pathIR; scene evaluation
+  reuses geometry by identity. Hosts parse resource paths before synchronous lookup.
+- Add convertCanvasSceneV3ToV4 and retain explicit older JSON upgrade chains.
+  Ordinary decoding accepts v4 only. Historical transforms and appearance remain
+  authored; quadratic-to-cubic conversion can change control-hull bounds and pivots.
+- Zero dimensions/radii disable basic-shape rendering. Zero-length line segments
+  remain geometry, distinct from move-only paths. No transform model changes.
+
 ## 0.16.0
 
 - **Breaking:** require `PathData.source` and use `CanvasAppearance` for path

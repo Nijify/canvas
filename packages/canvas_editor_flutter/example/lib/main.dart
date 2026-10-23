@@ -337,7 +337,7 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
       name: 'Demo card',
       xf: Transform2D(position: Vec2(370, 210)),
       data: PathData(
-        source: RoundRectSource(600, 280, 32, 32),
+        source: RectSource(x: -300, y: -140, width: 600, height: 280, rx: 32, ry: 32),
         appearance: CanvasAppearance(
           foreground: CanvasFill.solid(0xFFFFFFFF),
           stroke: CanvasStroke(color: 0xFFE0E7FF, width: 4),

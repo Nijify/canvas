@@ -1,3 +1,9 @@
+## 0.4.0
+
+- **Breaking:** require canvas_core 0.17.x and reuse its shared M/L/C/Z path writer.
+- Remove duplicate command writing and validation. Keep the strict export profile,
+  unsupported-feature reporting, and rejection of icon nodes unchanged.
+
 ## 0.3.0
 
 - **Breaking:** require `canvas_core 0.16.x` and export path paint from

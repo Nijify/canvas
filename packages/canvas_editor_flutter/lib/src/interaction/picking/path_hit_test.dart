@@ -93,18 +93,6 @@ List<_Contour> _flattenContours(PathIR ir, {int curveSteps = 16}) {
         current.add(cmd.p);
         break;
 
-      case PathVerb.quadTo:
-        final p0 = prev;
-        if (p0 == null) break;
-        final c1 = cmd.c1!;
-        final p1 = cmd.p;
-        for (var i = 1; i <= curveSteps; i++) {
-          final t = i / curveSteps;
-          current.add(_quad(p0, c1, p1, t));
-        }
-        prev = p1;
-        break;
-
       case PathVerb.cubicTo:
         final p0 = prev;
         if (p0 == null) break;
@@ -225,13 +213,6 @@ double _dist2PointToSegment(Vec2 p, Vec2 a, Vec2 b) {
   final dx = p.x - cx;
   final dy = p.y - cy;
   return dx * dx + dy * dy;
-}
-
-Vec2 _quad(Vec2 p0, Vec2 c1, Vec2 p1, double t) {
-  final u = 1.0 - t;
-  final x = u * u * p0.x + 2 * u * t * c1.x + t * t * p1.x;
-  final y = u * u * p0.y + 2 * u * t * c1.y + t * t * p1.y;
-  return Vec2(x, y);
 }
 
 Vec2 _cubic(Vec2 p0, Vec2 c1, Vec2 c2, Vec2 p1, double t) {

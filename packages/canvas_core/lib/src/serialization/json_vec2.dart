@@ -31,6 +31,3 @@ List<Vec2?> vec2ListNullableFromJson(Object? json) {
 
   return json.map<Vec2?>(parseOne).toList(growable: false);
 }
-
-Object? vec2ListNullableToJson(List<Vec2?> value) =>
-    value.map((v) => v == null ? null : {'x': v.x, 'y': v.y}).toList();

@@ -31,7 +31,7 @@ final class ComputedIcon {
       ..translateByDouble(x, y, 0, 1)
       ..scaleByDouble(scale, scale, 1, 1);
     return ComputedIcon._(
-      PathIR(icon.source.commands),
+      icon.pathIR,
       sourceToLocal,
       icon.fillRule,
     );

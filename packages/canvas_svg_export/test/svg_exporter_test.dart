@@ -19,7 +19,7 @@ final class _TextMeasurer implements TextMeasurer {
 final class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String ref) => ResolvedIcon(
-    source: CommandPathSource([
+    pathIR: PathIR([
       PathCmd.moveTo(const Vec2(-12, -12)),
       PathCmd.lineTo(const Vec2(12, -12)),
       PathCmd.lineTo(const Vec2(12, 12)),
@@ -71,7 +71,7 @@ void main() {
         Node.path(
           id: 'p',
           data: PathData(
-            source: const RectSource(20, 10),
+            source: const RectSource(x: -10, y: -5, width: 20, height: 10),
             fillRule: FillRule.evenOdd,
             appearance: CanvasAppearance(
               foreground: const CanvasFill.solid(0x80445566),
@@ -118,7 +118,7 @@ void main() {
           name: 'unsafe<&',
           role: 'logo:main',
           data: PathData(
-            source: const RectSource(20, 10),
+            source: const RectSource(x: -10, y: -5, width: 20, height: 10),
             fillRule: FillRule.evenOdd,
             appearance: CanvasAppearance(
               foreground: const CanvasFill.solid(0x80ff0000),
@@ -185,7 +185,7 @@ void main() {
                 customPivotPx: Vec2.zero,
               ),
               data: PathData(
-                source: RectSource(10, 10),
+                source: RectSource(x: -5, y: -5, width: 10, height: 10),
                 appearance: CanvasAppearance(
                   foreground: CanvasFill.solid(0xffff0000),
                 ),
@@ -199,7 +199,7 @@ void main() {
                 customPivotPx: Vec2.zero,
               ),
               data: PathData(
-                source: RectSource(20, 10),
+                source: RectSource(x: -10, y: -5, width: 20, height: 10),
                 appearance: CanvasAppearance(
                   foreground: CanvasFill.solid(0xff0000ff),
                 ),
@@ -225,9 +225,9 @@ void main() {
         Node.path(
           id: 'curve',
           data: PathData(
-            source: CommandPathSource([
+            source: GeneralPathSource(PathIR([
               PathCmd.moveTo(const Vec2(0, 0)),
-              PathCmd.quadTo(const Vec2(2, 3), const Vec2(4, 5)),
+              PathCmd.cubicTo(const Vec2(1, 2), const Vec2(3, 4), const Vec2(4, 5)),
               PathCmd.cubicTo(
                 const Vec2(6, 7),
                 const Vec2(8, 9),
@@ -236,7 +236,7 @@ void main() {
               PathCmd.close(),
               PathCmd.moveTo(const Vec2(20, 30)),
               PathCmd.lineTo(const Vec2(40, 50)),
-            ]),
+            ])),
             appearance: const CanvasAppearance(
               foreground: CanvasFill.solid(0xff123456),
             ),
@@ -249,7 +249,7 @@ void main() {
     final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
     expect(
       path.getAttribute('d'),
-      'M0 0 Q2.0 3.0 4.0 5.0 '
+      'M0 0 C1.0 2.0 3.0 4.0 4.0 5.0 '
       'C6.0 7.0 8.0 9.0 10.0 11.0 Z M20.0 30.0 L40.0 50.0',
     );
   });
@@ -281,7 +281,7 @@ void main() {
           id: 'gradient',
           xf: const Transform2D(position: Vec2(20, 10), rotationRad: 0.5),
           data: PathData(
-            source: const RectSource(10, 10),
+            source: const RectSource(x: -5, y: -5, width: 10, height: 10),
             appearance: CanvasAppearance(
               foreground: CanvasFill.gradient(pathGradient),
             ),
@@ -343,7 +343,7 @@ void main() {
         Node.path(
           id: 'gradient',
           data: PathData(
-            source: RectSource(10, 10),
+            source: RectSource(x: -5, y: -5, width: 10, height: 10),
             appearance: CanvasAppearance(
               foreground: CanvasFill.gradient(
                 LinearGradientSpec(
@@ -361,7 +361,7 @@ void main() {
         Node.path(
           id: 'dashed',
           data: PathData(
-            source: RectSource(20, 10),
+            source: RectSource(x: -10, y: -5, width: 20, height: 10),
             appearance: CanvasAppearance(
               foreground: CanvasFill.none(),
               stroke: CanvasStroke(color: 0xff000000, dash: [5, 3]),
@@ -435,7 +435,7 @@ void main() {
         Node.path(
           id: 'p',
           data: PathData(
-            source: RectSource(10, 10),
+            source: RectSource(x: -5, y: -5, width: 10, height: 10),
             appearance: CanvasAppearance(
               foreground: CanvasFill.solid(0xff000000),
             ),

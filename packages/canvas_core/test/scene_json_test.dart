@@ -58,7 +58,7 @@ void main() {
       test('rejects raw SVG sources before decoding (nested: $nested)', () {
         const path = Node.path(
           id: 'svg-path',
-          data: PathData(source: RectSource(24, 24)),
+          data: PathData(source: RectSource(x: -12, y: -12, width: 24, height: 24)),
         );
         final json = encodeCanvasScene(
           _scene().copyWith(
@@ -144,7 +144,7 @@ void main() {
       expect(decodeCanvasScene(json), _imageScene());
     });
 
-    test('rejects sourcePath in scene format v3 image data', () {
+    test('rejects sourcePath in scene format v4 image data', () {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
@@ -164,7 +164,7 @@ void main() {
       );
     });
 
-    test('rejects legacy or invalid gradient geometry in scene format v3', () {
+    test('rejects legacy or invalid gradient geometry in scene format v4', () {
       final legacyGradient = encodeCanvasScene(_scene());
       final legacyFill =
           legacyGradient['backgroundFill'] as Map<String, dynamic>;
@@ -202,7 +202,7 @@ void main() {
           Node.path(
             id: 'gradient-path',
             data: PathData(
-              source: const RectSource(20, 10),
+              source: const RectSource(x: -10, y: -5, width: 20, height: 10),
               appearance: CanvasAppearance(
                 foreground: CanvasFill.gradient(valid),
               ),

@@ -1,3 +1,8 @@
+## 0.16.0
+
+- **Breaking:** require canvas_core 0.17.x and render its four-command geometry.
+- Keep existing fill/stroke/resource behavior; prepared icons reuse PathIR directly.
+
 ## 0.15.0
 
 - **Breaking:** require `canvas_core 0.16.x` and read path fill/stroke from

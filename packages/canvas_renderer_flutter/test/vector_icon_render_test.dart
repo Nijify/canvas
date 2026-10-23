@@ -29,7 +29,7 @@ ResolvedIcon _icon({
   Rect2D box = const Rect2D(0, 0, 24, 24),
   FillRule fillRule = FillRule.nonZero,
 }) => ResolvedIcon(
-  source: CommandPathSource(commands ?? _rect(box)),
+  pathIR: PathIR(commands ?? _rect(box)),
   viewBox: box,
   fillRule: fillRule,
 );

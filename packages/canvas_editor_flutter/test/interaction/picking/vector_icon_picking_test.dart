@@ -20,7 +20,7 @@ class _NoText implements TextMeasurer {
 class _Icons implements IconResolver {
   @override
   ResolvedIcon? resolve(String ref) => ResolvedIcon(
-    source: CommandPathSource([
+    pathIR: PathIR([
       PathCmd.moveTo(const Vec2(0, 0)),
       PathCmd.lineTo(const Vec2(32, 0)),
       PathCmd.lineTo(const Vec2(32, 16)),
@@ -44,7 +44,7 @@ CanvasSceneDocument _scene({Transform2D group = const Transform2D()}) =>
       children: [
         const Node.path(
           id: 'under',
-          data: PathData(source: RectSource(400, 400)),
+          data: PathData(source: RectSource(x: -200, y: -200, width: 400, height: 400)),
         ),
         Node.group(
           id: 'group',

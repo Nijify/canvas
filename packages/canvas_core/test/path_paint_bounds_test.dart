@@ -102,7 +102,7 @@ void main() {
           Node.path(
             id: 'path',
             data: PathData(
-              source: const RectSource(20, 10),
+              source: const RectSource(x: -10, y: -5, width: 20, height: 10),
               appearance: appearance,
             ),
           ),
@@ -129,7 +129,7 @@ void main() {
       Node.path(
         id: 'path',
         data: PathData(
-          source: const RectSource(20, 10),
+          source: const RectSource(x: -10, y: -5, width: 20, height: 10),
           appearance: CanvasAppearance(
             foreground: const CanvasFill.solid(0xFF112233),
             stroke: CanvasStroke(color: 0x00112233, width: 100),
@@ -183,8 +183,8 @@ void main() {
 
   test('empty and move-only paths have no paint', () {
     for (final source in [
-      CommandPathSource([]),
-      CommandPathSource([PathCmd.moveTo(const Vec2(10, 20))]),
+      GeneralPathSource(PathIR([])),
+      GeneralPathSource(PathIR([PathCmd.moveTo(const Vec2(10, 20))])),
     ]) {
       final computed = _compute([
         Node.path(
@@ -237,7 +237,7 @@ void main() {
                   const Node.path(
                     id: 'sibling',
                     xf: Transform2D(position: Vec2(150, 30)),
-                    data: PathData(source: RectSource(20, 10)),
+                    data: PathData(source: RectSource(x: -10, y: -5, width: 20, height: 10)),
                   ),
                 ],
               ),
