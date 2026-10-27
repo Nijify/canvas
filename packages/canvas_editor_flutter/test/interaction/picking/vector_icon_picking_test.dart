@@ -4,7 +4,7 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vector_math/vector_math_64.dart' as vm;
+
 
 class _NoText implements TextMeasurer {
   @override
@@ -37,7 +37,7 @@ class _Icons implements IconResolver {
   );
 }
 
-CanvasSceneDocument _scene({Transform2D group = const Transform2D()}) =>
+CanvasSceneDocument _scene({Affine2D group = const Affine2D.identity()}) =>
     CanvasSceneDocument(
       backgroundFill: const CanvasFill.none(),
       backgroundOpacity: 1,
@@ -100,11 +100,7 @@ void main() {
 
   test('square picking follows nested rotation and nonuniform reflection', () {
     final scene = _scene(
-      group: Transform2D(
-        position: const Vec2(70, -35),
-        rotationRad: math.pi / 3,
-        scale: const Vec2(-2, 0.5),
-      ),
+      group: (Affine2D.translation(70, -35) * Affine2D.rotation(math.pi / 3) * Affine2D.scale(-2, 0.5)),
     );
     final computed = computeScene(
       scene,
@@ -112,8 +108,7 @@ void main() {
     );
     final geometry = EditorGeometryIndex.fromComputed(computed);
     Vec2 world(Vec2 local) {
-      final point = vm.Vector3(local.x, local.y, 0);
-      computed.worldById['icon']!.transform3(point);
+      final point = computed.worldById['icon']!.transformPoint(local);
       return Vec2(point.x, point.y);
     }
 

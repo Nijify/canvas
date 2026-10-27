@@ -17,10 +17,10 @@ CanvasSceneDocument _scene({double backgroundOpacity = 0.5}) {
       ),
     ),
     backgroundOpacity: backgroundOpacity,
-    children: const <Node>[
+    children: <Node>[
       Node.text(
         id: 'headline',
-        xf: Transform2D(position: Vec2(32, 48)),
+        xf: Affine2D.translation(32, 48),
         data: TextData(
           text: 'Scene JSON',
           fontFamily: 'Inter',

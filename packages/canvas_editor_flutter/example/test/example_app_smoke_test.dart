@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/example/test/example_app_smoke_test.dart
+// Path: packages/canvas_editor_flutter/example/test/example_app_smoke_test.dart
 
 import 'dart:async';
 

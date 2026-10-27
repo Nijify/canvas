@@ -40,18 +40,14 @@ void main() {
   test(
     'paints nested group transforms and sibling order from computed scene',
     () async {
-      const scene = CanvasSceneDocument(
+      final scene = CanvasSceneDocument(
         artboardSize: Size2D(64, 64),
         backgroundFill: CanvasFill.none(),
         backgroundOpacity: 1,
         children: [
           Node.group(
             id: 'group',
-            xf: Transform2D(
-              position: Vec2(24, 24),
-              origin: OriginKind.custom,
-              customPivotPx: Vec2.zero,
-            ),
+            xf: Affine2D.translation(24, 24),
             children: [
               Node.path(
                 id: 'red',
@@ -83,14 +79,14 @@ void main() {
   );
 
   test('null image asset leaves an unfilled frame transparent', () async {
-    const scene = CanvasSceneDocument(
+    final scene = CanvasSceneDocument(
       artboardSize: Size2D(64, 64),
       backgroundFill: CanvasFill.none(),
       backgroundOpacity: 1,
       children: [
         Node.image(
           id: 'empty',
-          xf: Transform2D(position: Vec2(32, 32)),
+          xf: Affine2D.translation(32, 32),
           data: ImageData(size: Size2D(24, 24)),
         ),
       ],

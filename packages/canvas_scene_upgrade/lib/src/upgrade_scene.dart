@@ -1,4 +1,4 @@
-import 'package:canvas_core/canvas_core_runtime.dart' show decodeCanvasScene;
+import 'package:canvas_core/canvas_core_runtime.dart' show CoreServices, decodeCanvasScene;
 
 import 'formats/scene_v1.dart';
 import 'formats/scene_v2.dart';
@@ -7,9 +7,13 @@ import 'migrations/legacy_unversioned_to_v1.dart';
 import 'migrations/v1_to_v2.dart';
 import 'migrations/v2_to_v3.dart';
 import 'migrations/v3_to_v4.dart';
+import 'migrations/v4_to_v5.dart';
 
-/// Upgrades supported historical JSON to the current Canvas scene format (v4).
+/// Upgrades supported historical JSON to the current Canvas scene format (v5).
 ///
+/// [services] supplies layout metrics when a historical group pivot needs them.
+/// Missing required text/image metrics are reported rather than approximated.
+/// Hidden center pivots are baked at zero, matching their unevaluated v4 state.
 /// The input is never mutated. Intermediate steps use historical wire checks;
 /// only the completed upgrade is decoded and integrity-checked by current core.
 /// This does not resolve resources or guarantee identical historical rendering.
@@ -26,6 +30,7 @@ import 'migrations/v3_to_v4.dart';
 Map<String, Object?> upgradeCanvasScene(
   Map<String, Object?> json, {
   bool legacyUnversioned = false,
+  CoreServices? services,
   bool? Function(String iconRef)? resolveLegacyIconWasGlyph,
 }) {
   var source = json;
@@ -52,7 +57,7 @@ Map<String, Object?> upgradeCanvasScene(
     throw const FormatException('sceneFormatVersion must be an integer.');
   }
 
-  final result = switch (version) {
+  final historical = switch (version) {
     canvasSceneFormatV1 => convertCanvasSceneV3ToV4(
       convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(source)),
     ),
@@ -60,12 +65,14 @@ Map<String, Object?> upgradeCanvasScene(
       convertCanvasSceneV2ToV3(source),
     ),
     canvasSceneFormatV3 => convertCanvasSceneV3ToV4(source),
-    4 => Map<String, Object?>.from(source),
+    4 || 5 => Map<String, Object?>.from(source),
     _ => throw FormatException(
       'Unsupported Canvas sceneFormatVersion: $version',
     ),
   };
 
+  final result = historical['sceneFormatVersion'] == 5 ? historical
+      : convertCanvasSceneV4ToV5(historical, services: services);
   decodeCanvasScene(result);
   return result;
 }

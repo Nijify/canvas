@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_edits.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_edits.dart
 //
 // Concrete reusable scene-edit factories.
 //

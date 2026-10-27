@@ -2,6 +2,7 @@
 
 library;
 
+import 'package:canvas_core/src/foundation/math/affine2d.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 
 String? _normalizeLayerName(String? raw) {
@@ -31,7 +32,7 @@ extension NodeEditingX on Node {
     };
   }
 
-  Node withXf(Transform2D xf) => switch (this) {
+  Node withXf(Affine2D xf) => switch (this) {
     final TextNode node => node.copyWith(xf: xf),
     final ImageNode node => node.copyWith(xf: xf),
     final PathNode node => node.copyWith(xf: xf),

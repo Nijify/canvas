@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/example/lib/main.dart
+// Path: packages/canvas_editor_flutter/example/lib/main.dart
 import 'dart:async';
 import 'dart:convert';
 
@@ -335,7 +335,7 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
     Node.path(
       id: 'demo-card',
       name: 'Demo card',
-      xf: Transform2D(position: Vec2(370, 210)),
+      xf: Affine2D.translation(370, 210),
       data: PathData(
         source: RectSource(
           x: -300,
@@ -354,7 +354,7 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
     Node.icon(
       id: 'demo-icon',
       name: 'Vector icon',
-      xf: Transform2D(position: Vec2(170, 150)),
+      xf: Affine2D.translation(170, 150),
       data: CanvasIconData(
         iconRef: 'icon.ring',
         sizePx: 64,
@@ -383,7 +383,7 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
     Node.text(
       id: 'demo-title',
       name: 'Title',
-      xf: Transform2D(position: Vec2(410, 150)),
+      xf: Affine2D.translation(410, 150),
       data: TextData(
         text: 'CanvasSceneEditor',
         fontFamily: _demoFontFamily,
@@ -396,7 +396,7 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
     Node.text(
       id: 'demo-subtitle',
       name: 'Subtitle',
-      xf: Transform2D(position: Vec2(370, 255)),
+      xf: Affine2D.translation(370, 255),
       data: TextData(
         text:
             'Select the ring to change its icon, fill, or shadow.\n'

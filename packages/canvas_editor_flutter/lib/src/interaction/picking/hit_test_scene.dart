@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:canvas_core/canvas_core_runtime.dart'
     show
+        Affine2D,
         CanvasSceneDocument,
         CanvasStroke,
         ComputedScene,
@@ -18,7 +19,7 @@ import 'package:canvas_core/canvas_core_runtime.dart'
         TextNode,
         Vec2,
         strokeContributesToPaint;
-import 'package:vector_math/vector_math_64.dart' as vm;
+
 
 import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart'
     show pathContainsClosedArea, pathHitsOutline;
@@ -180,9 +181,12 @@ bool _hitLeafAt(
   if (inv == null) return false;
 
   // world -> local
-  final p3 = vm.Vector3(worldPos.x, worldPos.y, 0);
-  inv.transform3(p3);
-  final local = Vec2(p3.x, p3.y);
+  final Vec2 local;
+  try {
+    local = inv.transformPoint(worldPos);
+  } on ArgumentError {
+    return false;
+  }
 
   final localRect = computed.layoutBoundsLocalById[leafId];
   if (localRect == null) return false;
@@ -196,6 +200,7 @@ bool _hitLeafAt(
           screenPx: minPathHitSlopScreenPx,
         )
       : 0.0;
+  if (!localHitSlop.isFinite) return false;
   final outlineRadius = leaf is PathNode
       ? math.max(_strokeRadiusLocal(leaf.data.appearance.stroke), localHitSlop)
       : 0.0;
@@ -233,7 +238,7 @@ double _strokeRadiusLocal(CanvasStroke? stroke) {
 }
 
 double _localHitSlopForLeaf(
-  vm.Matrix4 inverseWorld, {
+  Affine2D inverseWorld, {
   required double viewportZoom,
   required double screenPx,
 }) {
@@ -244,14 +249,11 @@ double _localHitSlopForLeaf(
     return 0.0;
   }
 
-  final m = inverseWorld.storage;
-  final scale = math.max(
-    math.max(m[0].abs(), m[4].abs()),
-    math.max(m[1].abs(), m[5].abs()),
-  );
-  if (!scale.isFinite || scale == 0) return 0.0;
-  final a = m[0] / scale, b = m[4] / scale;
-  final c = m[1] / scale, d = m[5] / scale;
+  final scale = math.max(math.max(inverseWorld.a.abs(), inverseWorld.b.abs()),
+      math.max(inverseWorld.c.abs(), inverseWorld.d.abs()));
+  if (scale == 0) return 0;
+  final a = inverseWorld.a / scale, b = inverseWorld.c / scale;
+  final c = inverseWorld.b / scale, d = inverseWorld.d / scale;
   // Largest singular value of the inverse linear transform. Unlike column
   // lengths, it preserves the screen-space floor under nested nonuniform
   // scales and rotations, which can compose into shear.

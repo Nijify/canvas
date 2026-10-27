@@ -198,6 +198,7 @@ final class EditorRuntime<TSourceDocument>
     final active = _endActiveSession;
     if (active != null) return active;
 
+    _pipeline.flushPending();
     _history.beginTransaction();
 
     late final VoidCallback endSession;
@@ -219,11 +220,12 @@ final class EditorRuntime<TSourceDocument>
 
   void _commit(TSourceDocument Function(TSourceDocument) operation) {
     final previous = _history.present;
-    final next = _history.applyOp(operation, pushHistory: true);
-
+    final next = operation(previous);
     if (identical(next, previous) || next == previous) return;
-
-    _pipeline.applySourceDocument(next);
+    // Evaluate before adopting history so failed arithmetic/preparation is atomic.
+    final prepared = _pipeline.prepare(next);
+    _history.applyOp((_) => next, pushHistory: true);
+    _pipeline.applySourceDocument(next, prepared: prepared);
   }
 
   @override
@@ -253,13 +255,10 @@ final class EditorRuntime<TSourceDocument>
     );
 
     final previous = _history.present;
+    if (identical(next, previous) || next == previous) return;
+    final prepared = _pipeline.prepare(next);
     final current = _history.applyOp((_) => next, pushHistory: false);
-
-    if (identical(current, previous) || current == previous) {
-      return;
-    }
-
-    _pipeline.applySourceDocument(current, scheduleSnapshot: true);
+    _pipeline.applySourceDocument(current, scheduleSnapshot: true, prepared: prepared);
   }
 
   @override
@@ -329,46 +328,10 @@ final class EditorRuntime<TSourceDocument>
   // ==========================================================================
 
   @override
-  void updateDrag(rt.ElementId id, rt.Vec2 delta) {
-    final presentSourceDocument = _presentSourceDocument;
-    final presentBase = _adapter.getBase(presentSourceDocument);
-
-    final base = rt.SceneTreeOps.translate(presentBase, id, delta);
-
-    _applyEphemeral(_replaceBase(presentSourceDocument, base));
-  }
-
-  @override
-  void updateRotate(rt.ElementId id, double deltaRad) {
-    final presentSourceDocument = _presentSourceDocument;
-    final presentBase = _adapter.getBase(presentSourceDocument);
-
-    final base = rt.SceneTreeOps.rotate(presentBase, id, deltaRad);
-    _applyEphemeral(_replaceBase(presentSourceDocument, base));
-  }
-
-  @override
-  void updateUniformScaleAround(
-    rt.ElementId id,
-    rt.Vec2 anchorParent,
-    double mul,
-  ) {
-    final presentSourceDocument = _presentSourceDocument;
-    final presentBase = _adapter.getBase(presentSourceDocument);
-
-    final n = rt.findById(presentBase, id);
-    if (n == null) return;
-
-    final xf = n.xf;
-    final pos = xf.position;
-
-    final nextPos = anchorParent + (pos - anchorParent) * mul;
-    final s = xf.scale;
-    final nextScale = rt.Vec2(s.x * mul, s.y * mul);
-
-    final nextXf = xf.copyWith(position: nextPos, scale: nextScale);
-    final base = rt.SceneTreeOps.replaceNodeXf(presentBase, id, nextXf);
-    _applyEphemeral(_replaceBase(presentSourceDocument, base));
+  void updateTransform(rt.ElementId id, rt.Affine2D local) {
+    final document = _presentSourceDocument;
+    final base = rt.SceneTreeOps.replaceNodeXf(_adapter.getBase(document), id, local);
+    _applyEphemeral(_replaceBase(document, base));
   }
 
   T _readEffectiveOrBase<T>({

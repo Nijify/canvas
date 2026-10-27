@@ -1,9 +1,14 @@
+## 0.18.0
+
+- **Breaking:** scene v5 replaces Transform2D, origin, and persisted pivots with immutable Affine2D matrices; JSON xf uses six numbers and omits identity.
+- Compute hierarchy transforms independently of bounds/resources in one traversal; expose explicit transform spaces and reparent preservation.
+- Reject nonfinite derived geometry and expose reliable inversion failure. Evaluation snapshots are core-created and computed collections immutable.
+
 ## Unreleased
 
 - **Breaking:** move `upgradeCanvasScene` to the optional `canvas_scene_upgrade`
   package. Replace direct `convertCanvasSceneV3ToV4` calls with that package's
   `upgradeCanvasScene`. Core no longer exports or contains historical upgrades.
-- Keep scene v4, current validation, geometry, and transform behavior unchanged.
 
 ## 0.17.0
 

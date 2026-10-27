@@ -11,8 +11,8 @@ import 'package:canvas_core/src/services/services_context.dart'
     show CoreServices;
 
 /// An already-prepared scene and its derived geometry for painting and export.
-class SceneEvaluation {
-  const SceneEvaluation({
+final class SceneEvaluation {
+  const SceneEvaluation._({
     required this.scene,
     required this.computed,
     required this.contentBounds,
@@ -49,7 +49,7 @@ SceneEvaluation evaluateScene(
           paddingPx: spec.paddingPx,
         );
 
-  return SceneEvaluation(
+  return SceneEvaluation._(
     scene: preparedScene,
     computed: computed,
     contentBounds: bounds,

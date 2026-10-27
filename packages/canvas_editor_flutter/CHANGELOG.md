@@ -1,3 +1,8 @@
+## 0.21.0
+
+- **Breaking:** replace incremental TRS controller commands with updateTransform; gestures capture initial affine frames and total deltas.
+- Share affine inversion, reject invalid candidates before history changes, and retain one history transaction per gesture.
+
 ## 0.20.0
 
 - **Breaking:** require canvas_core 0.17.x and canvas_renderer_flutter 0.16.x.

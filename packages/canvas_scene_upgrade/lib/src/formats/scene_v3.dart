@@ -1,10 +1,10 @@
-import 'scene_v3_wire.dart';
+import 'scene_trs_wire.dart';
 
 /// Historical v3 wire format, independent of current runtime geometry.
 const int canvasSceneFormatV3 = 3;
 
 void validateSceneV3Json(Map<String, Object?> json) =>
-    validateSceneV3Wire(json, validateSource: _source);
+    validateLegacySceneWire(json, version: canvasSceneFormatV3, validateSource: _source);
 
 void _source(Object? raw, String path) {
   final source = _object(raw, path);

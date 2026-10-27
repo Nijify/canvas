@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/asset_library.dart
+// Path: packages/canvas_editor_flutter/lib/src/asset_library.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' show Size2D;
 import 'package:flutter/widgets.dart' show BuildContext;

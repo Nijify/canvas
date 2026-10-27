@@ -1,3 +1,7 @@
+## 0.17.0
+
+- **Breaking:** consume v5 affine scenes and derive framework matrix buffers only at paint boundaries.
+
 ## 0.16.0
 
 - **Breaking:** require canvas_core 0.17.x and render its four-command geometry.

@@ -501,8 +501,8 @@ void main() {
       expect(image.data.assetId, isNotNull);
       expect(size.w, 200);
       expect(size.h, 200);
-      expect(image.xf.position.x, 180);
-      expect(image.xf.position.y, 180);
+      expect(image.xf.e, 180);
+      expect(image.xf.f, 180);
       expect(editor.selection.value, image.id);
       expect(editor.controller.canUndo.value, isTrue);
     },
@@ -535,7 +535,7 @@ void main() {
 
     expect(images.requestedIntrinsicSizes, <String>['media:wide-image']);
     expect(image.data.size, const Size2D(200, 100));
-    expect(image.xf.position, const Vec2(180, 130));
+    expect(image.xf.transformPoint(Vec2.zero), const Vec2(180, 130));
     expect(
       _imageAsset(editor.controller, image.id)?.intrinsicSize,
       const Size2D(800, 400),
@@ -571,7 +571,7 @@ void main() {
       final image = _singleImage(editor.controller);
 
       expect(image.data.size, const Size2D(200, 200));
-      expect(image.xf.position, const Vec2(180, 180));
+      expect(image.xf.transformPoint(Vec2.zero), const Vec2(180, 180));
       expect(_imageAsset(editor.controller, image.id)?.intrinsicSize, isNull);
       expect(editor.selection.value, image.id);
 

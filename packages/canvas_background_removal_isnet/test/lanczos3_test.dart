@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/test/lanczos3_test.dart
+// Path: packages/canvas_background_removal_isnet/test/lanczos3_test.dart
 
 import 'dart:typed_data';
 

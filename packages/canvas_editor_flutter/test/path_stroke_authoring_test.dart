@@ -40,7 +40,7 @@ rt.CanvasSceneDocument _scene({rt.CanvasStroke? stroke}) =>
         rt.Node.path(
           id: 'path',
           name: 'Shape',
-          xf: const rt.Transform2D(position: rt.Vec2(20, 30)),
+          xf: rt.Affine2D.translation(20, 30),
           data: rt.PathData(
             source: const rt.RectSource(x: -20, y: -10, width: 40, height: 20),
             fillRule: rt.FillRule.evenOdd,

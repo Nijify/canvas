@@ -1,6 +1,6 @@
 // Path: packages/canvas_core/lib/src/serialization/scene_format.dart
 
-import 'package:canvas_core/src/serialization/formats/scene_v4.dart';
+import 'package:canvas_core/src/serialization/formats/scene_v5.dart';
 
 /// Current persisted Canvas scene format; independent of package version.
-const int currentCanvasSceneFormatVersion = canvasSceneFormatV4;
+const int currentCanvasSceneFormatVersion = canvasSceneFormatV5;

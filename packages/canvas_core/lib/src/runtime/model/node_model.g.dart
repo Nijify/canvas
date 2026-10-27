@@ -6,39 +6,6 @@ part of 'node_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_Transform2D _$Transform2DFromJson(Map<String, dynamic> json) => _Transform2D(
-  position: json['position'] == null
-      ? Vec2.zero
-      : const Vec2Converter().fromJson(
-          json['position'] as Map<String, dynamic>,
-        ),
-  rotationRad: (json['rotationRad'] as num?)?.toDouble() ?? 0.0,
-  scale: json['scale'] == null
-      ? const Vec2(1, 1)
-      : const Vec2Converter().fromJson(json['scale'] as Map<String, dynamic>),
-  origin:
-      $enumDecodeNullable(_$OriginKindEnumMap, json['origin']) ??
-      OriginKind.center,
-  customPivotPx: const NullableVec2Converter().fromJson(
-    json['customPivotPx'] as Map<String, dynamic>?,
-  ),
-);
-
-Map<String, dynamic> _$Transform2DToJson(
-  _Transform2D instance,
-) => <String, dynamic>{
-  'position': const Vec2Converter().toJson(instance.position),
-  'rotationRad': instance.rotationRad,
-  'scale': const Vec2Converter().toJson(instance.scale),
-  'origin': _$OriginKindEnumMap[instance.origin]!,
-  'customPivotPx': const NullableVec2Converter().toJson(instance.customPivotPx),
-};
-
-const _$OriginKindEnumMap = {
-  OriginKind.center: 'center',
-  OriginKind.custom: 'custom',
-};
-
 _TextData _$TextDataFromJson(Map<String, dynamic> json) => _TextData(
   text: json['text'] as String,
   fontFamily: json['fontFamily'] as String,
@@ -94,7 +61,8 @@ _PathData _$PathDataFromJson(Map<String, dynamic> json) => _PathData(
 
 Map<String, dynamic> _$PathDataToJson(_PathData instance) => <String, dynamic>{
   'source': const PathSourceConverter().toJson(instance.source),
-  'fillRule': _$FillRuleEnumMap[instance.fillRule]!,
+  if (instance.fillRule != FillRule.nonZero)
+    'fillRule': _$FillRuleEnumMap[instance.fillRule]!,
   'appearance': instance.appearance.toJson(),
 };
 
@@ -139,9 +107,9 @@ TextNode _$TextNodeFromJson(Map<String, dynamic> json) => TextNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  xf: json['xf'] == null
-      ? const Transform2D()
-      : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
+  xf: json.containsKey('xf')
+      ? const Affine2DConverter().fromJson(json['xf'])
+      : const Affine2D.identity(),
   data: TextData.fromJson(json['data'] as Map<String, dynamic>),
   role: json['role'] as String?,
   $type: json['runtimeType'] as String?,
@@ -150,8 +118,8 @@ TextNode _$TextNodeFromJson(Map<String, dynamic> json) => TextNode(
 Map<String, dynamic> _$TextNodeToJson(TextNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'hidden': instance.hidden,
-  'xf': instance.xf.toJson(),
+  if (instance.hidden) 'hidden': true,
+  if (!instance.xf.isIdentity) 'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
   'runtimeType': instance.$type,
@@ -161,9 +129,9 @@ ImageNode _$ImageNodeFromJson(Map<String, dynamic> json) => ImageNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  xf: json['xf'] == null
-      ? const Transform2D()
-      : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
+  xf: json.containsKey('xf')
+      ? const Affine2DConverter().fromJson(json['xf'])
+      : const Affine2D.identity(),
   data: ImageData.fromJson(json['data'] as Map<String, dynamic>),
   role: json['role'] as String?,
   $type: json['runtimeType'] as String?,
@@ -172,8 +140,8 @@ ImageNode _$ImageNodeFromJson(Map<String, dynamic> json) => ImageNode(
 Map<String, dynamic> _$ImageNodeToJson(ImageNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'hidden': instance.hidden,
-  'xf': instance.xf.toJson(),
+  if (instance.hidden) 'hidden': true,
+  if (!instance.xf.isIdentity) 'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
   'runtimeType': instance.$type,
@@ -183,9 +151,9 @@ PathNode _$PathNodeFromJson(Map<String, dynamic> json) => PathNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  xf: json['xf'] == null
-      ? const Transform2D()
-      : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
+  xf: json.containsKey('xf')
+      ? const Affine2DConverter().fromJson(json['xf'])
+      : const Affine2D.identity(),
   data: PathData.fromJson(json['data'] as Map<String, dynamic>),
   role: json['role'] as String?,
   $type: json['runtimeType'] as String?,
@@ -194,8 +162,8 @@ PathNode _$PathNodeFromJson(Map<String, dynamic> json) => PathNode(
 Map<String, dynamic> _$PathNodeToJson(PathNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'hidden': instance.hidden,
-  'xf': instance.xf.toJson(),
+  if (instance.hidden) 'hidden': true,
+  if (!instance.xf.isIdentity) 'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
   'runtimeType': instance.$type,
@@ -205,9 +173,9 @@ IconNode _$IconNodeFromJson(Map<String, dynamic> json) => IconNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  xf: json['xf'] == null
-      ? const Transform2D()
-      : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
+  xf: json.containsKey('xf')
+      ? const Affine2DConverter().fromJson(json['xf'])
+      : const Affine2D.identity(),
   data: CanvasIconData.fromJson(json['data'] as Map<String, dynamic>),
   role: json['role'] as String?,
   $type: json['runtimeType'] as String?,
@@ -216,8 +184,8 @@ IconNode _$IconNodeFromJson(Map<String, dynamic> json) => IconNode(
 Map<String, dynamic> _$IconNodeToJson(IconNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'hidden': instance.hidden,
-  'xf': instance.xf.toJson(),
+  if (instance.hidden) 'hidden': true,
+  if (!instance.xf.isIdentity) 'xf': instance.xf.toJson(),
   'data': instance.data.toJson(),
   'role': instance.role,
   'runtimeType': instance.$type,
@@ -227,9 +195,9 @@ GroupNode _$GroupNodeFromJson(Map<String, dynamic> json) => GroupNode(
   id: json['id'] as String,
   name: json['name'] as String?,
   hidden: json['hidden'] as bool? ?? false,
-  xf: json['xf'] == null
-      ? const Transform2D()
-      : Transform2D.fromJson(json['xf'] as Map<String, dynamic>),
+  xf: json.containsKey('xf')
+      ? const Affine2DConverter().fromJson(json['xf'])
+      : const Affine2D.identity(),
   behavior: json['behavior'] == null
       ? null
       : GroupBehaviorRef.fromJson(json['behavior'] as Map<String, dynamic>),
@@ -244,8 +212,8 @@ GroupNode _$GroupNodeFromJson(Map<String, dynamic> json) => GroupNode(
 Map<String, dynamic> _$GroupNodeToJson(GroupNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'hidden': instance.hidden,
-  'xf': instance.xf.toJson(),
+  if (instance.hidden) 'hidden': true,
+  if (!instance.xf.isIdentity) 'xf': instance.xf.toJson(),
   'behavior': instance.behavior?.toJson(),
   'children': instance.children.map((e) => e.toJson()).toList(),
   'runtimeType': instance.$type,

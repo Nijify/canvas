@@ -31,8 +31,8 @@ final class _Icons implements IconResolver {
   );
 }
 
-ComputedScene _compute(CanvasSceneDocument scene) =>
-    computeScene(scene, const CoreServices(textMeasurer: _TextMeasurer()));
+SceneEvaluation _compute(CanvasSceneDocument scene) =>
+    evaluateScene(scene, const CoreServices(textMeasurer: _TextMeasurer()));
 
 CanvasSceneDocument _scene({
   CanvasFill background = const CanvasFill.none(),
@@ -55,12 +55,12 @@ void main() {
         ),
       ],
     );
-    final computed = computeScene(
+    final computed = evaluateScene(
       scene,
       CoreServices(textMeasurer: const _TextMeasurer(), icons: _Icons()),
     );
-    expect(computed.iconById, contains('icon'));
-    final result = exportPreparedSvg(scene: scene, computed: computed);
+    expect(computed.computed.iconById, contains('icon'));
+    final result = exportPreparedSvg(evaluation: computed);
     expect(result.svg, isNull);
     expect(result.issues.single.code, SvgExportIssueCode.unsupportedIcon);
   });
@@ -89,7 +89,7 @@ void main() {
     );
     final computed = _compute(scene);
 
-    final result = exportPreparedSvg(scene: scene, computed: computed);
+    final result = exportPreparedSvg(evaluation: computed);
 
     expect(result.issues, isEmpty);
     final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
@@ -116,7 +116,7 @@ void main() {
         Node.path(
           id: 'p',
           name: 'unsafe<&',
-          role: 'logo:main',
+          role: 'example:content',
           data: PathData(
             source: const RectSource(x: -10, y: -5, width: 20, height: 10),
             fillRule: FillRule.evenOdd,
@@ -134,7 +134,7 @@ void main() {
       ],
     );
 
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
     expect(result.issues, isEmpty);
     final root = XmlDocument.parse(result.svg!).rootElement;
     expect(root.name.local, 'svg');
@@ -158,32 +158,23 @@ void main() {
     expect(path.getAttribute('stroke-linecap'), 'round');
     expect(path.getAttribute('stroke-linejoin'), 'bevel');
     expect(result.svg, isNot(contains('unsafe')));
-    expect(result.svg, isNot(contains('logo:main')));
+    expect(result.svg, isNot(contains('example:content')));
     expect(
-      exportPreparedSvg(scene: scene, computed: _compute(scene)).svg,
+      exportPreparedSvg(evaluation: _compute(scene)).svg,
       result.svg,
     );
   });
 
   test('flattens nested groups in computed paint order', () {
     final scene = _scene(
-      children: const [
+      children: [
         Node.group(
           id: 'group',
-          xf: Transform2D(
-            position: Vec2(40, 20),
-            scale: Vec2(2, 2),
-            origin: OriginKind.custom,
-            customPivotPx: Vec2.zero,
-          ),
+          xf: (Affine2D.translation(40, 20) * Affine2D.translation(0, 0) * Affine2D.scale(2, 2) * Affine2D.translation(-0.0, -0.0)),
           children: [
             Node.path(
               id: 'first',
-              xf: Transform2D(
-                position: Vec2(10, 5),
-                origin: OriginKind.custom,
-                customPivotPx: Vec2.zero,
-              ),
+              xf: Affine2D.translation(10, 5),
               data: PathData(
                 source: RectSource(x: -5, y: -5, width: 10, height: 10),
                 appearance: CanvasAppearance(
@@ -193,11 +184,7 @@ void main() {
             ),
             Node.path(
               id: 'second',
-              xf: Transform2D(
-                position: Vec2(20, 5),
-                origin: OriginKind.custom,
-                customPivotPx: Vec2.zero,
-              ),
+              xf: Affine2D.translation(20, 5),
               data: PathData(
                 source: RectSource(x: -10, y: -5, width: 20, height: 10),
                 appearance: CanvasAppearance(
@@ -210,7 +197,7 @@ void main() {
       ],
     );
 
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
     final paths = XmlDocument.parse(
       result.svg!,
     ).findAllElements('path').toList();
@@ -250,7 +237,7 @@ void main() {
         ),
       ],
     );
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
     expect(result.issues, isEmpty);
     final path = XmlDocument.parse(result.svg!).findAllElements('path').single;
     expect(
@@ -285,7 +272,7 @@ void main() {
       children: <Node>[
         Node.path(
           id: 'gradient',
-          xf: const Transform2D(position: Vec2(20, 10), rotationRad: 0.5),
+          xf: (Affine2D.translation(20, 10) * Affine2D.rotation(0.5)),
           data: PathData(
             source: const RectSource(x: -5, y: -5, width: 10, height: 10),
             appearance: CanvasAppearance(
@@ -296,7 +283,7 @@ void main() {
       ],
     );
 
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
 
     expect(result.issues, isEmpty);
     final root = XmlDocument.parse(result.svg!).rootElement;
@@ -377,7 +364,7 @@ void main() {
       ],
     );
 
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
     expect(result.svg, isNull);
     expect(result.issues.map((i) => (i.code, i.nodeId)), [
       (SvgExportIssueCode.unsupportedDashedStroke, 'dashed'),
@@ -399,7 +386,7 @@ void main() {
         ),
       ],
     );
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
     expect(result.issues, isEmpty);
     expect(XmlDocument.parse(result.svg!).findAllElements('path'), isEmpty);
   });
@@ -426,7 +413,7 @@ void main() {
         ),
       ],
     );
-    final result = exportPreparedSvg(scene: scene, computed: _compute(scene));
+    final result = exportPreparedSvg(evaluation: _compute(scene));
     expect(result.svg, isNull);
     expect(result.issues.map((i) => i.code), [
       SvgExportIssueCode.unsupportedText,
@@ -435,65 +422,8 @@ void main() {
     ]);
   });
 
-  test('does not silently skip missing computed path geometry', () {
-    final scene = _scene(
-      children: const [
-        Node.path(
-          id: 'p',
-          data: PathData(
-            source: RectSource(x: -5, y: -5, width: 10, height: 10),
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xff000000),
-            ),
-          ),
-        ),
-      ],
-    );
-    final computed = _compute(scene);
-    final incomplete = ComputedScene(
-      drawList: computed.drawList,
-      nodeById: computed.nodeById,
-      worldById: computed.worldById,
-      layoutBoundsLocalById: computed.layoutBoundsLocalById,
-      paintBoundsLocalById: computed.paintBoundsLocalById,
-      paintBoundsWorldById: computed.paintBoundsWorldById,
-      pathIRById: const {},
-      imagePlacementById: computed.imagePlacementById,
-      iconById: computed.iconById,
-    );
-    final result = exportPreparedSvg(scene: scene, computed: incomplete);
-    expect(result.svg, isNull);
-    expect(
-      result.issues.single.code,
-      SvgExportIssueCode.missingComputedGeometry,
-    );
-    expect(result.issues.single.nodeId, 'p');
+  test('evaluation rejects invalid scene before export', () {
+    expect(() => _compute(_scene().copyWith(artboardSize: const Size2D(0, 80))),
+      throwsArgumentError);
   });
-
-  test('rejects invalid numeric scene values before writing XML', () {
-    final valid = _scene();
-    final invalid = valid.copyWith(artboardSize: const Size2D(0, 80));
-    final result = exportPreparedSvg(scene: invalid, computed: _compute(valid));
-    expect(result.svg, isNull);
-    expect(result.issues.single.code, SvgExportIssueCode.invalidScene);
-    expect(result.issues.single.message, isNotEmpty);
-  });
-
-  test(
-    'rejects cyclic scene integrity before traversing export capabilities',
-    () {
-      final valid = _scene();
-      final children = <Node>[];
-      final group = Node.group(id: 'group', children: children);
-      children.add(group);
-      final invalid = valid.copyWith(children: [group]);
-      final result = exportPreparedSvg(
-        scene: invalid,
-        computed: _compute(valid),
-      );
-      expect(result.svg, isNull);
-      expect(result.issues.single.code, SvgExportIssueCode.invalidScene);
-      expect(result.issues.single.message, isNotEmpty);
-    },
-  );
 }

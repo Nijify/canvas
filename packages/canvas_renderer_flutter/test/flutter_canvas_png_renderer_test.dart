@@ -648,10 +648,10 @@ void main() {
       );
       final bytes = await renderer.renderPng(
         scene: _emptyScene().copyWith(
-          children: const [
+          children: [
             Node.icon(
               id: 'vector',
-              xf: Transform2D(position: Vec2(32, 32)),
+              xf: Affine2D.translation(32, 32),
               data: CanvasIconData(
                 iconRef: 'vector',
                 sizePx: 24,
@@ -846,9 +846,9 @@ void main() {
         scenePreparer: (scene, services) {
           return scene.copyWith(
             children: <Node>[
-              const Node.path(
+              Node.path(
                 id: 'generated-shape',
-                xf: Transform2D(position: Vec2(20, 20)),
+                xf: Affine2D.translation(20, 20),
                 data: PathData(
                   source: RectSource(x: -10, y: -10, width: 20, height: 20),
                   appearance: CanvasAppearance(

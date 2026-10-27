@@ -1,10 +1,10 @@
-/// Frozen v3 wire checks used only during explicit historical upgrades.
+/// Frozen TRS scene wire checks used only during explicit historical upgrades.
 /// Keep these independent of the current canvas_core scene format.
-void validateSceneV3Wire(
+void validateLegacySceneWire(
   Map<String, Object?> json, {
+  required int version,
   required void Function(Object? raw, String path) validateSource,
 }) {
-  const version = 3;
   if (json['sceneFormatVersion'] is! int ||
       json['sceneFormatVersion'] != version) {
     _fail(

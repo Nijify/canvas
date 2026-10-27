@@ -58,8 +58,6 @@ export 'src/runtime/model/node_model.dart'
         ImageNode,
         PathNode,
         GroupNode,
-        OriginKind,
-        Transform2D,
         GroupBehaviorRef,
         TextData,
         CanvasIconData,
@@ -120,7 +118,7 @@ export 'src/foundation/fields/canvas_field_key.dart'
     show CanvasFieldKey, CanvasFields, CanvasFieldKeyConverter;
 export 'src/foundation/geometry/geometry.dart' show Rect2D;
 export 'src/foundation/geometry/geometry_ext.dart';
-export 'src/runtime/geometry/scene_math.dart' show aabbOfTransformedRect;
+export 'src/runtime/geometry/scene_math.dart' show aabbOfTransformedRect, transformedRectCorners;
 export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 
 // ============================================================================
@@ -184,3 +182,6 @@ export 'src/foundation/paint/canvas_fill.dart';
 // Scene preparers transform runtime scenes. Evaluation computes geometry and
 // optional content bounds. Flutter paints the evaluated scene directly.
 export 'src/runtime/render/scene_evaluation.dart';
+
+export 'src/foundation/math/affine2d.dart' show Affine2D;
+export 'src/runtime/geometry/transform_operations.dart';

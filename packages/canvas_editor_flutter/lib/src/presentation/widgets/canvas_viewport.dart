@@ -1,9 +1,10 @@
+import 'package:canvas_editor_flutter/src/interaction/transform_gesture.dart';
 // Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_viewport.dart
 
 import 'package:flutter/foundation.dart' show listEquals, Listenable;
 import 'package:flutter/material.dart';
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show ElementId, Rect2D, SceneEvaluation, Vec2, findById;
+    show Affine2D, ElementId, Rect2D, SceneEvaluation, Vec2, findById;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 import 'package:canvas_editor_flutter/src/editor_api.dart'
@@ -120,18 +121,14 @@ class _CanvasViewportState extends State<CanvasViewport> {
   Offset _scaleStartPan = Offset.zero;
   Offset _worldAtCenterOnScaleStart = Offset.zero;
 
-  VoidCallback? _endDragSession;
-
-  void _beginMoveSession() {
-    _endDragSession ??= widget.controller.beginEditSession();
-  }
+  TransformGesture? _dragGesture;
+  Rect2D? _dragBoundsStart;
+  double _dragScaleStart = 1;
 
   void _endMoveSession() {
-    final endSession = _endDragSession;
-    if (endSession == null) return;
-
-    _endDragSession = null;
-    endSession();
+    _dragGesture?.close();
+    _dragGesture = null;
+    _dragBoundsStart = null;
   }
 
   void _setGuides(List<SnapLine> next) {
@@ -166,7 +163,13 @@ class _CanvasViewportState extends State<CanvasViewport> {
       return;
     }
 
-    _beginMoveSession();
+    _endMoveSession();
+    final gesture = TransformGesture.start(widget.controller, id);
+    if (gesture == null) return;
+    _dragGesture = gesture;
+    _dragBoundsStart = EditorGeometryIndex.fromComputed(gesture.evaluation.computed)
+        .layoutBoundsWorldById[id];
+    _dragScaleStart = widget.scale;
     _draggingId = id;
     _dragStartScreen = screenFocalPoint;
   }
@@ -352,17 +355,16 @@ class _CanvasViewportState extends State<CanvasViewport> {
               final screenDelta = d.focalPoint - _dragStartScreen!;
 
               final rawDelta = Vec2(
-                screenDelta.dx / displayScale,
-                screenDelta.dy / displayScale,
+                screenDelta.dx / _dragScaleStart,
+                screenDelta.dy / _dragScaleStart,
               );
 
-              final bounds = geometry.layoutBoundsWorldById[dragId];
+              final bounds = _dragBoundsStart;
 
               // Missing interaction geometry must not make us redirect or drop
               // a valid canonical drag. Preserve movement without snapping.
               if (bounds == null) {
-                widget.controller.updateDrag(dragId, rawDelta);
-                _dragStartScreen = d.focalPoint;
+                _dragGesture?.applyWorldDelta(Affine2D.translation(rawDelta.x, rawDelta.y));
 
                 if (_guides.isNotEmpty) {
                   _setGuides(const []);
@@ -411,7 +413,7 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
               final snappedDelta = rawDelta + res.deltaWorld;
 
-              widget.controller.updateDrag(dragId, snappedDelta);
+              _dragGesture?.applyWorldDelta(Affine2D.translation(snappedDelta.x, snappedDelta.y));
 
               if (res.guides.isEmpty) {
                 if (_guides.isNotEmpty) {
@@ -421,7 +423,6 @@ class _CanvasViewportState extends State<CanvasViewport> {
                 _setGuides(res.guides);
               }
 
-              _dragStartScreen = d.focalPoint;
               return;
             }
 

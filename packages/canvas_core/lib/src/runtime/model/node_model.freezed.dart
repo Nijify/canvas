@@ -14,288 +14,6 @@ part of 'node_model.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$Transform2D {
-
-@Vec2Converter() Vec2 get position; double get rotationRad;@Vec2Converter() Vec2 get scale; OriginKind get origin;@NullableVec2Converter() Vec2? get customPivotPx;
-/// Create a copy of Transform2D
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<Transform2D> get copyWith => _$Transform2DCopyWithImpl<Transform2D>(this as Transform2D, _$identity);
-
-  /// Serializes this Transform2D to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  final _this = this as Transform2D;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Transform2D&&(identical(other.position, _this.position) || other.position == _this.position)&&(identical(other.rotationRad, _this.rotationRad) || other.rotationRad == _this.rotationRad)&&(identical(other.scale, _this.scale) || other.scale == _this.scale)&&(identical(other.origin, _this.origin) || other.origin == _this.origin)&&(identical(other.customPivotPx, _this.customPivotPx) || other.customPivotPx == _this.customPivotPx));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-  final _this = this as Transform2D;
-  return Object.hash(runtimeType,_this.position,_this.rotationRad,_this.scale,_this.origin,_this.customPivotPx);
-}
-
-@override
-String toString() {
-  final _this = this as Transform2D;
-  return 'Transform2D(position: ${_this.position}, rotationRad: ${_this.rotationRad}, scale: ${_this.scale}, origin: ${_this.origin}, customPivotPx: ${_this.customPivotPx})';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $Transform2DCopyWith<$Res>  {
-  factory $Transform2DCopyWith(Transform2D value, $Res Function(Transform2D) _then) = _$Transform2DCopyWithImpl;
-@useResult
-$Res call({
-@Vec2Converter() Vec2 position, double rotationRad,@Vec2Converter() Vec2 scale, OriginKind origin,@NullableVec2Converter() Vec2? customPivotPx
-});
-
-
-
-
-}
-/// @nodoc
-class _$Transform2DCopyWithImpl<$Res>
-    implements $Transform2DCopyWith<$Res> {
-  _$Transform2DCopyWithImpl(this._self, this._then);
-
-  final Transform2D _self;
-  final $Res Function(Transform2D) _then;
-
-/// Create a copy of Transform2D
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? position = null,Object? rotationRad = null,Object? scale = null,Object? origin = null,Object? customPivotPx = freezed,}) {
-  return _then(Transform2D(
-position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
-as Vec2,rotationRad: null == rotationRad ? _self.rotationRad : rotationRad // ignore: cast_nullable_to_non_nullable
-as double,scale: null == scale ? _self.scale : scale // ignore: cast_nullable_to_non_nullable
-as Vec2,origin: null == origin ? _self.origin : origin // ignore: cast_nullable_to_non_nullable
-as OriginKind,customPivotPx: freezed == customPivotPx ? _self.customPivotPx : customPivotPx // ignore: cast_nullable_to_non_nullable
-as Vec2?,
-  ));
-}
-
-}
-
-
-/// Adds pattern-matching-related methods to [Transform2D].
-extension Transform2DPatterns on Transform2D {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Transform2D value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _Transform2D() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Transform2D value)  $default,){
-final _that = this;
-switch (_that) {
-case _Transform2D():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Transform2D value)?  $default,){
-final _that = this;
-switch (_that) {
-case _Transform2D() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@Vec2Converter()  Vec2 position,  double rotationRad, @Vec2Converter()  Vec2 scale,  OriginKind origin, @NullableVec2Converter()  Vec2? customPivotPx)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _Transform2D() when $default != null:
-return $default(_that.position,_that.rotationRad,_that.scale,_that.origin,_that.customPivotPx);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@Vec2Converter()  Vec2 position,  double rotationRad, @Vec2Converter()  Vec2 scale,  OriginKind origin, @NullableVec2Converter()  Vec2? customPivotPx)  $default,) {final _that = this;
-switch (_that) {
-case _Transform2D():
-return $default(_that.position,_that.rotationRad,_that.scale,_that.origin,_that.customPivotPx);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@Vec2Converter()  Vec2 position,  double rotationRad, @Vec2Converter()  Vec2 scale,  OriginKind origin, @NullableVec2Converter()  Vec2? customPivotPx)?  $default,) {final _that = this;
-switch (_that) {
-case _Transform2D() when $default != null:
-return $default(_that.position,_that.rotationRad,_that.scale,_that.origin,_that.customPivotPx);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _Transform2D implements Transform2D {
-  const _Transform2D({@Vec2Converter() this.position = Vec2.zero, this.rotationRad = 0.0, @Vec2Converter() this.scale = const Vec2(1, 1), this.origin = OriginKind.center, @NullableVec2Converter() this.customPivotPx});
-  factory _Transform2D.fromJson(Map<String, dynamic> json) => _$Transform2DFromJson(json);
-
-@override@JsonKey()@Vec2Converter() final  Vec2 position;
-@override@JsonKey() final  double rotationRad;
-@override@JsonKey()@Vec2Converter() final  Vec2 scale;
-@override@JsonKey() final  OriginKind origin;
-@override@NullableVec2Converter() final  Vec2? customPivotPx;
-
-/// Create a copy of Transform2D
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$Transform2DCopyWith<_Transform2D> get copyWith => __$Transform2DCopyWithImpl<_Transform2D>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$Transform2DToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Transform2D&&(identical(other.position, position) || other.position == position)&&(identical(other.rotationRad, rotationRad) || other.rotationRad == rotationRad)&&(identical(other.scale, scale) || other.scale == scale)&&(identical(other.origin, origin) || other.origin == origin)&&(identical(other.customPivotPx, customPivotPx) || other.customPivotPx == customPivotPx));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-    return Object.hash(runtimeType,position,rotationRad,scale,origin,customPivotPx);
-}
-
-@override
-String toString() {
-    return 'Transform2D(position: $position, rotationRad: $rotationRad, scale: $scale, origin: $origin, customPivotPx: $customPivotPx)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$Transform2DCopyWith<$Res> implements $Transform2DCopyWith<$Res> {
-  factory _$Transform2DCopyWith(_Transform2D value, $Res Function(_Transform2D) _then) = __$Transform2DCopyWithImpl;
-@override @useResult
-$Res call({
-@Vec2Converter() Vec2 position, double rotationRad,@Vec2Converter() Vec2 scale, OriginKind origin,@NullableVec2Converter() Vec2? customPivotPx
-});
-
-
-
-
-}
-/// @nodoc
-class __$Transform2DCopyWithImpl<$Res>
-    implements _$Transform2DCopyWith<$Res> {
-  __$Transform2DCopyWithImpl(this._self, this._then);
-
-  final _Transform2D _self;
-  final $Res Function(_Transform2D) _then;
-
-/// Create a copy of Transform2D
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? position = null,Object? rotationRad = null,Object? scale = null,Object? origin = null,Object? customPivotPx = freezed,}) {
-  return _then(_Transform2D(
-position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
-as Vec2,rotationRad: null == rotationRad ? _self.rotationRad : rotationRad // ignore: cast_nullable_to_non_nullable
-as double,scale: null == scale ? _self.scale : scale // ignore: cast_nullable_to_non_nullable
-as Vec2,origin: null == origin ? _self.origin : origin // ignore: cast_nullable_to_non_nullable
-as OriginKind,customPivotPx: freezed == customPivotPx ? _self.customPivotPx : customPivotPx // ignore: cast_nullable_to_non_nullable
-as Vec2?,
-  ));
-}
-
-
-}
-
-
-/// @nodoc
 mixin _$TextData {
 
  String get text; String get fontFamily; FontWeightNum get fontWeight; double get fontSize;/// Additional spacing between characters in logical canvas units.
@@ -1809,7 +1527,7 @@ Node _$NodeFromJson(
 /// @nodoc
 mixin _$Node {
 
- ElementId get id; String? get name; bool get hidden; Transform2D get xf;
+ ElementId get id; String? get name; bool get hidden; Affine2D get xf;
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1847,11 +1565,11 @@ abstract mixin class $NodeCopyWith<$Res>  {
   factory $NodeCopyWith(Node value, $Res Function(Node) _then) = _$NodeCopyWithImpl;
 @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Transform2D xf
+ ElementId id, String? name, bool hidden, Affine2D xf
 });
 
 
-$Transform2DCopyWith<$Res> get xf;
+
 
 }
 /// @nodoc
@@ -1870,19 +1588,10 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Transform2D,
+as Affine2D,
   ));
 }
-/// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<$Res> get xf {
-  
-  return $Transform2DCopyWith<$Res>(_self.xf, (value) {
-    return _then(_self.copyWith(xf: value));
-  });
-}
+
 }
 
 
@@ -1973,7 +1682,7 @@ return group(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  TextData data,  String? role)?  text,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  ImageData data,  String? role)?  image,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  PathData data,  String? role)?  path,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  TextData data,  String? role)?  text,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  ImageData data,  String? role)?  image,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  PathData data,  String? role)?  path,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
 return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
@@ -1998,7 +1707,7 @@ return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.chil
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  TextData data,  String? role)  text,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  ImageData data,  String? role)  image,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  PathData data,  String? role)  path,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  TextData data,  String? role)  text,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  ImageData data,  String? role)  image,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  PathData data,  String? role)  path,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
 switch (_that) {
 case TextNode():
 return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode():
@@ -2019,7 +1728,7 @@ return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.chil
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  TextData data,  String? role)?  text,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  ImageData data,  String? role)?  image,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  PathData data,  String? role)?  path,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( ElementId id,  String? name,  bool hidden,  Transform2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  TextData data,  String? role)?  text,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  ImageData data,  String? role)?  image,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  PathData data,  String? role)?  path,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
 return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
@@ -2038,13 +1747,13 @@ return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.chil
 @JsonSerializable()
 
 class TextNode extends Node {
-  const TextNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'text',super._();
+  const TextNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'text',super._();
   factory TextNode.fromJson(Map<String, dynamic> json) => _$TextNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
-@override@JsonKey() final  bool hidden;
-@override@JsonKey() final  Transform2D xf;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
+@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
  final  TextData data;
  final  String? role;
 
@@ -2087,11 +1796,11 @@ abstract mixin class $TextNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $TextNodeCopyWith(TextNode value, $Res Function(TextNode) _then) = _$TextNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Transform2D xf, TextData data, String? role
+ ElementId id, String? name, bool hidden, Affine2D xf, TextData data, String? role
 });
 
 
-@override $Transform2DCopyWith<$Res> get xf;$TextDataCopyWith<$Res> get data;
+$TextDataCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -2110,22 +1819,13 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as TextData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
 /// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<$Res> get xf {
-  
-  return $Transform2DCopyWith<$Res>(_self.xf, (value) {
-    return _then(_self.copyWith(xf: value));
-  });
-}/// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -2141,13 +1841,13 @@ $TextDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class ImageNode extends Node {
-  const ImageNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'image',super._();
+  const ImageNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'image',super._();
   factory ImageNode.fromJson(Map<String, dynamic> json) => _$ImageNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
-@override@JsonKey() final  bool hidden;
-@override@JsonKey() final  Transform2D xf;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
+@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
  final  ImageData data;
  final  String? role;
 
@@ -2190,11 +1890,11 @@ abstract mixin class $ImageNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $ImageNodeCopyWith(ImageNode value, $Res Function(ImageNode) _then) = _$ImageNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Transform2D xf, ImageData data, String? role
+ ElementId id, String? name, bool hidden, Affine2D xf, ImageData data, String? role
 });
 
 
-@override $Transform2DCopyWith<$Res> get xf;$ImageDataCopyWith<$Res> get data;
+$ImageDataCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -2213,22 +1913,13 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as ImageData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
 /// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<$Res> get xf {
-  
-  return $Transform2DCopyWith<$Res>(_self.xf, (value) {
-    return _then(_self.copyWith(xf: value));
-  });
-}/// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -2244,13 +1935,13 @@ $ImageDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class PathNode extends Node {
-  const PathNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'path',super._();
+  const PathNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'path',super._();
   factory PathNode.fromJson(Map<String, dynamic> json) => _$PathNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
-@override@JsonKey() final  bool hidden;
-@override@JsonKey() final  Transform2D xf;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
+@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
  final  PathData data;
  final  String? role;
 
@@ -2293,11 +1984,11 @@ abstract mixin class $PathNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $PathNodeCopyWith(PathNode value, $Res Function(PathNode) _then) = _$PathNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Transform2D xf, PathData data, String? role
+ ElementId id, String? name, bool hidden, Affine2D xf, PathData data, String? role
 });
 
 
-@override $Transform2DCopyWith<$Res> get xf;$PathDataCopyWith<$Res> get data;
+$PathDataCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -2316,22 +2007,13 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as PathData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
 /// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<$Res> get xf {
-  
-  return $Transform2DCopyWith<$Res>(_self.xf, (value) {
-    return _then(_self.copyWith(xf: value));
-  });
-}/// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -2347,13 +2029,13 @@ $PathDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class IconNode extends Node {
-  const IconNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), required this.data, this.role,  String? $type}): $type = $type ?? 'icon',super._();
+  const IconNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'icon',super._();
   factory IconNode.fromJson(Map<String, dynamic> json) => _$IconNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
-@override@JsonKey() final  bool hidden;
-@override@JsonKey() final  Transform2D xf;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
+@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
  final  CanvasIconData data;
  final  String? role;
 
@@ -2396,11 +2078,11 @@ abstract mixin class $IconNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $IconNodeCopyWith(IconNode value, $Res Function(IconNode) _then) = _$IconNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Transform2D xf, CanvasIconData data, String? role
+ ElementId id, String? name, bool hidden, Affine2D xf, CanvasIconData data, String? role
 });
 
 
-@override $Transform2DCopyWith<$Res> get xf;$CanvasIconDataCopyWith<$Res> get data;
+$CanvasIconDataCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -2419,22 +2101,13 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Transform2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as CanvasIconData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
 /// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<$Res> get xf {
-  
-  return $Transform2DCopyWith<$Res>(_self.xf, (value) {
-    return _then(_self.copyWith(xf: value));
-  });
-}/// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -2450,13 +2123,13 @@ $CanvasIconDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class GroupNode extends Node {
-  const GroupNode({required this.id, this.name, this.hidden = false, this.xf = const Transform2D(), this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
+  const GroupNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
   factory GroupNode.fromJson(Map<String, dynamic> json) => _$GroupNodeFromJson(json);
 
 @override final  ElementId id;
 @override final  String? name;
-@override@JsonKey() final  bool hidden;
-@override@JsonKey() final  Transform2D xf;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
+@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
  final  GroupBehaviorRef? behavior;
  final  List<Node> _children;
 @JsonKey() List<Node> get children {
@@ -2505,11 +2178,11 @@ abstract mixin class $GroupNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $GroupNodeCopyWith(GroupNode value, $Res Function(GroupNode) _then) = _$GroupNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Transform2D xf, GroupBehaviorRef? behavior, List<Node> children
+ ElementId id, String? name, bool hidden, Affine2D xf, GroupBehaviorRef? behavior, List<Node> children
 });
 
 
-@override $Transform2DCopyWith<$Res> get xf;$GroupBehaviorRefCopyWith<$Res>? get behavior;
+$GroupBehaviorRefCopyWith<$Res>? get behavior;
 
 }
 /// @nodoc
@@ -2528,22 +2201,13 @@ id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Transform2D,behavior: freezed == behavior ? _self.behavior : behavior // ignore: cast_nullable_to_non_nullable
+as Affine2D,behavior: freezed == behavior ? _self.behavior : behavior // ignore: cast_nullable_to_non_nullable
 as GroupBehaviorRef?,children: null == children ? _self._children : children // ignore: cast_nullable_to_non_nullable
 as List<Node>,
   ));
 }
 
 /// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$Transform2DCopyWith<$Res> get xf {
-  
-  return $Transform2DCopyWith<$Res>(_self.xf, (value) {
-    return _then(_self.copyWith(xf: value));
-  });
-}/// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')

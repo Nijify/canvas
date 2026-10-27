@@ -88,7 +88,6 @@ final class _SceneValidator {
       }
       _validateNodeId(node.id, '$path/id');
       _validateName(node.name, '$path/name');
-      _validateTransform(node.xf, '$path/xf');
 
       switch (node) {
         case TextNode(:final data):
@@ -125,20 +124,6 @@ final class _SceneValidator {
   void _validateName(String? name, String path) {
     if (name != null && name.runes.length > 80) {
       _fail(path, 'Node name must be at most 80 characters.');
-    }
-  }
-
-  void _validateTransform(Transform2D transform, String path) {
-    _validateFinite(transform.position.x, '$path/position/x');
-    _validateFinite(transform.position.y, '$path/position/y');
-    _validateFinite(transform.rotationRad, '$path/rotationRad');
-    _validateFinite(transform.scale.x, '$path/scale/x');
-    _validateFinite(transform.scale.y, '$path/scale/y');
-
-    final pivot = transform.customPivotPx;
-    if (pivot != null) {
-      _validateFinite(pivot.x, '$path/customPivotPx/x');
-      _validateFinite(pivot.y, '$path/customPivotPx/y');
     }
   }
 

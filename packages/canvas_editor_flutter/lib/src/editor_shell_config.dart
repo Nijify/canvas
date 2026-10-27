@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_shell_config.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_shell_config.dart
 
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart'
     show EditorActionDispatcher, EditorActionSpec, EditorToolbarState;

@@ -60,7 +60,7 @@ void main() {
 
     final group = Node.group(
       id: 'group1',
-      xf: const Transform2D(position: Vec2(100, 50)),
+      xf: Affine2D.translation(100, 50),
       children: [icon, main, shape, accent],
     );
 

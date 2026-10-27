@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vector_math/vector_math_64.dart' as vm;
+
 
 class _TextMeasurer implements TextMeasurer {
   @override
@@ -28,7 +28,7 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
   children: children,
 );
 
-Node _text({String id = 'text', Transform2D xf = const Transform2D()}) =>
+Node _text({String id = 'text', Affine2D xf = const Affine2D.identity()}) =>
     Node.text(
       id: id,
       xf: xf,
@@ -55,11 +55,7 @@ void main() {
   test('derives leaf world layout bounds from core geometry', () {
     final scene = _scene([
       _text(
-        xf: const Transform2D(
-          position: Vec2(30, 40),
-          rotationRad: 0.35,
-          scale: Vec2(1.5, 0.75),
-        ),
+        xf: (Affine2D.translation(30, 40) * Affine2D.rotation(0.35) * Affine2D.scale(1.5, 0.75)),
       ),
     ]);
 
@@ -79,14 +75,10 @@ void main() {
     final scene = _scene([
       Node.group(
         id: 'group',
-        xf: const Transform2D(position: Vec2(80, 20), rotationRad: 0.25),
+        xf: (Affine2D.translation(80, 20) * Affine2D.rotation(0.25)),
         children: [
           _text(
-            xf: const Transform2D(
-              position: Vec2(15, -10),
-              rotationRad: -0.4,
-              scale: Vec2(1.5, 0.7),
-            ),
+            xf: (Affine2D.translation(15, -10) * Affine2D.rotation(-0.4) * Affine2D.scale(1.5, 0.7)),
           ),
         ],
       ),
@@ -101,10 +93,8 @@ void main() {
       containsAll(computed.worldById.keys),
     );
 
-    final point = vm.Vector3(7, -3, 0);
-
-    computed.worldById['text']!.transform3(point);
-    geometry.inverseWorldById['text']!.transform3(point);
+    final point = geometry.inverseWorldById['text']!.transformPoint(
+      computed.worldById['text']!.transformPoint(const Vec2(7, -3)));
 
     expect(point.x, closeTo(7, 1e-8));
     expect(point.y, closeTo(-3, 1e-8));
@@ -116,11 +106,11 @@ void main() {
     final scene = _scene([
       Node.group(
         id: 'outer',
-        xf: Transform2D(rotationRad: math.pi / 4),
+        xf: Affine2D.rotation(math.pi / 4),
         children: [
           Node.group(
             id: 'inner',
-            xf: Transform2D(rotationRad: -math.pi / 4),
+            xf: Affine2D.rotation(-math.pi / 4),
             children: [_text()],
           ),
         ],
@@ -135,4 +125,13 @@ void main() {
       _expectRect(geometry.layoutBoundsWorldById[id], expected);
     }
   });
+  test('singular geometry retains bounds but has no picking inverse', () {
+    final scene = _scene([Node.group(id: 'flat', xf: Affine2D.scale(0, 1), children: [_text()])]);
+    final computed = computeScene(scene, _services());
+    final geometry = EditorGeometryIndex.fromComputed(computed);
+    expect(geometry.inverseWorldById, isEmpty);
+    expect(geometry.layoutBoundsWorldById.keys, containsAll(['flat', 'text']));
+    expect(geometry.layoutBoundsWorldById['text']!.width, 0);
+  });
+
 }

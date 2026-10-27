@@ -13,8 +13,8 @@ final upgradedJson = upgradeCanvasScene(historicalJson);
 final scene = decodeCanvasScene(upgradedJson);
 ```
 
-The current target is scene v4. Supported versioned inputs are v1, v2, v3, and
-already-current v4. Earlier versions follow the chain v1 -> v2 -> v3 -> v4.
+The current target is scene v5. Supported versioned inputs are v1, v2, v3, v4,
+and already-current v5. Earlier versions follow v1 -> v2 -> v3 -> v4 -> v5.
 The input is never mutated. Already-current input is validated and returned in
 a new top-level map; encoding defaults or normalizing the document is left to
 `encodeCanvasScene`.
@@ -68,8 +68,15 @@ import `package:canvas_scene_upgrade/canvas_scene_upgrade.dart`.
 Replace direct `convertCanvasSceneV3ToV4(json)` calls with
 `upgradeCanvasScene(json)`.
 
-This extraction keeps scene v4 and the existing transform model. Affine
-transforms, scene v5, and a future v4 -> v5 step are separate work.
+The v4 -> v5 step bakes historical TRS and pivots into complete affine matrices.
+Geometry remains in its existing local coordinates. Translation-only transforms
+need no measurements. Rotated/scaled group center pivots may need text metrics
+and contain-fit image intrinsics: pass the original resource bundle as
+`services: CoreServices(...)`. Missing required metrics fail explicitly. Hidden
+center pivots use zero because v4 did not evaluate hidden layout; revealing them
+later does not recover a historical auto-pivot. Custom pivots are baked directly.
+This is an optional recovery tool; applications explicitly adopt or reject its
+result. It is never a runtime read fallback.
 
 ## Verification
 

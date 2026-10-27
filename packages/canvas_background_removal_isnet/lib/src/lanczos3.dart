@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/lib/src/lanczos3.dart
+// Path: packages/canvas_background_removal_isnet/lib/src/lanczos3.dart
 
 import 'dart:math' as math;
 import 'dart:typed_data';

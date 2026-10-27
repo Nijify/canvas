@@ -39,7 +39,7 @@ void main() {
       final nested = Node.group(id: 'nested', children: <Node>[_text('b')]);
       final group = Node.group(
         id: 'g',
-        xf: const Transform2D(position: Vec2(10, 20)),
+        xf: Affine2D.translation(10, 20),
         children: <Node>[_text('a'), nested],
       );
       final scene = _scene(<Node>[group]);
@@ -71,7 +71,7 @@ void main() {
       expect(duplicateNested.children.single.id, 'b_copy_4');
 
       // Only the duplicate root receives the standard position shift.
-      expect(duplicate.xf.position, const Vec2(26, 36));
+      expect(duplicate.xf.transformPoint(Vec2.zero), const Vec2(26, 36));
 
       expect(() => requireCanvasSceneIntegrity(result.doc), returnsNormally);
     });

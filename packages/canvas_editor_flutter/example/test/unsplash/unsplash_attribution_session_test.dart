@@ -30,11 +30,11 @@ void main() {
         'used': CanvasImageAsset(sourceRef: photo.sourceRef),
         'orphan': CanvasImageAsset(sourceRef: photo.sourceRef),
       },
-      children: const <Node>[
+      children: <Node>[
         ImageNode(
           id: 'image',
           data: ImageData(assetId: 'used', size: Size2D(200, 120)),
-          xf: Transform2D(position: Vec2(100, 100)),
+          xf: Affine2D.translation(100, 100),
         ),
       ],
     );
@@ -54,16 +54,16 @@ void main() {
         'a': CanvasImageAsset(sourceRef: photo.sourceRef),
         'b': CanvasImageAsset(sourceRef: photo.sourceRef),
       },
-      children: const <Node>[
+      children: <Node>[
         ImageNode(
           id: 'image-a',
           data: ImageData(assetId: 'a', size: Size2D(200, 120)),
-          xf: Transform2D(position: Vec2(100, 100)),
+          xf: Affine2D.translation(100, 100),
         ),
         ImageNode(
           id: 'image-b',
           data: ImageData(assetId: 'b', size: Size2D(200, 120)),
-          xf: Transform2D(position: Vec2(300, 100)),
+          xf: Affine2D.translation(300, 100),
         ),
       ],
     );
@@ -80,12 +80,12 @@ void main() {
       assets: <CanvasAssetId, CanvasImageAsset>{
         'image': CanvasImageAsset(sourceRef: photo.sourceRef),
       },
-      children: const <Node>[
+      children: <Node>[
         ImageNode(
           id: 'hidden-image',
           hidden: true,
           data: ImageData(assetId: 'image', size: Size2D(200, 120)),
-          xf: Transform2D(position: Vec2(100, 100)),
+          xf: Affine2D.translation(100, 100),
         ),
       ],
     );

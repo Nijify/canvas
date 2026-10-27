@@ -1,3 +1,7 @@
+## 0.2.0
+
+- Extend the optional historical chain through v4 -> v5, baking pivots into affine matrices and accepting explicit layout services when required.
+
 ## 0.1.0
 
 - Extract explicit historical scene upgrades from `canvas_core` into an optional

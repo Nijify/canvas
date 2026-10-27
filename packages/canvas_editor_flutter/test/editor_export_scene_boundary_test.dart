@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/editor_export_scene_boundary_test.dart
+// Path: packages/canvas_editor_flutter/test/editor_export_scene_boundary_test.dart
 
 import 'dart:convert';
 

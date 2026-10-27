@@ -26,8 +26,7 @@ they fit, and document any deliberate difference and its cost across renderers
 and editors.
 
 The sibling [`canvas_svg_export`](../canvas_svg_export/README.md) package is a
-strict, one-way check of prepared visual scenes. It uses the scene and
-`ComputedScene`, reports unsupported semantics, and currently exports only a
+strict, one-way check of prepared visual scenes. It consumes one `SceneEvaluation`, reports unsupported semantics, and currently exports only a
 small path profile. This does not make SVG the editable format.
 
 ## Installation
@@ -68,7 +67,7 @@ final document = CanvasSceneDocument(
   children: <Node>[
     Node.text(
       id: 'headline',
-      xf: const Transform2D(position: Vec2(540, 540)),
+      xf: Affine2D.translation(540, 540),
       data: const TextData(
         text: 'Hello canvas',
         fontFamily: 'Inter',
@@ -157,7 +156,7 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-Persistence uses scene format v4. For supported historical JSON, explicitly call
+Persistence uses scene format v5. For supported historical JSON, explicitly call
 `upgradeCanvasScene()` from the optional
 [`canvas_scene_upgrade`](../canvas_scene_upgrade) package before decoding. Both
 persistence functions enforce scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
@@ -256,3 +255,17 @@ Use `upgradeCanvasScene()` from the optional `canvas_scene_upgrade` package for
 v3 input and the retained historical routes. Migration does not restore
 star-generation parameters or compensate for quadratic control-hull/pivot changes. Historical underline bars
 become rectangles; new Line actions create stroke-based geometry.
+
+## Affine transforms (scene v5)
+
+A node owns a complete immutable local-to-parent `Affine2D`. JSON stores
+`xf: [a,b,c,d,e,f]`; omitted xf is identity. `A * B` applies B before A.
+Use `Affine2D.translation`, `.rotation`, `.scale`, or `.shear` to compose an
+explicit mapping. `affineAround(anchor, delta)` is a temporary edit operation,
+not persisted pivot state. Bounds and resources never change node transforms.
+
+SceneTreeOps deltas name local, parent, or world space. Reparenting requires
+`TransformPreservation.local` or `.world`. Operations needing a parent inverse
+fail when it is singular or poorly conditioned. `tryInverse()` exposes that
+failure without inventing a fallback. Renderer buffers returned by
+`toColumnMajor4x4()` are copies.

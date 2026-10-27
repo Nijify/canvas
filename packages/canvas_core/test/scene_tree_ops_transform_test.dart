@@ -1,97 +1,58 @@
-// Path: packages/canvas_core/test/scene_tree_ops_transform_test.dart
-
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
-const _textData = TextData(
-  text: 'Hello',
-  fontFamily: 'Inter',
-  fontWeight: 400,
-  fontSize: 16,
-);
-
-CanvasSceneDocument _scene() {
-  return const CanvasSceneDocument(
-    backgroundFill: CanvasFill.none(),
-    backgroundOpacity: 1,
-    children: <Node>[
-      Node.text(
-        id: 'node',
-        xf: Transform2D(
-          position: Vec2(1, 2),
-          rotationRad: 0.5,
-          scale: Vec2(2, 3),
-        ),
-        data: _textData,
-      ),
-    ],
-  );
+Node _node(String id, Affine2D xf) => Node.group(id: id, xf: xf, children: []);
+CanvasSceneDocument _scene() => CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [
+  Node.group(id: 'parent', xf: Affine2D(2, .5, 1, -3, 40, 20), children: [
+    _node('child', Affine2D(1, 0, .4, 2, 3, 5)),
+  ]),
+  _node('target', Affine2D(1, 1, -.5, 2, -20, 50)),
+]);
+void _close(Affine2D actual, Affine2D expected) {
+  for (var i = 0; i < 6; i++) expect(actual.toJson()[i], closeTo(expected.toJson()[i], 1e-9));
 }
-
-Transform2D _xf(CanvasSceneDocument doc) {
-  return findById(doc, 'node')!.xf;
-}
-
 void main() {
-  group('SceneTreeOps transform helpers', () {
-    test('replaceNodeXf replaces the node transform', () {
-      final doc = _scene();
-
-      const nextXf = Transform2D(
-        position: Vec2(10, 20),
-        rotationRad: 1,
-        scale: Vec2(4, 5),
-      );
-
-      final next = SceneTreeOps.replaceNodeXf(doc, 'node', nextXf);
-
-      expect(_xf(next), nextXf);
-    });
-
-    test('translate updates position', () {
-      final next = SceneTreeOps.translate(_scene(), 'node', const Vec2(4, -1));
-
-      expect(_xf(next).position, const Vec2(5, 1));
-      expect(_xf(next).rotationRad, 0.5);
-      expect(_xf(next).scale, const Vec2(2, 3));
-    });
-
-    test('rotate updates rotation', () {
-      final next = SceneTreeOps.rotate(_scene(), 'node', 0.25);
-
-      expect(_xf(next).position, const Vec2(1, 2));
-      expect(_xf(next).rotationRad, 0.75);
-      expect(_xf(next).scale, const Vec2(2, 3));
-    });
-
-    test('uniformScale updates both scale axes', () {
-      final next = SceneTreeOps.uniformScale(_scene(), 'node', 2);
-
-      expect(_xf(next).position, const Vec2(1, 2));
-      expect(_xf(next).rotationRad, 0.5);
-      expect(_xf(next).scale, const Vec2(4, 6));
-    });
-
-    test('transform helpers preserve missing-node behavior', () {
-      final doc = _scene();
-
-      expect(
-        SceneTreeOps.replaceNodeXf(
-          doc,
-          'missing',
-          const Transform2D(position: Vec2(10, 20)),
-        ),
-        same(doc),
-      );
-
-      expect(
-        SceneTreeOps.translate(doc, 'missing', const Vec2(10, 20)),
-        same(doc),
-      );
-
-      expect(SceneTreeOps.rotate(doc, 'missing', 1), same(doc));
-
-      expect(SceneTreeOps.uniformScale(doc, 'missing', 2), same(doc));
-    });
+  test('local, parent and world deltas share explicit composition rules', () {
+    final doc = _scene();
+    final local = findById(doc, 'child')!.xf;
+    final parent = findById(doc, 'parent')!.xf;
+    final delta = affineAround(const Vec2(10, 20), Affine2D.rotation(.4));
+    for (final space in TransformSpace.values) {
+      final next = SceneTreeOps.composeDelta(doc, 'child', delta, space: space);
+      final expected = switch (space) {
+        TransformSpace.local => local * delta,
+        TransformSpace.parent => delta * local,
+        TransformSpace.world => parent.tryInverse()! * delta * parent * local,
+      };
+      _close(findById(next, 'child')!.xf, expected);
+    }
+  });
+  test('world preserving reparent retains shear and reflection', () {
+    final doc = _scene();
+    final world = worldTransformOf(doc, 'child')!;
+    final moved = SceneTreeOps.moveSubtree(doc, 'child', newParentId: 'target',
+      preservation: TransformPreservation.world);
+    _close(worldTransformOf(moved, 'child')!, world);
+    final local = SceneTreeOps.moveSubtree(doc, 'child',
+      preservation: TransformPreservation.local);
+    expect(findById(local, 'child')!.xf, findById(doc, 'child')!.xf);
+  });
+  test('singular target rejects world preservation without changing source', () {
+    final doc = CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [
+      _node('child', const Affine2D.identity()), _node('target', Affine2D.scale(0, 1)),
+    ]);
+    expect(() => SceneTreeOps.moveSubtree(doc, 'child', newParentId: 'target',
+      preservation: TransformPreservation.world), throwsStateError);
+    expect(doc.children.map((n) => n.id), ['child', 'target']);
+  });
+  test('world delta works for singular node under invertible parent', () {
+    final doc = CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [_node('flat', Affine2D.scale(0, 1))]);
+    final next = SceneTreeOps.translate(doc, 'flat', const Vec2(4, 5), space: TransformSpace.world);
+    expect(findById(next, 'flat')!.xf.transformPoint(Vec2.zero), const Vec2(4, 5));
+  });
+  test('missing node and equal replacement are unchanged', () {
+    final doc = _scene();
+    expect(SceneTreeOps.replaceNodeXf(doc, 'child', findById(doc, 'child')!.xf), same(doc));
+    expect(SceneTreeOps.translate(doc, 'missing', const Vec2(1, 2)), same(doc));
   });
 }

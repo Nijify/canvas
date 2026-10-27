@@ -7,7 +7,7 @@ Node _text({
   String id = 'text',
   String? name,
   bool hidden = false,
-  Transform2D xf = const Transform2D(),
+  Affine2D xf = const Affine2D.identity(),
 }) {
   return Node.text(
     id: id,
@@ -52,7 +52,7 @@ void main() {
         children: <Node>[child],
       );
 
-      const nextXf = Transform2D(position: Vec2(12, 34));
+      final nextXf = Affine2D.translation(12, 34);
 
       final renamed = group.withName('Renamed') as GroupNode;
       final moved = renamed.withXf(nextXf) as GroupNode;

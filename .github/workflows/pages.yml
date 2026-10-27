@@ -34,33 +34,41 @@ jobs:
           cache: true
 
       - name: Install dependencies
+        id: dependencies
         run: flutter pub get
 
       - name: Test example
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter/example
         run: flutter test
 
       - name: Test core
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_core
         run: dart test
 
       - name: Test scene upgrades
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_scene_upgrade
         run: dart test
 
       - name: Test Flutter renderer
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_renderer_flutter
         run: flutter test
 
       - name: Test Flutter editor
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter
         run: flutter test
 
       - name: Test SVG exporter
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_svg_export
         run: dart test
 
       - name: Test data URI metadata in Chrome
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter/example
         run: flutter test --platform chrome test/data_uri_image_metadata_test.dart
 

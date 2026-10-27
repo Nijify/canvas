@@ -19,7 +19,7 @@ void main() {
     final core = _packageRoot('package:canvas_core/canvas_core_runtime.dart');
     final historicalImport = RegExp(
       r'(?:import|export)\s+[^;]*(?:canvas_scene_upgrade|'
-      r'scene_migrations|migrations/|formats/scene_v[123]\.dart)',
+      r'scene_migrations|migrations/|formats/scene_v[1234]\.dart)',
     );
     for (final source in _sources(core)) {
       expect(

@@ -6,7 +6,7 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dart';
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vector_math/vector_math_64.dart' as vm;
+
 
 class _TextMeasurer implements TextMeasurer {
   @override
@@ -144,11 +144,11 @@ void main() {
     final scene = _scene([
       Node.group(
         id: 'group',
-        xf: const Transform2D(scale: Vec2(4, 0.25)),
+        xf: Affine2D.scale(4, 0.25),
         children: [
           Node.path(
             id: 'path',
-            xf: Transform2D(rotationRad: math.pi / 4),
+            xf: Affine2D.rotation(math.pi / 4),
             data: PathData(source: const LineSource(x1: -10, x2: 10)),
           ),
         ],
@@ -157,9 +157,9 @@ void main() {
     final computed = computeScene(scene, _services());
     final geometry = EditorGeometryIndex.fromComputed(computed);
     final world = computed.worldById['path']!;
-    final origin = world.transform3(vm.Vector3.zero());
-    final tangent = world.transform3(vm.Vector3(1, 0, 0)) - origin;
-    final normal = vm.Vector3(-tangent.y, tangent.x, 0)..normalize();
+    final origin = world.transformPoint(Vec2.zero);
+    final tangent = world.transformPoint(const Vec2(1, 0)) - origin;
+    final normal = Vec2(-tangent.y, tangent.x).normalized;
     for (final zoom in [0.5, 1.0, 4.0]) {
       final point = origin + normal * (5.5 / zoom);
       final hit = pickLeafTopAtScene(

@@ -1,3 +1,4 @@
+import 'package:canvas_core/src/foundation/math/affine2d.dart';
 // Path: lib/src/serialization/converters.dart
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -53,4 +54,15 @@ class CanvasFillConverter
   @override
   Map<String, dynamic> toJson(CanvasFill object) =>
       object.toJson().cast<String, dynamic>();
+}
+
+/// Flat affine coefficients; identity is omitted by the containing node field.
+class Affine2DConverter implements JsonConverter<Affine2D, Object?> {
+  const Affine2DConverter();
+
+  @override
+  Affine2D fromJson(Object? json) => Affine2D.fromJson(json);
+
+  @override
+  Object? toJson(Affine2D value) => value.isIdentity ? null : value.toJson();
 }

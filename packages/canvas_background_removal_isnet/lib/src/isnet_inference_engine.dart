@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/lib/src/isnet_inference_engine.dart
+// Path: packages/canvas_background_removal_isnet/lib/src/isnet_inference_engine.dart
 
 import 'dart:typed_data';
 

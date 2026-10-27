@@ -10,7 +10,7 @@ void validateSceneJsonWire(
       json['sceneFormatVersion'] != version) {
     _fail(
       '/sceneFormatVersion',
-      'Expected sceneFormatVersion $version. Upgrade historical scenes explicitly.',
+      'Expected sceneFormatVersion $version. Use canvas_scene_upgrade explicitly for historical scenes.',
     );
   }
   _keys(
@@ -89,7 +89,7 @@ void _node(
   if (node['name'] != null) _string(node['name'], '$path/name');
   if (node['hidden'] != null) _bool(node['hidden'], '$path/hidden');
   if (node['role'] != null) _string(node['role'], '$path/role');
-  if (node['xf'] != null) _transform(node['xf'], '$path/xf');
+  if (node.containsKey('xf')) _transform(node['xf'], '$path/xf');
   if (node['runtimeType'] == 'group') {
     _required(node, 'children', path);
     final children = _list(node['children'], '$path/children');
@@ -183,22 +183,10 @@ void _node(
 }
 
 void _transform(Object? raw, String path) {
-  final value = _object(raw, path);
-  _keys(value, {
-    'position',
-    'rotationRad',
-    'scale',
-    'origin',
-    'customPivotPx',
-  }, path);
-  if (value['position'] != null) _point(value['position'], '$path/position');
-  if (value['rotationRad'] != null)
-    _number(value['rotationRad'], '$path/rotationRad');
-  if (value['scale'] != null) _point(value['scale'], '$path/scale');
-  if (value['origin'] != null)
-    _enum(value['origin'], {'center', 'custom'}, '$path/origin');
-  if (value['customPivotPx'] != null)
-    _point(value['customPivotPx'], '$path/customPivotPx');
+  if (raw is! List || raw.length != 6 ||
+      raw.any((value) => value is! num || !value.toDouble().isFinite)) {
+    _fail(path, 'Expected exactly six finite affine coefficients.');
+  }
 }
 
 void _appearance(Object? raw, String path) {

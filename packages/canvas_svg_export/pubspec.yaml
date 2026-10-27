@@ -1,7 +1,7 @@
 name: canvas_svg_export
 description: Strict SVG projection of prepared canvas_core path scenes.
 publish_to: "none"
-version: 0.4.0
+version: 0.5.0
 repository: https://github.com/Nijify/canvas
 issue_tracker: https://github.com/Nijify/canvas/issues
 
@@ -11,7 +11,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  canvas_core: ^0.17.0
+  canvas_core: ^0.18.0
 
 dev_dependencies:
   test: ^1.30.0

@@ -22,7 +22,7 @@ TextData _textData() => const TextData(
   fontSize: 16,
 );
 
-Node _text(String id, {String? name, Transform2D xf = const Transform2D()}) =>
+Node _text(String id, {String? name, Affine2D xf = const Affine2D.identity()}) =>
     Node.text(id: id, name: name, xf: xf, data: _textData());
 
 Node _path(PathSource source) => Node.path(
@@ -45,7 +45,7 @@ void main() {
       _scene(),
       _scene(
         children: [
-          _text('text', xf: const Transform2D(origin: OriginKind.custom)),
+          _text('text', xf: const Affine2D.identity()),
           _behavior({
             'nested': [
               null,
@@ -99,25 +99,6 @@ void main() {
       ),
       returnsNormally,
     );
-  });
-
-  test('checks every transform coordinate and optional custom pivots', () {
-    for (final xf in const [
-      Transform2D(position: Vec2(double.nan, 0)),
-      Transform2D(position: Vec2(0, double.infinity)),
-      Transform2D(rotationRad: double.infinity),
-      Transform2D(scale: Vec2(double.nan, 1)),
-      Transform2D(scale: Vec2(1, double.infinity)),
-      Transform2D(customPivotPx: Vec2(double.nan, 0)),
-      Transform2D(customPivotPx: Vec2(0, double.infinity)),
-    ]) {
-      expect(
-        () => requireCanvasSceneIntegrity(
-          _scene(children: [_text('text', xf: xf)]),
-        ),
-        throwsArgumentError,
-      );
-    }
   });
 
   test('retains path source numeric invariants', () {

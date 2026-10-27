@@ -1,5 +1,5 @@
 import 'package:canvas_background_removal/background_removal.dart';
-// Path: private_packages/bg_remover_mlkit/test/bg_remover_api_test.dart
+// Path: packages/canvas_background_removal_mlkit/test/bg_remover_api_test.dart
 
 import 'dart:io';
 import 'dart:typed_data';

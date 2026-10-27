@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_surface_features.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_surface_features.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' show ContentBoundsSpec;
 import 'package:canvas_editor_flutter/src/interaction/canvas_viewport_behavior.dart'

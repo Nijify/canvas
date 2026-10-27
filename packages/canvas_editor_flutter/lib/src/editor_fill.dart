@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_fill.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_fill.dart
 
 import 'dart:math' as math;
 

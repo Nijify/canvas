@@ -1,3 +1,4 @@
+import 'package:canvas_editor_flutter/src/interaction/transform_gesture.dart';
 // Path: packages/canvas_editor_flutter/test/editor_runtime_controller_behavior_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
@@ -36,7 +37,7 @@ rt.CanvasSceneDocument _sceneWithText(String text) {
     children: <rt.Node>[
       rt.Node.text(
         id: 't1',
-        xf: const rt.Transform2D(position: rt.Vec2(20, 20)),
+        xf: rt.Affine2D.translation(20, 20),
         data: _baseTextData.copyWith(text: text),
       ),
     ],
@@ -476,7 +477,7 @@ void main() {
 
       final endSession = runtime.beginEditSession();
 
-      runtime.updateDrag('t1', const rt.Vec2(10, 0));
+      runtime.updateTransform('t1', rt.Affine2D.translation(10, 0) * rt.findById(runtime.document.value, 't1')!.xf);
 
       expect(runtime.sourceDocument, same(initialSource));
       expect(runtime.source.value, same(initialSource));
@@ -488,7 +489,7 @@ void main() {
       final movedNode =
           rt.findById(runtime.sourceDocument, 't1') as rt.TextNode;
 
-      expect(movedNode.xf.position, const rt.Vec2(30, 20));
+      expect(movedNode.xf.transformPoint(rt.Vec2.zero), const rt.Vec2(30, 20));
       expect(sourceNotifications, 1);
       expect(identical(runtime.render.value, initialRender), isFalse);
 
@@ -502,7 +503,7 @@ void main() {
       final restoredNode =
           rt.findById(runtime.sourceDocument, 't1') as rt.TextNode;
 
-      expect(restoredNode.xf.position, const rt.Vec2(20, 20));
+      expect(restoredNode.xf.transformPoint(rt.Vec2.zero), const rt.Vec2(20, 20));
       expect(runtime.canRedo.value, isTrue);
     },
   );
@@ -531,7 +532,7 @@ void main() {
 
     final endSession = runtime.beginEditSession();
 
-    runtime.updateDrag('t1', rt.Vec2.zero);
+    runtime.updateTransform('t1', rt.Affine2D.translation(0, 0) * rt.findById(runtime.document.value, 't1')!.xf);
     await tester.pump();
 
     endSession();
@@ -1199,4 +1200,41 @@ void main() {
     expect(derivedRuntime.sourceDocument.children, isEmpty);
     expect(derivedRuntime.canUndo.value, isFalse);
   });
+  for (final publishBetweenUpdates in [false, true]) {
+    testWidgets('gesture uses its starting matrix across publication: $publishBetweenUpdates', (tester) async {
+      final leaf = _sceneWithText('Title').children.single;
+      final initial = _sceneWithText('Title').copyWith(children: [
+        rt.Node.group(id: 'parent', xf: rt.Affine2D(2, .3, .6, -1.5, 40, 20), children: [leaf]),
+      ]);
+      final runtime = _buildSceneRuntime(initial);
+      addTearDown(runtime.dispose);
+      final originalWorld = rt.worldTransformOf(initial, 't1')!;
+      final gesture = TransformGesture.start(runtime, 't1')!;
+      gesture.applyWorldDelta(rt.Affine2D.translation(5, 10));
+      if (publishBetweenUpdates) await tester.pump();
+      final delta = rt.affineAround(const rt.Vec2(30, 15), rt.Affine2D.rotation(.3));
+      expect(gesture.applyWorldDelta(delta), isTrue);
+      gesture.close();
+      await tester.pump();
+      final expected = (delta * originalWorld).toJson();
+      final actual = rt.worldTransformOf(runtime.document.value, 't1')!.toJson();
+      for (var i = 0; i < 6; i++) expect(actual[i], closeTo(expected[i], 1e-9));
+      runtime.undo();
+      expect(runtime.document.value, initial);
+    });
+  }
+  testWidgets('overflowing candidate leaves document and history unchanged', (tester) async {
+    final leaf = _sceneWithText('Title').children.single;
+    final initial = _sceneWithText('Title').copyWith(children: [
+      rt.Node.group(id: 'parent', xf: rt.Affine2D.scale(2), children: [leaf]),
+    ]);
+    final runtime = _buildSceneRuntime(initial);
+    addTearDown(runtime.dispose);
+    final end = runtime.beginEditSession();
+    expect(() => runtime.updateTransform('t1', rt.Affine2D.scale(1e308)), throwsArgumentError);
+    end(); await tester.pump();
+    expect(runtime.document.value, initial);
+    expect(runtime.canUndo.value, isFalse);
+  });
+
 }

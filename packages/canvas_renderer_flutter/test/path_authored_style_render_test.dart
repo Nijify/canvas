@@ -20,7 +20,7 @@ Future<({Uint8List pixels, Rect2D? paintBounds})> _render(PathData data) async {
       children: [
         Node.path(
           id: 'path',
-          xf: const Transform2D(position: Vec2(_center * 1.0, _center * 1.0)),
+          xf: Affine2D.translation(_center * 1.0, _center * 1.0),
           data: data,
         ),
       ],

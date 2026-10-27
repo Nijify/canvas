@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/layers/scene_object_tree.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/layers/scene_object_tree.dart
 // ignore_for_file: unreachable_switch_case
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;

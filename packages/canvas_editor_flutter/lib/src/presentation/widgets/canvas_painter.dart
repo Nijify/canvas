@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_painter.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_painter.dart
 
 import 'package:flutter/material.dart';
 import 'package:canvas_core/canvas_core_runtime.dart';

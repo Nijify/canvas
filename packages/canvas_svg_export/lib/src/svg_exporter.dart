@@ -4,14 +4,15 @@ import 'svg_export_result.dart';
 
 /// Projects an already-prepared scene and its matching computed geometry.
 ///
-/// The caller computes [computed] from this exact [scene] with `computeScene`.
+/// [evaluation] is the matching scene/geometry snapshot created by core.
 /// This exporter does not consume paint operations or resolve host resources.
 /// The supported profile includes none, solid, and linear-gradient backgrounds,
 /// plus undashed path geometry with those same fill variants.
 SvgExportResult exportPreparedSvg({
-  required CanvasSceneDocument scene,
-  required ComputedScene computed,
+  required SceneEvaluation evaluation,
 }) {
+  final scene = evaluation.scene;
+  final computed = evaluation.computed;
   try {
     requireCanvasSceneIntegrity(scene);
   } on ArgumentError catch (error) {
@@ -82,44 +83,6 @@ SvgExportResult exportPreparedSvg({
   }
   if (issues.isNotEmpty) return SvgExportResult.failure(issues);
 
-  final drawList = computed.drawList;
-  var orderMatches = drawList.length == paths.length;
-  if (orderMatches) {
-    for (var i = 0; i < paths.length; i++) {
-      if (drawList[i].leafId != paths[i].id) {
-        orderMatches = false;
-        break;
-      }
-    }
-  }
-  if (!orderMatches) {
-    return SvgExportResult.failure(const <SvgExportIssue>[
-      SvgExportIssue(
-        code: SvgExportIssueCode.missingComputedGeometry,
-        message: 'Computed paint order does not match the prepared scene.',
-      ),
-    ]);
-  }
-
-  for (final path in paths) {
-    final id = path.id;
-    final ir = computed.pathIRById[id];
-    final matrix = computed.worldById[id];
-    if (computed.nodeById[id] != path ||
-        ir == null ||
-        matrix == null ||
-        !_validMatrix(matrix.storage)) {
-      issues.add(
-        SvgExportIssue(
-          code: SvgExportIssueCode.missingComputedGeometry,
-          nodeId: id,
-          message: 'The path or its computed transform is missing or invalid.',
-        ),
-      );
-    }
-  }
-  if (issues.isNotEmpty) return SvgExportResult.failure(issues);
-
   final width = _number(scene.artboardSize.w);
   final height = _number(scene.artboardSize.h);
   final gradients = <_SvgLinearGradient>[];
@@ -178,15 +141,7 @@ SvgExportResult exportPreparedSvg({
 
   for (final path in paths) {
     final ir = computed.pathIRById[path.id]!;
-    final storage = computed.worldById[path.id]!.storage;
-    final matrix = [
-      storage[0],
-      storage[1],
-      storage[4],
-      storage[5],
-      storage[12],
-      storage[13],
-    ].map(_number).join(' ');
+    final matrix = computed.worldById[path.id]!.toJson().map(_number).join(' ');
     final data = path.data;
     final authoredFill = data.appearance.foreground;
     final fill = switch (authoredFill) {
@@ -245,14 +200,6 @@ final class _SvgLinearGradient {
 
   final String id;
   final LinearGradientSpec spec;
-}
-
-bool _validMatrix(List<double> m) {
-  if (m.length != 16 || m.any((v) => !v.isFinite)) return false;
-  const zero = <int>[2, 3, 6, 7, 8, 9, 11, 14];
-  return zero.every((i) => m[i].abs() < 1e-9) &&
-      (m[10] - 1).abs() < 1e-9 &&
-      (m[15] - 1).abs() < 1e-9;
 }
 
 String _number(double value) => value == 0 ? '0' : value.toString();

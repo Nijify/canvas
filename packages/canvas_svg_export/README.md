@@ -3,8 +3,8 @@
 A strict, one-way SVG projection of an already-prepared `canvas_core` scene.
 
 ```dart
-final computed = computeScene(preparedScene, services);
-final result = exportPreparedSvg(scene: preparedScene, computed: computed);
+final evaluation = evaluateScene(preparedScene, services);
+final result = exportPreparedSvg(evaluation: evaluation);
 if (result.svg != null) {
   // Use the complete SVG document.
 } else {
@@ -26,7 +26,7 @@ change the visual result. Hidden nodes do not affect export.
 Invalid scenes or missing computed geometry fail rather than producing
 incomplete output.
 
-The caller must pass geometry computed from the same prepared scene. Host
+The caller passes one evaluated snapshot that pairs its scene and geometry. Host
 resolution and scene preparation remain outside this package. This package
 does not consume Flutter painting state; its narrow supported profile does not
 imply general SVG fidelity or pixel-identical rasterization across engines.

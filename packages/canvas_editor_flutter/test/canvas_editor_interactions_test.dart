@@ -34,11 +34,7 @@ CanvasSceneDocument _fixtureScene() {
     children: <Node>[
       Node.path(
         id: 'shape-1',
-        xf: const Transform2D(
-          position: Vec2(40, 40),
-          origin: OriginKind.custom,
-          customPivotPx: Vec2(40, 30),
-        ),
+        xf: Affine2D.translation(40, 40),
         data: PathData(
           source: const RectSource(x: -40, y: -30, width: 80, height: 60),
           appearance: CanvasAppearance(
@@ -59,11 +55,7 @@ CanvasSceneDocument _twoShapeScene() {
       ...base.children,
       Node.path(
         id: 'shape-2',
-        xf: const Transform2D(
-          position: Vec2(180, 100),
-          origin: OriginKind.custom,
-          customPivotPx: Vec2(30, 20),
-        ),
+        xf: Affine2D.translation(180, 100),
         data: PathData(
           source: const RectSource(x: -30, y: -20, width: 60, height: 40),
           appearance: CanvasAppearance(
@@ -338,12 +330,12 @@ void main() {
       final shape1Before = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       final shape2Before = findById(
         editor.controller.document.value,
         'shape-2',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       final geometry = EditorGeometryIndex.fromComputed(
         editor.controller.render.value.computed,
@@ -380,12 +372,12 @@ void main() {
       final shape1After = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       final shape2After = findById(
         editor.controller.document.value,
         'shape-2',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       expect(editor.selection.value, 'shape-1');
 
@@ -428,7 +420,7 @@ void main() {
       final shape1Before = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       final geometry = EditorGeometryIndex.fromComputed(
         editor.controller.render.value.computed,
@@ -470,7 +462,7 @@ void main() {
       final shape1After = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       // Losing the drag target must end movement, not redirect it to selection.
       expect(shape1After, shape1Before);
@@ -515,7 +507,7 @@ void main() {
     final before = findById(
       editor.controller.document.value,
       'group-1',
-    )!.xf.position;
+    )!.xf.transformPoint(Vec2.zero);
 
     final viewportBox = tester.renderObject<RenderBox>(
       find.byType(CanvasViewport).first,
@@ -540,7 +532,7 @@ void main() {
     final after = findById(
       editor.controller.document.value,
       'group-1',
-    )!.xf.position;
+    )!.xf.transformPoint(Vec2.zero);
 
     expect(after, isNot(before));
 
@@ -555,9 +547,9 @@ void main() {
 
     editor.controller.applyEdit(
       EditorEdits.addNode(
-        const Node.text(
+        Node.text(
           id: 'text-2',
-          xf: Transform2D(position: Vec2(10, 10)),
+          xf: Affine2D.translation(10, 10),
           data: TextData(
             text: 'Undo me',
             fontFamily: 'TestFont',
@@ -607,11 +599,7 @@ void main() {
     final endSession = editor.controller.beginEditSession();
 
     try {
-      editor.controller.updateUniformScaleAround(
-        'shape-1',
-        nodeBefore.xf.position,
-        1.25,
-      );
+      editor.controller.updateTransform('shape-1', affineAround(nodeBefore.xf.transformPoint(Vec2.zero), Affine2D.scale(1.25)) * findById(editor.controller.document.value, 'shape-1')!.xf);
     } finally {
       endSession();
     }
@@ -849,7 +837,7 @@ void main() {
       final beforeDrag = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       // First movement lets Flutter's scale recognizer establish the gesture.
       await gesture.moveBy(const Offset(30, 0));
@@ -862,7 +850,7 @@ void main() {
       final afterFirstMove = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       expect(afterFirstMove, isNot(beforeDrag));
 
@@ -873,7 +861,7 @@ void main() {
       final afterResize = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       // Layout/camera synchronization itself must never move the document.
       expect(afterResize, afterFirstMove);
@@ -888,7 +876,7 @@ void main() {
       final afterFurtherPointerMove = findById(
         editor.controller.document.value,
         'shape-1',
-      )!.xf.position;
+      )!.xf.transformPoint(Vec2.zero);
 
       final postResizeDelta = afterFurtherPointerMove - afterResize;
 
@@ -969,9 +957,9 @@ void main() {
 
       editor.controller.applyEdit(
         EditorEdits.addNode(
-          const Node.text(
+          Node.text(
             id: 'callback-text',
-            xf: Transform2D(position: Vec2(10, 10)),
+            xf: Affine2D.translation(10, 10),
             data: TextData(
               text: 'Callback test',
               fontFamily: 'TestFont',
