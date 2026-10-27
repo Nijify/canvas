@@ -28,7 +28,8 @@ void main() {
     final input = _scene({'runtimeType': 'group', 'id': 'g',
       'xf': {'scale': {'x': 2, 'y': 2}}, 'children': [
         {'runtimeType': 'text', 'id': 't', 'xf': {'position': {'x': 50, 'y': 0}},
-          'data': {'text': 'Text', 'fontFamily': 'Test', 'fontWeight': 400, 'fontSize': 10}},
+          'data': {'text': 'Text', 'fontFamily': 'Test', 'fontWeight': 400, 'fontSize': 10,
+            'appearance': {'foreground': {'type': 'none'}}}},
       ]});
     expect(() => upgradeCanvasScene(input), throwsFormatException);
     final output = decodeCanvasScene(upgradeCanvasScene(input,

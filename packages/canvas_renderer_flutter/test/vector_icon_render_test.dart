@@ -63,10 +63,7 @@ Future<Uint8List> _render(
       children: [
         Node.group(
           id: 'frame',
-          xf: parent.copyWith(
-            position:
-                parent.position + const Vec2(_center * 1.0, _center * 1.0),
-          ),
+          xf: Affine2D.translation(_center * 1.0, _center * 1.0) * parent,
           children: [
             Node.icon(
               id: 'icon',
