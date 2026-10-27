@@ -108,9 +108,10 @@ coordinates; existing transforms and host application placement are unchanged.
 
 Persistence validates common scene wire structure, delegates exact geometry
 structure and parsing to the source codec, then checks runtime integrity. Reads
-and writes use v4 only. upgradeCanvasScene retains explicit JSON routes through
-v1/v2/v3 to v4; intermediate steps validate historical wire formats independently
-of the current runtime. Migration contains no retired runtime source classes.
+and writes use v4 only. The optional `canvas_scene_upgrade` package owns explicit
+JSON routes through v1/v2/v3 to v4. Its intermediate steps validate historical
+wire formats independently of the current runtime and validate the final result
+through current core once. Core has no dependency on historical upgrade code.
 
 Generated model serializers remain implementation-level primitives. Persistence
 checks raw structure before decoding and runtime integrity on both boundaries.

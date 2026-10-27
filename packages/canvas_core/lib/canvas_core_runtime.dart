@@ -99,8 +99,6 @@ export 'src/path/path_source.dart'
         PolygonSource;
 export 'src/path/svg_path_codec.dart'
     show parseSvgPathData, writeSvgPathData, parseSvgPoints, writeSvgPoints;
-export 'src/serialization/migrations/v3_to_v4.dart'
-    show convertCanvasSceneV3ToV4;
 
 // ============================================================================
 // 5) Geometry primitives + derived helpers (renderer-agnostic)
@@ -129,7 +127,6 @@ export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 // 7) Serde (JSON I/O boundary) + host service contracts
 // ============================================================================
 export 'src/serialization/serializers.dart';
-export 'src/serialization/scene_migrations.dart' show upgradeCanvasScene;
 
 export 'src/services/services.dart'
     show CanvasImageAssetResolver, ImageIntrinsics, TextMeasurer;

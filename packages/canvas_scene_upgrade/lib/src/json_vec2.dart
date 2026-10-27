@@ -1,6 +1,6 @@
-// Path: lib/src/serialization/json_vec2.dart
+// Historical object/tuple point parsing used by the v2 -> v3 upgrade.
 
-import 'package:canvas_core/src/foundation/core_types.dart';
+import 'package:canvas_core/canvas_core_runtime.dart' show Vec2;
 
 List<Vec2?> vec2ListNullableFromJson(Object? json) {
   if (json == null) return const [];

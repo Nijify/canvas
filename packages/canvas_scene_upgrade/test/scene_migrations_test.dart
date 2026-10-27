@@ -1,19 +1,20 @@
-// Path: packages/canvas_core/test/scene_migrations_test.dart
+// Path: packages/canvas_scene_upgrade/test/scene_migrations_test.dart
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
+import 'package:canvas_scene_upgrade/canvas_scene_upgrade.dart';
 import 'package:test/test.dart';
 
 Directory _resolvePackageRoot() {
   final runtimeUri = Isolate.resolvePackageUriSync(
-    Uri.parse('package:canvas_core/canvas_core_runtime.dart'),
+    Uri.parse('package:canvas_scene_upgrade/canvas_scene_upgrade.dart'),
   );
 
   if (runtimeUri == null) {
-    throw StateError('Could not resolve package:canvas_core');
+    throw StateError('Could not resolve package:canvas_scene_upgrade');
   }
 
   return File.fromUri(runtimeUri).parent.parent;
@@ -23,7 +24,7 @@ final Directory _packageRoot = _resolvePackageRoot();
 
 Map<String, dynamic> _loadFixture(String name) {
   final file = File.fromUri(
-    _packageRoot.uri.resolve('test/fixtures/scene_migration/$name'),
+    _packageRoot.uri.resolve('test/fixtures/$name'),
   );
 
   return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
@@ -90,7 +91,7 @@ void main() {
       });
     }
 
-    test('upgrades literal canvas_core 0.10.x JSON through v1/v2 to v3', () {
+    test('upgrades literal canvas_core 0.10.x JSON through v1/v2/v3 to v4', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);
 
@@ -297,7 +298,7 @@ void main() {
       );
     });
 
-    test('upgrades an already-versioned v1 scene to v3', () {
+    test('upgrades an already-versioned v1 scene to v4', () {
       final current = _loadFixture('v1_nested.json');
 
       final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
@@ -306,7 +307,7 @@ void main() {
       expect(upgraded, isNot(equals(current)));
     });
 
-    test('accepts an already-current v3 scene without migration', () {
+    test('accepts an already-current v4 scene without migration', () {
       final v1 = _loadFixture('v1_nested.json');
       final current = upgradeCanvasScene(Map<String, Object?>.from(v1));
 

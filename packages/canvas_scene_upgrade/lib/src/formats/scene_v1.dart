@@ -1,19 +1,16 @@
-import 'package:canvas_core/src/foundation/core_types.dart'
-    show LinearGradientSpec;
-import 'package:canvas_core/src/runtime/validation/linear_gradient_semantics.dart';
+// Path: packages/canvas_scene_upgrade/lib/src/serialization/formats/scene_v1.dart
 
-/// Persisted Canvas scene format with explicit linear-gradient semantics.
+/// First explicitly versioned persisted Canvas scene format.
 ///
-/// Gradients carry local endpoints and ordered stops. Earlier angle/width
-/// gradients remain readable only through the explicit v1 -> v2 migration.
-const int canvasSceneFormatV2 = 2;
+/// The earlier scene format has no embedded version.
+const int canvasSceneFormatV1 = 1;
 
-/// Checks v2-specific wire rules. Typed and semantic validation are separate.
-void validateSceneV2Json(Map<String, Object?> json) {
+/// Checks v1-specific wire rules. Typed and semantic validation are separate.
+void validateSceneV1Json(Map<String, Object?> json) {
   final version = json['sceneFormatVersion'];
-  if (version is! int || version != canvasSceneFormatV2) {
+  if (version is! int || version != canvasSceneFormatV1) {
     throw FormatException(
-      'Expected sceneFormatVersion $canvasSceneFormatV2; got $version',
+      'Expected sceneFormatVersion $canvasSceneFormatV1; got $version',
     );
   }
 
@@ -31,8 +28,8 @@ void validateSceneV2Json(Map<String, Object?> json) {
     throw const FormatException('children must be a list');
   }
 
-  for (var index = 0; index < children.length; index++) {
-    _validateNode(children[index], 'children[$index]');
+  for (var i = 0; i < children.length; i++) {
+    _validateNode(children[i], 'children[$i]');
   }
 }
 
@@ -44,7 +41,7 @@ void _validateNode(Object? raw, String path) {
     throw FormatException('$path.id must be a string');
   }
   if (node.containsKey('locked')) {
-    throw FormatException('$path.locked is not in scene format v2');
+    throw FormatException('$path.locked is not in scene format v1');
   }
 
   if (kind == 'group') {
@@ -53,8 +50,8 @@ void _validateNode(Object? raw, String path) {
       throw FormatException('$path.children must be a list');
     }
 
-    for (var index = 0; index < children.length; index++) {
-      _validateNode(children[index], '$path.children[$index]');
+    for (var i = 0; i < children.length; i++) {
+      _validateNode(children[i], '$path.children[$i]');
     }
     return;
   }
@@ -78,34 +75,22 @@ void _validateNode(Object? raw, String path) {
       throw FormatException('$path.data.appearance.underlays must be a list');
     }
 
-    for (var index = 0; index < underlays.length; index++) {
-      _validateUnderlay(
-        underlays[index],
-        '$path.data.appearance.underlays[$index]',
-      );
+    for (var i = 0; i < underlays.length; i++) {
+      _validateUnderlay(underlays[i], '$path.data.appearance.underlays[$i]');
     }
     return;
   }
 
   if (kind == 'image' && data.containsKey('sourcePath')) {
-    throw FormatException('$path.data.sourcePath is not in scene format v2');
+    throw FormatException('$path.data.sourcePath is not in scene format v1');
   }
 
   if (data.containsKey('appearance') || data.containsKey('shadowOffset')) {
     throw FormatException('$path.data contains unsupported appearance fields');
   }
 
-  if (kind == 'path') {
-    final source = data['source'];
-    if (source is Map && source['kind'] == 'svg') {
-      throw FormatException(
-        '$path.data.source.kind "svg" is unsupported. Normalize SVG paths '
-        'to a commands source before loading.',
-      );
-    }
-    if (data['fill'] != null) {
-      _validateFill(data['fill'], '$path.data.fill');
-    }
+  if (kind == 'path' && data['fill'] != null) {
+    _validateFill(data['fill'], '$path.data.fill');
   }
 }
 
@@ -137,17 +122,18 @@ void _validateFill(Object? raw, String path) {
 
   switch (fill['type']) {
     case 'none':
-      _onlyKeys(fill, const <String>{'type'}, path);
       return;
 
     case 'solid':
-      _onlyKeys(fill, const <String>{'type', 'color'}, path);
-      _argbColor(fill['color'], '$path.color');
+      _finiteNumber(fill['color'], '$path.color');
       return;
 
     case 'gradient':
-      _onlyKeys(fill, const <String>{'type', 'grad'}, path);
-      _validateGradient(fill['grad'], '$path.grad');
+      final grad = _object(fill['grad'], '$path.grad');
+      _finiteNumber(grad['color1'], '$path.grad.color1');
+      _finiteNumber(grad['color2'], '$path.grad.color2');
+      _finiteNumber(grad['angle'], '$path.grad.angle');
+      _finiteNumber(grad['width'], '$path.grad.width');
       return;
 
     default:
@@ -155,45 +141,9 @@ void _validateFill(Object? raw, String path) {
   }
 }
 
-void _validateGradient(Object? raw, String path) {
-  // Structure and numeric types belong to the strict typed decoder.
-  // Semantic invariants are the same ones used for in-memory documents.
-  final LinearGradientSpec gradient;
-  try {
-    gradient = LinearGradientSpec.fromJson(
-      Map<String, dynamic>.from(_object(raw, path)),
-    );
-  } on FormatException catch (error) {
-    throw FormatException('$path: ${error.message}');
-  }
-
-  try {
-    requireLinearGradientIntegrity(gradient, context: path);
-  } on ArgumentError catch (error) {
-    throw FormatException(error.message.toString());
-  }
-}
-
-void _argbColor(Object? raw, String path) {
-  if (raw is! int || raw < 0 || raw > 0xFFFFFFFF) {
-    throw FormatException('$path must be a 32-bit ARGB integer');
-  }
-}
-
-double _finiteNumber(Object? raw, String path) {
+void _finiteNumber(Object? raw, String path) {
   if (raw is! num || !raw.isFinite) {
     throw FormatException('$path must be a finite number');
-  }
-  return raw.toDouble();
-}
-
-void _onlyKeys(Map<String, Object?> object, Set<String> allowed, String path) {
-  final extras = object.keys.where((key) => !allowed.contains(key)).toList()
-    ..sort();
-  if (extras.isNotEmpty) {
-    throw FormatException(
-      '$path contains unsupported key(s): ${extras.join(', ')}',
-    );
   }
 }
 
