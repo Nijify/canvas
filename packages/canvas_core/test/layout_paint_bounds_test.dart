@@ -330,7 +330,10 @@ void main() {
       _text(),
     ]);
     final computed = computeScene(scene, _services());
-    expect(computed.nodeById.containsKey('hidden-text'), isFalse);
+    expect(computed.nodeById.containsKey('hidden-text'), isTrue);
+    expect(computed.worldById.containsKey('hidden-text'), isTrue);
+    expect(computed.layoutBoundsLocalById.containsKey('hidden-text'), isFalse);
+    expect(computed.paintBoundsWorldById.containsKey('hidden-text'), isFalse);
     expect(computed.layoutBoundsLocalById.containsKey('empty'), isFalse);
     expect(computed.paintBoundsWorldById.containsKey('empty'), isFalse);
     expect(computed.layoutBoundsLocalById.containsKey('unresolved'), isTrue);
