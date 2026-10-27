@@ -223,7 +223,7 @@ void main() {
         ),
       );
 
-      const group = Node.group(id: 'g1', children: [child1, child2]);
+      final group = Node.group(id: 'g1', children: [child1, child2]);
 
       final initialScene = _sceneWithChildren([group]);
       final runtime = _buildRuntime(initialScene);
