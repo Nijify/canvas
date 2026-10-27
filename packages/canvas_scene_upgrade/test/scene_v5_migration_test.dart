@@ -17,7 +17,7 @@ void main() {
     final source = {'kind': 'rect', 'x': 20, 'y': 30, 'width': 10, 'height': 20};
     final input = _scene({'runtimeType': 'path', 'id': 'p',
       'xf': {'scale': {'x': 2, 'y': 2}},
-      'data': {'source': source, 'appearance': {'foreground': {'type': 'none'}}}});
+      'data': {'source': source, 'appearance': {'foreground': {'type': 'none'}, 'underlays': []}}});
     final output = decodeCanvasScene(upgradeCanvasScene(input));
     expect(output.children.single.xf, Affine2D(2, 0, 0, 2, -25, -40));
     expect(output.children.single.xf.transformPoint(const Vec2(25, 40)), const Vec2(25, 40));
@@ -29,7 +29,7 @@ void main() {
       'xf': {'scale': {'x': 2, 'y': 2}}, 'children': [
         {'runtimeType': 'text', 'id': 't', 'xf': {'position': {'x': 50, 'y': 0}},
           'data': {'text': 'Text', 'fontFamily': 'Test', 'fontWeight': 400, 'fontSize': 10,
-            'appearance': {'foreground': {'type': 'none'}}}},
+            'appearance': {'foreground': {'type': 'none'}, 'underlays': []}}},
       ]});
     expect(() => upgradeCanvasScene(input), throwsFormatException);
     final output = decodeCanvasScene(upgradeCanvasScene(input,
