@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/canvas_editor_flutter.dart
+// Path: packages/canvas_editor_flutter/lib/canvas_editor_flutter.dart
 // canvas_editor_flutter – Turnkey scene editor API.
 //
 // Use this entrypoint to embed CanvasSceneEditor with the package's standard

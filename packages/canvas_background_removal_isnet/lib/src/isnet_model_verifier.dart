@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/lib/src/isnet_model_verifier.dart
+// Path: packages/canvas_background_removal_isnet/lib/src/isnet_model_verifier.dart
 
 import 'dart:io';
 

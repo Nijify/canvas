@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/example/lib/main.dart
+// Path: packages/canvas_editor_flutter/example/lib/main.dart
 import 'dart:async';
 import 'dart:convert';
 

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/public_entrypoints_test.dart
+// Path: packages/canvas_editor_flutter/test/public_entrypoints_test.dart
 
 import 'dart:io';
 

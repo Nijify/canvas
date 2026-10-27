@@ -7,7 +7,7 @@ void main() {
   group('GroupBehaviorRef', () {
     test('round-trips an explicit behavior envelope', () {
       const ref = GroupBehaviorRef(
-        type: 'canvas.logo',
+        type: 'example.component',
         version: 1,
         data: <String, dynamic>{'layout': 'horizontal'},
       );
@@ -28,7 +28,7 @@ void main() {
     test('rejects a missing version', () {
       expect(
         () => GroupBehaviorRef.fromJson(const <String, dynamic>{
-          'type': 'canvas.logo',
+          'type': 'example.component',
           'data': <String, dynamic>{},
         }),
         throwsA(anything),
@@ -38,7 +38,7 @@ void main() {
     test('rejects missing data', () {
       expect(
         () => GroupBehaviorRef.fromJson(const <String, dynamic>{
-          'type': 'canvas.logo',
+          'type': 'example.component',
           'version': 1,
         }),
         throwsA(anything),
@@ -48,7 +48,7 @@ void main() {
     test('rejects a non-integer version', () {
       expect(
         () => GroupBehaviorRef.fromJson(const <String, dynamic>{
-          'type': 'canvas.logo',
+          'type': 'example.component',
           'version': '1',
           'data': <String, dynamic>{},
         }),
@@ -59,7 +59,7 @@ void main() {
     test('rejects non-object data', () {
       expect(
         () => GroupBehaviorRef.fromJson(const <String, dynamic>{
-          'type': 'canvas.logo',
+          'type': 'example.component',
           'version': 1,
           'data': 'not-an-object',
         }),

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/actions/editor_action_sets.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/actions/editor_action_sets.dart
 
 import 'dart:convert';
 

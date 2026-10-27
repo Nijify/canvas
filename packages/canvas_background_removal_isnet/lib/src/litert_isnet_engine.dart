@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/lib/src/litert_isnet_engine.dart
+// Path: packages/canvas_background_removal_isnet/lib/src/litert_isnet_engine.dart
 
 import 'dart:io';
 import 'dart:typed_data';

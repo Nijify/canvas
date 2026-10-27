@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_ui.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_ui.dart
 
 import 'package:flutter/material.dart';
 

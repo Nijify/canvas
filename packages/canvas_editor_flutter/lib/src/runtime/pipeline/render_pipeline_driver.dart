@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/runtime/pipeline/render_pipeline_driver.dart
+// Path: packages/canvas_editor_flutter/lib/src/runtime/pipeline/render_pipeline_driver.dart
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';

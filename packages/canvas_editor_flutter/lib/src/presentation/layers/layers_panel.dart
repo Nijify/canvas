@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/layers/layers_panel.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/layers/layers_panel.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart' show CanvasSceneDocument;
 import 'package:canvas_editor_flutter/src/editor_api.dart'

@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/editor_extensions.dart
+// Path: packages/canvas_editor_flutter/lib/src/editor_extensions.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFieldKey, ScenePreparer;

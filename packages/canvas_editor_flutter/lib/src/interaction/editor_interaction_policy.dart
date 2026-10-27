@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/interaction/editor_interaction_policy.dart
+// Path: packages/canvas_editor_flutter/lib/src/interaction/editor_interaction_policy.dart
 import 'package:flutter/foundation.dart';
 import 'package:canvas_core/canvas_core_runtime.dart';
 

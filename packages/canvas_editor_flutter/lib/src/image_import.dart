@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/image_import.dart
+// Path: packages/canvas_editor_flutter/lib/src/image_import.dart
 /// Where the user wants to import an image from.
 enum ImageImportSource { gallery, camera }
 

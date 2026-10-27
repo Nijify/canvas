@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_editor_scaffold_layout.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_editor_scaffold_layout.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_api.dart'

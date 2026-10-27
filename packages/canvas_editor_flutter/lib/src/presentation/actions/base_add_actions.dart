@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/actions/base_add_actions.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/actions/base_add_actions.dart
 //
 // Base/basic add actions.
 //

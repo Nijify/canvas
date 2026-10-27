@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_field_row.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_field_row.dart
 
 import 'dart:async';
 

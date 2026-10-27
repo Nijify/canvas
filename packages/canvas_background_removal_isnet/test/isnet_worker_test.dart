@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/test/isnet_worker_test.dart
+// Path: packages/canvas_background_removal_isnet/test/isnet_worker_test.dart
 
 import 'dart:io';
 

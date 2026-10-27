@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/image_import.dart
+// Path: packages/canvas_editor_flutter/lib/image_import.dart
 // canvas_editor_flutter – Image-import capability.
 //
 // Use this entrypoint to acquire user-selected images and add or replace image

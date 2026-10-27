@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/widgets/selection_overlay.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/selection_overlay.dart
 
 import 'dart:math' as math;
 

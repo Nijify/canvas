@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/scene_object_tree_test.dart
+// Path: packages/canvas_editor_flutter/test/scene_object_tree_test.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.dart';

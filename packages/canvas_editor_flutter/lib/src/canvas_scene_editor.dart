@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/canvas_scene_editor.dart
+// Path: packages/canvas_editor_flutter/lib/src/canvas_scene_editor.dart
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/canvas_editor_surface.dart';
 import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart';

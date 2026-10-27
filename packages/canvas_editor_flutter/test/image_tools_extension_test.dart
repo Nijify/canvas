@@ -186,7 +186,7 @@ final class _ImageSourceDeniedAdapter
     CanvasFieldKey fieldKey,
   ) {
     if (nodeId == _imageA && fieldKey == CanvasFields.imageSource) {
-      return 'Bound to brand.logo';
+      return 'Bound to example.image';
     }
 
     return null;
@@ -403,7 +403,7 @@ void main() {
       editor.selection.selectItem(_imageA);
       await tester.pumpAndSettle();
 
-      expect(find.text('Bound to brand.logo'), findsOneWidget);
+      expect(find.text('Bound to example.image'), findsOneWidget);
 
       final button = tester.widget<OutlinedButton>(
         find.byKey(_removeButtonKey),

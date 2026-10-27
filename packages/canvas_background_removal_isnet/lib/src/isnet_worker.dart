@@ -1,4 +1,4 @@
-// Path: private_packages/bg_remover_isnet/lib/src/isnet_worker.dart
+// Path: packages/canvas_background_removal_isnet/lib/src/isnet_worker.dart
 
 import 'dart:async';
 import 'dart:io';

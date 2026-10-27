@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/viewport/editor_camera_controller.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/viewport/editor_camera_controller.dart
 
 import 'dart:math' as math;
 import 'dart:ui' show Offset, Size;

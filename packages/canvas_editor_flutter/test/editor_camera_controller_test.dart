@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/test/editor_camera_controller_test.dart
+// Path: packages/canvas_editor_flutter/test/editor_camera_controller_test.dart
 
 import 'dart:ui' show Offset, Size;
 

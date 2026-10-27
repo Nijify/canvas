@@ -116,7 +116,7 @@ void main() {
         Node.path(
           id: 'p',
           name: 'unsafe<&',
-          role: 'logo:main',
+          role: 'example:content',
           data: PathData(
             source: const RectSource(x: -10, y: -5, width: 20, height: 10),
             fillRule: FillRule.evenOdd,
@@ -158,7 +158,7 @@ void main() {
     expect(path.getAttribute('stroke-linecap'), 'round');
     expect(path.getAttribute('stroke-linejoin'), 'bevel');
     expect(result.svg, isNot(contains('unsafe')));
-    expect(result.svg, isNot(contains('logo:main')));
+    expect(result.svg, isNot(contains('example:content')));
     expect(
       exportPreparedSvg(evaluation: _compute(scene)).svg,
       result.svg,

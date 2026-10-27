@@ -1,4 +1,4 @@
-// Path: oss_packages/canvas_editor_flutter/lib/src/presentation/viewport/editor_camera_state.dart
+// Path: packages/canvas_editor_flutter/lib/src/presentation/viewport/editor_camera_state.dart
 
 import 'dart:ui' show Offset, Size;
 
