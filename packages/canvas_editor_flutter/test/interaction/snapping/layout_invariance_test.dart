@@ -118,7 +118,7 @@ void main() {
                 children: [
                   _text(
                     shadow: shadow,
-                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-(7), -(-3))),
+                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-7.0, 3.0)),
                   ),
                   _text(
                     id: 'sibling',

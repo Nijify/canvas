@@ -10,7 +10,7 @@ void main() {
   test('hidden transforms are available without resolving hidden resources', () {
     final parent = Affine2D(2, .5, .3, -1, 40, 20);
     final child = Affine2D.translation(10, 30);
-    final scene = CanvasSceneDocument(children: [Node.group(id: 'hidden', hidden: true,
+    final scene = CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [Node.group(id: 'hidden', hidden: true,
       xf: parent, children: [Node.text(id: 'text', xf: child,
         data: const TextData(text: 'Text', fontFamily: 'Missing', fontWeight: 400, fontSize: 12))])]);
     final computed = computeScene(scene, const CoreServices(textMeasurer: _NoMetrics()));

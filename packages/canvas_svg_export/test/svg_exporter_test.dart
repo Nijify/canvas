@@ -170,7 +170,7 @@ void main() {
       children: [
         Node.group(
           id: 'group',
-          xf: (Affine2D.translation(40, 20) * Affine2D.translation(0, 0) * Affine2D.scale(2, 2) * Affine2D.translation(-(0), -(0))),
+          xf: (Affine2D.translation(40, 20) * Affine2D.translation(0, 0) * Affine2D.scale(2, 2) * Affine2D.translation(-0.0, -0.0)),
           children: [
             Node.path(
               id: 'first',

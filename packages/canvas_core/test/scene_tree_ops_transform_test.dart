@@ -2,7 +2,7 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
 Node _node(String id, Affine2D xf) => Node.group(id: id, xf: xf, children: []);
-CanvasSceneDocument _scene() => CanvasSceneDocument(children: [
+CanvasSceneDocument _scene() => CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [
   Node.group(id: 'parent', xf: Affine2D(2, .5, 1, -3, 40, 20), children: [
     _node('child', Affine2D(1, 0, .4, 2, 3, 5)),
   ]),
@@ -38,7 +38,7 @@ void main() {
     expect(findById(local, 'child')!.xf, findById(doc, 'child')!.xf);
   });
   test('singular target rejects world preservation without changing source', () {
-    final doc = CanvasSceneDocument(children: [
+    final doc = CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [
       _node('child', const Affine2D.identity()), _node('target', Affine2D.scale(0, 1)),
     ]);
     expect(() => SceneTreeOps.moveSubtree(doc, 'child', newParentId: 'target',
@@ -46,7 +46,7 @@ void main() {
     expect(doc.children.map((n) => n.id), ['child', 'target']);
   });
   test('world delta works for singular node under invertible parent', () {
-    final doc = CanvasSceneDocument(children: [_node('flat', Affine2D.scale(0, 1))]);
+    final doc = CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [_node('flat', Affine2D.scale(0, 1))]);
     final next = SceneTreeOps.translate(doc, 'flat', const Vec2(4, 5), space: TransformSpace.world);
     expect(findById(next, 'flat')!.xf.transformPoint(Vec2.zero), const Vec2(4, 5));
   });

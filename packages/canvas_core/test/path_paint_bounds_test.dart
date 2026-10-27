@@ -223,7 +223,7 @@ void main() {
                 children: [
                   Node.path(
                     id: 'path',
-                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-(7), -(-3))),
+                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-7.0, 3.0)),
                     data: PathData(source: source, appearance: appearance),
                   ),
                   Node.path(

@@ -33,7 +33,7 @@ void main() {
     expect(matrix.toColumnMajor4x4(), [1, 2, 0, 0, 3, 4, 0, 0, 0, 0, 1, 0, 5, 6, 0, 1]);
   });
   test('v5 omits identity and rejects historical transform objects', () {
-    final scene = CanvasSceneDocument(children: [Node.group(id: 'g', children: [])]);
+    final scene = CanvasSceneDocument(backgroundFill: const CanvasFill.none(), backgroundOpacity: 1, children: [Node.group(id: 'g', children: [])]);
     final wire = encodeCanvasScene(scene);
     expect(wire['sceneFormatVersion'], 5);
     final group = (wire['children'] as List).single as Map;
