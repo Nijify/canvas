@@ -1,8 +1,8 @@
-import 'package:canvas_core/src/foundation/math/affine2d.dart';
 // Path: lib/src/runtime/model/node_editing.dart
 
 library;
 
+import 'package:canvas_core/src/foundation/math/affine2d.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
 
 String? _normalizeLayerName(String? raw) {
