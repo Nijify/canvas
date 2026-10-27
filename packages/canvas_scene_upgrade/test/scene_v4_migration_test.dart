@@ -153,7 +153,7 @@ void main() {
       (newNode['data'] as Map)['appearance'],
       (oldNode['data'] as Map)['appearance'],
     );
-    (newNode['xf'] as List)[0] = 9;
+    (newNode['xf'] as List)[0] = 9.0;
     expect(jsonEncode(old), before);
     expect(() => decodeCanvasScene(old), throwsFormatException);
   });
