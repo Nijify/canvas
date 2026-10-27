@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:canvas_core/src/serialization/formats/scene_v1.dart';
-import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
+import 'package:canvas_scene_upgrade/src/formats/scene_v1.dart';
+import 'package:canvas_scene_upgrade/src/formats/scene_v2.dart';
 
 /// Converts a valid v1 persisted scene to explicit v2 gradient semantics.
 ///

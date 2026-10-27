@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:canvas_core/canvas_core_runtime.dart';
+import 'package:canvas_scene_upgrade/canvas_scene_upgrade.dart';
 import 'package:test/test.dart';
 
 Map<String, Object?> _scene(Map<String, Object?> source) => {
@@ -35,7 +36,7 @@ Map<String, Object?> _scene(Map<String, Object?> source) => {
   ],
 };
 PathSource _convert(Map<String, Object?> source) =>
-    (decodeCanvasScene(convertCanvasSceneV3ToV4(_scene(source))).children.single
+    (decodeCanvasScene(upgradeCanvasScene(_scene(source))).children.single
             as PathNode)
         .data
         .source;
@@ -142,7 +143,7 @@ void main() {
   test('migration copies JSON and preserves unrelated authored content', () {
     final old = _scene({'kind': 'rect', 'w': 20, 'h': 10});
     final before = jsonEncode(old);
-    final result = convertCanvasSceneV3ToV4(old);
+    final result = upgradeCanvasScene(old);
     expect(result['sceneFormatVersion'], 4);
     final oldNode = (old['children'] as List).single as Map;
     final newNode = (result['children'] as List).single as Map;
@@ -155,6 +156,5 @@ void main() {
     (newNode['xf'] as Map)['rotationRad'] = 1;
     expect(jsonEncode(old), before);
     expect(() => decodeCanvasScene(old), throwsFormatException);
-    expect(upgradeCanvasScene(old), convertCanvasSceneV3ToV4(old));
   });
 }

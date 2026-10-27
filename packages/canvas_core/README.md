@@ -157,9 +157,10 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-Persistence uses scene format v4. Call `upgradeCanvasScene()` explicitly for
-supported historical JSON before decoding. Both persistence functions enforce
-scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
+Persistence uses scene format v4. For supported historical JSON, explicitly call
+`upgradeCanvasScene()` from the optional
+[`canvas_scene_upgrade`](../canvas_scene_upgrade) package before decoding. Both
+persistence functions enforce scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
 check. Malformed wire structure throws `FormatException`; runtime integrity
 failures throw `ArgumentError`.
 
@@ -251,7 +252,7 @@ Nonfinite/unsupported numeric input fails with `FormatException`; original
 SVG spelling and bit-exact decimal save/load round trips are not preserved.
 `writeSvgPathData` is deterministic for unchanged geometry and does not round it.
 
-Use `convertCanvasSceneV3ToV4()` for v3 input or `upgradeCanvasScene()` for the
-retained historical routes. Migration does not restore star-generation parameters
-or compensate for quadratic control-hull/pivot changes. Historical underline bars
+Use `upgradeCanvasScene()` from the optional `canvas_scene_upgrade` package for
+v3 input and the retained historical routes. Migration does not restore
+star-generation parameters or compensate for quadratic control-hull/pivot changes. Historical underline bars
 become rectangles; new Line actions create stroke-based geometry.

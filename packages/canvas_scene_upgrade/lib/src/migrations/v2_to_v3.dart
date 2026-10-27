@@ -1,6 +1,6 @@
-import 'package:canvas_core/src/serialization/formats/scene_v2.dart';
-import 'package:canvas_core/src/serialization/formats/scene_v3.dart';
-import 'package:canvas_core/src/serialization/json_vec2.dart';
+import 'package:canvas_scene_upgrade/src/formats/scene_v2.dart';
+import 'package:canvas_scene_upgrade/src/formats/scene_v3.dart';
+import 'package:canvas_scene_upgrade/src/json_vec2.dart';
 
 /// Converts historical path fields into the scene-v3 source/appearance model.
 ///

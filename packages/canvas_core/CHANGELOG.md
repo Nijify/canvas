@@ -1,3 +1,10 @@
+## Unreleased
+
+- **Breaking:** move `upgradeCanvasScene` to the optional `canvas_scene_upgrade`
+  package. Replace direct `convertCanvasSceneV3ToV4` calls with that package's
+  `upgradeCanvasScene`. Core no longer exports or contains historical upgrades.
+- Keep scene v4, current validation, geometry, and transform behavior unchanged.
+
 ## 0.17.0
 
 - **Breaking:** adopt scene format v4 with seven SVG-aligned geometry sources.

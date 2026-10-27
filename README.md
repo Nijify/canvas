@@ -12,6 +12,7 @@ Use the complete stack or depend only on the packages your application needs.
 
 | Package | Purpose | Runtime |
 |---|---|---|
+| [`canvas_scene_upgrade`](packages/canvas_scene_upgrade) | Optional explicit historical JSON upgrades to the current scene format | Pure Dart |
 | [`canvas_core`](packages/canvas_core) | Scene documents, document/render geometry, layout, serialization, logical resource contracts, and computed scene geometry | Pure Dart |
 | [`canvas_renderer_flutter`](packages/canvas_renderer_flutter) | Flutter drawing, text/font resources, image management, and canonical PNG output | Flutter |
 | [`canvas_editor_flutter`](packages/canvas_editor_flutter) | Turnkey and composable visual editor UI | Flutter |
@@ -27,6 +28,9 @@ canvas_editor_flutter
 ```
 
 `canvas_core` is independent of Flutter. The renderer implements Flutter-specific drawing/resource behavior, while the editor uses both packages to provide a complete editing experience.
+
+`canvas_scene_upgrade` depends on core public APIs; core never imports or
+re-exports it. Historical documents are upgraded explicitly before normal loading.
 
 `canvas_svg_export` depends on `canvas_core` directly; it does not depend on the Flutter renderer or editor.
 

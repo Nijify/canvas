@@ -18,7 +18,8 @@ export 'package:canvas_core/src/serialization/scene_format.dart'
 
 /// Decodes current persisted JSON: strict wire checks, decoding, then integrity.
 ///
-/// Upgrade historical JSON explicitly first. Malformed wire data throws
+/// Upgrade historical JSON explicitly with the optional `canvas_scene_upgrade`
+/// package first. Malformed wire data throws
 /// [FormatException]; invalid runtime values throw [ArgumentError]. Error text
 /// is diagnostic context, not a stable code, path, or ordering contract.
 CanvasSceneDocument decodeCanvasScene(Map<String, Object?> json) {

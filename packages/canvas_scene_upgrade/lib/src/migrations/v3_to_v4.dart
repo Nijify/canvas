@@ -1,11 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
-import 'package:canvas_core/src/path/path_ir.dart';
-import 'package:canvas_core/src/path/svg_path_codec.dart';
-import 'package:canvas_core/src/serialization/formats/scene_v3.dart';
-import 'package:canvas_core/src/serialization/formats/scene_v4.dart';
-import 'package:canvas_core/src/serialization/serializers.dart';
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show PathCmd, PathIR, Vec2, writeSvgPathData, writeSvgPoints;
+import 'package:canvas_scene_upgrade/src/formats/scene_v3.dart';
+
+const int _sceneFormatV4 = 4;
 
 /// Converts historical v3 JSON without constructing retired runtime sources.
 /// Input containers are copied. Transforms, appearance, IDs, and authoring
@@ -14,7 +13,7 @@ import 'package:canvas_core/src/serialization/serializers.dart';
 Map<String, Object?> convertCanvasSceneV3ToV4(Map<String, Object?> v3) {
   validateSceneV3Json(v3);
   final result = _copy(v3) as Map<String, Object?>;
-  result['sceneFormatVersion'] = canvasSceneFormatV4;
+  result['sceneFormatVersion'] = _sceneFormatV4;
   void visit(List children) {
     for (final raw in children) {
       final node = raw as Map<String, Object?>;
@@ -28,7 +27,6 @@ Map<String, Object?> convertCanvasSceneV3ToV4(Map<String, Object?> v3) {
   }
 
   visit(result['children'] as List);
-  decodeCanvasScene(result);
   return result;
 }
 

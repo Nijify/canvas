@@ -1,6 +1,6 @@
-// Path: packages/canvas_core/lib/src/serialization/migrations/legacy_unversioned_to_v1.dart
+// Path: packages/canvas_scene_upgrade/lib/src/serialization/migrations/legacy_unversioned_to_v1.dart
 
-import 'package:canvas_core/src/serialization/formats/scene_v1.dart'
+import 'package:canvas_scene_upgrade/src/formats/scene_v1.dart'
     show canvasSceneFormatV1;
 
 /// Converts an unversioned Canvas scene using the canvas_core 0.10.x

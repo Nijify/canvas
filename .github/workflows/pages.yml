@@ -8,6 +8,7 @@ on:
     paths:
       - ".github/workflows/pages.yml"
       - "packages/canvas_core/**"
+      - "packages/canvas_scene_upgrade/**"
       - "packages/canvas_renderer_flutter/**"
       - "packages/canvas_editor_flutter/**"
       - "packages/canvas_svg_export/**"
@@ -41,6 +42,10 @@ jobs:
 
       - name: Test core
         working-directory: packages/canvas_core
+        run: dart test
+
+      - name: Test scene upgrades
+        working-directory: packages/canvas_scene_upgrade
         run: dart test
 
       - name: Test Flutter renderer

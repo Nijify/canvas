@@ -6,6 +6,7 @@ environment:
 
 workspace:
   - packages/canvas_core
+  - packages/canvas_scene_upgrade
   - packages/canvas_renderer_flutter
   - packages/canvas_editor_flutter
   - packages/canvas_editor_flutter/example
