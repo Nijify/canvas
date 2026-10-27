@@ -89,9 +89,9 @@ void main() {
       final runtime = _buildRuntime(_sceneWithChildren(const []));
       final initialRender = runtime.render.value;
 
-      const node = Node.text(
+      final node = Node.text(
         id: 't1',
-        xf: Transform2D(position: Vec2(10, 10)),
+        xf: Affine2D.translation(10, 10),
         data: TextData(
           text: 'Hello',
           fontFamily: 'Inter',
@@ -120,9 +120,9 @@ void main() {
 
   test('duplicate edit returns createdId for reselection', () {
     final initialScene = _sceneWithChildren([
-      const Node.text(
+      Node.text(
         id: 't1',
-        xf: Transform2D(position: Vec2(10, 10)),
+        xf: Affine2D.translation(10, 10),
         data: TextData(
           text: 'Hello',
           fontFamily: 'Inter',
@@ -149,9 +149,9 @@ void main() {
 
   test('duplicate edit inserts copy above original', () {
     final initialScene = _sceneWithChildren([
-      const Node.text(
+      Node.text(
         id: 't1',
-        xf: Transform2D(position: Vec2(10, 10)),
+        xf: Affine2D.translation(10, 10),
         data: TextData(
           text: 'Hello',
           fontFamily: 'Inter',
@@ -163,9 +163,9 @@ void main() {
           ),
         ),
       ),
-      const Node.text(
+      Node.text(
         id: 't2',
-        xf: Transform2D(position: Vec2(20, 20)),
+        xf: Affine2D.translation(20, 20),
         data: TextData(
           text: 'World',
           fontFamily: 'Inter',
@@ -195,7 +195,7 @@ void main() {
     () {
       const child1 = Node.text(
         id: 't1',
-        xf: Transform2D(position: Vec2(0, 0)),
+        xf: const Affine2D.identity(),
         data: TextData(
           text: 'One',
           fontFamily: 'Inter',
@@ -208,9 +208,9 @@ void main() {
         ),
       );
 
-      const child2 = Node.text(
+      final child2 = Node.text(
         id: 't2',
-        xf: Transform2D(position: Vec2(10, 10)),
+        xf: Affine2D.translation(10, 10),
         data: TextData(
           text: 'Two',
           fontFamily: 'Inter',
@@ -242,7 +242,7 @@ void main() {
     final initialScene = _sceneWithChildren(const [
       Node.text(
         id: 't1',
-        xf: Transform2D(position: Vec2(0, 0)),
+        xf: const Affine2D.identity(),
         data: TextData(
           text: 'One',
           fontFamily: 'Inter',
@@ -256,7 +256,7 @@ void main() {
       ),
       Node.text(
         id: 't2',
-        xf: Transform2D(position: Vec2(0, 0)),
+        xf: const Affine2D.identity(),
         data: TextData(
           text: 'Two',
           fontFamily: 'Inter',
@@ -287,7 +287,7 @@ void main() {
     final initialScene = _sceneWithChildren(const [
       Node.text(
         id: 't1',
-        xf: Transform2D(position: Vec2(0, 0)),
+        xf: const Affine2D.identity(),
         data: TextData(
           text: 'One',
           fontFamily: 'Inter',
@@ -301,7 +301,7 @@ void main() {
       ),
       Node.text(
         id: 't2',
-        xf: Transform2D(position: Vec2(0, 0)),
+        xf: const Affine2D.identity(),
         data: TextData(
           text: 'Two',
           fontFamily: 'Inter',
@@ -315,7 +315,7 @@ void main() {
       ),
       Node.text(
         id: 't3',
-        xf: Transform2D(position: Vec2(0, 0)),
+        xf: const Affine2D.identity(),
         data: TextData(
           text: 'Three',
           fontFamily: 'Inter',
@@ -350,9 +350,9 @@ void main() {
 
     runtime.applyEdit(
       EditorEdits.addNode(
-        const Node.text(
+        Node.text(
           id: 't1',
-          xf: Transform2D(position: Vec2(10, 10)),
+          xf: Affine2D.translation(10, 10),
           data: TextData(
             text: 'Hello',
             fontFamily: 'Inter',

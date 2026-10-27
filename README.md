@@ -66,9 +66,7 @@ final document = CanvasSceneDocument(
   children: <Node>[
     Node.text(
       id: 'headline',
-      xf: const Transform2D(
-        position: Vec2(540, 540),
-      ),
+      xf: Affine2D.translation(540, 540),
       data: const TextData(
         text: 'Hello canvas',
         fontFamily: 'Inter',

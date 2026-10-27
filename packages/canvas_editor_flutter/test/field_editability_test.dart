@@ -38,7 +38,7 @@ rt.CanvasSceneDocument _scene() {
     children: <rt.Node>[
       rt.Node.text(
         id: 't1',
-        xf: const rt.Transform2D(position: rt.Vec2(20, 20)),
+        xf: rt.Affine2D.translation(20, 20),
         data: _textData,
       ),
     ],
@@ -50,7 +50,7 @@ String _textOf(rt.CanvasSceneDocument scene) {
 }
 
 double _xOf(rt.CanvasSceneDocument scene) {
-  return (rt.findById(scene, 't1') as rt.TextNode).xf.position.x;
+  return (rt.findById(scene, 't1') as rt.TextNode).xf.e;
 }
 
 final class _PolicyDocument {
@@ -120,7 +120,7 @@ final class _PolicyAdapter extends EditorDocumentAdapter<_PolicyDocument> {
 
     if (document.denyTextWhenMoved) {
       final node = rt.findById(document.base, nodeId);
-      if (node is rt.TextNode && node.xf.position.x > 20) {
+      if (node is rt.TextNode && node.xf.e > 20) {
         return 'Moved field is source-locked';
       }
     }
@@ -354,7 +354,7 @@ void main() {
 
       final endSession = runtime.beginEditSession();
 
-      runtime.updateDrag('t1', const rt.Vec2(10, 0));
+      runtime.updateTransform('t1', rt.Affine2D.translation(10, 0) * rt.findById(runtime.document.value, 't1')!.xf);
 
       expect(
         _xOf(runtime.sourceDocument.base),

@@ -102,7 +102,7 @@ void main() {
         children: [_text('a'), _text('b'), _text('c'), _text('d')],
       );
 
-      final updated = SceneTreeOps.moveSubtree(doc, 'b', toIndex: 3);
+      final updated = SceneTreeOps.moveSubtree(doc, 'b', toIndex: 3, preservation: TransformPreservation.local);
 
       expect(_rootIds(updated), ['a', 'c', 'd', 'b']);
     });
@@ -116,8 +116,7 @@ void main() {
         doc,
         'a',
         newParentId: 'g',
-        toIndex: 1,
-      );
+        toIndex: 1, preservation: TransformPreservation.local);
 
       expect(_rootIds(updated), ['g']);
       expect(_groupChildIds(updated, 'g'), ['x', 'a', 'z']);

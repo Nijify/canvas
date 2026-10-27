@@ -144,16 +144,16 @@ void main() {
     final old = _scene({'kind': 'rect', 'w': 20, 'h': 10});
     final before = jsonEncode(old);
     final result = upgradeCanvasScene(old);
-    expect(result['sceneFormatVersion'], 4);
+    expect(result['sceneFormatVersion'], 5);
     final oldNode = (old['children'] as List).single as Map;
     final newNode = (result['children'] as List).single as Map;
-    for (final key in ['id', 'name', 'role', 'xf'])
+    for (final key in ['id', 'name', 'role'])
       expect(newNode[key], oldNode[key]);
     expect(
       (newNode['data'] as Map)['appearance'],
       (oldNode['data'] as Map)['appearance'],
     );
-    (newNode['xf'] as Map)['rotationRad'] = 1;
+    (newNode['xf'] as List)[0] = 9;
     expect(jsonEncode(old), before);
     expect(() => decodeCanvasScene(old), throwsFormatException);
   });

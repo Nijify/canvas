@@ -1,0 +1,192 @@
+{
+  "sceneFormatVersion": 5,
+  "artboardSize": {
+    "w": 320,
+    "h": 200
+  },
+  "backgroundFill": {
+    "type": "none"
+  },
+  "backgroundOpacity": 1,
+  "assets": {
+    "asset": {
+      "sourceRef": "media:test",
+      "intrinsicSize": {
+        "w": 40,
+        "h": 20
+      }
+    }
+  },
+  "children": [
+    {
+      "runtimeType": "group",
+      "id": "group",
+      "behavior": {
+        "type": "test.component",
+        "version": 1,
+        "data": {
+          "keep": "value"
+        }
+      },
+      "children": [
+        {
+          "runtimeType": "path",
+          "id": "source-wins",
+          "role": "shape",
+          "data": {
+            "source": {
+              "kind": "rect",
+              "x": -10.0,
+              "y": -5.0,
+              "width": 20,
+              "height": 10
+            },
+            "fillRule": "evenOdd",
+            "appearance": {
+              "foreground": {
+                "type": "solid",
+                "color": 4279312947
+              },
+              "stroke": null,
+              "underlays": []
+            }
+          }
+        },
+        {
+          "runtimeType": "path",
+          "id": "points",
+          "data": {
+            "source": {
+              "kind": "path",
+              "d": "M0 0 L10.0 0 M20.0 0 L20.0 10.0"
+            },
+            "fillRule": "nonZero",
+            "appearance": {
+              "foreground": {
+                "type": "none"
+              },
+              "stroke": {
+                "color": 4278190080,
+                "width": 2,
+                "cap": "round",
+                "join": "bevel",
+                "miterLimit": 4,
+                "dash": [
+                  5,
+                  0,
+                  3
+                ]
+              },
+              "underlays": []
+            }
+          }
+        },
+        {
+          "runtimeType": "path",
+          "id": "empty",
+          "data": {
+            "source": {
+              "kind": "path",
+              "d": ""
+            },
+            "fillRule": "nonZero",
+            "appearance": {
+              "foreground": {
+                "type": "none"
+              },
+              "stroke": null,
+              "underlays": []
+            }
+          }
+        },
+        {
+          "runtimeType": "path",
+          "id": "inactive",
+          "data": {
+            "source": {
+              "kind": "path",
+              "d": ""
+            },
+            "fillRule": "nonZero",
+            "appearance": {
+              "foreground": {
+                "type": "none"
+              },
+              "stroke": {
+                "color": 0,
+                "width": 12,
+                "cap": "round",
+                "join": "miter",
+                "miterLimit": 4,
+                "dash": []
+              },
+              "underlays": []
+            }
+          }
+        },
+        {
+          "runtimeType": "text",
+          "id": "text",
+          "data": {
+            "text": "Kept",
+            "fontFamily": "Inter",
+            "fontWeight": 400,
+            "fontSize": 16,
+            "appearance": {
+              "foreground": {
+                "type": "solid",
+                "color": 4279308561
+              },
+              "underlays": [
+                {
+                  "type": "shadow",
+                  "id": "shadow",
+                  "enabled": false,
+                  "offset": {
+                    "x": 2,
+                    "y": 3
+                  },
+                  "blurSigma": 1,
+                  "color": 2147483648
+                }
+              ]
+            }
+          }
+        },
+        {
+          "runtimeType": "icon",
+          "id": "icon",
+          "data": {
+            "iconRef": "test.symbol",
+            "sizePx": 48,
+            "appearance": {
+              "foreground": {
+                "type": "none"
+              },
+              "underlays": []
+            }
+          }
+        },
+        {
+          "runtimeType": "image",
+          "id": "image",
+          "data": {
+            "assetId": "asset",
+            "size": {
+              "w": 20,
+              "h": 10
+            }
+          }
+        }
+      ],
+      "xf": [
+        1.0530990742684472,
+        0.5753106463250436,
+        -0.3835404308833624,
+        0.7020660495122982,
+        11.427963574996555,
+        20.04111450930072
+      ]
+    }
+  ]
+}

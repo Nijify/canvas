@@ -36,7 +36,7 @@ Map<String, Object?> _stroke(Map<String, Object?> scene) {
 
 void main() {
   test(
-    'v4 round trips all path sources and preserves authored dash arrays',
+    'v5 round trips all path sources and preserves authored dash arrays',
     () {
       final sources = <PathSource>[
         const RectSource(x: -10, y: -5, width: 20, height: 10),
@@ -68,7 +68,7 @@ void main() {
           ),
         ]);
         final json = encodeCanvasScene(scene);
-        expect(json['sceneFormatVersion'], 4);
+        expect(json['sceneFormatVersion'], 5);
         final restored = decodeCanvasScene(
           jsonDecode(jsonEncode(json)) as Map<String, Object?>,
         );
@@ -91,7 +91,7 @@ void main() {
     'miterLimit',
     'dash',
   ]) {
-    test('v4 rejects obsolete path field $field', () {
+    test('v5 rejects obsolete path field $field', () {
       final json = _wire();
       _data(json)[field] = null;
       expect(() => decodeCanvasScene(json), throwsFormatException);
@@ -99,7 +99,7 @@ void main() {
   }
 
   for (final field in ['source', 'appearance']) {
-    test('v4 requires path $field and rejects explicit null', () {
+    test('v5 requires path $field and rejects explicit null', () {
       final missing = _wire();
       _data(missing).remove(field);
       expect(() => decodeCanvasScene(missing), throwsFormatException);
@@ -109,7 +109,7 @@ void main() {
     });
   }
 
-  test('v4 rejects unknown source kinds and invalid command structure', () {
+  test('v5 rejects unknown source kinds and invalid command structure', () {
     final unknown = _wire();
     _data(unknown)['source'] = {'kind': 'unknown'};
     expect(() => decodeCanvasScene(unknown), throwsFormatException);
@@ -140,7 +140,7 @@ void main() {
     expect(() => decodeCanvasScene(fractional), throwsFormatException);
   });
 
-  test('v4 validates inactive stroke values without numeric coercion', () {
+  test('v5 validates inactive stroke values without numeric coercion', () {
     final cases = <(String, Object?, Matcher)>[
       ('color', 1.5, isA<FormatException>()),
       ('color', -1, isA<ArgumentError>()),
@@ -222,7 +222,7 @@ void main() {
   });
 
   test('historical scenes require an explicit external upgrade', () {
-    for (final version in [1, 2, 3]) {
+    for (final version in [1, 2, 3, 4]) {
       final old = _wire()..['sceneFormatVersion'] = version;
       expect(() => decodeCanvasScene(old), throwsFormatException);
     }

@@ -1,3 +1,5 @@
+import 'package:canvas_core/src/foundation/math/affine2d.dart';
+import 'package:canvas_core/src/runtime/geometry/transform_operations.dart';
 // Path: packages/canvas_core/lib/src/runtime/traversal/scene_tree_ops.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
@@ -87,6 +89,7 @@ abstract final class SceneTreeOps {
     ElementId id, {
     ElementId? newParentId,
     int? toIndex,
+    required TransformPreservation preservation,
   }) {
     final node = findById(doc, id);
     if (node == null) return doc;
@@ -119,8 +122,16 @@ abstract final class SceneTreeOps {
       return _replaceChildren(doc, pr.parent, siblings);
     }
 
+    var moving = node;
+    if (preservation == TransformPreservation.world) {
+      final targetWorld = newParentId == null
+          ? const Affine2D.identity() : worldTransformOf(doc, newParentId)!;
+      final inverse = targetWorld.tryInverse();
+      if (inverse == null) throw StateError('New parent transform cannot be inverted reliably.');
+      moving = node.withXf(inverse * worldTransformOf(doc, id)!);
+    }
     final d1 = _removeAtParentRef(doc, pr);
-    return addNode(d1, node, parentId: newParentId, index: toIndex);
+    return addNode(d1, moving, parentId: newParentId, index: toIndex);
   }
 
   // -------------------------------------------------------------------------
@@ -131,6 +142,7 @@ abstract final class SceneTreeOps {
     CanvasSceneDocument doc,
     ElementId id, {
     Vec2 shift = const Vec2(16, 16),
+    TransformSpace shiftSpace = TransformSpace.parent,
   }) {
     final node = findById(doc, id);
     if (node == null) {
@@ -184,7 +196,10 @@ abstract final class SceneTreeOps {
 
     // Shift root position only.
     final xf0 = cloned.xf;
-    cloned = cloned.withXf(xf0.copyWith(position: xf0.position + shift));
+    cloned = cloned.withXf(transformAfterDelta(
+      xf0, Affine2D.translation(shift.x, shift.y), space: shiftSpace,
+      parentWorld: parentWorldTransformOf(doc, id)!,
+    ));
 
     // Insert immediately after the original.
     // Later siblings paint above earlier siblings, so the duplicate appears
@@ -211,56 +226,39 @@ abstract final class SceneTreeOps {
   // -------------------------------------------------------------------------
 
   static CanvasSceneDocument replaceNodeXf(
-    CanvasSceneDocument doc,
-    ElementId id,
-    Transform2D xf,
+    CanvasSceneDocument doc, ElementId id, Affine2D xf,
   ) {
     final node = findById(doc, id);
-    if (node == null) return doc;
+    if (node == null || node.xf == xf) return doc;
     return replaceById(doc, id, node.withXf(xf));
   }
 
-  static CanvasSceneDocument translate(
-    CanvasSceneDocument doc,
-    ElementId id,
-    Vec2 delta,
-  ) {
+  static CanvasSceneDocument composeDelta(
+    CanvasSceneDocument doc, ElementId id, Affine2D delta, {
+    required TransformSpace space,
+  }) {
     final node = findById(doc, id);
     if (node == null) return doc;
-    final xf = node.xf;
-    return replaceNodeXf(doc, id, xf.copyWith(position: xf.position + delta));
+    return replaceNodeXf(doc, id, transformAfterDelta(
+      node.xf, delta, space: space, parentWorld: parentWorldTransformOf(doc, id)!,
+    ));
   }
+
+  static CanvasSceneDocument translate(
+    CanvasSceneDocument doc, ElementId id, Vec2 delta, {
+    TransformSpace space = TransformSpace.parent,
+  }) => composeDelta(doc, id, Affine2D.translation(delta.x, delta.y), space: space);
 
   static CanvasSceneDocument rotate(
-    CanvasSceneDocument doc,
-    ElementId id,
-    double deltaRad,
-  ) {
-    final node = findById(doc, id);
-    if (node == null) return doc;
-    final xf = node.xf;
-    return replaceNodeXf(
-      doc,
-      id,
-      xf.copyWith(rotationRad: xf.rotationRad + deltaRad),
-    );
-  }
+    CanvasSceneDocument doc, ElementId id, double radians, {
+    required Vec2 anchor, required TransformSpace space,
+  }) => composeDelta(doc, id, affineAround(anchor, Affine2D.rotation(radians)), space: space);
 
-  static CanvasSceneDocument uniformScale(
-    CanvasSceneDocument doc,
-    ElementId id,
-    double mul,
-  ) {
-    final node = findById(doc, id);
-    if (node == null) return doc;
-    final xf = node.xf;
-    final s = xf.scale;
-    return replaceNodeXf(
-      doc,
-      id,
-      xf.copyWith(scale: Vec2(s.x * mul, s.y * mul)),
-    );
-  }
+  static CanvasSceneDocument scale(
+    CanvasSceneDocument doc, ElementId id, Vec2 factors, {
+    required Vec2 anchor, required TransformSpace space,
+  }) => composeDelta(doc, id, affineAround(anchor,
+    Affine2D.scale(factors.x, factors.y)), space: space);
 
   // -------------------------------------------------------------------------
   // Stack order

@@ -89,7 +89,7 @@ void main() {
       });
     }
 
-    test('upgrades literal canvas_core 0.10.x JSON through v1/v2/v3 to v4', () {
+    test('upgrades literal canvas_core 0.10.x JSON through v1/v2/v3/v4 to v5', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);
 
@@ -296,7 +296,7 @@ void main() {
       );
     });
 
-    test('upgrades an already-versioned v1 scene to v4', () {
+    test('upgrades an already-versioned v1 scene to v5', () {
       final current = _loadFixture('v1_nested.json');
 
       final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
@@ -305,7 +305,7 @@ void main() {
       expect(upgraded, isNot(equals(current)));
     });
 
-    test('accepts an already-current v4 scene without migration', () {
+    test('accepts an already-current v5 scene without migration', () {
       final v1 = _loadFixture('v1_nested.json');
       final current = upgradeCanvasScene(Map<String, Object?>.from(v1));
 

@@ -51,7 +51,7 @@ Future<Uint8List> _render(
   ResolvedIcon icon, {
   double size = 48,
   CanvasAppearance appearance = const CanvasAppearance(),
-  Transform2D parent = const Transform2D(),
+  Affine2D parent = const Affine2D.identity(),
 }) async {
   final text = FlutterTextPipeline();
   try {
@@ -233,7 +233,7 @@ void main() {
   test('parent transforms apply after the source fit', () async {
     final pixels = await _render(
       _icon(box: const Rect2D(0, 0, 32, 16)),
-      parent: Transform2D(rotationRad: math.pi / 2, scale: const Vec2(2, 1)),
+      parent: (Affine2D.rotation(math.pi / 2) * Affine2D.scale(2, 1)),
     );
     expect(_rgba(pixels, 0, 40)[3], 255);
     expect(_rgba(pixels, 20, 0)[3], 0);

@@ -4,7 +4,7 @@ import 'package:canvas_core/src/foundation/style/style_types.dart'
     show FillRule;
 import 'package:canvas_core/src/path/path_ir.dart' show PathIR;
 import 'package:canvas_core/src/services/icon_resolver.dart' show ResolvedIcon;
-import 'package:vector_math/vector_math_64.dart' as vm;
+import 'package:canvas_core/src/foundation/math/affine2d.dart';
 
 /// Evaluated icon geometry and its centered, uniform viewBox fit.
 /// Commands stay in source coordinates; appearance is authored in node-local
@@ -27,15 +27,13 @@ final class ComputedIcon {
         'Icon fitting must be representable as finite geometry.',
       );
     }
-    final sourceToLocal = vm.Matrix4.identity()
-      ..translateByDouble(x, y, 0, 1)
-      ..scaleByDouble(scale, scale, 1, 1);
+    final sourceToLocal = Affine2D.translation(x, y) * Affine2D.scale(scale);
     return ComputedIcon._(icon.pathIR, sourceToLocal, icon.fillRule);
   }
 
   const ComputedIcon._(this.pathIR, this.sourceToLocal, this.fillRule);
 
   final PathIR pathIR;
-  final vm.Matrix4 sourceToLocal;
+  final Affine2D sourceToLocal;
   final FillRule fillRule;
 }

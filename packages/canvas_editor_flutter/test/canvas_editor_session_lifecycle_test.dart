@@ -38,9 +38,9 @@ CanvasSceneDocument _scene(String seedId) {
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
     children: <Node>[
-      const Node.text(
+      Node.text(
         id: 'placeholder',
-        xf: Transform2D(position: Vec2(40, 40)),
+        xf: Affine2D.translation(40, 40),
         data: TextData(
           text: 'Seed',
           fontFamily: 'TestFont',
@@ -59,9 +59,9 @@ CanvasSceneDocument _scene(String seedId) {
 void _addLocalEdit(EditorController controller) {
   controller.applyEdit(
     EditorEdits.addNode(
-      const Node.text(
+      Node.text(
         id: 'local-edit',
-        xf: Transform2D(position: Vec2(120, 80)),
+        xf: Affine2D.translation(120, 80),
         data: TextData(
           text: 'Local edit',
           fontFamily: 'TestFont',

@@ -11,7 +11,7 @@ import 'package:canvas_core/canvas_core_runtime.dart'
         ImageNode,
         SceneTreeOps,
         Size2D,
-        Transform2D,
+        Affine2D,
         Vec2;
 import 'package:canvas_editor_flutter/src/asset_library.dart'
     show
@@ -80,7 +80,7 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
               fit: ImageFit.contain,
               align: const Vec2(0.5, 0.5),
             ),
-            xf: Transform2D(position: Vec2(artboard.w * 0.5, artboard.h * 0.5)),
+            xf: Affine2D.translation(artboard.w * 0.5, artboard.h * 0.5),
           );
 
           context.controller.applyEdit(

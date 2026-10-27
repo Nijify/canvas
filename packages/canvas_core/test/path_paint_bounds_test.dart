@@ -203,7 +203,7 @@ void main() {
     }
   });
 
-  for (final origin in OriginKind.values) {
+  for (final origin in ['affine']) {
     test(
       'path appearance preserves nested geometry and transforms: $origin',
       () {
@@ -215,28 +215,20 @@ void main() {
         ComputedScene build(CanvasAppearance appearance) => _compute([
           Node.group(
             id: 'outer',
-            xf: const Transform2D(rotationRad: 0.4, scale: Vec2(1.4, 0.8)),
+            xf: (Affine2D.rotation(0.4) * Affine2D.scale(1.4, 0.8)),
             children: [
               Node.group(
                 id: 'inner',
-                xf: const Transform2D(
-                  position: Vec2(15, -20),
-                  rotationRad: -0.7,
-                ),
+                xf: (Affine2D.translation(15, -20) * Affine2D.rotation(-0.7)),
                 children: [
                   Node.path(
                     id: 'path',
-                    xf: Transform2D(
-                      origin: origin,
-                      customPivotPx: const Vec2(7, -3),
-                      rotationRad: 0.3,
-                      scale: const Vec2(-2, 0.5),
-                    ),
+                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-(7), -(-3))),
                     data: PathData(source: source, appearance: appearance),
                   ),
-                  const Node.path(
+                  Node.path(
                     id: 'sibling',
-                    xf: Transform2D(position: Vec2(150, 30)),
+                    xf: Affine2D.translation(150, 30),
                     data: PathData(
                       source: RectSource(x: -10, y: -5, width: 20, height: 10),
                     ),
@@ -267,8 +259,8 @@ void main() {
             before.layoutBoundsLocalById[id],
           );
           expect(
-            after.worldById[id]!.storage,
-            orderedEquals(before.worldById[id]!.storage),
+            after.worldById[id]!.toJson(),
+            orderedEquals(before.worldById[id]!.toJson()),
           );
         }
         expect(before.paintBoundsWorldById, isEmpty);

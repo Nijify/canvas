@@ -31,7 +31,7 @@ void main() {
     final v2 = _fixture('v2_paths.json');
     final before = jsonEncode(v2);
     final upgraded = upgradeCanvasScene(v2);
-    expect(upgraded, _fixture('v4_paths.json'));
+    expect(upgraded, _fixture('v5_paths.json'));
     expect(jsonEncode(v2), before);
     final canonical = encodeCanvasScene(decodeCanvasScene(upgraded));
     expect(encodeCanvasScene(decodeCanvasScene(canonical)), canonical);

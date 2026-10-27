@@ -139,10 +139,10 @@ void main() {
           intrinsicSize: Size2D(8, 2),
         ),
       },
-      children: const <Node>[
+      children: <Node>[
         Node.image(
           id: 'image-1',
-          xf: Transform2D(position: Vec2(4, 1)),
+          xf: Affine2D.translation(4, 1),
           data: ImageData(
             assetId: 'asset-1',
             size: Size2D(8, 2),

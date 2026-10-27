@@ -213,7 +213,7 @@ class _ImageImportExtension<TSourceDocument>
     return ImageNode(
       id: nodeId,
       data: ImageData(assetId: assetId, size: size),
-      xf: Transform2D(position: position),
+      xf: Affine2D.translation((position).x, (position).y),
     );
   }
 

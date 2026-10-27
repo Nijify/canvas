@@ -264,8 +264,8 @@ void main() {
         expect(insertedSize.w, closeTo(220, 0.001));
         expect(insertedSize.h, closeTo(110, 0.001));
 
-        expect(inserted.xf.position.x, closeTo(150, 0.001));
-        expect(inserted.xf.position.y, closeTo(100, 0.001));
+        expect(inserted.xf.e, closeTo(150, 0.001));
+        expect(inserted.xf.f, closeTo(100, 0.001));
         expect(harness.selection.value, inserted.id);
       },
     );

@@ -14,14 +14,14 @@ const _customFieldValue = 'Value from surface extension codec';
 const _contentBoundsPaddingPx = 37.0;
 
 rt.CanvasSceneDocument _fixtureScene() {
-  return const rt.CanvasSceneDocument(
+  return rt.CanvasSceneDocument(
     artboardSize: rt.Size2D(300, 200),
     backgroundFill: rt.CanvasFill.none(),
     backgroundOpacity: 1.0,
     children: <rt.Node>[
       rt.Node.text(
         id: _nodeId,
-        xf: rt.Transform2D(position: rt.Vec2(20, 20)),
+        xf: rt.Affine2D.translation(20, 20),
         data: rt.TextData(
           text: 'Original title',
           fontFamily: 'Inter',
@@ -295,7 +295,7 @@ void main() {
     final endSession = runtime.beginEditSession();
 
     try {
-      runtime.updateDrag(_nodeId, const rt.Vec2(80, 0));
+      runtime.updateTransform(_nodeId, rt.Affine2D.translation(80, 0) * rt.findById(runtime.document.value, _nodeId)!.xf);
     } finally {
       endSession();
     }

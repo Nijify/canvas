@@ -1,7 +1,7 @@
 name: canvas_scene_upgrade
 description: Optional explicit JSON upgrades from supported historical Canvas scenes to the current format.
 publish_to: "none"
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/Nijify/canvas
 issue_tracker: https://github.com/Nijify/canvas/issues
 
@@ -11,7 +11,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  canvas_core: ^0.17.0
+  canvas_core: ^0.18.0
 
 dev_dependencies:
   test: ^1.30.0

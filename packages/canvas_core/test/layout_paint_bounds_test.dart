@@ -55,7 +55,7 @@ Node _text({
   String id = 'text',
   double shadow = 0,
   CanvasFill foreground = const CanvasFill.solid(0xFF111111),
-  Transform2D xf = const Transform2D(),
+  Affine2D xf = const Affine2D.identity(),
 }) => Node.text(
   id: id,
   xf: xf,
@@ -108,37 +108,24 @@ void main() {
     });
   }
 
-  for (final origin in OriginKind.values) {
-    test('shadow preserves nested layout and transforms: $origin', () {
+  for (final extra in [const Affine2D.identity(), Affine2D.shear(.6, -.2)]) {
+    test('shadow preserves nested layout and transforms: $extra', () {
       CanvasSceneDocument makeScene(double shadow) => _scene([
         Node.group(
           id: 'outer',
-          xf: const Transform2D(
-            position: Vec2(80, 40),
-            rotationRad: 0.4,
-            scale: Vec2(1.4, 0.8),
-          ),
+          xf: extra * (Affine2D.translation(80, 40) * Affine2D.rotation(0.4) * Affine2D.scale(1.4, 0.8)),
           children: [
             Node.group(
               id: 'inner',
-              xf: const Transform2D(
-                position: Vec2(15, -20),
-                rotationRad: -0.7,
-                scale: Vec2(0.8, 1.6),
-              ),
+              xf: (Affine2D.translation(15, -20) * Affine2D.rotation(-0.7) * Affine2D.scale(0.8, 1.6)),
               children: [
                 _text(
                   shadow: shadow,
-                  xf: Transform2D(
-                    origin: origin,
-                    customPivotPx: const Vec2(7, -3),
-                    rotationRad: 0.3,
-                    scale: const Vec2(-2, 0.5),
-                  ),
+                  xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-(7), -(-3))),
                 ),
                 _text(
                   id: 'sibling',
-                  xf: const Transform2D(position: Vec2(150, 30)),
+                  xf: Affine2D.translation(150, 30),
                 ),
               ],
             ),
@@ -156,8 +143,8 @@ void main() {
           before.layoutBoundsLocalById[id],
         );
         expect(
-          after.worldById[id]!.storage,
-          orderedEquals(before.worldById[id]!.storage),
+          after.worldById[id]!.toJson(),
+          orderedEquals(before.worldById[id]!.toJson()),
         );
       }
       expect(
@@ -172,7 +159,7 @@ void main() {
       _scene([
         _text(
           shadow: 10,
-          xf: Transform2D(rotationRad: math.pi / 2, scale: const Vec2(2, 3)),
+          xf: (Affine2D.rotation(math.pi / 2) * Affine2D.scale(2, 3)),
         ),
       ]),
       _services(),
@@ -187,11 +174,11 @@ void main() {
       _scene([
         Node.group(
           id: 'outer',
-          xf: Transform2D(rotationRad: math.pi / 4),
+          xf: Affine2D.rotation(math.pi / 4),
           children: [
             Node.group(
               id: 'inner',
-              xf: Transform2D(rotationRad: -math.pi / 4),
+              xf: Affine2D.rotation(-math.pi / 4),
               children: [_text(shadow: 10)],
             ),
           ],
@@ -276,8 +263,8 @@ void main() {
       before.layoutBoundsLocalById['icon'],
     );
     expect(
-      after.worldById['icon']!.storage,
-      orderedEquals(before.worldById['icon']!.storage),
+      after.worldById['icon']!.toJson(),
+      orderedEquals(before.worldById['icon']!.toJson()),
     );
     expect(after.layoutBoundsLocalById['icon']!.width, 96);
   });

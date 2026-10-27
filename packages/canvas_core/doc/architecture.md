@@ -89,7 +89,7 @@ documented ordinary-path profile and explicitly rejects icon nodes.
 
 ## Serialization boundary
 
-Scene format v4 retains the scene tree and authored appearance model. Paths have
+Scene format v5 retains the scene tree and authored appearance model. Paths have
 one of seven geometry sources: rect, circle, ellipse, line, polyline, polygon,
 or path. General paths persist as SVG d and hold one immutable PathIR snapshot.
 Polyline/polygon sources freeze numeric points and persist SVG point strings.
@@ -104,12 +104,12 @@ PathIR validates command structure and finite geometry at construction. General
 paths and icons reuse it directly, without independently editable raw text or
 command copies during evaluation. Shape compilation remains cached by immutable
 source identity independently of appearance. Basic shapes use local numeric
-coordinates; existing transforms and host application placement are unchanged.
+coordinates; transforms are complete local-to-parent affine mappings.
 
 Persistence validates common scene wire structure, delegates exact geometry
 structure and parsing to the source codec, then checks runtime integrity. Reads
-and writes use v4 only. The optional `canvas_scene_upgrade` package owns explicit
-JSON routes through v1/v2/v3 to v4. Its intermediate steps validate historical
+and writes use v5 only. The optional `canvas_scene_upgrade` package owns explicit
+JSON routes through v1/v2/v3/v4 to v5. Its intermediate steps validate historical
 wire formats independently of the current runtime and validate the final result
 through current core once. Core has no dependency on historical upgrade code.
 
@@ -159,3 +159,25 @@ The editor consumes core document/render geometry and derives its own
 interaction geometry from those canonical results. This keeps picking,
 selection, snapping, and manipulation aligned with rendering without making
 editor-only geometry part of the core runtime contract.
+
+## Affine placement
+
+`Affine2D` is immutable and stores six finite coefficients `[a,b,c,d,e,f]`.
+`A * B` applies B first; a hierarchy uses parent-world * local. Node matrices
+have no dependency on geometry, visibility, font metrics, or appearance. Local
+geometry keeps its own coordinates. No TRS decomposition or persistent pivot is
+part of the runtime contract. Identity xf, false hidden, and nonZero fillRule
+are omitted on write.
+
+`TransformSpace` makes deltas explicit: local postmultiplies, parent
+premultiplies, and world conjugates through the parent's reliable inverse.
+Reparenting requires a local/world preservation choice. Singular authored
+matrices can render, but unavailable inverses disable inverse-dependent picking
+and operations. Derived nonfinite matrices or coordinates fail before editor
+history adopts a candidate.
+
+Gesture state captures the target, starting matrix, prepared parent frame and
+anchor once. Total gesture deltas are independent of frame publication cadence.
+`SceneEvaluation` and `ComputedScene` are created by core evaluation, preventing
+unrelated scene/geometry pairs at rendering and SVG boundaries. Mutable platform
+matrix buffers are derived only for framework calls.

@@ -1,6 +1,6 @@
 name: canvas_background_removal
 description: Optional provider-neutral background removal orchestration for Canvas.
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 resolution: workspace
 environment:
@@ -8,7 +8,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  canvas_editor_flutter: ^0.20.0
+  canvas_editor_flutter: ^0.21.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

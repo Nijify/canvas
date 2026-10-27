@@ -170,16 +170,9 @@ abstract class EditorController {
   void undo();
   void redo();
 
-  // ---- Ephemeral transforms ----
-  void updateDrag(rt.ElementId id, rt.Vec2 delta);
-  void updateRotate(rt.ElementId id, double deltaRad);
-
-  /// Scale around an anchor point expressed in the node's parent space.
-  void updateUniformScaleAround(
-    rt.ElementId id,
-    rt.Vec2 anchorParent,
-    double mul,
-  );
+  /// Replace local placement during an owned edit session.
+  /// The caller calculates from its initial snapshot, not the current frame.
+  void updateTransform(rt.ElementId id, rt.Affine2D local);
 
   // ---- Persistent edit pipeline ----
 

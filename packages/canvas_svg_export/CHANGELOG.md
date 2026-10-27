@@ -1,3 +1,7 @@
+## 0.5.0
+
+- **Breaking:** exportPreparedSvg accepts one SceneEvaluation; emit complete affine world mappings directly.
+
 ## 0.4.0
 
 - **Breaking:** require canvas_core 0.17.x and reuse its shared M/L/C/Z path writer.

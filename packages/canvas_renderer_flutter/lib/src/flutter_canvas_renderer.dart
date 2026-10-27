@@ -128,7 +128,7 @@ class CanvasRenderer {
 
       canvas.save();
       try {
-        canvas.transform(world.storage);
+        canvas.transform(world.toColumnMajor4x4());
         switch (node) {
           case TextNode(data: final data):
             _drawText(
@@ -146,7 +146,7 @@ class CanvasRenderer {
               final path = _buildUiPath(
                 icon.pathIR,
                 fillRule: icon.fillRule,
-              ).transform(icon.sourceToLocal.storage);
+              ).transform(icon.sourceToLocal.toColumnMajor4x4());
               _drawPathUnderlays(canvas, path, data.appearance.underlays);
               _drawPathFill(canvas, path, data.appearance.foreground);
             }

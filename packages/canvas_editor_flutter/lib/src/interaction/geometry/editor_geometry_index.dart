@@ -1,8 +1,8 @@
 // Path: packages/canvas_editor_flutter/lib/src/interaction/geometry/editor_geometry_index.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show ComputedScene, ElementId, Rect2D, Rect2DX, aabbOfTransformedRect;
-import 'package:vector_math/vector_math_64.dart' as vm;
+    show Affine2D, ComputedScene, ElementId, Rect2D, Rect2DX, aabbOfTransformedRect;
+
 
 /// Editor-owned geometry derived from core document/render computation.
 ///
@@ -14,17 +14,16 @@ final class EditorGeometryIndex {
     required this.layoutBoundsWorldById,
   });
 
-  final Map<ElementId, vm.Matrix4> inverseWorldById;
+  final Map<ElementId, Affine2D> inverseWorldById;
   final Map<ElementId, Rect2D> layoutBoundsWorldById;
 
   factory EditorGeometryIndex.fromComputed(ComputedScene computed) {
-    final inverseWorldById = <ElementId, vm.Matrix4>{};
+    final inverseWorldById = <ElementId, Affine2D>{};
     final layoutBoundsWorldById = <ElementId, Rect2D>{};
 
-    // Preserve the former ComputedScene inverse semantics exactly.
     for (final entry in computed.worldById.entries) {
-      final inverse = vm.Matrix4.copy(entry.value)..invert();
-      inverseWorldById[entry.key] = inverse;
+      final inverse = entry.value.tryInverse();
+      if (inverse != null) inverseWorldById[entry.key] = inverse;
     }
 
     // Derive leaf world-layout AABBs from canonical local layout bounds and
@@ -54,8 +53,8 @@ final class EditorGeometryIndex {
     }
 
     return EditorGeometryIndex(
-      inverseWorldById: inverseWorldById,
-      layoutBoundsWorldById: layoutBoundsWorldById,
+      inverseWorldById: Map.unmodifiable(inverseWorldById),
+      layoutBoundsWorldById: Map.unmodifiable(layoutBoundsWorldById),
     );
   }
 }

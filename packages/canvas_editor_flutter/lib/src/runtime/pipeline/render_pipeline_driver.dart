@@ -38,6 +38,7 @@ class RenderPipelineDriver<TSourceDocument> {
 
   TSourceDocument _sourceDocument;
   TSourceDocument? _pendingSourceDocument;
+  rt.SceneEvaluation? _pendingEvaluation;
 
   bool _frameScheduled = false;
 
@@ -48,15 +49,28 @@ class RenderPipelineDriver<TSourceDocument> {
 
   TSourceDocument get sourceDocument => _sourceDocument;
 
+  rt.SceneEvaluation prepare(TSourceDocument document) => _build(document);
+
+  /// Settle the previous gesture before capturing a new starting snapshot.
+  void flushPending() {
+    final pending = _pendingSourceDocument;
+    if (pending == null || _disposed) return;
+    final evaluation = _pendingEvaluation;
+    _pendingEvaluation = null;
+    applySourceDocument(pending, prepared: evaluation);
+  }
+
   /// Applies a new source document immediately or through a deferred snapshot.
   void applySourceDocument(
     TSourceDocument sourceDocument, {
     bool scheduleSnapshot = false,
+    rt.SceneEvaluation? prepared,
   }) {
     if (_disposed) return;
 
     if (scheduleSnapshot) {
       _pendingSourceDocument = sourceDocument;
+      _pendingEvaluation = prepared;
       _scheduleInvalidation();
       return;
     }
@@ -65,8 +79,9 @@ class RenderPipelineDriver<TSourceDocument> {
     _scheduleToken += 1;
     _frameScheduled = false;
     _pendingSourceDocument = null;
+    _pendingEvaluation = null;
 
-    _applyNow(sourceDocument);
+    _applyNow(sourceDocument, prepared);
   }
 
   /// Schedules a render-only invalidation.
@@ -75,6 +90,7 @@ class RenderPipelineDriver<TSourceDocument> {
   /// editable/source document changed.
   void scheduleLayoutInvalidation() {
     if (_disposed) return;
+    _pendingEvaluation = null;
     _scheduleInvalidation();
   }
 
@@ -94,14 +110,16 @@ class RenderPipelineDriver<TSourceDocument> {
 
       final sourceDocument = _pendingSourceDocument ?? _sourceDocument;
 
+      final prepared = _pendingEvaluation;
       _pendingSourceDocument = null;
-      _applyNow(sourceDocument);
+      _pendingEvaluation = null;
+      _applyNow(sourceDocument, prepared);
     });
   }
 
-  void _applyNow(TSourceDocument sourceDocument) {
+  void _applyNow(TSourceDocument sourceDocument, [rt.SceneEvaluation? prepared]) {
     final sourceChanged = sourceDocument != _sourceDocument;
-    final built = _build(sourceDocument);
+    final built = prepared ?? _build(sourceDocument);
 
     _sourceDocument = sourceDocument;
 
@@ -120,6 +138,7 @@ class RenderPipelineDriver<TSourceDocument> {
     _disposed = true;
     _frameScheduled = false;
     _pendingSourceDocument = null;
+    _pendingEvaluation = null;
     _scheduleToken += 1;
 
     _render.dispose();

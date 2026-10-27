@@ -3,6 +3,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:canvas_core/src/foundation/core_types.dart';
+import 'package:canvas_core/src/foundation/math/affine2d.dart';
 import 'package:canvas_core/src/foundation/ids.dart'
     show CanvasAssetId, ElementId;
 import 'package:canvas_core/src/foundation/paint/canvas_fill.dart';
@@ -15,22 +16,6 @@ import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
 
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';
-
-enum OriginKind { center, custom }
-
-@freezed
-abstract class Transform2D with _$Transform2D {
-  const factory Transform2D({
-    @Vec2Converter() @Default(Vec2.zero) Vec2 position,
-    @Default(0.0) double rotationRad,
-    @Vec2Converter() @Default(Vec2(1, 1)) Vec2 scale,
-    @Default(OriginKind.center) OriginKind origin,
-    @NullableVec2Converter() Vec2? customPivotPx,
-  }) = _Transform2D;
-
-  factory Transform2D.fromJson(Map<String, dynamic> json) =>
-      _$Transform2DFromJson(json);
-}
 
 @freezed
 abstract class TextData with _$TextData {
@@ -83,6 +68,7 @@ abstract class PathData with _$PathData {
     /// The sole authored geometry source. Use an explicit empty source for an
     /// intentionally empty path.
     @PathSourceConverter() required PathSource source,
+    @JsonKey(toJson: _fillRuleToJson, includeIfNull: false)
     @Default(FillRule.nonZero) FillRule fillRule,
     @Default(CanvasAppearance(foreground: CanvasFill.none()))
     CanvasAppearance appearance,
@@ -122,10 +108,10 @@ abstract class GroupBehaviorRef with _$GroupBehaviorRef {
       _$GroupBehaviorRefFromJson(json);
 }
 
-/// Runtime scene-graph node (hierarchical TRS).
+/// Runtime scene-graph node (hierarchical affine placement).
 ///
 /// Notes:
-/// - All nodes (including groups) have a real Transform2D.
+/// - All nodes (including groups) have a complete local-to-parent Affine2D.
 /// - Group nodes structurally own children (no groupId).
 /// - IDs are intended to be globally unique within the document.
 /// - Optional user-facing display names live in [name].
@@ -143,8 +129,10 @@ sealed class Node with _$Node {
     // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
     // Candidate for removal from the persisted scene model after layer
     // visibility UX is intentionally redesigned or removed.
+    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
     @Default(false) bool hidden,
-    @Default(Transform2D()) Transform2D xf,
+    @JsonKey(includeIfNull: false)
+    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
     required TextData data,
     String? role,
   }) = TextNode;
@@ -152,8 +140,10 @@ sealed class Node with _$Node {
   const factory Node.image({
     required ElementId id,
     String? name,
+    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
     @Default(false) bool hidden,
-    @Default(Transform2D()) Transform2D xf,
+    @JsonKey(includeIfNull: false)
+    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
     required ImageData data,
     String? role,
   }) = ImageNode;
@@ -161,8 +151,10 @@ sealed class Node with _$Node {
   const factory Node.path({
     required ElementId id,
     String? name,
+    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
     @Default(false) bool hidden,
-    @Default(Transform2D()) Transform2D xf,
+    @JsonKey(includeIfNull: false)
+    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
     required PathData data,
     String? role,
   }) = PathNode;
@@ -170,8 +162,10 @@ sealed class Node with _$Node {
   const factory Node.icon({
     required ElementId id,
     String? name,
+    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
     @Default(false) bool hidden,
-    @Default(Transform2D()) Transform2D xf,
+    @JsonKey(includeIfNull: false)
+    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
     required CanvasIconData data,
     String? role,
   }) = IconNode;
@@ -179,8 +173,10 @@ sealed class Node with _$Node {
   const factory Node.group({
     required ElementId id,
     String? name,
+    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
     @Default(false) bool hidden,
-    @Default(Transform2D()) Transform2D xf,
+    @JsonKey(includeIfNull: false)
+    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
     GroupBehaviorRef? behavior,
     @Default(<Node>[]) List<Node> children,
   }) = GroupNode;
@@ -213,7 +209,7 @@ extension NodeFields on Node {
     GroupNode(:final hidden) => hidden,
   };
 
-  Transform2D get xf => switch (this) {
+  Affine2D get xf => switch (this) {
     TextNode(:final xf) => xf,
     ImageNode(:final xf) => xf,
     PathNode(:final xf) => xf,
@@ -236,3 +232,8 @@ extension NodeFields on Node {
     _ => const <Node>[],
   };
 }
+
+bool? _hiddenToJson(bool hidden) => hidden ? true : null;
+
+String? _fillRuleToJson(FillRule rule) =>
+    rule == FillRule.nonZero ? null : rule.name;

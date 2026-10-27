@@ -1,7 +1,12 @@
 {
-  "sceneFormatVersion": 4,
-  "artboardSize": { "w": 1080.0, "h": 1080.0 },
-  "backgroundFill": { "type": "none" },
+  "sceneFormatVersion": 5,
+  "artboardSize": {
+    "w": 1080.0,
+    "h": 1080.0
+  },
+  "backgroundFill": {
+    "type": "none"
+  },
   "backgroundOpacity": 1.0,
   "children": [
     {
@@ -17,11 +22,23 @@
           "foreground": {
             "type": "gradient",
             "grad": {
-              "start": { "x": -223.67532368147135, "y": -223.67532368147135 },
-              "end": { "x": 1303.6753236814714, "y": 1303.6753236814714 },
+              "start": {
+                "x": -223.67532368147135,
+                "y": -223.67532368147135
+              },
+              "end": {
+                "x": 1303.6753236814714,
+                "y": 1303.6753236814714
+              },
               "stops": [
-                { "offset": 0.3, "color": 4279308561 },
-                { "offset": 0.7, "color": 4281558681 }
+                {
+                  "offset": 0.3,
+                  "color": 4279308561
+                },
+                {
+                  "offset": 0.7,
+                  "color": 4281558681
+                }
               ]
             }
           },

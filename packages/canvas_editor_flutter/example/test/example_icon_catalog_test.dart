@@ -83,7 +83,7 @@ void main() {
         for (final (index, item) in catalog.items.indexed)
           Node.icon(
             id: item.ref,
-            xf: Transform2D(position: Vec2(64 + index * 128, 64)),
+            xf: Affine2D.translation(64 + index * 128, 64),
             data: CanvasIconData(
               iconRef: item.ref,
               sizePx: 96,

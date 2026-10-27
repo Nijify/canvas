@@ -84,7 +84,7 @@ PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
         ),
       ),
     ),
-    xf: const Transform2D(position: _shapePos),
+    xf: Affine2D.translation((_shapePos).x, (_shapePos).y),
     role: role,
   );
 }
@@ -134,7 +134,7 @@ void _addBaseText(EditorActionContext ctx) {
           foreground: CanvasFill.solid(_baseFill),
         ),
       ),
-      xf: const Transform2D(position: _textPos),
+      xf: Affine2D.translation((_textPos).x, (_textPos).y),
     ),
   );
 }
