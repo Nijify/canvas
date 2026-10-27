@@ -30,18 +30,21 @@ void main() {
     }
   });
 
-  test('upgrade code uses core public APIs and validates current output once', () {
-    final upgrade = _packageRoot(
-      'package:canvas_scene_upgrade/canvas_scene_upgrade.dart',
-    );
-    final currentDecoderCallers = <String>[];
-    final decoderCall = RegExp(r'\bdecodeCanvasScene\s*\(');
-    for (final source in _sources(upgrade)) {
-      final text = source.readAsStringSync();
-      expect(text, isNot(contains('package:canvas_core/src/')));
-      if (decoderCall.hasMatch(text)) currentDecoderCallers.add(source.path);
-    }
-    expect(currentDecoderCallers, hasLength(1));
-    expect(currentDecoderCallers.single, endsWith('src/upgrade_scene.dart'));
-  });
+  test(
+    'upgrade code uses core public APIs and validates current output once',
+    () {
+      final upgrade = _packageRoot(
+        'package:canvas_scene_upgrade/canvas_scene_upgrade.dart',
+      );
+      final currentDecoderCallers = <String>[];
+      final decoderCall = RegExp(r'\bdecodeCanvasScene\s*\(');
+      for (final source in _sources(upgrade)) {
+        final text = source.readAsStringSync();
+        expect(text, isNot(contains('package:canvas_core/src/')));
+        if (decoderCall.hasMatch(text)) currentDecoderCallers.add(source.path);
+      }
+      expect(currentDecoderCallers, hasLength(1));
+      expect(currentDecoderCallers.single, endsWith('src/upgrade_scene.dart'));
+    },
+  );
 }

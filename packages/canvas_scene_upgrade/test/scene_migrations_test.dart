@@ -23,9 +23,7 @@ Directory _resolvePackageRoot() {
 final Directory _packageRoot = _resolvePackageRoot();
 
 Map<String, dynamic> _loadFixture(String name) {
-  final file = File.fromUri(
-    _packageRoot.uri.resolve('test/fixtures/$name'),
-  );
+  final file = File.fromUri(_packageRoot.uri.resolve('test/fixtures/$name'));
 
   return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
 }

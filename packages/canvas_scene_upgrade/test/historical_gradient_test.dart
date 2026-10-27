@@ -33,7 +33,10 @@ void main() {
       {'x': 100, 'y': 0, 'extra': true},
     ]) {
       final gradient = _gradient()..['end'] = end;
-      expect(() => validateSceneV2Json(_scene(gradient)), throwsFormatException);
+      expect(
+        () => validateSceneV2Json(_scene(gradient)),
+        throwsFormatException,
+      );
     }
   });
 
@@ -41,7 +44,9 @@ void main() {
     for (final stops in <Object?>[
       null,
       [],
-      [{'offset': 0, 'color': 0xff112233}],
+      [
+        {'offset': 0, 'color': 0xff112233},
+      ],
       [
         {'offset': 0.75, 'color': 0xff112233},
         {'offset': 0.25, 'color': 0xff445566},
@@ -68,7 +73,10 @@ void main() {
       ],
     ]) {
       final gradient = _gradient()..['stops'] = stops;
-      expect(() => validateSceneV2Json(_scene(gradient)), throwsFormatException);
+      expect(
+        () => validateSceneV2Json(_scene(gradient)),
+        throwsFormatException,
+      );
     }
   });
 }
