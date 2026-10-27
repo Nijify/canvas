@@ -9,7 +9,12 @@ environment:
   flutter: ">=3.44.0"
 
 dependencies:
-  canvas_background_removal: ^0.1.0
+  canvas_background_removal:
+    git:
+      url: https://github.com/Nijify/canvas.git
+      ref: master
+      path: packages/canvas_background_removal
+    version: ^0.1.0
   flutter:
     sdk: flutter
   flutter_litert: ^3.9.3
