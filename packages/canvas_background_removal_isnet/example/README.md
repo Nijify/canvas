@@ -25,6 +25,11 @@ Use the verified FP16 candidate only:
 
 Every engine re-verifies the model identity before opening it.
 
+The [model conversion and verification guide](../../../tools/models/isnet/README.md)
+describes how to reproduce this candidate with the pinned Python toolchain.
+The recorded [conversion evidence](../../../tools/models/isnet/evidence.json)
+contains its artifact hashes, tensor contracts, and primary-output mapping.
+
 ## Engines under test
 
 The harness keeps four evidence modes:
@@ -50,7 +55,7 @@ cd packages/canvas_background_removal_isnet/example
 flutter run --profile
 ```
 
-As with `flutter_frontend`, Android wrapper scripts/JARs are generated locally and are intentionally ignored by Git.
+Android wrapper scripts/JARs are generated locally and are intentionally ignored by Git.
 
 Use a physical arm64 Android device for evidence. Debug-mode timings are not acceptance data. The Android build includes LiteRT Next's GPU accelerator because GPU is an explicit benchmark mode.
 
