@@ -11,3 +11,10 @@ verified model file, model configuration, and owns the worker lifecycle.
 Do not add provider selection, production fallback, model distribution, or
 rollout infrastructure for the current candidate. Model redistribution rights
 are unresolved and must be assessed before future distribution.
+
+## Model preparation
+
+The [standalone model tooling](../../tools/models/isnet/README.md) contains the
+pinned source metadata, conversion scripts, locked Python environment, and
+recorded conversion evidence. Follow its reproduction commands to prepare a
+local candidate, then use the benchmark harness to assess device-level behavior.
