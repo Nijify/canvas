@@ -147,6 +147,10 @@ See the [`canvas_editor_flutter` README](packages/canvas_editor_flutter/README.m
 | `canvas_editor_flutter` | [README](packages/canvas_editor_flutter/README.md) |
 | `canvas_svg_export` | [README](packages/canvas_svg_export/README.md) |
 
+For development-only ISNet model conversion and verification, see the
+[model tooling guide](tools/models/isnet/README.md), including source metadata,
+the locked Python environment, and recorded conversion evidence.
+
 ## License
 
 Each package is licensed under the Apache License, Version 2.0:
