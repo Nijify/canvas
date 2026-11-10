@@ -92,16 +92,12 @@ void main() {
       final node = Node.text(
         id: 't1',
         xf: Affine2D.translation(10, 10),
-        data: TextData(
-          text: 'Hello',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'Hello',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       );
 
       final primaryId = runtime.applyEdit(EditorEdits.addNode(node));
@@ -123,16 +119,12 @@ void main() {
       Node.text(
         id: 't1',
         xf: Affine2D.translation(10, 10),
-        data: TextData(
-          text: 'Hello',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'Hello',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       ),
     ]);
 
@@ -152,30 +144,22 @@ void main() {
       Node.text(
         id: 't1',
         xf: Affine2D.translation(10, 10),
-        data: TextData(
-          text: 'Hello',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'Hello',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       ),
       Node.text(
         id: 't2',
         xf: Affine2D.translation(20, 20),
-        data: TextData(
-          text: 'World',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'World',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       ),
     ]);
 
@@ -195,32 +179,23 @@ void main() {
     () {
       const child1 = Node.text(
         id: 't1',
-        xf: const Affine2D.identity(),
-        data: TextData(
-          text: 'One',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'One',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       );
 
       final child2 = Node.text(
         id: 't2',
         xf: Affine2D.translation(10, 10),
-        data: TextData(
-          text: 'Two',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'Two',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       );
 
       final group = Node.group(id: 'g1', children: [child1, child2]);
@@ -242,31 +217,21 @@ void main() {
     final initialScene = _sceneWithChildren(const [
       Node.text(
         id: 't1',
-        xf: const Affine2D.identity(),
-        data: TextData(
-          text: 'One',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'One',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       ),
       Node.text(
         id: 't2',
-        xf: const Affine2D.identity(),
-        data: TextData(
-          text: 'Two',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'Two',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       ),
     ]);
 
@@ -287,45 +252,30 @@ void main() {
     final initialScene = _sceneWithChildren(const [
       Node.text(
         id: 't1',
-        xf: const Affine2D.identity(),
-        data: TextData(
-          text: 'One',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'One',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       ),
       Node.text(
         id: 't2',
-        xf: const Affine2D.identity(),
-        data: TextData(
-          text: 'Two',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'Two',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       ),
       Node.text(
         id: 't3',
-        xf: const Affine2D.identity(),
-        data: TextData(
-          text: 'Three',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 16,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF000000),
-          ),
-        ),
+        text: 'Three',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 16,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF000000)),
       ),
     ]);
 
@@ -353,15 +303,13 @@ void main() {
         Node.text(
           id: 't1',
           xf: Affine2D.translation(10, 10),
-          data: TextData(
-            text: 'Hello',
-            fontFamily: 'Inter',
-            fontWeight: 700,
-            fontSize: 24,
-            letterSpacing: 0,
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF111111),
-            ),
+          text: 'Hello',
+          fontFamily: 'Inter',
+          fontWeight: 700,
+          fontSize: 24,
+          letterSpacing: 0,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
           ),
         ),
       ),

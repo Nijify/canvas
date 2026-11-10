@@ -20,7 +20,8 @@ class _FakeTextMeasurer implements TextMeasurer {
   }
 }
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -54,9 +55,7 @@ void main() {
   testWidgets(
     'layout invalidation publishes render without publishing document',
     (tester) async {
-      final runtime = _buildRuntime(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-      );
+      final runtime = _buildRuntime(_sceneWithChildren(const [_textNode]));
       addTearDown(runtime.dispose);
 
       final initialRender = runtime.render.value;
@@ -91,9 +90,7 @@ void main() {
   testWidgets(
     'pending layout invalidation is cancelled when runtime is disposed',
     (tester) async {
-      final runtime = _buildRuntime(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-      );
+      final runtime = _buildRuntime(_sceneWithChildren(const [_textNode]));
       addTearDown(runtime.dispose);
 
       var renderPublications = 0;

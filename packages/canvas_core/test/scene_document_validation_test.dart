@@ -15,20 +15,21 @@ CanvasSceneDocument _scene({
   children: children,
 );
 
-TextData _textData() => const TextData(
+const _textNode = TextNode(
+  id: 'text',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 400,
   fontSize: 16,
 );
 
-Node _text(String id, {String? name, Affine2D xf = const Affine2D.identity()}) =>
-    Node.text(id: id, name: name, xf: xf, data: _textData());
+Node _text(
+  String id, {
+  String? name,
+  Affine2D xf = const Affine2D.identity(),
+}) => _textNode.copyWith(id: id, name: name, xf: xf);
 
-Node _path(PathSource source) => Node.path(
-  id: 'path',
-  data: PathData(source: source),
-);
+Node _path(PathSource source) => Node.path(id: 'path', geometry: source);
 
 Node _behavior(
   Map<String, dynamic> data, {
@@ -144,37 +145,21 @@ void main() {
 
   test('checks text, icon, and image numerics', () {
     for (final node in [
-      Node.text(
-        id: 'text',
-        data: _textData().copyWith(fontSize: double.nan),
-      ),
-      Node.text(
-        id: 'text',
-        data: _textData().copyWith(letterSpacing: double.infinity),
-      ),
-      const Node.icon(
-        id: 'icon',
-        data: CanvasIconData(iconRef: 'symbol', sizePx: 0),
-      ),
-      const Node.icon(
-        id: 'icon',
-        data: CanvasIconData(iconRef: 'symbol', sizePx: double.infinity),
+      _textNode.copyWith(id: 'text', fontSize: double.nan),
+      _textNode.copyWith(id: 'text', letterSpacing: double.infinity),
+      const Node.icon(id: 'icon', iconRef: 'symbol', sizePx: 0),
+      const Node.icon(id: 'icon', iconRef: 'symbol', sizePx: double.infinity),
+      const Node.image(id: 'image', size: Size2D(-1, 10)),
+      const Node.image(id: 'image', size: Size2D(10, 0)),
+      const Node.image(
+        id: 'image',
+        size: Size2D(10, 10),
+        align: Vec2(-0.1, 0.5),
       ),
       const Node.image(
         id: 'image',
-        data: ImageData(size: Size2D(-1, 10)),
-      ),
-      const Node.image(
-        id: 'image',
-        data: ImageData(size: Size2D(10, 0)),
-      ),
-      const Node.image(
-        id: 'image',
-        data: ImageData(size: Size2D(10, 10), align: Vec2(-0.1, 0.5)),
-      ),
-      const Node.image(
-        id: 'image',
-        data: ImageData(size: Size2D(10, 10), align: Vec2(0.5, 1.1)),
+        size: Size2D(10, 10),
+        align: Vec2(0.5, 1.1),
       ),
     ]) {
       expect(
@@ -232,33 +217,30 @@ void main() {
     final variants = <(String, Node Function(String?))>[
       (
         'text',
-        (label) => TextNode(id: 'text', data: _textData(), $type: label),
+        (label) => TextNode(
+          id: 'text',
+          text: 'Hello',
+          fontFamily: 'Inter',
+          fontWeight: 400,
+          fontSize: 16,
+          $type: label,
+        ),
       ),
       (
         'image',
-        (label) => ImageNode(
-          id: 'image',
-          data: const ImageData(size: Size2D(10, 10)),
-          $type: label,
-        ),
+        (label) => ImageNode(id: 'image', size: Size2D(10, 10), $type: label),
       ),
       (
         'path',
         (label) => PathNode(
           id: 'path',
-          data: const PathData(
-            source: RectSource(x: -5, y: -5, width: 10, height: 10),
-          ),
+          geometry: RectSource(x: -5, y: -5, width: 10, height: 10),
           $type: label,
         ),
       ),
       (
         'icon',
-        (label) => IconNode(
-          id: 'icon',
-          data: const CanvasIconData(iconRef: 'symbol'),
-          $type: label,
-        ),
+        (label) => IconNode(id: 'icon', iconRef: 'symbol', $type: label),
       ),
       ('group', (label) => GroupNode(id: 'group', $type: label)),
     ];
@@ -266,10 +248,7 @@ void main() {
       for (final label in [null, expected]) {
         final scene = _scene(children: [build(label)]);
         final wire = encodeCanvasScene(scene);
-        expect(
-          ((wire['children'] as List).single as Map)['runtimeType'],
-          expected,
-        );
+        expect(((wire['children'] as List).single as Map)['type'], expected);
         final restored = decodeCanvasScene(
           jsonDecode(jsonEncode(wire)) as Map<String, Object?>,
         );

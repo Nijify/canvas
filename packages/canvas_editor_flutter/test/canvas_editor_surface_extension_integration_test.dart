@@ -22,15 +22,13 @@ rt.CanvasSceneDocument _fixtureScene() {
       rt.Node.text(
         id: _nodeId,
         xf: rt.Affine2D.translation(20, 20),
-        data: rt.TextData(
-          text: 'Original title',
-          fontFamily: 'Inter',
-          fontWeight: 400,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: rt.CanvasAppearance(
-            foreground: rt.CanvasFill.solid(0xFF111111),
-          ),
+        text: 'Original title',
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: rt.CanvasAppearance(
+          foreground: rt.CanvasFill.solid(0xFF111111),
         ),
       ),
     ],
@@ -102,20 +100,16 @@ final class _SurfaceSeamExtension
         },
         canReadCanonicalNode: (_, node) => node is rt.TextNode,
         readCanonicalNode: (_, node) {
-          return (node as rt.TextNode).data.text;
+          return (node as rt.TextNode).text;
         },
         writeCanonical: (base, nodeId, value) {
           final node = rt.findById(base, nodeId);
           if (node is! rt.TextNode) return base;
 
           final text = value as String;
-          if (node.data.text == text) return base;
+          if (node.text == text) return base;
 
-          return rt.replaceById(
-            base,
-            nodeId,
-            node.copyWith(data: node.data.copyWith(text: text)),
-          );
+          return rt.replaceById(base, nodeId, node.copyWith(text: text));
         },
       ),
     };
@@ -295,7 +289,11 @@ void main() {
     final endSession = runtime.beginEditSession();
 
     try {
-      runtime.updateTransform(_nodeId, rt.Affine2D.translation(80, 0) * rt.findById(runtime.document.value, _nodeId)!.xf);
+      runtime.updateTransform(
+        _nodeId,
+        rt.Affine2D.translation(80, 0) *
+            rt.findById(runtime.document.value, _nodeId)!.xf,
+      );
     } finally {
       endSession();
     }

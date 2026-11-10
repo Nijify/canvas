@@ -21,12 +21,10 @@ CanvasSceneDocument _scene({double backgroundOpacity = 0.5}) {
       Node.text(
         id: 'headline',
         xf: Affine2D.translation(32, 48),
-        data: TextData(
-          text: 'Scene JSON',
-          fontFamily: 'Inter',
-          fontWeight: 700,
-          fontSize: 32,
-        ),
+        text: 'Scene JSON',
+        fontFamily: 'Inter',
+        fontWeight: 700,
+        fontSize: 32,
       ),
     ],
   );
@@ -44,10 +42,7 @@ CanvasSceneDocument _imageScene() {
       ),
     },
     children: <Node>[
-      Node.image(
-        id: 'image-1',
-        data: ImageData(assetId: 'asset-1', size: Size2D(320, 180)),
-      ),
+      Node.image(id: 'image-1', assetId: 'asset-1', size: Size2D(320, 180)),
     ],
   );
 }
@@ -58,9 +53,7 @@ void main() {
       test('rejects raw SVG sources before decoding (nested: $nested)', () {
         const path = Node.path(
           id: 'svg-path',
-          data: PathData(
-            source: RectSource(x: -12, y: -12, width: 24, height: 24),
-          ),
+          geometry: RectSource(x: -12, y: -12, width: 24, height: 24),
         );
         final json = encodeCanvasScene(
           _scene().copyWith(
@@ -77,8 +70,7 @@ void main() {
         final node = nested
             ? (root['children'] as List<dynamic>).single as Map<String, dynamic>
             : root;
-        final data = node['data'] as Map<String, dynamic>;
-        data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
+        node['geometry'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
 
         expect(() => decodeCanvasScene(json), throwsFormatException);
       });
@@ -132,7 +124,7 @@ void main() {
       final asset = assets['asset-1'] as Map<String, dynamic>;
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
-      final data = image['data'] as Map<String, dynamic>;
+      final data = image;
 
       expect(asset['sourceRef'], 'media:image-1');
       expect(asset['intrinsicSize'], <String, dynamic>{
@@ -150,7 +142,7 @@ void main() {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
-      final data = image['data'] as Map<String, dynamic>;
+      final data = image;
 
       data['sourcePath'] = 'legacy/image.png';
 
@@ -203,11 +195,9 @@ void main() {
         children: <Node>[
           Node.path(
             id: 'gradient-path',
-            data: PathData(
-              source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-              appearance: CanvasAppearance(
-                foreground: CanvasFill.gradient(valid),
-              ),
+            geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.gradient(valid),
             ),
           ),
         ],
@@ -349,7 +339,7 @@ void main() {
       final json = encodeCanvasScene(_imageScene());
       final children = json['children'] as List<dynamic>;
       final image = children.single as Map<String, dynamic>;
-      final data = image['data'] as Map<String, dynamic>;
+      final data = image;
       data.remove('size');
 
       expect(() => decodeCanvasScene(json), throwsA(anything));

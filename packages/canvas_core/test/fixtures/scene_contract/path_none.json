@@ -1,5 +1,5 @@
 {
-  "sceneFormatVersion": 5,
+  "sceneFormatVersion": 6,
   "artboardSize": {
     "w": 1080.0,
     "h": 1080.0
@@ -10,21 +10,17 @@
   "backgroundOpacity": 1.0,
   "children": [
     {
-      "runtimeType": "path",
+      "type": "path",
       "id": "path-none-1",
-      "data": {
-        "source": {
-          "kind": "path",
-          "d": ""
-        },
-        "fillRule": "nonZero",
-        "appearance": {
-          "foreground": {
-            "type": "none"
-          },
-          "stroke": null,
-          "underlays": []
+      "fillRule": "nonZero",
+      "appearance": {
+        "foreground": {
+          "type": "none"
         }
+      },
+      "geometry": {
+        "kind": "path",
+        "d": ""
       }
     }
   ]

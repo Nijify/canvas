@@ -4,7 +4,8 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 'Hello world',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -13,46 +14,42 @@ const _textData = TextData(
   appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
 );
 
-const _imageData = ImageData(assetId: 'asset-1', size: Size2D(100, 100));
-
-PathData _rectData() {
-  return const PathData(
-    source: RectSource(x: -50, y: -30, width: 100, height: 60),
-    appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
-  );
-}
-
 Node _text(
   String id, {
   String text = 'Hello world',
   String? name,
   bool hidden = false,
 }) {
-  return Node.text(
-    id: id,
-    name: name,
-    hidden: hidden,
-    data: _textData.copyWith(text: text),
-  );
+  return _textNode.copyWith(id: id, name: name, hidden: hidden, text: text);
 }
 
 Node _image(String id, {String? name}) {
-  return Node.image(id: id, name: name, data: _imageData);
+  return Node.image(
+    id: id,
+    name: name,
+    assetId: 'asset-1',
+    size: const Size2D(100, 100),
+  );
 }
 
 Node _rect(String id, {String? name}) {
-  return Node.path(id: id, name: name, data: _rectData());
+  return Node.path(
+    id: id,
+    name: name,
+    geometry: const RectSource(x: -50, y: -30, width: 100, height: 60),
+    appearance: const CanvasAppearance(
+      foreground: CanvasFill.solid(0xFF111111),
+    ),
+  );
 }
 
 Node _icon(String id, {String? name}) {
   return Node.icon(
     id: id,
     name: name,
-    data: const CanvasIconData(
-      iconRef: 'icon:test',
-      sizePx: 32,
-      appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
-    ),
+    iconRef: 'icon:test',
+    sizePx: 32,
+    appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
   );
 }
 
@@ -192,9 +189,8 @@ void main() {
     test('policy can override labels', () {
       final doc = _scene([_text('a')]);
 
-      final rows = const SceneObjectTreeBuilder(
-        policy: _LabelOverridePolicy(),
-      ).build(scene: doc);
+      final rows = const SceneObjectTreeBuilder(policy: _LabelOverridePolicy())
+          .build(scene: doc);
 
       expect(rows.single.label, 'Overridden');
     });

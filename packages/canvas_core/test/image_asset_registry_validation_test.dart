@@ -12,10 +12,7 @@ CanvasSceneDocument _scene({
     backgroundOpacity: 1,
     assets: assets,
     children: <Node>[
-      Node.image(
-        id: 'image-1',
-        data: ImageData(assetId: assetId, size: const Size2D(100, 80)),
-      ),
+      Node.image(id: 'image-1', assetId: assetId, size: const Size2D(100, 80)),
     ],
   );
 }
@@ -33,7 +30,7 @@ void main() {
       );
     });
 
-    test('rejects a blank image asset source', () {
+    test('reports sourceRef when an image asset source is blank', () {
       expect(
         () => requireCanvasSceneIntegrity(
           _scene(
@@ -43,7 +40,13 @@ void main() {
             assetId: 'asset-1',
           ),
         ),
-        throwsArgumentError,
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.message,
+            'message',
+            startsWith('/assets/asset-1/sourceRef:'),
+          ),
+        ),
       );
     });
 

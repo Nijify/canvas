@@ -59,23 +59,21 @@ Node _text({
 }) => Node.text(
   id: id,
   xf: xf,
-  data: TextData(
-    text: 'TEXT',
-    fontFamily: 'TestFont',
-    fontWeight: 400,
-    fontSize: 20,
-    appearance: CanvasAppearance(
-      foreground: foreground,
-      underlays: shadow == 0
-          ? const []
-          : [
-              ShadowEffect(
-                id: 's',
-                offset: Vec2(shadow, shadow),
-                color: 0xFF111111,
-              ),
-            ],
-    ),
+  text: 'TEXT',
+  fontFamily: 'TestFont',
+  fontWeight: 400,
+  fontSize: 20,
+  appearance: CanvasAppearance(
+    foreground: foreground,
+    underlays: shadow == 0
+        ? const []
+        : [
+            ShadowEffect(
+              id: 's',
+              offset: Vec2(shadow, shadow),
+              color: 0xFF111111,
+            ),
+          ],
   ),
 );
 
@@ -113,20 +111,28 @@ void main() {
       CanvasSceneDocument makeScene(double shadow) => _scene([
         Node.group(
           id: 'outer',
-          xf: extra * (Affine2D.translation(80, 40) * Affine2D.rotation(0.4) * Affine2D.scale(1.4, 0.8)),
+          xf:
+              extra *
+              (Affine2D.translation(80, 40) *
+                  Affine2D.rotation(0.4) *
+                  Affine2D.scale(1.4, 0.8)),
           children: [
             Node.group(
               id: 'inner',
-              xf: (Affine2D.translation(15, -20) * Affine2D.rotation(-0.7) * Affine2D.scale(0.8, 1.6)),
+              xf:
+                  (Affine2D.translation(15, -20) *
+                  Affine2D.rotation(-0.7) *
+                  Affine2D.scale(0.8, 1.6)),
               children: [
                 _text(
                   shadow: shadow,
-                  xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-7.0, 3.0)),
+                  xf:
+                      (Affine2D.translation(7, -3) *
+                      Affine2D.rotation(0.3) *
+                      Affine2D.scale(-2, 0.5) *
+                      Affine2D.translation(-7.0, 3.0)),
                 ),
-                _text(
-                  id: 'sibling',
-                  xf: Affine2D.translation(150, 30),
-                ),
+                _text(id: 'sibling', xf: Affine2D.translation(150, 30)),
               ],
             ),
           ],
@@ -201,14 +207,12 @@ void main() {
         _scene([
           const Node.icon(
             id: 'icon',
-            data: CanvasIconData(
-              iconRef: 'path',
-              sizePx: 96,
-              appearance: CanvasAppearance(
-                underlays: [
-                  ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
-                ],
-              ),
+            iconRef: 'path',
+            sizePx: 96,
+            appearance: CanvasAppearance(
+              underlays: [
+                ShadowEffect(id: 's', offset: Vec2(8, 8), color: 0xFF111111),
+              ],
             ),
           ),
         ]),
@@ -230,21 +234,19 @@ void main() {
       _scene([
         Node.icon(
           id: 'icon',
-          data: CanvasIconData(
-            iconRef: 'path',
-            sizePx: 96,
-            appearance: CanvasAppearance(
-              underlays: withShadow
-                  ? const [
-                      ShadowEffect(
-                        id: 's',
-                        offset: Vec2(40, -10),
-                        blurSigma: 2,
-                        color: 0x80000000,
-                      ),
-                    ]
-                  : const [],
-            ),
+          iconRef: 'path',
+          sizePx: 96,
+          appearance: CanvasAppearance(
+            underlays: withShadow
+                ? const [
+                    ShadowEffect(
+                      id: 's',
+                      offset: Vec2(40, -10),
+                      blurSigma: 2,
+                      color: 0x80000000,
+                    ),
+                  ]
+                : const [],
           ),
         ),
       ]),
@@ -296,11 +298,9 @@ void main() {
       _scene([
         const Node.image(
           id: 'image',
-          data: ImageData(
-            size: Size2D(100, 100),
-            fit: ImageFit.contain,
-            align: Vec2.zero,
-          ),
+          size: Size2D(100, 100),
+          fit: ImageFit.contain,
+          align: Vec2.zero,
         ),
       ]),
       _services(),
@@ -323,10 +323,7 @@ void main() {
         children: [_text(id: 'hidden-text', shadow: 500)],
       ),
       const Node.group(id: 'empty'),
-      const Node.icon(
-        id: 'unresolved',
-        data: CanvasIconData(iconRef: 'missing'),
-      ),
+      const Node.icon(id: 'unresolved', iconRef: 'missing'),
       _text(),
     ]);
     final computed = computeScene(scene, _services());

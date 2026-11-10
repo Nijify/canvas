@@ -57,26 +57,22 @@ Node _node(String target, List<ShadowEffect> shadows, CanvasFill foreground) =>
     target == 'text'
     ? Node.text(
         id: 'source',
-        data: TextData(
-          text: 'X',
-          fontFamily: 'Ahem',
-          fontWeight: 400,
-          fontSize: 24,
-          appearance: CanvasAppearance(
-            foreground: foreground,
-            underlays: shadows,
-          ),
+        text: 'X',
+        fontFamily: 'Ahem',
+        fontWeight: 400,
+        fontSize: 24,
+        appearance: CanvasAppearance(
+          foreground: foreground,
+          underlays: shadows,
         ),
       )
     : Node.icon(
         id: 'source',
-        data: CanvasIconData(
-          iconRef: target,
-          sizePx: 24,
-          appearance: CanvasAppearance(
-            foreground: foreground,
-            underlays: shadows,
-          ),
+        iconRef: target,
+        sizePx: 24,
+        appearance: CanvasAppearance(
+          foreground: foreground,
+          underlays: shadows,
         ),
       );
 

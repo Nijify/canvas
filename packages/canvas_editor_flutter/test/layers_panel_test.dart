@@ -23,7 +23,8 @@ class _FakeTextMeasurer implements TextMeasurer {
   }
 }
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -38,12 +39,7 @@ Node _text(
   String text = 'Hello',
   bool hidden = false,
 }) {
-  return Node.text(
-    id: id,
-    name: name,
-    hidden: hidden,
-    data: _textData.copyWith(text: text),
-  );
+  return _textNode.copyWith(id: id, name: name, hidden: hidden, text: text);
 }
 
 CanvasSceneDocument _scene(List<Node> children) {

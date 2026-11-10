@@ -14,12 +14,10 @@ Node _text({
     name: name,
     hidden: hidden,
     xf: xf,
-    data: const TextData(
-      text: 'Hello',
-      fontFamily: 'Inter',
-      fontWeight: 400,
-      fontSize: 16,
-    ),
+    text: 'Hello',
+    fontFamily: 'Inter',
+    fontWeight: 400,
+    fontSize: 16,
   );
 }
 

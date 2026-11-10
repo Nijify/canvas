@@ -336,77 +336,69 @@ final CanvasSceneDocument _demoDocument = CanvasSceneDocument(
       id: 'demo-card',
       name: 'Demo card',
       xf: Affine2D.translation(370, 210),
-      data: PathData(
-        source: RectSource(
-          x: -300,
-          y: -140,
-          width: 600,
-          height: 280,
-          rx: 32,
-          ry: 32,
-        ),
-        appearance: CanvasAppearance(
-          foreground: CanvasFill.solid(0xFFFFFFFF),
-          stroke: CanvasStroke(color: 0xFFE0E7FF, width: 4),
-        ),
+      geometry: RectSource(
+        x: -300,
+        y: -140,
+        width: 600,
+        height: 280,
+        rx: 32,
+        ry: 32,
+      ),
+      appearance: CanvasAppearance(
+        foreground: CanvasFill.solid(0xFFFFFFFF),
+        stroke: CanvasStroke(color: 0xFFE0E7FF, width: 4),
       ),
     ),
     Node.icon(
       id: 'demo-icon',
       name: 'Vector icon',
       xf: Affine2D.translation(170, 150),
-      data: CanvasIconData(
-        iconRef: 'icon.ring',
-        sizePx: 64,
-        appearance: CanvasAppearance(
-          foreground: CanvasFill.gradient(
-            LinearGradientSpec(
-              start: const Vec2(-32, -32),
-              end: const Vec2(32, 32),
-              stops: const [
-                GradientStop(offset: 0, color: 0xFF7C3AED),
-                GradientStop(offset: 1, color: 0xFF0891B2),
-              ],
-            ),
+      iconRef: 'icon.ring',
+      sizePx: 64,
+      appearance: CanvasAppearance(
+        foreground: CanvasFill.gradient(
+          LinearGradientSpec(
+            start: const Vec2(-32, -32),
+            end: const Vec2(32, 32),
+            stops: const [
+              GradientStop(offset: 0, color: 0xFF7C3AED),
+              GradientStop(offset: 1, color: 0xFF0891B2),
+            ],
           ),
-          underlays: const [
-            ShadowEffect(
-              id: 'demo-icon-shadow',
-              offset: Vec2(0, 3),
-              blurSigma: 3,
-              color: 0x332E1065,
-            ),
-          ],
         ),
+        underlays: const [
+          ShadowEffect(
+            id: 'demo-icon-shadow',
+            offset: Vec2(0, 3),
+            blurSigma: 3,
+            color: 0x332E1065,
+          ),
+        ],
       ),
     ),
     Node.text(
       id: 'demo-title',
       name: 'Title',
       xf: Affine2D.translation(410, 150),
-      data: TextData(
-        text: 'CanvasSceneEditor',
-        fontFamily: _demoFontFamily,
-        fontWeight: 700,
-        fontSize: 32,
-        letterSpacing: 0,
-        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF312E81)),
-      ),
+      text: 'CanvasSceneEditor',
+      fontFamily: _demoFontFamily,
+      fontWeight: 700,
+      fontSize: 32,
+      letterSpacing: 0,
+      appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF312E81)),
     ),
     Node.text(
       id: 'demo-subtitle',
       name: 'Subtitle',
       xf: Affine2D.translation(370, 255),
-      data: TextData(
-        text:
-            'Select the ring to change its icon, fill, or shadow.\n'
-            'Try Add → Assets for images and background removal.',
-        fontFamily: _demoFontFamily,
-        fontWeight: 400,
-        fontSize: 18,
-        letterSpacing: 0,
-        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF475569)),
-      ),
+      text:
+          'Select the ring to change its icon, fill, or shadow.\n'
+          'Try Add → Assets for images and background removal.',
+      fontFamily: _demoFontFamily,
+      fontWeight: 400,
+      fontSize: 18,
+      letterSpacing: 0,
+      appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF475569)),
     ),
   ],
 );

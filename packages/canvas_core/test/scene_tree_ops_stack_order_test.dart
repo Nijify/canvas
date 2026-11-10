@@ -5,12 +5,10 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 
 Node _text(String id) => Node.text(
   id: id,
-  data: const TextData(
-    text: 't',
-    fontFamily: 'Inter',
-    fontWeight: 400,
-    fontSize: 12,
-  ),
+  text: 't',
+  fontFamily: 'Inter',
+  fontWeight: 400,
+  fontSize: 12,
 );
 
 CanvasSceneDocument _scene({required List<Node> children}) {
@@ -102,7 +100,12 @@ void main() {
         children: [_text('a'), _text('b'), _text('c'), _text('d')],
       );
 
-      final updated = SceneTreeOps.moveSubtree(doc, 'b', toIndex: 3, preservation: TransformPreservation.local);
+      final updated = SceneTreeOps.moveSubtree(
+        doc,
+        'b',
+        toIndex: 3,
+        preservation: TransformPreservation.local,
+      );
 
       expect(_rootIds(updated), ['a', 'c', 'd', 'b']);
     });
@@ -116,7 +119,9 @@ void main() {
         doc,
         'a',
         newParentId: 'g',
-        toIndex: 1, preservation: TransformPreservation.local);
+        toIndex: 1,
+        preservation: TransformPreservation.local,
+      );
 
       expect(_rootIds(updated), ['g']);
       expect(_groupChildIds(updated, 'g'), ['x', 'a', 'z']);

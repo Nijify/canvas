@@ -342,7 +342,7 @@ Widget _buildPathPanel({
   List<Widget> leadingSections = const <Widget>[],
 }) {
   final node = findById(inspector.editableScene, nodeId);
-  final isLine = node is PathNode && node.data.source is LineSource;
+  final isLine = node is PathNode && node.geometry is LineSource;
   return _buildInspectorPanel(
     title: isLine ? 'Line' : 'Path',
     leadingSections: leadingSections,

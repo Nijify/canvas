@@ -25,7 +25,7 @@ void main() {
       find.byType(CanvasSceneEditor),
     );
     final icon = editor.initialScene.children.whereType<IconNode>().single;
-    expect(editor.resources.icons.resolve(icon.data.iconRef), isNotNull);
+    expect(editor.resources.icons.resolve(icon.iconRef), isNotNull);
     expect(editor.resources.icons.items, hasLength(3));
     expect(editor.pngExport, isNotNull);
   });

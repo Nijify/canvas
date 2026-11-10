@@ -29,10 +29,15 @@ class CanvasStroke with _$CanvasStroke {
   }) : dash = List<double>.unmodifiable(dash);
 
   final Color32 color;
+  @JsonKey(toJson: _widthToJson, includeIfNull: false)
   final double width;
+  @JsonKey(toJson: _capToJson, includeIfNull: false)
   final StrokeCap cap;
+  @JsonKey(toJson: _joinToJson, includeIfNull: false)
   final StrokeJoin join;
+  @JsonKey(toJson: _miterLimitToJson, includeIfNull: false)
   final double miterLimit;
+  @JsonKey(toJson: _dashToJson, includeIfNull: false)
   final List<double> dash;
 
   factory CanvasStroke.fromJson(Map<String, dynamic> json) =>
@@ -40,3 +45,11 @@ class CanvasStroke with _$CanvasStroke {
 
   Map<String, dynamic> toJson() => _$CanvasStrokeToJson(this);
 }
+
+double? _widthToJson(double value) => value == 4 ? null : value;
+String? _capToJson(StrokeCap value) =>
+    value == StrokeCap.butt ? null : value.name;
+String? _joinToJson(StrokeJoin value) =>
+    value == StrokeJoin.miter ? null : value.name;
+double? _miterLimitToJson(double value) => value == 4 ? null : value;
+List<double>? _dashToJson(List<double> value) => value.isEmpty ? null : value;

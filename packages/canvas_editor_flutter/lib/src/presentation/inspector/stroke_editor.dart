@@ -87,7 +87,7 @@ class _StrokeEditorState extends State<StrokeEditor> {
   @override
   Widget build(BuildContext context) {
     final node = rt.findById(widget.inspector.editableScene, widget.nodeId);
-    final stroke = node is rt.PathNode ? node.data.appearance.stroke : null;
+    final stroke = node is rt.PathNode ? node.appearance.stroke : null;
     final state = widget.inspector.controller.getField<rt.CanvasStroke?>(
       widget.nodeId,
       rt.CanvasFields.pathStroke,

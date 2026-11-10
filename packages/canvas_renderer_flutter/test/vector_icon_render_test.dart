@@ -67,11 +67,9 @@ Future<Uint8List> _render(
           children: [
             Node.icon(
               id: 'icon',
-              data: CanvasIconData(
-                iconRef: 'test',
-                sizePx: size,
-                appearance: appearance,
-              ),
+              iconRef: 'test',
+              sizePx: size,
+              appearance: appearance,
             ),
           ],
         ),

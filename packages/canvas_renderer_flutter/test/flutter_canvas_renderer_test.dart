@@ -31,14 +31,12 @@ CanvasSceneDocument _textScene(String value, CanvasFill fill) =>
       children: [
         Node.text(
           id: 'text',
-          data: TextData(
-            text: value,
-            fontFamily: 'Inter',
-            fontWeight: 400,
-            fontSize: 20,
-            letterSpacing: 1.25,
-            appearance: CanvasAppearance(foreground: fill),
-          ),
+          text: value,
+          fontFamily: 'Inter',
+          fontWeight: 400,
+          fontSize: 20,
+          letterSpacing: 1.25,
+          appearance: CanvasAppearance(foreground: fill),
         ),
       ],
     );

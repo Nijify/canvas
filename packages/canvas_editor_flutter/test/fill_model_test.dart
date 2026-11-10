@@ -77,15 +77,13 @@ void main() {
       nodes: <Node>[
         const Node.text(
           id: 't1',
-          data: TextData(
-            text: 'Hello',
-            fontFamily: 'Inter',
-            fontWeight: 400,
-            fontSize: 24,
-            letterSpacing: 0,
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF010203),
-            ),
+          text: 'Hello',
+          fontFamily: 'Inter',
+          fontWeight: 400,
+          fontSize: 24,
+          letterSpacing: 0,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF010203),
           ),
         ),
       ],
@@ -97,12 +95,10 @@ void main() {
       nodes: <Node>[
         const Node.icon(
           id: 'i1',
-          data: CanvasIconData(
-            iconRef: 'star',
-            sizePx: 48,
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF010203),
-            ),
+          iconRef: 'star',
+          sizePx: 48,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF010203),
           ),
         ),
       ],
@@ -114,11 +110,9 @@ void main() {
       nodes: <Node>[
         const Node.path(
           id: 'p1',
-          data: PathData(
-            source: RectSource(x: -10, y: -5, width: 20, height: 10),
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF010203),
-            ),
+          geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF010203),
           ),
         ),
       ],
@@ -138,9 +132,8 @@ void main() {
       gradient,
     ]) {
       test('${target.name} accepts ${fillVariantOf(fill).name} and undoes', () {
-        final initial = _sceneWithChildren(
-          target.nodes,
-        ).copyWith(backgroundFill: const CanvasFill.solid(0xFF010203));
+        final initial = _sceneWithChildren(target.nodes)
+            .copyWith(backgroundFill: const CanvasFill.solid(0xFF010203));
         final runtime = _buildRuntime(initial);
         addTearDown(runtime.dispose);
 
@@ -168,12 +161,8 @@ void main() {
     final initial = _sceneWithChildren([
       const Node.path(
         id: 'p1',
-        data: PathData(
-          source: RectSource(x: -10, y: -5, width: 20, height: 10),
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF010203),
-          ),
-        ),
+        geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF010203)),
       ),
     ]);
     final runtime = _buildRuntime(initial);
@@ -303,11 +292,9 @@ void main() {
       _sceneWithChildren([
         const Node.path(
           id: 'p1',
-          data: PathData(
-            source: RectSource(x: -10, y: -5, width: 20, height: 10),
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF000000),
-            ),
+          geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF000000),
           ),
         ),
       ]),
@@ -321,7 +308,7 @@ void main() {
     );
 
     final node = findById(runtime.sourceDocument, 'p1') as PathNode;
-    expect(node.data.appearance.foreground, const CanvasFill.none());
+    expect(node.appearance.foreground, const CanvasFill.none());
   });
 
   test('text foreground can be set to none', () {
@@ -329,15 +316,13 @@ void main() {
       _sceneWithChildren([
         const Node.text(
           id: 't1',
-          data: TextData(
-            text: 'Hello',
-            fontFamily: 'Inter',
-            fontWeight: 700,
-            fontSize: 24,
-            letterSpacing: 0,
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF123456),
-            ),
+          text: 'Hello',
+          fontFamily: 'Inter',
+          fontWeight: 700,
+          fontSize: 24,
+          letterSpacing: 0,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF123456),
           ),
         ),
       ]),
@@ -353,7 +338,7 @@ void main() {
 
     final node = findById(runtime.sourceDocument, 't1') as TextNode;
 
-    expect(node.data.appearance.foreground, const CanvasFill.none());
+    expect(node.appearance.foreground, const CanvasFill.none());
   });
 
   test('icon foreground can be set to none', () {
@@ -361,12 +346,10 @@ void main() {
       _sceneWithChildren([
         const Node.icon(
           id: 'i1',
-          data: CanvasIconData(
-            iconRef: 'star',
-            sizePx: 48,
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF123456),
-            ),
+          iconRef: 'star',
+          sizePx: 48,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF123456),
           ),
         ),
       ]),
@@ -382,7 +365,7 @@ void main() {
 
     final node = findById(runtime.sourceDocument, 'i1') as IconNode;
 
-    expect(node.data.appearance.foreground, const CanvasFill.none());
+    expect(node.appearance.foreground, const CanvasFill.none());
   });
 
   test('creates a horizontal default gradient from local bounds', () {

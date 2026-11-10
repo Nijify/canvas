@@ -39,27 +39,23 @@ rt.CanvasSceneDocument _scene({
     children: <rt.Node>[
       rt.Node.text(
         id: 'text',
-        data: rt.TextData(
-          text: 'Shadow',
-          fontFamily: 'TestFont',
-          fontWeight: 400,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: rt.CanvasAppearance(
-            foreground: const rt.CanvasFill.solid(0xFF111111),
-            underlays: textUnderlays,
-          ),
+        text: 'Shadow',
+        fontFamily: 'TestFont',
+        fontWeight: 400,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: rt.CanvasAppearance(
+          foreground: const rt.CanvasFill.solid(0xFF111111),
+          underlays: textUnderlays,
         ),
       ),
       rt.Node.icon(
         id: 'icon',
-        data: rt.CanvasIconData(
-          iconRef: 'icon:test',
-          sizePx: 48,
-          appearance: rt.CanvasAppearance(
-            foreground: const rt.CanvasFill.solid(0xFF111111),
-            underlays: iconUnderlays,
-          ),
+        iconRef: 'icon:test',
+        sizePx: 48,
+        appearance: rt.CanvasAppearance(
+          foreground: const rt.CanvasFill.solid(0xFF111111),
+          underlays: iconUnderlays,
         ),
       ),
     ],
@@ -73,8 +69,8 @@ List<rt.CanvasSourceUnderlay> _underlaysOf(
   final node = rt.findById(scene, nodeId);
 
   return switch (node) {
-    rt.TextNode text => text.data.appearance.underlays,
-    rt.IconNode icon => icon.data.appearance.underlays,
+    rt.TextNode text => text.appearance.underlays,
+    rt.IconNode icon => icon.appearance.underlays,
     _ => throw StateError('Expected text or icon node: $nodeId'),
   };
 }
@@ -132,17 +128,15 @@ final class _ResolvedShadowAdapter
       document,
       'text',
       node.copyWith(
-        data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(
-            underlays: const <rt.CanvasSourceUnderlay>[
-              rt.CanvasSourceUnderlay.shadow(
-                id: 'resolved',
-                offset: rt.Vec2(99, 99),
-                blurSigma: 20,
-                color: 0xAAFF0000,
-              ),
-            ],
-          ),
+        appearance: node.appearance.copyWith(
+          underlays: const <rt.CanvasSourceUnderlay>[
+            rt.CanvasSourceUnderlay.shadow(
+              id: 'resolved',
+              offset: rt.Vec2(99, 99),
+              blurSigma: 20,
+              color: 0xAAFF0000,
+            ),
+          ],
         ),
       ),
     );
@@ -293,65 +287,56 @@ void main() {
     final text = rt.findById(runtime.sourceDocument, 'text') as rt.TextNode;
     final icon = rt.findById(runtime.sourceDocument, 'icon') as rt.IconNode;
 
-    expect(
-      text.data.appearance.foreground,
-      const rt.CanvasFill.solid(0xFF111111),
-    );
-    expect(
-      icon.data.appearance.foreground,
-      const rt.CanvasFill.solid(0xFF111111),
-    );
+    expect(text.appearance.foreground, const rt.CanvasFill.solid(0xFF111111));
+    expect(icon.appearance.foreground, const rt.CanvasFill.solid(0xFF111111));
   });
 
-  test(
-    'functional shadow update starts from canonical underlays when resolved differs',
-    () {
-      final runtime = _runtime(
-        _scene(
-          textUnderlays: const <rt.CanvasSourceUnderlay>[
-            rt.CanvasSourceUnderlay.shadow(
-              id: 'canonical',
-              offset: rt.Vec2(1, 2),
-              blurSigma: 3,
-              color: 0x66000000,
-            ),
-          ],
-        ),
-        adapter: const _ResolvedShadowAdapter(),
-      );
-      addTearDown(runtime.dispose);
+  test('functional shadow update starts from canonical underlays when resolved differs', () {
+    final runtime = _runtime(
+      _scene(
+        textUnderlays: const <rt.CanvasSourceUnderlay>[
+          rt.CanvasSourceUnderlay.shadow(
+            id: 'canonical',
+            offset: rt.Vec2(1, 2),
+            blurSigma: 3,
+            color: 0x66000000,
+          ),
+        ],
+      ),
+      adapter: const _ResolvedShadowAdapter(),
+    );
+    addTearDown(runtime.dispose);
 
-      final presentation = runtime
-          .getField<List<rt.CanvasSourceUnderlay>>(
-            'text',
-            rt.CanvasFields.textUnderlays,
-          )
-          .value;
+    final presentation = runtime
+        .getField<List<rt.CanvasSourceUnderlay>>(
+          'text',
+          rt.CanvasFields.textUnderlays,
+        )
+        .value;
 
-      expect(presentation.single.id, 'resolved');
+    expect(presentation.single.id, 'resolved');
 
-      var observedCanonicalId = '';
+    var observedCanonicalId = '';
 
-      runtime.updateField<List<rt.CanvasSourceUnderlay>>(
-        'text',
-        rt.CanvasFields.textUnderlays,
-        (current) {
-          observedCanonicalId = current.single.id;
+    runtime.updateField<List<rt.CanvasSourceUnderlay>>(
+      'text',
+      rt.CanvasFields.textUnderlays,
+      (current) {
+        observedCanonicalId = current.single.id;
 
-          final shadow = current.single as rt.ShadowEffect;
+        final shadow = current.single as rt.ShadowEffect;
 
-          return <rt.CanvasSourceUnderlay>[shadow.copyWith(blurSigma: 8)];
-        },
-      );
+        return <rt.CanvasSourceUnderlay>[shadow.copyWith(blurSigma: 8)];
+      },
+    );
 
-      expect(observedCanonicalId, 'canonical');
+    expect(observedCanonicalId, 'canonical');
 
-      final canonical = _shadowOf(runtime.sourceDocument, 'text', 'canonical');
+    final canonical = _shadowOf(runtime.sourceDocument, 'text', 'canonical');
 
-      expect(canonical.blurSigma, 8);
-      expect(canonical.offset, const rt.Vec2(1, 2));
-    },
-  );
+    expect(canonical.blurSigma, 8);
+    expect(canonical.offset, const rt.Vec2(1, 2));
+  });
 
   test('missing wrong-kind and denied targets do not invoke updater', () {
     final normalRuntime = _runtime(_scene());

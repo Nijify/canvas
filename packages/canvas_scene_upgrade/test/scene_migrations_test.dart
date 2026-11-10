@@ -47,24 +47,16 @@ bool? _resolveLegacyIconWasGlyph(String iconRef) {
   };
 }
 
-Map<String, Object?> _firstNestedTextForeground(Map<String, Object?> scene) {
-  final roots = scene['children'] as List<Object?>;
-  final group = roots.single as Map<String, Object?>;
-  final children = group['children'] as List<Object?>;
-  final text = children.first as Map<String, Object?>;
-  final data = text['data'] as Map<String, Object?>;
-  final appearance = data['appearance'] as Map<String, Object?>;
-  return appearance['foreground'] as Map<String, Object?>;
-}
+Map<String, Object?> _textForeground(Map<String, Object?> textFields) =>
+    (textFields['appearance'] as Map)['foreground'] as Map<String, Object?>;
 
 void main() {
   group('scene migration', () {
     for (final fixture in ['legacy_v010_nested.json', 'v1_nested.json']) {
       test('rejects unsupported SVG sources without changing $fixture', () {
         final input = _loadFixture(fixture);
-        final path = _legacyGroupChildren(
-          input,
-        ).singleWhere((node) => node['runtimeType'] == 'path');
+        final path = _legacyGroupChildren(input)
+            .singleWhere((node) => node['runtimeType'] == 'path');
         final data = path['data'] as Map<String, dynamic>;
         data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
         final before = _deepCopy(input);
@@ -89,7 +81,7 @@ void main() {
       });
     }
 
-    test('upgrades literal canvas_core 0.10.x JSON through v1/v2/v3/v4 to v5', () {
+    test('upgrades literal canvas_core 0.10.x JSON through v1–v5 to v6', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);
 
@@ -100,7 +92,9 @@ void main() {
       );
 
       expect(migrated['sceneFormatVersion'], currentCanvasSceneFormatVersion);
-      final migratedForeground = _firstNestedTextForeground(migrated);
+      final migratedForeground = _textForeground(
+        _legacyGroupChildren(migrated).first,
+      );
       final gradient = migratedForeground['grad'] as Map<String, Object?>;
       final start = gradient['start'] as Map<String, Object?>;
       final end = gradient['end'] as Map<String, Object?>;
@@ -127,14 +121,17 @@ void main() {
       final v1 = _loadFixture('v1_nested.json');
       v1.remove('artboardSize');
 
-      final foreground = _firstNestedTextForeground(v1);
+      final foreground = _textForeground(
+        _legacyGroupChildren(v1).first['data'] as Map<String, Object?>,
+      );
       final legacyGradient = foreground['grad'] as Map<String, dynamic>;
       legacyGradient['angle'] = 0.0;
       legacyGradient['width'] = 20.0;
 
       final migrated = upgradeCanvasScene(Map<String, Object?>.from(v1));
       final converted =
-          _firstNestedTextForeground(migrated)['grad'] as Map<String, Object?>;
+          _textForeground(_legacyGroupChildren(migrated).first)['grad']
+              as Map<String, Object?>;
       final start = converted['start'] as Map<String, Object?>;
       final end = converted['end'] as Map<String, Object?>;
 
@@ -265,9 +262,8 @@ void main() {
     test('rejects mixed legacy and current appearance fields', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
 
-      final text = _legacyGroupChildren(
-        legacy,
-      ).firstWhere((node) => node['runtimeType'] == 'text');
+      final text = _legacyGroupChildren(legacy)
+          .firstWhere((node) => node['runtimeType'] == 'text');
 
       final data = text['data'] as Map<String, dynamic>;
 
@@ -296,7 +292,7 @@ void main() {
       );
     });
 
-    test('upgrades an already-versioned v1 scene to v5', () {
+    test('upgrades an already-versioned v1 scene to v6', () {
       final current = _loadFixture('v1_nested.json');
 
       final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
@@ -305,7 +301,7 @@ void main() {
       expect(upgraded, isNot(equals(current)));
     });
 
-    test('accepts an already-current v5 scene without migration', () {
+    test('accepts an already-current v6 scene without migration', () {
       final v1 = _loadFixture('v1_nested.json');
       final current = upgradeCanvasScene(Map<String, Object?>.from(v1));
 

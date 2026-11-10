@@ -7,7 +7,6 @@ import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dar
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 class _TextMeasurer implements TextMeasurer {
   @override
   Size2D measure({
@@ -24,12 +23,10 @@ CoreServices _services() => CoreServices(textMeasurer: _TextMeasurer());
 Node _text(String id, {bool hidden = false}) => Node.text(
   id: id,
   hidden: hidden,
-  data: const TextData(
-    text: 'X',
-    fontFamily: 'Test',
-    fontWeight: 400,
-    fontSize: 20,
-  ),
+  text: 'X',
+  fontFamily: 'Test',
+  fontWeight: 400,
+  fontSize: 20,
 );
 
 CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
@@ -43,12 +40,10 @@ void main() {
     final scene = _scene([
       Node.path(
         id: 'path',
-        data: PathData(
-          source: GeneralPathSource.fromSvg(
-            'M-12 -12L12 -12L12 12L-12 12Z M-5 -5L5 -5L5 5L-5 5Z',
-          ),
-          fillRule: FillRule.evenOdd,
+        geometry: GeneralPathSource.fromSvg(
+          'M-12 -12L12 -12L12 12L-12 12Z M-5 -5L5 -5L5 5L-5 5Z',
         ),
+        fillRule: FillRule.evenOdd,
       ),
     ]);
     final computed = computeScene(scene, _services());
@@ -70,12 +65,10 @@ void main() {
     final scene = _scene([
       Node.path(
         id: 'path',
-        data: PathData(
-          source: const LineSource(x1: -10, x2: 10),
-          appearance: CanvasAppearance(
-            foreground: const CanvasFill.none(),
-            stroke: CanvasStroke(color: 0xFF112233, width: 8),
-          ),
+        geometry: const LineSource(x1: -10, x2: 10),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.none(),
+          stroke: CanvasStroke(color: 0xFF112233, width: 8),
         ),
       ),
     ]);
@@ -111,12 +104,10 @@ void main() {
         final scene = _scene([
           Node.path(
             id: 'path',
-            data: PathData(
-              source: PolylineSource(
-                vertical
-                    ? const [Vec2(0, -10), Vec2(0, 10)]
-                    : const [Vec2(-10, 0), Vec2(10, 0)],
-              ),
+            geometry: PolylineSource(
+              vertical
+                  ? const [Vec2(0, -10), Vec2(0, 10)]
+                  : const [Vec2(-10, 0), Vec2(10, 0)],
             ),
           ),
         ]);
@@ -149,7 +140,7 @@ void main() {
           Node.path(
             id: 'path',
             xf: Affine2D.rotation(math.pi / 4),
-            data: PathData(source: const LineSource(x1: -10, x2: 10)),
+            geometry: const LineSource(x1: -10, x2: 10),
           ),
         ],
       ),
@@ -177,9 +168,7 @@ void main() {
     final scene = _scene([
       const Node.path(
         id: 'path',
-        data: PathData(
-          source: RectSource(x: -10, y: -10, width: 20, height: 20),
-        ),
+        geometry: RectSource(x: -10, y: -10, width: 20, height: 20),
       ),
     ]);
     final computed = computeScene(scene, _services());

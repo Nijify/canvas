@@ -67,12 +67,10 @@ final document = CanvasSceneDocument(
     Node.text(
       id: 'headline',
       xf: Affine2D.translation(540, 540),
-      data: const TextData(
-        text: 'Hello canvas',
-        fontFamily: 'Inter',
-        fontWeight: 700,
-        fontSize: 72,
-      ),
+      text: 'Hello canvas',
+      fontFamily: 'Inter',
+      fontWeight: 700,
+      fontSize: 72,
     ),
   ],
 );

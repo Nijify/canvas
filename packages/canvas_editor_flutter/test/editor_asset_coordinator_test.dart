@@ -87,10 +87,7 @@ CanvasSceneDocument _imageScene(String sourceRef) {
       'asset-0': CanvasImageAsset(sourceRef: sourceRef),
     },
     children: const [
-      Node.image(
-        id: 'image-0',
-        data: ImageData(assetId: 'asset-0', size: Size2D(100, 100)),
-      ),
+      Node.image(id: 'image-0', assetId: 'asset-0', size: Size2D(100, 100)),
     ],
   );
 }

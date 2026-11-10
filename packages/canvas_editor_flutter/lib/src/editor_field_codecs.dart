@@ -2,25 +2,30 @@
 
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 
-typedef ReadNodeFn =
-    Object? Function(rt.CanvasSceneDocument scene, rt.Node node);
+typedef ReadNodeFn = Object? Function(
+  rt.CanvasSceneDocument scene,
+  rt.Node node,
+);
 
 typedef ReadSceneFn = Object? Function(rt.CanvasSceneDocument scene);
 
-typedef CanReadCanonicalNodeFn =
-    bool Function(rt.CanvasSceneDocument scene, rt.Node node);
+typedef CanReadCanonicalNodeFn = bool Function(
+  rt.CanvasSceneDocument scene,
+  rt.Node node,
+);
 
-typedef ReadCanonicalNodeFn =
-    Object? Function(rt.CanvasSceneDocument scene, rt.Node node);
+typedef ReadCanonicalNodeFn = Object? Function(
+  rt.CanvasSceneDocument scene,
+  rt.Node node,
+);
 
 typedef ReadCanonicalSceneFn = Object? Function(rt.CanvasSceneDocument scene);
 
-typedef WriteCanonicalFn =
-    rt.CanvasSceneDocument Function(
-      rt.CanvasSceneDocument base,
-      rt.ElementId nodeId,
-      Object? value,
-    );
+typedef WriteCanonicalFn = rt.CanvasSceneDocument Function(
+  rt.CanvasSceneDocument base,
+  rt.ElementId nodeId,
+  Object? value,
+);
 
 /// Defines presentation reads and canonical mutation behavior for one
 /// registered canvas field.
@@ -103,34 +108,28 @@ rt.CanvasSceneDocument _writeFill(
 ) {
   return _writeNodeUpdate(base, nodeId, (node) {
     if (node is rt.TextNode) {
-      final current = node.data.appearance.foreground;
+      final current = node.appearance.foreground;
       if (requestedFill == current) return node;
 
       return node.copyWith(
-        data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(foreground: requestedFill),
-        ),
+        appearance: node.appearance.copyWith(foreground: requestedFill),
       );
     }
 
     if (node is rt.IconNode) {
-      final current = node.data.appearance.foreground;
+      final current = node.appearance.foreground;
       if (requestedFill == current) return node;
 
       return node.copyWith(
-        data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(foreground: requestedFill),
-        ),
+        appearance: node.appearance.copyWith(foreground: requestedFill),
       );
     }
 
     if (node is rt.PathNode) {
-      if (requestedFill == node.data.appearance.foreground) return node;
+      if (requestedFill == node.appearance.foreground) return node;
 
       return node.copyWith(
-        data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(foreground: requestedFill),
-        ),
+        appearance: node.appearance.copyWith(foreground: requestedFill),
       );
     }
 
@@ -162,7 +161,7 @@ rt.CanvasSceneDocument _writeTextUnderlays(
   return _writeNodeUpdate(base, nodeId, (node) {
     if (node is! rt.TextNode) return node;
 
-    final currentUnderlays = node.data.appearance.underlays;
+    final currentUnderlays = node.appearance.underlays;
 
     if (_sameUnderlays(currentUnderlays, requestedUnderlays)) {
       return node;
@@ -173,9 +172,7 @@ rt.CanvasSceneDocument _writeTextUnderlays(
     );
 
     return node.copyWith(
-      data: node.data.copyWith(
-        appearance: node.data.appearance.copyWith(underlays: nextUnderlays),
-      ),
+      appearance: node.appearance.copyWith(underlays: nextUnderlays),
     );
   });
 }
@@ -188,7 +185,7 @@ rt.CanvasSceneDocument _writeIconUnderlays(
   return _writeNodeUpdate(base, nodeId, (node) {
     if (node is! rt.IconNode) return node;
 
-    final currentUnderlays = node.data.appearance.underlays;
+    final currentUnderlays = node.appearance.underlays;
 
     if (_sameUnderlays(currentUnderlays, requestedUnderlays)) {
       return node;
@@ -199,9 +196,7 @@ rt.CanvasSceneDocument _writeIconUnderlays(
     );
 
     return node.copyWith(
-      data: node.data.copyWith(
-        appearance: node.data.appearance.copyWith(underlays: nextUnderlays),
-      ),
+      appearance: node.appearance.copyWith(underlays: nextUnderlays),
     );
   });
 }
@@ -231,46 +226,44 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.textContent: FieldCodec(
       fallback: '',
-      readNode: (_, node) => (node as rt.TextNode).data.text,
+      readNode: (_, node) => (node as rt.TextNode).text,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
-      readCanonicalNode: (_, node) => (node as rt.TextNode).data.text,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).text,
       writeCanonical: (base, nodeId, value) {
         final text = value as String;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
-          if (node.data.text == text) return node;
+          if (node.text == text) return node;
 
-          return node.copyWith(data: node.data.copyWith(text: text));
+          return node.copyWith(text: text);
         });
       },
     ),
 
     rt.CanvasFields.textFontFamily: FieldCodec(
       fallback: 'Inter',
-      readNode: (_, node) => (node as rt.TextNode).data.fontFamily,
+      readNode: (_, node) => (node as rt.TextNode).fontFamily,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
-      readCanonicalNode: (_, node) => (node as rt.TextNode).data.fontFamily,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).fontFamily,
       writeCanonical: (base, nodeId, value) {
         final fontFamily = value as String;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
-          if (node.data.fontFamily == fontFamily) return node;
+          if (node.fontFamily == fontFamily) return node;
 
-          return node.copyWith(
-            data: node.data.copyWith(fontFamily: fontFamily),
-          );
+          return node.copyWith(fontFamily: fontFamily);
         });
       },
     ),
 
     rt.CanvasFields.textFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
-      readNode: (_, node) => (node as rt.TextNode).data.appearance.foreground,
+      readNode: (_, node) => (node as rt.TextNode).appearance.foreground,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
       readCanonicalNode: (_, node) =>
-          (node as rt.TextNode).data.appearance.foreground,
+          (node as rt.TextNode).appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
       },
@@ -278,10 +271,10 @@ class FieldCatalog {
 
     rt.CanvasFields.textUnderlays: FieldCodec(
       fallback: const <rt.CanvasSourceUnderlay>[],
-      readNode: (_, node) => (node as rt.TextNode).data.appearance.underlays,
+      readNode: (_, node) => (node as rt.TextNode).appearance.underlays,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
       readCanonicalNode: (_, node) =>
-          (node as rt.TextNode).data.appearance.underlays,
+          (node as rt.TextNode).appearance.underlays,
       writeCanonical: (base, nodeId, value) {
         return _writeTextUnderlays(
           base,
@@ -293,55 +286,51 @@ class FieldCatalog {
 
     rt.CanvasFields.textFontSize: FieldCodec(
       fallback: 28.0,
-      readNode: (_, node) => (node as rt.TextNode).data.fontSize,
+      readNode: (_, node) => (node as rt.TextNode).fontSize,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
-      readCanonicalNode: (_, node) => (node as rt.TextNode).data.fontSize,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).fontSize,
       writeCanonical: (base, nodeId, value) {
         final fontSize = value as double;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
-          if (node.data.fontSize == fontSize) return node;
+          if (node.fontSize == fontSize) return node;
 
-          return node.copyWith(data: node.data.copyWith(fontSize: fontSize));
+          return node.copyWith(fontSize: fontSize);
         });
       },
     ),
 
     rt.CanvasFields.textFontWeight: FieldCodec(
       fallback: 400,
-      readNode: (_, node) => (node as rt.TextNode).data.fontWeight,
+      readNode: (_, node) => (node as rt.TextNode).fontWeight,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
-      readCanonicalNode: (_, node) => (node as rt.TextNode).data.fontWeight,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).fontWeight,
       writeCanonical: (base, nodeId, value) {
         final fontWeight = value as int;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
-          if (node.data.fontWeight == fontWeight) return node;
+          if (node.fontWeight == fontWeight) return node;
 
-          return node.copyWith(
-            data: node.data.copyWith(fontWeight: fontWeight),
-          );
+          return node.copyWith(fontWeight: fontWeight);
         });
       },
     ),
 
     rt.CanvasFields.textLetterSpacing: FieldCodec(
       fallback: 0.0,
-      readNode: (_, node) => (node as rt.TextNode).data.letterSpacing,
+      readNode: (_, node) => (node as rt.TextNode).letterSpacing,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
-      readCanonicalNode: (_, node) => (node as rt.TextNode).data.letterSpacing,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).letterSpacing,
       writeCanonical: (base, nodeId, value) {
         final letterSpacing = value as double;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.TextNode) return node;
-          if (node.data.letterSpacing == letterSpacing) return node;
+          if (node.letterSpacing == letterSpacing) return node;
 
-          return node.copyWith(
-            data: node.data.copyWith(letterSpacing: letterSpacing),
-          );
+          return node.copyWith(letterSpacing: letterSpacing);
         });
       },
     ),
@@ -351,27 +340,27 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.iconRef: FieldCodec(
       fallback: '',
-      readNode: (_, node) => (node as rt.IconNode).data.iconRef,
+      readNode: (_, node) => (node as rt.IconNode).iconRef,
       canReadCanonicalNode: (_, node) => node is rt.IconNode,
-      readCanonicalNode: (_, node) => (node as rt.IconNode).data.iconRef,
+      readCanonicalNode: (_, node) => (node as rt.IconNode).iconRef,
       writeCanonical: (base, nodeId, value) {
         final iconRef = value as String;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.IconNode) return node;
-          if (node.data.iconRef == iconRef) return node;
+          if (node.iconRef == iconRef) return node;
 
-          return node.copyWith(data: node.data.copyWith(iconRef: iconRef));
+          return node.copyWith(iconRef: iconRef);
         });
       },
     ),
 
     rt.CanvasFields.iconFill: FieldCodec(
       fallback: const rt.CanvasFill.solid(0xFF111111),
-      readNode: (_, node) => (node as rt.IconNode).data.appearance.foreground,
+      readNode: (_, node) => (node as rt.IconNode).appearance.foreground,
       canReadCanonicalNode: (_, node) => node is rt.IconNode,
       readCanonicalNode: (_, node) =>
-          (node as rt.IconNode).data.appearance.foreground,
+          (node as rt.IconNode).appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
       },
@@ -379,10 +368,10 @@ class FieldCatalog {
 
     rt.CanvasFields.iconUnderlays: FieldCodec(
       fallback: const <rt.CanvasSourceUnderlay>[],
-      readNode: (_, node) => (node as rt.IconNode).data.appearance.underlays,
+      readNode: (_, node) => (node as rt.IconNode).appearance.underlays,
       canReadCanonicalNode: (_, node) => node is rt.IconNode,
       readCanonicalNode: (_, node) =>
-          (node as rt.IconNode).data.appearance.underlays,
+          (node as rt.IconNode).appearance.underlays,
       writeCanonical: (base, nodeId, value) {
         return _writeIconUnderlays(
           base,
@@ -394,17 +383,17 @@ class FieldCatalog {
 
     rt.CanvasFields.iconSizePx: FieldCodec(
       fallback: 48.0,
-      readNode: (_, node) => (node as rt.IconNode).data.sizePx,
+      readNode: (_, node) => (node as rt.IconNode).sizePx,
       canReadCanonicalNode: (_, node) => node is rt.IconNode,
-      readCanonicalNode: (_, node) => (node as rt.IconNode).data.sizePx,
+      readCanonicalNode: (_, node) => (node as rt.IconNode).sizePx,
       writeCanonical: (base, nodeId, value) {
         final sizePx = value as double;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.IconNode) return node;
-          if (node.data.sizePx == sizePx) return node;
+          if (node.sizePx == sizePx) return node;
 
-          return node.copyWith(data: node.data.copyWith(sizePx: sizePx));
+          return node.copyWith(sizePx: sizePx);
         });
       },
     ),
@@ -416,14 +405,14 @@ class FieldCatalog {
       fallback: '',
       readNode: (scene, node) {
         final image = node as rt.ImageNode;
-        final assetId = image.data.assetId;
+        final assetId = image.assetId;
 
         return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
       },
       canReadCanonicalNode: (_, node) => node is rt.ImageNode,
       readCanonicalNode: (scene, node) {
         final image = node as rt.ImageNode;
-        final assetId = image.data.assetId;
+        final assetId = image.assetId;
 
         return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
       },
@@ -434,7 +423,7 @@ class FieldCatalog {
         final node = rt.findById(base, nodeId);
         if (node is! rt.ImageNode) return base;
 
-        final currentAssetId = node.data.assetId;
+        final currentAssetId = node.assetId;
         final currentSourceRef = currentAssetId == null
             ? null
             : base.assets[currentAssetId]?.sourceRef;
@@ -442,11 +431,7 @@ class FieldCatalog {
         if (sourceRef == null) {
           if (currentAssetId == null) return base;
 
-          return rt.replaceById(
-            base,
-            nodeId,
-            node.copyWith(data: node.data.copyWith(assetId: null)),
-          );
+          return rt.replaceById(base, nodeId, node.copyWith(assetId: null));
         }
 
         if (currentSourceRef == sourceRef) {
@@ -465,51 +450,45 @@ class FieldCatalog {
         return rt.replaceById(
           nextBase,
           nodeId,
-          node.copyWith(data: node.data.copyWith(assetId: assetId)),
+          node.copyWith(assetId: assetId),
         );
       },
     ),
 
     rt.CanvasFields.imageWidthPx: FieldCodec(
       fallback: 200.0,
-      readNode: (_, node) => (node as rt.ImageNode).data.size.w.toDouble(),
+      readNode: (_, node) => (node as rt.ImageNode).size.w.toDouble(),
       canReadCanonicalNode: (_, node) => node is rt.ImageNode,
-      readCanonicalNode: (_, node) =>
-          (node as rt.ImageNode).data.size.w.toDouble(),
+      readCanonicalNode: (_, node) => (node as rt.ImageNode).size.w.toDouble(),
       writeCanonical: (base, nodeId, value) {
         final width = value as double;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.ImageNode) return node;
 
-          final size = node.data.size;
+          final size = node.size;
           if (size.w == width) return node;
 
-          return node.copyWith(
-            data: node.data.copyWith(size: rt.Size2D(width, size.h)),
-          );
+          return node.copyWith(size: rt.Size2D(width, size.h));
         });
       },
     ),
 
     rt.CanvasFields.imageHeightPx: FieldCodec(
       fallback: 200.0,
-      readNode: (_, node) => (node as rt.ImageNode).data.size.h.toDouble(),
+      readNode: (_, node) => (node as rt.ImageNode).size.h.toDouble(),
       canReadCanonicalNode: (_, node) => node is rt.ImageNode,
-      readCanonicalNode: (_, node) =>
-          (node as rt.ImageNode).data.size.h.toDouble(),
+      readCanonicalNode: (_, node) => (node as rt.ImageNode).size.h.toDouble(),
       writeCanonical: (base, nodeId, value) {
         final height = value as double;
 
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.ImageNode) return node;
 
-          final size = node.data.size;
+          final size = node.size;
           if (size.h == height) return node;
 
-          return node.copyWith(
-            data: node.data.copyWith(size: rt.Size2D(size.w, height)),
-          );
+          return node.copyWith(size: rt.Size2D(size.w, height));
         });
       },
     ),
@@ -519,10 +498,10 @@ class FieldCatalog {
     // -------------------------------------------------------------------------
     rt.CanvasFields.pathFill: FieldCodec(
       fallback: const rt.CanvasFill.none(),
-      readNode: (_, node) => (node as rt.PathNode).data.appearance.foreground,
+      readNode: (_, node) => (node as rt.PathNode).appearance.foreground,
       canReadCanonicalNode: (_, node) => node is rt.PathNode,
       readCanonicalNode: (_, node) =>
-          (node as rt.PathNode).data.appearance.foreground,
+          (node as rt.PathNode).appearance.foreground,
       writeCanonical: (base, nodeId, value) {
         return _writeFill(base, nodeId, value as rt.CanvasFill);
       },
@@ -530,20 +509,17 @@ class FieldCatalog {
 
     rt.CanvasFields.pathStroke: FieldCodec(
       fallback: null,
-      readNode: (_, node) => (node as rt.PathNode).data.appearance.stroke,
+      readNode: (_, node) => (node as rt.PathNode).appearance.stroke,
       canReadCanonicalNode: (_, node) => node is rt.PathNode,
-      readCanonicalNode: (_, node) =>
-          (node as rt.PathNode).data.appearance.stroke,
+      readCanonicalNode: (_, node) => (node as rt.PathNode).appearance.stroke,
       writeCanonical: (base, nodeId, value) {
         final stroke = value as rt.CanvasStroke?;
         return _writeNodeUpdate(base, nodeId, (node) {
           if (node is! rt.PathNode) return node;
-          if (node.data.appearance.stroke == stroke) return node;
+          if (node.appearance.stroke == stroke) return node;
 
           return node.copyWith(
-            data: node.data.copyWith(
-              appearance: node.data.appearance.copyWith(stroke: stroke),
-            ),
+            appearance: node.appearance.copyWith(stroke: stroke),
           );
         });
       },

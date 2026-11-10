@@ -41,19 +41,14 @@ rt.CanvasSceneDocument _scene({rt.CanvasStroke? stroke}) =>
           id: 'path',
           name: 'Shape',
           xf: rt.Affine2D.translation(20, 30),
-          data: rt.PathData(
-            source: const rt.RectSource(x: -20, y: -10, width: 40, height: 20),
-            fillRule: rt.FillRule.evenOdd,
-            appearance: rt.CanvasAppearance(
-              foreground: const rt.CanvasFill.solid(0xFF334455),
-              stroke: stroke,
-            ),
+          geometry: const rt.RectSource(x: -20, y: -10, width: 40, height: 20),
+          fillRule: rt.FillRule.evenOdd,
+          appearance: rt.CanvasAppearance(
+            foreground: const rt.CanvasFill.solid(0xFF334455),
+            stroke: stroke,
           ),
         ),
-        const rt.Node.icon(
-          id: 'icon',
-          data: rt.CanvasIconData(iconRef: 'missing'),
-        ),
+        const rt.Node.icon(id: 'icon', iconRef: 'missing'),
       ],
     );
 
@@ -86,10 +81,8 @@ class _Adapter extends EditorDocumentAdapter<rt.CanvasSceneDocument> {
       document,
       'path',
       node.copyWith(
-        data: node.data.copyWith(
-          appearance: node.data.appearance.copyWith(
-            stroke: rt.CanvasStroke(color: 0xFFFF0000, width: 99, dash: [99]),
-          ),
+        appearance: node.appearance.copyWith(
+          stroke: rt.CanvasStroke(color: 0xFFFF0000, width: 99, dash: [99]),
         ),
       ),
     );
@@ -179,21 +172,21 @@ void main() {
     replacement.clear();
 
     final beforeStroke =
-        (rt.findById(before, 'path') as rt.PathNode).data.appearance.stroke!;
+        (rt.findById(before, 'path') as rt.PathNode).appearance.stroke!;
     expect(beforeStroke.dash, [5, 0, 3]);
-    expect(_path(runtime).data.appearance.stroke!.dash, [7, 0, 5]);
-    expect(_path(runtime).data.appearance.stroke!.width, 12);
+    expect(_path(runtime).appearance.stroke!.dash, [7, 0, 5]);
+    expect(_path(runtime).appearance.stroke!.width, 12);
 
     runtime.undo();
     expect(runtime.sourceDocument, before);
-    expect(_path(runtime).data.appearance.stroke!.dash, [5, 0, 3]);
-    expect(_path(runtime).data.appearance.stroke!.width, 0);
+    expect(_path(runtime).appearance.stroke!.dash, [5, 0, 3]);
+    expect(_path(runtime).appearance.stroke!.width, 0);
 
     runtime.redo();
     expect(runtime.sourceDocument, after);
-    expect(_path(runtime).data.appearance.stroke!.dash, [7, 0, 5]);
-    expect(_path(runtime).data.appearance.stroke!.color, 0x00112233);
-    expect(_path(runtime).data.appearance.stroke!.width, 12);
+    expect(_path(runtime).appearance.stroke!.dash, [7, 0, 5]);
+    expect(_path(runtime).appearance.stroke!.color, 0x00112233);
+    expect(_path(runtime).appearance.stroke!.width, 12);
   });
 
   test(
@@ -226,18 +219,15 @@ void main() {
         _configured.copyWith(),
       );
       final after = _path(runtime);
-      expect(after.data.appearance.stroke, _configured);
-      expect(after.data.source, same(before.data.source));
-      expect(after.data.fillRule, before.data.fillRule);
-      expect(
-        after.data.appearance.foreground,
-        before.data.appearance.foreground,
-      );
+      expect(after.appearance.stroke, _configured);
+      expect(after.geometry, same(before.geometry));
+      expect(after.fillRule, before.fillRule);
+      expect(after.appearance.foreground, before.appearance.foreground);
       expect(after.xf, before.xf);
       expect(after.name, before.name);
 
       runtime.undo();
-      expect(_path(runtime).data.appearance.stroke, isNull);
+      expect(_path(runtime).appearance.stroke, isNull);
       expect(runtime.canUndo.value, isFalse);
       runtime.redo();
       runtime.commitField<rt.CanvasStroke?>(
@@ -245,11 +235,11 @@ void main() {
         rt.CanvasFields.pathStroke,
         null,
       );
-      expect(_path(runtime).data.appearance.stroke, isNull);
+      expect(_path(runtime).appearance.stroke, isNull);
       runtime.undo();
-      expect(_path(runtime).data.appearance.stroke, _configured);
+      expect(_path(runtime).appearance.stroke, _configured);
       runtime.redo();
-      expect(_path(runtime).data.appearance.stroke, isNull);
+      expect(_path(runtime).appearance.stroke, isNull);
     },
   );
 
@@ -284,10 +274,7 @@ void main() {
           return current!.copyWith(width: 12);
         },
       );
-      expect(
-        _path(runtime).data.appearance.stroke,
-        _configured.copyWith(width: 12),
-      );
+      expect(_path(runtime).appearance.stroke, _configured.copyWith(width: 12));
     },
   );
 
@@ -331,7 +318,7 @@ void main() {
       await tester.tap(find.text('Add Stroke'));
       await tester.pump();
       expect(
-        _path(runtime).data.appearance.stroke,
+        _path(runtime).appearance.stroke,
         rt.CanvasStroke(color: 0xFF111111),
       );
       final picker = tester.widget<SwatchPickerRow>(
@@ -352,20 +339,20 @@ void main() {
       await tester.ensureVisible(find.byTooltip('Remove stroke'));
       await tester.tap(find.byTooltip('Remove stroke'));
       await tester.pump();
-      expect(_path(runtime).data.appearance.stroke, isNull);
+      expect(_path(runtime).appearance.stroke, isNull);
       final cleared = runtime.sourceDocument;
       picker.onPick(0xFFEF4444);
       expect(runtime.sourceDocument, same(cleared));
       runtime.undo();
       await tester.pump();
       expect(
-        _path(runtime).data.appearance.stroke,
+        _path(runtime).appearance.stroke,
         rt.CanvasStroke(color: 0x80111111),
       );
       runtime.undo();
       await tester.pump();
       expect(
-        _path(runtime).data.appearance.stroke,
+        _path(runtime).appearance.stroke,
         rt.CanvasStroke(color: 0xFF111111),
       );
     },
@@ -394,25 +381,25 @@ void main() {
       );
       stalePicker.onPick(0xFFEF4444);
       await tester.pump();
-      expect(_path(runtime).data.appearance.stroke!.color, 0x00EF4444);
-      expect(_path(runtime).data.appearance.stroke!.dash, [4, 0, 7]);
+      expect(_path(runtime).appearance.stroke!.color, 0x00EF4444);
+      expect(_path(runtime).appearance.stroke!.dash, [4, 0, 7]);
 
       await tester.enterText(_number('width'), '-1');
       await tester.pump();
       expect(find.text('Enter a finite number ≥ 0'), findsOneWidget);
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pump();
-      expect(_path(runtime).data.appearance.stroke!.width, 0);
+      expect(_path(runtime).appearance.stroke!.width, 0);
       await tester.enterText(_number('width'), '12.5');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pump();
-      expect(_path(runtime).data.appearance.stroke!.width, 12.5);
+      expect(_path(runtime).appearance.stroke!.width, 12.5);
       await tester.enterText(_number('miter'), '0.5');
       await tester.pump();
       expect(find.text('Enter a finite number ≥ 1'), findsOneWidget);
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pump();
-      expect(_path(runtime).data.appearance.stroke!.miterLimit, 6);
+      expect(_path(runtime).appearance.stroke!.miterLimit, 6);
       await tester.enterText(_number('miter'), '7.5');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pump();
@@ -425,7 +412,7 @@ void main() {
       );
       join.onChanged!(rt.StrokeJoin.bevel);
       await tester.pump();
-      final stroke = _path(runtime).data.appearance.stroke!;
+      final stroke = _path(runtime).appearance.stroke!;
       expect(stroke.cap, rt.StrokeCap.round);
       expect(stroke.join, rt.StrokeJoin.bevel);
       expect(stroke.miterLimit, 7.5);
@@ -440,7 +427,7 @@ void main() {
       slider.onChanged!(1);
       slider.onChangeEnd!(1);
       await tester.pump();
-      expect(_path(runtime).data.appearance.stroke!.color, 0xFFEF4444);
+      expect(_path(runtime).appearance.stroke!.color, 0xFFEF4444);
       runtime.undo();
       await tester.pump();
       expect(runtime.sourceDocument, beforeGesture);

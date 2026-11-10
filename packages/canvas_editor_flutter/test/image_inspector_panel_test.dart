@@ -23,10 +23,7 @@ CanvasSceneDocument _fixtureScene() {
       _assetId: CanvasImageAsset(sourceRef: 'media:test-image'),
     },
     children: <Node>[
-      Node.image(
-        id: _imageId,
-        data: ImageData(assetId: _assetId, size: Size2D(200, 160)),
-      ),
+      Node.image(id: _imageId, assetId: _assetId, size: Size2D(200, 160)),
     ],
   );
 }

@@ -5,7 +5,6 @@ import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_i
 import 'package:canvas_editor_flutter/src/interaction/picking/hit_test_scene.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 class _NoText implements TextMeasurer {
   @override
   Size2D measure({
@@ -44,9 +43,7 @@ CanvasSceneDocument _scene({Affine2D group = const Affine2D.identity()}) =>
       children: [
         const Node.path(
           id: 'under',
-          data: PathData(
-            source: RectSource(x: -200, y: -200, width: 400, height: 400),
-          ),
+          geometry: RectSource(x: -200, y: -200, width: 400, height: 400),
         ),
         Node.group(
           id: 'group',
@@ -54,19 +51,17 @@ CanvasSceneDocument _scene({Affine2D group = const Affine2D.identity()}) =>
           children: const [
             Node.icon(
               id: 'icon',
-              data: CanvasIconData(
-                iconRef: 'ring',
-                sizePx: 96,
-                appearance: CanvasAppearance(
-                  foreground: CanvasFill.none(),
-                  underlays: [
-                    ShadowEffect(
-                      id: 's',
-                      offset: Vec2(100, 0),
-                      color: 0xff000000,
-                    ),
-                  ],
-                ),
+              iconRef: 'ring',
+              sizePx: 96,
+              appearance: CanvasAppearance(
+                foreground: CanvasFill.none(),
+                underlays: [
+                  ShadowEffect(
+                    id: 's',
+                    offset: Vec2(100, 0),
+                    color: 0xff000000,
+                  ),
+                ],
               ),
             ),
           ],
@@ -100,7 +95,10 @@ void main() {
 
   test('square picking follows nested rotation and nonuniform reflection', () {
     final scene = _scene(
-      group: (Affine2D.translation(70, -35) * Affine2D.rotation(math.pi / 3) * Affine2D.scale(-2, 0.5)),
+      group:
+          (Affine2D.translation(70, -35) *
+          Affine2D.rotation(math.pi / 3) *
+          Affine2D.scale(-2, 0.5)),
     );
     final computed = computeScene(
       scene,

@@ -86,7 +86,8 @@ class _FakeEditorController implements EditorController {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -146,7 +147,7 @@ void main() {
       selection: selection,
     );
 
-    final id = ctx.addNodeAndSelect(const Node.text(id: 't1', data: _textData));
+    final id = ctx.addNodeAndSelect(_textNode);
 
     expect(id, 't1');
     expect(selection.value, 't1');
@@ -157,7 +158,7 @@ void main() {
     tester,
   ) async {
     final controller = _FakeEditorController(
-      _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
+      _sceneWithChildren(const [_textNode]),
     );
     final selection = SelectionController()..selectItem('t1');
 
@@ -183,7 +184,7 @@ void main() {
     'deleteSelection applies edit without eagerly clearing selection',
     (tester) async {
       final controller = _FakeEditorController(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
+        _sceneWithChildren(const [_textNode]),
       );
 
       final selection = SelectionController()..selectItem('t1');

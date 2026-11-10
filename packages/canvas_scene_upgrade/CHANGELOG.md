@@ -1,3 +1,9 @@
+## 0.3.0
+
+- Upgrade v5 and supported earlier documents to canonical v6 JSON.
+- Reconstruct historical pivots from v4 wire fields using shared geometry
+  primitives. Validate the final document through the current core decoder.
+
 ## 0.2.0
 
 - Extend the optional historical chain through v4 -> v5, baking pivots into affine matrices and accepting explicit layout services when required.

@@ -6,7 +6,6 @@ import 'package:canvas_core/canvas_core_runtime.dart'
     show
         CanvasAssetId,
         CanvasImageAsset,
-        ImageData,
         ImageFit,
         ImageNode,
         SceneTreeOps,
@@ -74,12 +73,10 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
 
           final node = ImageNode(
             id: nodeId,
-            data: ImageData(
-              assetId: assetId,
-              size: size,
-              fit: ImageFit.contain,
-              align: const Vec2(0.5, 0.5),
-            ),
+            assetId: assetId,
+            size: size,
+            fit: ImageFit.contain,
+            align: const Vec2(0.5, 0.5),
             xf: Affine2D.translation(artboard.w * 0.5, artboard.h * 0.5),
           );
 

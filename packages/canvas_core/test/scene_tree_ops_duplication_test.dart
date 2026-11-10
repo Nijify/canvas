@@ -5,12 +5,10 @@ import 'package:test/test.dart';
 
 Node _text(String id) => Node.text(
   id: id,
-  data: const TextData(
-    text: 't',
-    fontFamily: 'Inter',
-    fontWeight: 400,
-    fontSize: 12,
-  ),
+  text: 't',
+  fontFamily: 'Inter',
+  fontWeight: 400,
+  fontSize: 12,
 );
 
 CanvasSceneDocument _scene(List<Node> children) {

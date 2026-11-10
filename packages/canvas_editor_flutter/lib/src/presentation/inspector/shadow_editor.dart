@@ -63,11 +63,11 @@ List<rt.CanvasSourceUnderlay>? _canonicalUnderlaysFor(
   final node = rt.findById(inspector.editableScene, nodeId);
 
   if (fieldKey == rt.CanvasFields.textUnderlays && node is rt.TextNode) {
-    return node.data.appearance.underlays;
+    return node.appearance.underlays;
   }
 
   if (fieldKey == rt.CanvasFields.iconUnderlays && node is rt.IconNode) {
-    return node.data.appearance.underlays;
+    return node.appearance.underlays;
   }
 
   return null;

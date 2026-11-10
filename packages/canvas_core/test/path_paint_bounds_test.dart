@@ -59,12 +59,10 @@ void main() {
       final computed = _compute([
         Node.path(
           id: 'path',
-          data: PathData(
-            source: source,
-            appearance: CanvasAppearance(
-              foreground: const CanvasFill.none(),
-              stroke: stroke,
-            ),
+          geometry: source,
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.none(),
+            stroke: stroke,
           ),
         ),
       ]);
@@ -101,10 +99,8 @@ void main() {
         children: [
           Node.path(
             id: 'path',
-            data: PathData(
-              source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-              appearance: appearance,
-            ),
+            geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+            appearance: appearance,
           ),
         ],
       );
@@ -128,12 +124,10 @@ void main() {
     final filled = _compute([
       Node.path(
         id: 'path',
-        data: PathData(
-          source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-          appearance: CanvasAppearance(
-            foreground: const CanvasFill.solid(0xFF112233),
-            stroke: CanvasStroke(color: 0x00112233, width: 100),
-          ),
+        geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.solid(0xFF112233),
+          stroke: CanvasStroke(color: 0x00112233, width: 100),
         ),
       ),
     ]);
@@ -152,16 +146,14 @@ void main() {
         children: [
           Node.path(
             id: 'path',
-            data: PathData(
-              source: PolylineSource(points),
-              appearance: CanvasAppearance(
-                foreground: const CanvasFill.none(),
-                stroke: CanvasStroke(
-                  color: 0xFF112233,
-                  width: 6,
-                  cap: StrokeCap.round,
-                  join: StrokeJoin.round,
-                ),
+            geometry: PolylineSource(points),
+            appearance: CanvasAppearance(
+              foreground: const CanvasFill.none(),
+              stroke: CanvasStroke(
+                color: 0xFF112233,
+                width: 6,
+                cap: StrokeCap.round,
+                join: StrokeJoin.round,
               ),
             ),
           ),
@@ -189,11 +181,9 @@ void main() {
       final computed = _compute([
         Node.path(
           id: 'path',
-          data: PathData(
-            source: source,
-            appearance: CanvasAppearance(
-              stroke: CanvasStroke(color: 0xFF111111, cap: StrokeCap.round),
-            ),
+          geometry: source,
+          appearance: CanvasAppearance(
+            stroke: CanvasStroke(color: 0xFF111111, cap: StrokeCap.round),
           ),
         ),
       ]);
@@ -223,15 +213,18 @@ void main() {
                 children: [
                   Node.path(
                     id: 'path',
-                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-7.0, 3.0)),
-                    data: PathData(source: source, appearance: appearance),
+                    xf:
+                        (Affine2D.translation(7, -3) *
+                        Affine2D.rotation(0.3) *
+                        Affine2D.scale(-2, 0.5) *
+                        Affine2D.translation(-7.0, 3.0)),
+                    geometry: source,
+                    appearance: appearance,
                   ),
                   Node.path(
                     id: 'sibling',
                     xf: Affine2D.translation(150, 30),
-                    data: PathData(
-                      source: RectSource(x: -10, y: -5, width: 20, height: 10),
-                    ),
+                    geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
                   ),
                 ],
               ),

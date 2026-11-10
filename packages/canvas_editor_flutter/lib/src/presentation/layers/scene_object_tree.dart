@@ -109,9 +109,9 @@ SceneObjectKind kindForNode(rt.Node node) {
 
 String fallbackLabelForNode(rt.Node node) {
   return switch (node) {
-    rt.TextNode(:final data) => _fallbackTextLabel(data.text),
+    rt.TextNode(:final text) => _fallbackTextLabel(text),
     rt.ImageNode() => 'Image',
-    rt.PathNode(:final data) => _fallbackPathLabel(data.source),
+    rt.PathNode(:final geometry) => _fallbackPathLabel(geometry),
     rt.IconNode() => 'Icon',
     rt.GroupNode() => 'Group',
     _ => 'Layer',

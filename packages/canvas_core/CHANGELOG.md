@@ -1,3 +1,11 @@
+## 0.19.0
+
+- **Breaking:** scene v6 stores authored fields directly on nodes and uses
+  `type` as the discriminator. Path geometry is now `PathNode.geometry`.
+  Replace the four node data wrappers with direct constructor and `copyWith`
+  fields. The optional `canvas_scene_upgrade` package handles older documents.
+- Omit null node fields and default appearance and image options in JSON.
+
 ## 0.18.0
 
 - **Breaking:** move `upgradeCanvasScene` to the optional `canvas_scene_upgrade`

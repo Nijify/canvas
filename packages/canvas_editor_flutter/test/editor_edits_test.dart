@@ -4,7 +4,8 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/editor_edits.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -14,7 +15,7 @@ const _textData = TextData(
 );
 
 Node _text(String id, {String? name}) {
-  return Node.text(id: id, name: name, data: _textData);
+  return _textNode.copyWith(id: id, name: name);
 }
 
 CanvasSceneDocument _scene(List<Node> children) {

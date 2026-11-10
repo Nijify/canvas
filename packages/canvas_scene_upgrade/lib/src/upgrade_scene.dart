@@ -1,15 +1,24 @@
-import 'package:canvas_core/canvas_core_runtime.dart' show CoreServices, decodeCanvasScene;
+import 'dart:convert';
+
+import 'package:canvas_core/canvas_core_runtime.dart'
+    show
+        CoreServices,
+        currentCanvasSceneFormatVersion,
+        decodeCanvasScene,
+        encodeCanvasScene;
 
 import 'formats/scene_v1.dart';
 import 'formats/scene_v2.dart';
 import 'formats/scene_v3.dart';
+import 'formats/scene_v5.dart';
 import 'migrations/legacy_unversioned_to_v1.dart';
 import 'migrations/v1_to_v2.dart';
 import 'migrations/v2_to_v3.dart';
 import 'migrations/v3_to_v4.dart';
 import 'migrations/v4_to_v5.dart';
+import 'migrations/v5_to_v6.dart';
 
-/// Upgrades supported historical JSON to the current Canvas scene format (v5).
+/// Upgrades supported historical JSON to the current Canvas scene format.
 ///
 /// [services] supplies layout metrics when a historical group pivot needs them.
 /// Missing required text/image metrics are reported rather than approximated.
@@ -57,22 +66,33 @@ Map<String, Object?> upgradeCanvasScene(
     throw const FormatException('sceneFormatVersion must be an integer.');
   }
 
-  final historical = switch (version) {
-    canvasSceneFormatV1 => convertCanvasSceneV3ToV4(
-      convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(source)),
-    ),
-    canvasSceneFormatV2 => convertCanvasSceneV3ToV4(
-      convertCanvasSceneV2ToV3(source),
-    ),
-    canvasSceneFormatV3 => convertCanvasSceneV3ToV4(source),
-    4 || 5 => Map<String, Object?>.from(source),
-    _ => throw FormatException(
-      'Unsupported Canvas sceneFormatVersion: $version',
-    ),
-  };
-
-  final result = historical['sceneFormatVersion'] == 5 ? historical
-      : convertCanvasSceneV4ToV5(historical, services: services);
-  decodeCanvasScene(result);
-  return result;
+  final Map<String, Object?> result;
+  if (version == currentCanvasSceneFormatVersion) {
+    result = source;
+  } else {
+    final v5 = switch (version) {
+      5 => source,
+      _ => convertCanvasSceneV4ToV5(_toV4(source, version), services: services),
+    };
+    if (version == 5) validateSceneV5Json(v5);
+    result = convertCanvasSceneV5ToV6(v5);
+  }
+  final canonical = encodeCanvasScene(decodeCanvasScene(result));
+  // Snapshot opaque behavior payloads along with the rest of the wire data.
+  return jsonDecode(jsonEncode(canonical)) as Map<String, Object?>;
 }
+
+Map<String, Object?> _toV4(Map<String, Object?> source, int version) =>
+    switch (version) {
+      canvasSceneFormatV1 => convertCanvasSceneV3ToV4(
+        convertCanvasSceneV2ToV3(convertCanvasSceneV1ToV2(source)),
+      ),
+      canvasSceneFormatV2 => convertCanvasSceneV3ToV4(
+        convertCanvasSceneV2ToV3(source),
+      ),
+      canvasSceneFormatV3 => convertCanvasSceneV3ToV4(source),
+      4 => source,
+      _ => throw FormatException(
+        'Unsupported Canvas sceneFormatVersion: $version',
+      ),
+    };

@@ -1,5 +1,5 @@
 {
-  "sceneFormatVersion": 5,
+  "sceneFormatVersion": 6,
   "artboardSize": {
     "w": 1080.0,
     "h": 1080.0
@@ -10,17 +10,14 @@
   "backgroundOpacity": 1.0,
   "children": [
     {
-      "runtimeType": "icon",
+      "type": "icon",
       "id": "icon-solid-1",
-      "data": {
-        "iconRef": "icon.star",
-        "sizePx": 96.0,
-        "appearance": {
-          "foreground": {
-            "type": "solid",
-            "color": 4279308561
-          },
-          "underlays": []
+      "iconRef": "icon.star",
+      "sizePx": 96.0,
+      "appearance": {
+        "foreground": {
+          "type": "solid",
+          "color": 4279308561
         }
       }
     }

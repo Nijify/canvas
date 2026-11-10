@@ -14,11 +14,11 @@ class _NoTextMeasurer implements TextMeasurer {
   }) => throw StateError('Ordinary path evaluation must not measure text.');
 }
 
-ComputedScene _computePath(PathData data) => computeScene(
+ComputedScene _computePath(PathNode path) => computeScene(
   CanvasSceneDocument(
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1,
-    children: [Node.path(id: 'path', data: data)],
+    children: [path],
   ),
   CoreServices(textMeasurer: _NoTextMeasurer()),
 );
@@ -47,7 +47,10 @@ void main() {
 
   test('computed path commands cannot be appended to or replaced', () {
     final computed = _computePath(
-      const PathData(source: RectSource(x: -12, y: -6, width: 24, height: 12)),
+      const PathNode(
+        id: 'path',
+        geometry: RectSource(x: -12, y: -6, width: 24, height: 12),
+      ),
     );
     final path = computed.pathIRById['path']!;
     final originalGeometry = _geometry(path);
@@ -63,12 +66,13 @@ void main() {
   });
 
   test('authored appearance preserves compiled geometry', () {
-    final plain = _computePath(
-      const PathData(source: RectSource(x: -12, y: -6, width: 24, height: 12)),
+    const path = PathNode(
+      id: 'path',
+      geometry: RectSource(x: -12, y: -6, width: 24, height: 12),
     );
+    final plain = _computePath(path);
     final painted = _computePath(
-      PathData(
-        source: const RectSource(x: -12, y: -6, width: 24, height: 12),
+      path.copyWith(
         fillRule: FillRule.evenOdd,
         appearance: CanvasAppearance(
           foreground: const CanvasFill.solid(0x8044AAFF),

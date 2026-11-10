@@ -315,9 +315,8 @@ final class _BackgroundRemovalControlState
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.maybeOf(
-      context,
-    )?.showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -352,7 +351,7 @@ final class _BackgroundRemovalControlState
 }
 
 String? _sourceRefForImage(CanvasSceneDocument scene, ImageNode image) {
-  final assetId = image.data.assetId;
+  final assetId = image.assetId;
   return assetId == null ? null : scene.assets[assetId]?.sourceRef;
 }
 

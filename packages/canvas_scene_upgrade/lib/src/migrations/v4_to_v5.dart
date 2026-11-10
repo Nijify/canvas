@@ -1,133 +1,171 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
+
 import '../formats/scene_v4.dart';
 
-/// Bake historical TRS+pivot placement into complete local affine matrices.
-/// Geometry stays unchanged. Missing layout resources are reported, not guessed.
+/// Bake v4 TRS and pivots into local affine matrices using historical layout.
 Map<String, Object?> convertCanvasSceneV4ToV5(
-  Map<String, Object?> input, {CoreServices? services,
+  Map<String, Object?> input, {
+  CoreServices? services,
 }) {
   validateSceneV4Json(input);
-  final result = _copy(input) as Map<String, Object?>;
-  result['sceneFormatVersion'] = 5;
-  final legacy = <ElementId, Map<String, Object?>>{};
-  final hidden = <ElementId, bool>{};
-  final wires = <ElementId, Map<String, Object?>>{};
-  void collect(List children, bool ancestorHidden) {
-    for (final value in children) {
-      final node = value as Map<String, Object?>;
-      final id = node['id'] as String;
-      legacy[id] = node['xf'] == null ? {} : Map<String, Object?>.from(node['xf'] as Map);
-      hidden[id] = ancestorHidden || node['hidden'] == true;
-      wires[id] = node;
-      node.remove('xf');
-      if (node['runtimeType'] == 'group') collect(node['children'] as List, hidden[id]!);
-    }
-  }
-  collect(result['children'] as List, false);
-  // Wire structure was checked as v4. The unchanged geometry/appearance uses
-  // current primitives; no historical scene decoder is installed in core.
-  final scene = CanvasSceneDocument.fromJson(Map<String, dynamic>.from(result));
-  requireCanvasSceneIntegrity(scene);
-  final imageSizes = _UpgradeImageSizes(scene, services?.images);
-  final geometry = NodeGeometry(CoreServices(
-    textMeasurer: services?.textMeasurer ?? const _MissingTextMetrics(),
-    images: imageSizes, icons: services?.icons,
-  ));
-  final bounds = <ElementId, Rect2D?>{};
-  final matrices = <ElementId, Affine2D>{};
+  final assets = input['assets'] as Map?;
+  final roots = input['children'] as List;
 
-  late Rect2D? Function(Node) layout;
-  Affine2D local(Node node) {
-    final cached = matrices[node.id];
-    if (cached != null) return cached;
-    final xf = legacy[node.id]!;
-    final position = _point(xf['position'], const Vec2(0, 0));
-    final scale = _point(xf['scale'], const Vec2(1, 1));
-    final rotation = _number(xf['rotationRad'], 0);
-    var matrix = Affine2D.translation(position.x, position.y);
-    if (rotation != 0 || scale != const Vec2(1, 1)) {
-      var pivot = const Vec2(0, 0);
-      if (xf['origin'] == 'custom') {
-        pivot = _point(xf['customPivotPx'], pivot);
-      } else if (!hidden[node.id]! && node is! TextNode && node is! IconNode) {
-        // Text and nominal icon bounds are always centered at local zero.
-        final box = layout(node);
-        if (box != null) pivot = Vec2(box.left / 2 + box.right / 2, box.top / 2 + box.bottom / 2);
+  ({Map<String, Object?> json, Affine2D xf, Rect2D? bounds}) convert(
+    Map<String, Object?> node, {
+    bool needsBounds = false,
+    bool ancestorHidden = false,
+  }) {
+    final type = node['runtimeType'];
+    final id = node['id'] as String;
+    final hidden = ancestorHidden || node['hidden'] == true;
+    final legacy = node['xf'] as Map? ?? const {};
+    final position = _point(legacy['position'], Vec2.zero);
+    final scale = _point(legacy['scale'], const Vec2(1, 1));
+    final rotation = _number(legacy['rotationRad'], 0);
+    final customPivot = _point(legacy['customPivotPx'], Vec2.zero);
+    final hasLinearTransform = rotation != 0 || scale != const Vec2(1, 1);
+    final useCenter = hasLinearTransform && legacy['origin'] != 'custom';
+    final measure =
+        !hidden &&
+        (needsBounds || (useCenter && type != 'text' && type != 'icon'));
+
+    final output = Map<String, Object?>.of(node)..remove('xf');
+    Rect2D? bounds;
+    if (type == 'group') {
+      final children = <Map<String, Object?>>[];
+      for (final raw in node['children'] as List) {
+        final child = convert(
+          Map<String, Object?>.from(raw as Map),
+          needsBounds: measure,
+          ancestorHidden: hidden,
+        );
+        children.add(child.json);
+        final childBounds = child.bounds;
+        if (measure && childBounds != null) {
+          final placed = aabbOfTransformedRect(childBounds, child.xf);
+          bounds = bounds == null ? placed : Rect2DX.union(bounds, placed);
+        }
       }
-      matrix = matrix * affineAround(pivot,
-        Affine2D.rotation(rotation) * Affine2D.scale(scale.x, scale.y));
+      output['children'] = children;
+    } else if (measure) {
+      bounds = _leafBounds(
+        type as String,
+        id,
+        node['data'] as Map,
+        assets,
+        services,
+      );
     }
-    matrices[node.id] = matrix;
-    return matrix;
+
+    var xf = Affine2D.translation(position.x, position.y);
+    if (hasLinearTransform) {
+      final pivot = legacy['origin'] == 'custom'
+          ? customPivot
+          : bounds == null || type == 'text' || type == 'icon'
+          ? Vec2.zero
+          : Vec2(
+              bounds.left / 2 + bounds.right / 2,
+              bounds.top / 2 + bounds.bottom / 2,
+            );
+      xf =
+          xf *
+          affineAround(
+            pivot,
+            Affine2D.rotation(rotation) * Affine2D.scale(scale.x, scale.y),
+          );
+    }
+    if (!xf.isIdentity) output['xf'] = xf.toJson();
+    return (json: output, xf: xf, bounds: bounds);
   }
 
-  layout = (Node node) {
-    if (hidden[node.id]!) return null;
-    if (bounds.containsKey(node.id)) return bounds[node.id];
-    Rect2D? box;
-    if (node is GroupNode) {
-      for (final child in node.children) {
-        final childBounds = layout(child);
-        if (childBounds == null) continue;
-        final placed = aabbOfTransformedRect(childBounds, local(child));
-        box = box == null ? placed : Rect2DX.union(box, placed);
-      }
-    } else {
-      box = geometry.leafBounds(node)?.layout;
-    }
-    bounds[node.id] = box;
-    return box;
+  return {
+    ...input,
+    'sceneFormatVersion': 5,
+    'children': [
+      for (final root in roots)
+        convert(Map<String, Object?>.from(root as Map)).json,
+    ],
   };
-  void write(Node node) {
-    // Validate every legacy coefficient even when its pivot cancels at identity.
-    final xf = legacy[node.id]!;
-    _point(xf['customPivotPx'], const Vec2(0, 0));
-    final matrix = local(node);
-    if (!matrix.isIdentity) wires[node.id]!['xf'] = matrix.toJson();
-    for (final child in node.childrenOrEmpty) write(child);
-  }
-  for (final root in scene.children) write(root);
-  return result;
 }
 
-final class _MissingTextMetrics implements TextMeasurer {
-  const _MissingTextMetrics();
-  @override
-  Size2D measure({required String text, required String fontFamily,
-    required int fontWeight, required double fontSize, required double letterSpacing}) =>
-      throw const FormatException('Historical group pivots need text metrics. Pass CoreServices to upgradeCanvasScene.');
+Rect2D? _leafBounds(
+  String type,
+  String id,
+  Map data,
+  Map? assets,
+  CoreServices? services,
+) {
+  switch (type) {
+    case 'path':
+      final source = PathSource.fromJson(
+        Map<String, Object?>.from(data['source'] as Map),
+      );
+      return compilePath(source).localBounds();
+    case 'text':
+      final measurer = services?.textMeasurer;
+      if (measurer == null) {
+        throw FormatException(
+          'Scene v4 text node $id needs text metrics to resolve a group pivot. '
+          'Pass CoreServices to upgradeCanvasScene.',
+        );
+      }
+      return _centered(
+        measurer.measure(
+          text: data['text'] as String,
+          fontFamily: data['fontFamily'] as String,
+          fontWeight: data['fontWeight'] as int,
+          fontSize: (data['fontSize'] as num).toDouble(),
+          letterSpacing: (data['letterSpacing'] as num?)?.toDouble() ?? 0,
+        ),
+      );
+    case 'icon':
+      final size = (data['sizePx'] as num?)?.toDouble() ?? 96;
+      return _centered(Size2D(size, size));
+    case 'image':
+      final layout = Size2D.fromJson(
+        Map<String, dynamic>.from(data['size'] as Map),
+      );
+      final fit = ImageFit.values.byName(data['fit'] as String? ?? 'contain');
+      final assetId = data['assetId'];
+      final asset = assets?[assetId] as Map?;
+      final storedSize = asset?['intrinsicSize'] as Map?;
+      final intrinsic =
+          services?.images?.intrinsicSize(id) ??
+          (storedSize == null
+              ? null
+              : Size2D.fromJson(Map<String, dynamic>.from(storedSize)));
+      if (fit == ImageFit.contain && assetId != null && intrinsic == null) {
+        throw FormatException(
+          'Scene v4 image node $id needs intrinsic image dimensions to resolve '
+          'a pivot. Pass CoreServices or persist intrinsicSize.',
+        );
+      }
+      return imageSrcDst(
+        intrinsic: intrinsic ?? layout,
+        layout: layout,
+        fit: fit,
+        align: _point(data['align'], const Vec2(0.5, 0.5)),
+      ).dst;
+  }
+  return null;
 }
 
-final class _UpgradeImageSizes implements ImageIntrinsics {
-  _UpgradeImageSizes(this.scene, this.delegate);
-  final CanvasSceneDocument scene;
-  final ImageIntrinsics? delegate;
-  @override
-  Size2D? intrinsicSize(ElementId id) {
-    final external = delegate?.intrinsicSize(id);
-    if (external != null) return external;
-    final node = findById(scene, id);
-    if (node is! ImageNode || node.data.assetId == null) return null;
-    final size = scene.assets[node.data.assetId]?.intrinsicSize;
-    if (size == null && node.data.fit == ImageFit.contain) {
-      throw const FormatException('Historical contain-fit bounds need intrinsic image metadata. Pass CoreServices or persist intrinsicSize.');
-    }
-    return size;
-  }
-}
+Rect2D _centered(Size2D size) =>
+    Rect2D.fromLTWH(-size.w / 2, -size.h / 2, size.w, size.h);
 
 double _number(Object? value, double fallback) {
   if (value == null) return fallback;
-  if (value is! num || !value.toDouble().isFinite) throw const FormatException('Legacy transforms require finite numbers.');
+  if (value is! num || !value.toDouble().isFinite) {
+    throw const FormatException('Legacy transforms require finite numbers.');
+  }
   return value.toDouble();
 }
+
 Vec2 _point(Object? value, Vec2 fallback) {
   if (value == null) return fallback;
-  if (value is! Map) throw const FormatException('Legacy transform point must be an object.');
+  if (value is! Map) {
+    throw const FormatException('Legacy transform point must be an object.');
+  }
   return Vec2(_number(value['x'], fallback.x), _number(value['y'], fallback.y));
-}
-Object? _copy(Object? value) {
-  if (value is Map) return <String, Object?>{for (final entry in value.entries) entry.key as String: _copy(entry.value)};
-  if (value is List) return <Object?>[for (final item in value) _copy(item)];
-  return value;
 }

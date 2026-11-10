@@ -17,80 +17,7 @@ import 'package:canvas_core/src/runtime/model/canvas_appearance.dart';
 part 'node_model.freezed.dart';
 part 'node_model.g.dart';
 
-@freezed
-abstract class TextData with _$TextData {
-  const TextData._();
-
-  const factory TextData({
-    required String text,
-    required String fontFamily,
-    required FontWeightNum fontWeight,
-    required double fontSize,
-
-    /// Additional spacing between characters in logical canvas units.
-    ///
-    /// The original text must remain unchanged. Platform text implementations
-    /// must apply this value through their native text-layout API.
-    @Default(0.0) double letterSpacing,
-
-    /// Source-derived visual appearance.
-    ///
-    /// Layout and interaction geometry remain source-derived and do not expand
-    /// for source underlays.
-    @Default(CanvasAppearance()) CanvasAppearance appearance,
-  }) = _TextData;
-
-  factory TextData.fromJson(Map<String, dynamic> json) =>
-      _$TextDataFromJson(json);
-}
-
 enum ImageFit { contain, cover, fill }
-
-@freezed
-abstract class ImageData with _$ImageData {
-  const factory ImageData({
-    /// Null represents an intentionally unfilled image frame.
-    CanvasAssetId? assetId,
-
-    /// Editable destination-frame dimensions in document units.
-    @Size2DConverter() required Size2D size,
-    @Default(ImageFit.contain) ImageFit fit,
-    @Vec2Converter() @Default(Vec2(0.5, 0.5)) Vec2 align,
-  }) = _ImageData;
-
-  factory ImageData.fromJson(Map<String, dynamic> json) =>
-      _$ImageDataFromJson(json);
-}
-
-@freezed
-abstract class PathData with _$PathData {
-  const factory PathData({
-    /// The sole authored geometry source. Use an explicit empty source for an
-    /// intentionally empty path.
-    @PathSourceConverter() required PathSource source,
-    @JsonKey(toJson: _fillRuleToJson, includeIfNull: false)
-    @Default(FillRule.nonZero) FillRule fillRule,
-    @Default(CanvasAppearance(foreground: CanvasFill.none()))
-    CanvasAppearance appearance,
-  }) = _PathData;
-
-  factory PathData.fromJson(Map<String, dynamic> json) =>
-      _$PathDataFromJson(json);
-}
-
-@freezed
-abstract class CanvasIconData with _$CanvasIconData {
-  const CanvasIconData._();
-
-  const factory CanvasIconData({
-    required String iconRef,
-    @Default(96.0) double sizePx,
-    @Default(CanvasAppearance()) CanvasAppearance appearance,
-  }) = _CanvasIconData;
-
-  factory CanvasIconData.fromJson(Map<String, dynamic> json) =>
-      _$CanvasIconDataFromJson(json);
-}
 
 /// Generic runtime-owned behavior envelope for optional group semantics.
 ///
@@ -119,65 +46,124 @@ abstract class GroupBehaviorRef with _$GroupBehaviorRef {
 ///   Core runtime does not interpret product/domain behavior types directly.
 /// - Sibling order is paint/stack order:
 ///   earlier siblings paint behind later siblings.
-@Freezed(unionKey: 'runtimeType')
+@Freezed(unionKey: 'type')
 sealed class Node with _$Node {
   const Node._();
 
   const factory Node.text({
     required ElementId id,
-    String? name,
+    @JsonKey(includeIfNull: false) String? name,
     // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
     // Candidate for removal from the persisted scene model after layer
     // visibility UX is intentionally redesigned or removed.
     @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false) bool hidden,
+    @Default(false)
+    bool hidden,
     @JsonKey(includeIfNull: false)
-    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
-    required TextData data,
-    String? role,
+    @Affine2DConverter()
+    @Default(Affine2D.identity())
+    Affine2D xf,
+    required String text,
+    required String fontFamily,
+    required FontWeightNum fontWeight,
+    required double fontSize,
+
+    /// Additional spacing between characters in logical canvas units.
+    ///
+    /// The original text must remain unchanged. Platform text implementations
+    /// must apply this value through their native text-layout API.
+    @JsonKey(toJson: _letterSpacingToJson, includeIfNull: false)
+    @Default(0.0)
+    double letterSpacing,
+
+    /// Source-derived visual appearance.
+    ///
+    /// Layout and interaction geometry remain source-derived and do not expand
+    /// for source underlays.
+    @Default(CanvasAppearance()) CanvasAppearance appearance,
+    @JsonKey(includeIfNull: false) String? role,
   }) = TextNode;
 
   const factory Node.image({
     required ElementId id,
-    String? name,
+    @JsonKey(includeIfNull: false) String? name,
     @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false) bool hidden,
+    @Default(false)
+    bool hidden,
     @JsonKey(includeIfNull: false)
-    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
-    required ImageData data,
-    String? role,
+    @Affine2DConverter()
+    @Default(Affine2D.identity())
+    Affine2D xf,
+
+    /// Null represents an intentionally unfilled image frame.
+    @JsonKey(includeIfNull: false) CanvasAssetId? assetId,
+
+    /// Editable destination-frame dimensions in document units.
+    @Size2DConverter() required Size2D size,
+    @JsonKey(toJson: _imageFitToJson, includeIfNull: false)
+    @Default(ImageFit.contain)
+    ImageFit fit,
+    @JsonKey(
+      fromJson: Vec2.fromJson,
+      toJson: _imageAlignToJson,
+      includeIfNull: false,
+    )
+    @Default(Vec2(0.5, 0.5))
+    Vec2 align,
+    @JsonKey(includeIfNull: false) String? role,
   }) = ImageNode;
 
   const factory Node.path({
     required ElementId id,
-    String? name,
+    @JsonKey(includeIfNull: false) String? name,
     @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false) bool hidden,
+    @Default(false)
+    bool hidden,
     @JsonKey(includeIfNull: false)
-    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
-    required PathData data,
-    String? role,
+    @Affine2DConverter()
+    @Default(Affine2D.identity())
+    Affine2D xf,
+
+    /// The sole authored geometry source. Use an explicit empty source for an
+    /// intentionally empty path.
+    @PathSourceConverter() required PathSource geometry,
+    @JsonKey(toJson: _fillRuleToJson, includeIfNull: false)
+    @Default(FillRule.nonZero)
+    FillRule fillRule,
+    @Default(CanvasAppearance(foreground: CanvasFill.none()))
+    CanvasAppearance appearance,
+    @JsonKey(includeIfNull: false) String? role,
   }) = PathNode;
 
   const factory Node.icon({
     required ElementId id,
-    String? name,
+    @JsonKey(includeIfNull: false) String? name,
     @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false) bool hidden,
+    @Default(false)
+    bool hidden,
     @JsonKey(includeIfNull: false)
-    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
-    required CanvasIconData data,
-    String? role,
+    @Affine2DConverter()
+    @Default(Affine2D.identity())
+    Affine2D xf,
+    required String iconRef,
+    @JsonKey(toJson: _iconSizeToJson, includeIfNull: false)
+    @Default(96.0)
+    double sizePx,
+    @Default(CanvasAppearance()) CanvasAppearance appearance,
+    @JsonKey(includeIfNull: false) String? role,
   }) = IconNode;
 
   const factory Node.group({
     required ElementId id,
-    String? name,
+    @JsonKey(includeIfNull: false) String? name,
     @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false) bool hidden,
+    @Default(false)
+    bool hidden,
     @JsonKey(includeIfNull: false)
-    @Affine2DConverter() @Default(Affine2D.identity()) Affine2D xf,
-    GroupBehaviorRef? behavior,
+    @Affine2DConverter()
+    @Default(Affine2D.identity())
+    Affine2D xf,
+    @JsonKey(includeIfNull: false) GroupBehaviorRef? behavior,
     @Default(<Node>[]) List<Node> children,
   }) = GroupNode;
 
@@ -185,38 +171,6 @@ sealed class Node with _$Node {
 }
 
 extension NodeFields on Node {
-  ElementId get id => switch (this) {
-    TextNode(:final id) => id,
-    ImageNode(:final id) => id,
-    PathNode(:final id) => id,
-    IconNode(:final id) => id,
-    GroupNode(:final id) => id,
-  };
-
-  String? get name => switch (this) {
-    TextNode(:final name) => name,
-    ImageNode(:final name) => name,
-    PathNode(:final name) => name,
-    IconNode(:final name) => name,
-    GroupNode(:final name) => name,
-  };
-
-  bool get hidden => switch (this) {
-    TextNode(:final hidden) => hidden,
-    ImageNode(:final hidden) => hidden,
-    PathNode(:final hidden) => hidden,
-    IconNode(:final hidden) => hidden,
-    GroupNode(:final hidden) => hidden,
-  };
-
-  Affine2D get xf => switch (this) {
-    TextNode(:final xf) => xf,
-    ImageNode(:final xf) => xf,
-    PathNode(:final xf) => xf,
-    IconNode(:final xf) => xf,
-    GroupNode(:final xf) => xf,
-  };
-
   String? get role => switch (this) {
     TextNode(:final role) => role,
     ImageNode(:final role) => role,
@@ -237,3 +191,13 @@ bool? _hiddenToJson(bool hidden) => hidden ? true : null;
 
 String? _fillRuleToJson(FillRule rule) =>
     rule == FillRule.nonZero ? null : rule.name;
+
+double? _letterSpacingToJson(double value) => value == 0 ? null : value;
+
+double? _iconSizeToJson(double value) => value == 96 ? null : value;
+
+String? _imageFitToJson(ImageFit value) =>
+    value == ImageFit.contain ? null : value.name;
+
+Map<String, dynamic>? _imageAlignToJson(Vec2 value) =>
+    value == const Vec2(0.5, 0.5) ? null : value.toJson();

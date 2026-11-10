@@ -21,7 +21,8 @@ final class _FakeTextMeasurer implements rt.TextMeasurer {
   }
 }
 
-const _textData = rt.TextData(
+const _textNode = rt.TextNode(
+  id: 't1',
   text: 'Original title',
   fontFamily: 'Inter',
   fontWeight: 400,
@@ -36,17 +37,13 @@ rt.CanvasSceneDocument _scene() {
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1,
     children: <rt.Node>[
-      rt.Node.text(
-        id: 't1',
-        xf: rt.Affine2D.translation(20, 20),
-        data: _textData,
-      ),
+      _textNode.copyWith(xf: rt.Affine2D.translation(20, 20)),
     ],
   );
 }
 
 String _textOf(rt.CanvasSceneDocument scene) {
-  return (rt.findById(scene, 't1') as rt.TextNode).data.text;
+  return (rt.findById(scene, 't1') as rt.TextNode).text;
 }
 
 double _xOf(rt.CanvasSceneDocument scene) {
@@ -185,9 +182,9 @@ void main() {
       extraFieldCodecs: <rt.CanvasFieldKey, FieldCodec>{
         rt.CanvasFields.textContent: FieldCodec(
           fallback: '',
-          readNode: (_, node) => (node as rt.TextNode).data.text,
+          readNode: (_, node) => (node as rt.TextNode).text,
           canReadCanonicalNode: (_, node) => node is rt.TextNode,
-          readCanonicalNode: (_, node) => (node as rt.TextNode).data.text,
+          readCanonicalNode: (_, node) => (node as rt.TextNode).text,
           writeCanonical: (base, nodeId, value) {
             codecWriteCalls += 1;
 
@@ -195,13 +192,9 @@ void main() {
             if (node is! rt.TextNode) return base;
 
             final text = value as String;
-            if (node.data.text == text) return base;
+            if (node.text == text) return base;
 
-            return rt.replaceById(
-              base,
-              nodeId,
-              node.copyWith(data: node.data.copyWith(text: text)),
-            );
+            return rt.replaceById(base, nodeId, node.copyWith(text: text));
           },
         ),
       },
@@ -354,7 +347,11 @@ void main() {
 
       final endSession = runtime.beginEditSession();
 
-      runtime.updateTransform('t1', rt.Affine2D.translation(10, 0) * rt.findById(runtime.document.value, 't1')!.xf);
+      runtime.updateTransform(
+        't1',
+        rt.Affine2D.translation(10, 0) *
+            rt.findById(runtime.document.value, 't1')!.xf,
+      );
 
       expect(
         _xOf(runtime.sourceDocument.base),
