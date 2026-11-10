@@ -179,7 +179,6 @@ void main() {
     () {
       const child1 = Node.text(
         id: 't1',
-        xf: const Affine2D.identity(),
         text: 'One',
         fontFamily: 'Inter',
         fontWeight: 700,
@@ -218,7 +217,6 @@ void main() {
     final initialScene = _sceneWithChildren(const [
       Node.text(
         id: 't1',
-        xf: const Affine2D.identity(),
         text: 'One',
         fontFamily: 'Inter',
         fontWeight: 700,
@@ -228,7 +226,6 @@ void main() {
       ),
       Node.text(
         id: 't2',
-        xf: const Affine2D.identity(),
         text: 'Two',
         fontFamily: 'Inter',
         fontWeight: 700,
@@ -255,7 +252,6 @@ void main() {
     final initialScene = _sceneWithChildren(const [
       Node.text(
         id: 't1',
-        xf: const Affine2D.identity(),
         text: 'One',
         fontFamily: 'Inter',
         fontWeight: 700,
@@ -265,7 +261,6 @@ void main() {
       ),
       Node.text(
         id: 't2',
-        xf: const Affine2D.identity(),
         text: 'Two',
         fontFamily: 'Inter',
         fontWeight: 700,
@@ -275,7 +270,6 @@ void main() {
       ),
       Node.text(
         id: 't3',
-        xf: const Affine2D.identity(),
         text: 'Three',
         fontFamily: 'Inter',
         fontWeight: 700,

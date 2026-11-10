@@ -36,7 +36,9 @@ rt.CanvasSceneDocument _scene() {
     artboardSize: const rt.Size2D(300, 200),
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1,
-    children: <rt.Node>[_textNode],
+    children: <rt.Node>[
+      _textNode.copyWith(xf: rt.Affine2D.translation(20, 20)),
+    ],
   );
 }
 

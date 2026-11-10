@@ -36,11 +36,7 @@ rt.CanvasSceneDocument _sceneWithText(String text) {
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1.0,
     children: <rt.Node>[
-      _baseTextNode.copyWith(
-        id: id,
-        xf: rt.Affine2D.translation(20, 20),
-        text: text,
-      ),
+      _baseTextNode.copyWith(xf: rt.Affine2D.translation(20, 20), text: text),
     ],
   );
 }
@@ -1218,8 +1214,9 @@ void main() {
         final actual = rt
             .worldTransformOf(runtime.document.value, 't1')!
             .toJson();
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 6; i++) {
           expect(actual[i], closeTo(expected[i], 1e-9));
+        }
         runtime.undo();
         expect(runtime.document.value, initial);
       },
