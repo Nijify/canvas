@@ -230,10 +230,12 @@ void main() {
 
     test('does not require an icon resolver for zero legacy shadows', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
+      final legacyIcons = _legacyGroupChildren(legacy).where(
+        (node) => node['runtimeType'] == 'icon',
+      );
+      expect(legacyIcons, isNotEmpty);
 
-      for (final node in _legacyGroupChildren(legacy)) {
-        if (node['runtimeType'] != 'icon') continue;
-
+      for (final node in legacyIcons) {
         final data = node['data'] as Map<String, dynamic>;
         data['shadowOffset'] = 0.0;
       }
@@ -243,19 +245,17 @@ void main() {
         legacyUnversioned: true,
       );
 
-      final roots = migrated['children'] as List<Object?>;
-      final group = roots.single as Map<String, Object?>;
-      final children = group['children'] as List<Object?>;
+      final migratedIcons = _legacyGroupChildren(migrated).where(
+        (node) => node['type'] == 'icon',
+      );
+      expect(
+        migratedIcons.map((node) => node['id']),
+        unorderedEquals(legacyIcons.map((node) => node['id'])),
+      );
 
-      for (final rawNode in children) {
-        final node = rawNode as Map<String, Object?>;
-        if (node['runtimeType'] != 'icon') continue;
-
-        final data = node['data'] as Map<String, Object?>;
-        final appearance = data['appearance'] as Map<String, Object?>;
-        final underlays = appearance['underlays'] as List<Object?>;
-
-        expect(underlays, isEmpty);
+      for (final node in migratedIcons) {
+        final appearance = node['appearance'] as Map<String, Object?>;
+        expect(appearance['underlays'], anyOf(isNull, equals(<Object?>[])));
       }
     });
 
