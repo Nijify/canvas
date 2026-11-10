@@ -30,7 +30,7 @@ void main() {
       );
     });
 
-    test('rejects a blank image asset source', () {
+    test('reports sourceRef when an image asset source is blank', () {
       expect(
         () => requireCanvasSceneIntegrity(
           _scene(
@@ -40,7 +40,13 @@ void main() {
             assetId: 'asset-1',
           ),
         ),
-        throwsArgumentError,
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.message,
+            'message',
+            startsWith('/assets/asset-1/sourceRef:'),
+          ),
+        ),
       );
     });
 

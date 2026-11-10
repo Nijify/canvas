@@ -55,7 +55,7 @@ final class _SceneValidator {
 
     if (asset.sourceRef.trim().isEmpty) {
       _fail(
-        '$path/geometryRef',
+        '$path/sourceRef',
         'Image asset source reference must be nonblank.',
       );
     }
