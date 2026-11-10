@@ -1,3 +1,7 @@
+## Unreleased
+
+- Read fill, stroke, and fill rule directly from v6 path nodes.
+
 ## 0.5.0
 
 - **Breaking:** exportPreparedSvg accepts one SceneEvaluation; emit complete affine world mappings directly.

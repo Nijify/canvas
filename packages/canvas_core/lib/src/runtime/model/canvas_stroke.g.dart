@@ -24,11 +24,11 @@ CanvasStroke _$CanvasStrokeFromJson(Map<String, dynamic> json) => CanvasStroke(
 Map<String, dynamic> _$CanvasStrokeToJson(CanvasStroke instance) =>
     <String, dynamic>{
       'color': instance.color,
-      'width': instance.width,
-      'cap': _$StrokeCapEnumMap[instance.cap]!,
-      'join': _$StrokeJoinEnumMap[instance.join]!,
-      'miterLimit': instance.miterLimit,
-      'dash': instance.dash,
+      'width': ?_widthToJson(instance.width),
+      'cap': ?_capToJson(instance.cap),
+      'join': ?_joinToJson(instance.join),
+      'miterLimit': ?_miterLimitToJson(instance.miterLimit),
+      'dash': ?_dashToJson(instance.dash),
     };
 
 const _$StrokeCapEnumMap = {

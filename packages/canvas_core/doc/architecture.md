@@ -79,8 +79,8 @@ alpha, and visibility. Node/group transforms apply to the whole result.
 Intrinsic outlines and multiple source paints are outside this icon contract.
 
 `PathIR` is immutable geometry only; `localBounds()` estimates its geometry
-from endpoints and curve controls. `PathData.source` owns geometry and
-`PathData.appearance` owns fill and stroke. Layout uses geometry alone; visible
+from endpoints and curve controls. `PathNode.geometry` owns geometry and
+`PathNode.appearance` owns fill and stroke. Layout uses geometry alone; visible
 paint contributes separate bounds that conservatively include stroke caps and
 joins. Compilation is cached by source identity independently of appearance.
 
@@ -89,7 +89,8 @@ documented ordinary-path profile and explicitly rejects icon nodes.
 
 ## Serialization boundary
 
-Scene format v5 retains the scene tree and authored appearance model. Paths have
+Scene format v6 puts authored fields directly on each node and uses `type` as
+the node discriminator. Paths have
 one of seven geometry sources: rect, circle, ellipse, line, polyline, polygon,
 or path. General paths persist as SVG d and hold one immutable PathIR snapshot.
 Polyline/polygon sources freeze numeric points and persist SVG point strings.
@@ -108,8 +109,8 @@ coordinates; transforms are complete local-to-parent affine mappings.
 
 Persistence validates common scene wire structure, delegates exact geometry
 structure and parsing to the source codec, then checks runtime integrity. Reads
-and writes use v5 only. The optional `canvas_scene_upgrade` package owns explicit
-JSON routes through v1/v2/v3/v4 to v5. Its intermediate steps validate historical
+and writes use v6 only. The optional `canvas_scene_upgrade` package owns explicit
+JSON routes from supported historical scenes to v6. Its intermediate steps validate historical
 wire formats independently of the current runtime and validate the final result
 through current core once. Core has no dependency on historical upgrade code.
 

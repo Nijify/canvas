@@ -14,1200 +14,6 @@ part of 'node_model.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
-mixin _$TextData {
-
- String get text; String get fontFamily; FontWeightNum get fontWeight; double get fontSize;/// Additional spacing between characters in logical canvas units.
-///
-/// The original text must remain unchanged. Platform text implementations
-/// must apply this value through their native text-layout API.
- double get letterSpacing;/// Source-derived visual appearance.
-///
-/// Layout and interaction geometry remain source-derived and do not expand
-/// for source underlays.
- CanvasAppearance get appearance;
-/// Create a copy of TextData
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$TextDataCopyWith<TextData> get copyWith => _$TextDataCopyWithImpl<TextData>(this as TextData, _$identity);
-
-  /// Serializes this TextData to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  final _this = this as TextData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TextData&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.fontFamily, _this.fontFamily) || other.fontFamily == _this.fontFamily)&&(identical(other.fontWeight, _this.fontWeight) || other.fontWeight == _this.fontWeight)&&(identical(other.fontSize, _this.fontSize) || other.fontSize == _this.fontSize)&&(identical(other.letterSpacing, _this.letterSpacing) || other.letterSpacing == _this.letterSpacing)&&(identical(other.appearance, _this.appearance) || other.appearance == _this.appearance));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-  final _this = this as TextData;
-  return Object.hash(runtimeType,_this.text,_this.fontFamily,_this.fontWeight,_this.fontSize,_this.letterSpacing,_this.appearance);
-}
-
-@override
-String toString() {
-  final _this = this as TextData;
-  return 'TextData(text: ${_this.text}, fontFamily: ${_this.fontFamily}, fontWeight: ${_this.fontWeight}, fontSize: ${_this.fontSize}, letterSpacing: ${_this.letterSpacing}, appearance: ${_this.appearance})';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $TextDataCopyWith<$Res>  {
-  factory $TextDataCopyWith(TextData value, $Res Function(TextData) _then) = _$TextDataCopyWithImpl;
-@useResult
-$Res call({
- String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing, CanvasAppearance appearance
-});
-
-
-$CanvasAppearanceCopyWith<$Res> get appearance;
-
-}
-/// @nodoc
-class _$TextDataCopyWithImpl<$Res>
-    implements $TextDataCopyWith<$Res> {
-  _$TextDataCopyWithImpl(this._self, this._then);
-
-  final TextData _self;
-  final $Res Function(TextData) _then;
-
-/// Create a copy of TextData
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? appearance = null,}) {
-  return _then(TextData(
-text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
-as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
-as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // ignore: cast_nullable_to_non_nullable
-as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
-as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
-as double,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
-as CanvasAppearance,
-  ));
-}
-/// Create a copy of TextData
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$CanvasAppearanceCopyWith<$Res> get appearance {
-  
-  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
-    return _then(_self.copyWith(appearance: value));
-  });
-}
-}
-
-
-/// Adds pattern-matching-related methods to [TextData].
-extension TextDataPatterns on TextData {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _TextData value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _TextData() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _TextData value)  $default,){
-final _that = this;
-switch (_that) {
-case _TextData():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _TextData value)?  $default,){
-final _that = this;
-switch (_that) {
-case _TextData() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing,  CanvasAppearance appearance)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _TextData() when $default != null:
-return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.appearance);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing,  CanvasAppearance appearance)  $default,) {final _that = this;
-switch (_that) {
-case _TextData():
-return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.appearance);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize,  double letterSpacing,  CanvasAppearance appearance)?  $default,) {final _that = this;
-switch (_that) {
-case _TextData() when $default != null:
-return $default(_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.appearance);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _TextData extends TextData {
-  const _TextData({required this.text, required this.fontFamily, required this.fontWeight, required this.fontSize, this.letterSpacing = 0.0, this.appearance = const CanvasAppearance()}): super._();
-  factory _TextData.fromJson(Map<String, dynamic> json) => _$TextDataFromJson(json);
-
-@override final  String text;
-@override final  String fontFamily;
-@override final  FontWeightNum fontWeight;
-@override final  double fontSize;
-/// Additional spacing between characters in logical canvas units.
-///
-/// The original text must remain unchanged. Platform text implementations
-/// must apply this value through their native text-layout API.
-@override@JsonKey() final  double letterSpacing;
-/// Source-derived visual appearance.
-///
-/// Layout and interaction geometry remain source-derived and do not expand
-/// for source underlays.
-@override@JsonKey() final  CanvasAppearance appearance;
-
-/// Create a copy of TextData
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$TextDataCopyWith<_TextData> get copyWith => __$TextDataCopyWithImpl<_TextData>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$TextDataToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TextData&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.appearance, appearance) || other.appearance == appearance));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-    return Object.hash(runtimeType,text,fontFamily,fontWeight,fontSize,letterSpacing,appearance);
-}
-
-@override
-String toString() {
-    return 'TextData(text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, appearance: $appearance)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$TextDataCopyWith<$Res> implements $TextDataCopyWith<$Res> {
-  factory _$TextDataCopyWith(_TextData value, $Res Function(_TextData) _then) = __$TextDataCopyWithImpl;
-@override @useResult
-$Res call({
- String text, String fontFamily, FontWeightNum fontWeight, double fontSize, double letterSpacing, CanvasAppearance appearance
-});
-
-
-@override $CanvasAppearanceCopyWith<$Res> get appearance;
-
-}
-/// @nodoc
-class __$TextDataCopyWithImpl<$Res>
-    implements _$TextDataCopyWith<$Res> {
-  __$TextDataCopyWithImpl(this._self, this._then);
-
-  final _TextData _self;
-  final $Res Function(_TextData) _then;
-
-/// Create a copy of TextData
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? appearance = null,}) {
-  return _then(_TextData(
-text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
-as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
-as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // ignore: cast_nullable_to_non_nullable
-as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
-as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
-as double,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
-as CanvasAppearance,
-  ));
-}
-
-/// Create a copy of TextData
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$CanvasAppearanceCopyWith<$Res> get appearance {
-  
-  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
-    return _then(_self.copyWith(appearance: value));
-  });
-}
-}
-
-
-/// @nodoc
-mixin _$ImageData {
-
-/// Null represents an intentionally unfilled image frame.
- CanvasAssetId? get assetId;/// Editable destination-frame dimensions in document units.
-@Size2DConverter() Size2D get size; ImageFit get fit;@Vec2Converter() Vec2 get align;
-/// Create a copy of ImageData
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ImageDataCopyWith<ImageData> get copyWith => _$ImageDataCopyWithImpl<ImageData>(this as ImageData, _$identity);
-
-  /// Serializes this ImageData to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  final _this = this as ImageData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageData&&(identical(other.assetId, _this.assetId) || other.assetId == _this.assetId)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.fit, _this.fit) || other.fit == _this.fit)&&(identical(other.align, _this.align) || other.align == _this.align));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-  final _this = this as ImageData;
-  return Object.hash(runtimeType,_this.assetId,_this.size,_this.fit,_this.align);
-}
-
-@override
-String toString() {
-  final _this = this as ImageData;
-  return 'ImageData(assetId: ${_this.assetId}, size: ${_this.size}, fit: ${_this.fit}, align: ${_this.align})';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $ImageDataCopyWith<$Res>  {
-  factory $ImageDataCopyWith(ImageData value, $Res Function(ImageData) _then) = _$ImageDataCopyWithImpl;
-@useResult
-$Res call({
- CanvasAssetId? assetId,@Size2DConverter() Size2D size, ImageFit fit,@Vec2Converter() Vec2 align
-});
-
-
-
-
-}
-/// @nodoc
-class _$ImageDataCopyWithImpl<$Res>
-    implements $ImageDataCopyWith<$Res> {
-  _$ImageDataCopyWithImpl(this._self, this._then);
-
-  final ImageData _self;
-  final $Res Function(ImageData) _then;
-
-/// Create a copy of ImageData
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? assetId = freezed,Object? size = null,Object? fit = null,Object? align = null,}) {
-  return _then(ImageData(
-assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
-as CanvasAssetId?,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
-as Size2D,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
-as ImageFit,align: null == align ? _self.align : align // ignore: cast_nullable_to_non_nullable
-as Vec2,
-  ));
-}
-
-}
-
-
-/// Adds pattern-matching-related methods to [ImageData].
-extension ImageDataPatterns on ImageData {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ImageData value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _ImageData() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ImageData value)  $default,){
-final _that = this;
-switch (_that) {
-case _ImageData():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ImageData value)?  $default,){
-final _that = this;
-switch (_that) {
-case _ImageData() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CanvasAssetId? assetId, @Size2DConverter()  Size2D size,  ImageFit fit, @Vec2Converter()  Vec2 align)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _ImageData() when $default != null:
-return $default(_that.assetId,_that.size,_that.fit,_that.align);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CanvasAssetId? assetId, @Size2DConverter()  Size2D size,  ImageFit fit, @Vec2Converter()  Vec2 align)  $default,) {final _that = this;
-switch (_that) {
-case _ImageData():
-return $default(_that.assetId,_that.size,_that.fit,_that.align);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CanvasAssetId? assetId, @Size2DConverter()  Size2D size,  ImageFit fit, @Vec2Converter()  Vec2 align)?  $default,) {final _that = this;
-switch (_that) {
-case _ImageData() when $default != null:
-return $default(_that.assetId,_that.size,_that.fit,_that.align);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _ImageData implements ImageData {
-  const _ImageData({this.assetId, @Size2DConverter() required this.size, this.fit = ImageFit.contain, @Vec2Converter() this.align = const Vec2(0.5, 0.5)});
-  factory _ImageData.fromJson(Map<String, dynamic> json) => _$ImageDataFromJson(json);
-
-/// Null represents an intentionally unfilled image frame.
-@override final  CanvasAssetId? assetId;
-/// Editable destination-frame dimensions in document units.
-@override@Size2DConverter() final  Size2D size;
-@override@JsonKey() final  ImageFit fit;
-@override@JsonKey()@Vec2Converter() final  Vec2 align;
-
-/// Create a copy of ImageData
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$ImageDataCopyWith<_ImageData> get copyWith => __$ImageDataCopyWithImpl<_ImageData>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$ImageDataToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImageData&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-    return Object.hash(runtimeType,assetId,size,fit,align);
-}
-
-@override
-String toString() {
-    return 'ImageData(assetId: $assetId, size: $size, fit: $fit, align: $align)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$ImageDataCopyWith<$Res> implements $ImageDataCopyWith<$Res> {
-  factory _$ImageDataCopyWith(_ImageData value, $Res Function(_ImageData) _then) = __$ImageDataCopyWithImpl;
-@override @useResult
-$Res call({
- CanvasAssetId? assetId,@Size2DConverter() Size2D size, ImageFit fit,@Vec2Converter() Vec2 align
-});
-
-
-
-
-}
-/// @nodoc
-class __$ImageDataCopyWithImpl<$Res>
-    implements _$ImageDataCopyWith<$Res> {
-  __$ImageDataCopyWithImpl(this._self, this._then);
-
-  final _ImageData _self;
-  final $Res Function(_ImageData) _then;
-
-/// Create a copy of ImageData
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? assetId = freezed,Object? size = null,Object? fit = null,Object? align = null,}) {
-  return _then(_ImageData(
-assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
-as CanvasAssetId?,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
-as Size2D,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
-as ImageFit,align: null == align ? _self.align : align // ignore: cast_nullable_to_non_nullable
-as Vec2,
-  ));
-}
-
-
-}
-
-
-/// @nodoc
-mixin _$PathData {
-
-/// The sole authored geometry source. Use an explicit empty source for an
-/// intentionally empty path.
-@PathSourceConverter() PathSource get source; FillRule get fillRule; CanvasAppearance get appearance;
-/// Create a copy of PathData
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$PathDataCopyWith<PathData> get copyWith => _$PathDataCopyWithImpl<PathData>(this as PathData, _$identity);
-
-  /// Serializes this PathData to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  final _this = this as PathData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PathData&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.fillRule, _this.fillRule) || other.fillRule == _this.fillRule)&&(identical(other.appearance, _this.appearance) || other.appearance == _this.appearance));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-  final _this = this as PathData;
-  return Object.hash(runtimeType,_this.source,_this.fillRule,_this.appearance);
-}
-
-@override
-String toString() {
-  final _this = this as PathData;
-  return 'PathData(source: ${_this.source}, fillRule: ${_this.fillRule}, appearance: ${_this.appearance})';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $PathDataCopyWith<$Res>  {
-  factory $PathDataCopyWith(PathData value, $Res Function(PathData) _then) = _$PathDataCopyWithImpl;
-@useResult
-$Res call({
-@PathSourceConverter() PathSource source, FillRule fillRule, CanvasAppearance appearance
-});
-
-
-$CanvasAppearanceCopyWith<$Res> get appearance;
-
-}
-/// @nodoc
-class _$PathDataCopyWithImpl<$Res>
-    implements $PathDataCopyWith<$Res> {
-  _$PathDataCopyWithImpl(this._self, this._then);
-
-  final PathData _self;
-  final $Res Function(PathData) _then;
-
-/// Create a copy of PathData
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? source = null,Object? fillRule = null,Object? appearance = null,}) {
-  return _then(PathData(
-source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
-as PathSource,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
-as FillRule,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
-as CanvasAppearance,
-  ));
-}
-/// Create a copy of PathData
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$CanvasAppearanceCopyWith<$Res> get appearance {
-  
-  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
-    return _then(_self.copyWith(appearance: value));
-  });
-}
-}
-
-
-/// Adds pattern-matching-related methods to [PathData].
-extension PathDataPatterns on PathData {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PathData value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _PathData() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PathData value)  $default,){
-final _that = this;
-switch (_that) {
-case _PathData():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PathData value)?  $default,){
-final _that = this;
-switch (_that) {
-case _PathData() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@PathSourceConverter()  PathSource source,  FillRule fillRule,  CanvasAppearance appearance)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _PathData() when $default != null:
-return $default(_that.source,_that.fillRule,_that.appearance);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@PathSourceConverter()  PathSource source,  FillRule fillRule,  CanvasAppearance appearance)  $default,) {final _that = this;
-switch (_that) {
-case _PathData():
-return $default(_that.source,_that.fillRule,_that.appearance);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@PathSourceConverter()  PathSource source,  FillRule fillRule,  CanvasAppearance appearance)?  $default,) {final _that = this;
-switch (_that) {
-case _PathData() when $default != null:
-return $default(_that.source,_that.fillRule,_that.appearance);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _PathData implements PathData {
-  const _PathData({@PathSourceConverter() required this.source, this.fillRule = FillRule.nonZero, this.appearance = const CanvasAppearance(foreground: CanvasFill.none())});
-  factory _PathData.fromJson(Map<String, dynamic> json) => _$PathDataFromJson(json);
-
-/// The sole authored geometry source. Use an explicit empty source for an
-/// intentionally empty path.
-@override@PathSourceConverter() final  PathSource source;
-@override@JsonKey() final  FillRule fillRule;
-@override@JsonKey() final  CanvasAppearance appearance;
-
-/// Create a copy of PathData
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$PathDataCopyWith<_PathData> get copyWith => __$PathDataCopyWithImpl<_PathData>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$PathDataToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PathData&&(identical(other.source, source) || other.source == source)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.appearance, appearance) || other.appearance == appearance));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-    return Object.hash(runtimeType,source,fillRule,appearance);
-}
-
-@override
-String toString() {
-    return 'PathData(source: $source, fillRule: $fillRule, appearance: $appearance)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$PathDataCopyWith<$Res> implements $PathDataCopyWith<$Res> {
-  factory _$PathDataCopyWith(_PathData value, $Res Function(_PathData) _then) = __$PathDataCopyWithImpl;
-@override @useResult
-$Res call({
-@PathSourceConverter() PathSource source, FillRule fillRule, CanvasAppearance appearance
-});
-
-
-@override $CanvasAppearanceCopyWith<$Res> get appearance;
-
-}
-/// @nodoc
-class __$PathDataCopyWithImpl<$Res>
-    implements _$PathDataCopyWith<$Res> {
-  __$PathDataCopyWithImpl(this._self, this._then);
-
-  final _PathData _self;
-  final $Res Function(_PathData) _then;
-
-/// Create a copy of PathData
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? source = null,Object? fillRule = null,Object? appearance = null,}) {
-  return _then(_PathData(
-source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
-as PathSource,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
-as FillRule,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
-as CanvasAppearance,
-  ));
-}
-
-/// Create a copy of PathData
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$CanvasAppearanceCopyWith<$Res> get appearance {
-  
-  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
-    return _then(_self.copyWith(appearance: value));
-  });
-}
-}
-
-
-/// @nodoc
-mixin _$CanvasIconData {
-
- String get iconRef; double get sizePx; CanvasAppearance get appearance;
-/// Create a copy of CanvasIconData
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$CanvasIconDataCopyWith<CanvasIconData> get copyWith => _$CanvasIconDataCopyWithImpl<CanvasIconData>(this as CanvasIconData, _$identity);
-
-  /// Serializes this CanvasIconData to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  final _this = this as CanvasIconData;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CanvasIconData&&(identical(other.iconRef, _this.iconRef) || other.iconRef == _this.iconRef)&&(identical(other.sizePx, _this.sizePx) || other.sizePx == _this.sizePx)&&(identical(other.appearance, _this.appearance) || other.appearance == _this.appearance));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-  final _this = this as CanvasIconData;
-  return Object.hash(runtimeType,_this.iconRef,_this.sizePx,_this.appearance);
-}
-
-@override
-String toString() {
-  final _this = this as CanvasIconData;
-  return 'CanvasIconData(iconRef: ${_this.iconRef}, sizePx: ${_this.sizePx}, appearance: ${_this.appearance})';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class $CanvasIconDataCopyWith<$Res>  {
-  factory $CanvasIconDataCopyWith(CanvasIconData value, $Res Function(CanvasIconData) _then) = _$CanvasIconDataCopyWithImpl;
-@useResult
-$Res call({
- String iconRef, double sizePx, CanvasAppearance appearance
-});
-
-
-$CanvasAppearanceCopyWith<$Res> get appearance;
-
-}
-/// @nodoc
-class _$CanvasIconDataCopyWithImpl<$Res>
-    implements $CanvasIconDataCopyWith<$Res> {
-  _$CanvasIconDataCopyWithImpl(this._self, this._then);
-
-  final CanvasIconData _self;
-  final $Res Function(CanvasIconData) _then;
-
-/// Create a copy of CanvasIconData
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? iconRef = null,Object? sizePx = null,Object? appearance = null,}) {
-  return _then(CanvasIconData(
-iconRef: null == iconRef ? _self.iconRef : iconRef // ignore: cast_nullable_to_non_nullable
-as String,sizePx: null == sizePx ? _self.sizePx : sizePx // ignore: cast_nullable_to_non_nullable
-as double,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
-as CanvasAppearance,
-  ));
-}
-/// Create a copy of CanvasIconData
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$CanvasAppearanceCopyWith<$Res> get appearance {
-  
-  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
-    return _then(_self.copyWith(appearance: value));
-  });
-}
-}
-
-
-/// Adds pattern-matching-related methods to [CanvasIconData].
-extension CanvasIconDataPatterns on CanvasIconData {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CanvasIconData value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _CanvasIconData() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CanvasIconData value)  $default,){
-final _that = this;
-switch (_that) {
-case _CanvasIconData():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CanvasIconData value)?  $default,){
-final _that = this;
-switch (_that) {
-case _CanvasIconData() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String iconRef,  double sizePx,  CanvasAppearance appearance)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _CanvasIconData() when $default != null:
-return $default(_that.iconRef,_that.sizePx,_that.appearance);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String iconRef,  double sizePx,  CanvasAppearance appearance)  $default,) {final _that = this;
-switch (_that) {
-case _CanvasIconData():
-return $default(_that.iconRef,_that.sizePx,_that.appearance);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String iconRef,  double sizePx,  CanvasAppearance appearance)?  $default,) {final _that = this;
-switch (_that) {
-case _CanvasIconData() when $default != null:
-return $default(_that.iconRef,_that.sizePx,_that.appearance);case _:
-  return null;
-
-}
-}
-
-}
-
-/// @nodoc
-@JsonSerializable()
-
-class _CanvasIconData extends CanvasIconData {
-  const _CanvasIconData({required this.iconRef, this.sizePx = 96.0, this.appearance = const CanvasAppearance()}): super._();
-  factory _CanvasIconData.fromJson(Map<String, dynamic> json) => _$CanvasIconDataFromJson(json);
-
-@override final  String iconRef;
-@override@JsonKey() final  double sizePx;
-@override@JsonKey() final  CanvasAppearance appearance;
-
-/// Create a copy of CanvasIconData
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$CanvasIconDataCopyWith<_CanvasIconData> get copyWith => __$CanvasIconDataCopyWithImpl<_CanvasIconData>(this, _$identity);
-
-@override
-Map<String, dynamic> toJson() {
-  return _$CanvasIconDataToJson(this, );
-}
-
-@override
-bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CanvasIconData&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.appearance, appearance) || other.appearance == appearance));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode {
-    return Object.hash(runtimeType,iconRef,sizePx,appearance);
-}
-
-@override
-String toString() {
-    return 'CanvasIconData(iconRef: $iconRef, sizePx: $sizePx, appearance: $appearance)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$CanvasIconDataCopyWith<$Res> implements $CanvasIconDataCopyWith<$Res> {
-  factory _$CanvasIconDataCopyWith(_CanvasIconData value, $Res Function(_CanvasIconData) _then) = __$CanvasIconDataCopyWithImpl;
-@override @useResult
-$Res call({
- String iconRef, double sizePx, CanvasAppearance appearance
-});
-
-
-@override $CanvasAppearanceCopyWith<$Res> get appearance;
-
-}
-/// @nodoc
-class __$CanvasIconDataCopyWithImpl<$Res>
-    implements _$CanvasIconDataCopyWith<$Res> {
-  __$CanvasIconDataCopyWithImpl(this._self, this._then);
-
-  final _CanvasIconData _self;
-  final $Res Function(_CanvasIconData) _then;
-
-/// Create a copy of CanvasIconData
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? iconRef = null,Object? sizePx = null,Object? appearance = null,}) {
-  return _then(_CanvasIconData(
-iconRef: null == iconRef ? _self.iconRef : iconRef // ignore: cast_nullable_to_non_nullable
-as String,sizePx: null == sizePx ? _self.sizePx : sizePx // ignore: cast_nullable_to_non_nullable
-as double,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
-as CanvasAppearance,
-  ));
-}
-
-/// Create a copy of CanvasIconData
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$CanvasAppearanceCopyWith<$Res> get appearance {
-  
-  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
-    return _then(_self.copyWith(appearance: value));
-  });
-}
-}
-
-
-/// @nodoc
 mixin _$GroupBehaviorRef {
 
  String get type; int get version; Map<String, dynamic> get data;
@@ -1491,7 +297,7 @@ as Map<String, dynamic>,
 Node _$NodeFromJson(
   Map<String, dynamic> json
 ) {
-        switch (json['runtimeType']) {
+        switch (json['type']) {
                   case 'text':
           return TextNode.fromJson(
             json
@@ -1516,9 +322,9 @@ Node _$NodeFromJson(
           default:
             throw CheckedFromJsonException(
   json,
-  'runtimeType',
+  'type',
   'Node',
-  'Invalid union type "${json['runtimeType']}"!'
+  'Invalid union type "${json['type']}"!'
 );
         }
       
@@ -1527,7 +333,7 @@ Node _$NodeFromJson(
 /// @nodoc
 mixin _$Node {
 
- ElementId get id; String? get name; bool get hidden; Affine2D get xf;
+ ElementId get id;@JsonKey(includeIfNull: false) String? get name;@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool get hidden;@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D get xf;
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1565,7 +371,7 @@ abstract mixin class $NodeCopyWith<$Res>  {
   factory $NodeCopyWith(Node value, $Res Function(Node) _then) = _$NodeCopyWithImpl;
 @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Affine2D xf
+ ElementId id,@JsonKey(includeIfNull: false) String? name,@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool hidden,@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D xf
 });
 
 
@@ -1682,13 +488,13 @@ return group(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  TextData data,  String? role)?  text,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  ImageData data,  String? role)?  image,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  PathData data,  String? role)?  path,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  CanvasIconData data,  String? role)?  icon,TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf,  String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize, @JsonKey(toJson: _letterSpacingToJson, includeIfNull: false)  double letterSpacing,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)?  text,TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @JsonKey(includeIfNull: false)  CanvasAssetId? assetId, @Size2DConverter()  Size2D size, @JsonKey(toJson: _imageFitToJson, includeIfNull: false)  ImageFit fit, @JsonKey(fromJson: Vec2.fromJson, toJson: _imageAlignToJson, includeIfNull: false)  Vec2 align, @JsonKey(includeIfNull: false)  String? role)?  image,TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @PathSourceConverter()  PathSource geometry, @JsonKey(toJson: _fillRuleToJson, includeIfNull: false)  FillRule fillRule,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)?  path,TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf,  String iconRef, @JsonKey(toJson: _iconSizeToJson, includeIfNull: false)  double sizePx,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)?  icon,TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @JsonKey(includeIfNull: false)  GroupBehaviorRef? behavior,  List<Node> children)?  group,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
-return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
-return image(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case PathNode() when path != null:
-return path(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case IconNode() when icon != null:
-return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case GroupNode() when group != null:
+return text(_that.id,_that.name,_that.hidden,_that.xf,_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.appearance,_that.role);case ImageNode() when image != null:
+return image(_that.id,_that.name,_that.hidden,_that.xf,_that.assetId,_that.size,_that.fit,_that.align,_that.role);case PathNode() when path != null:
+return path(_that.id,_that.name,_that.hidden,_that.xf,_that.geometry,_that.fillRule,_that.appearance,_that.role);case IconNode() when icon != null:
+return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.iconRef,_that.sizePx,_that.appearance,_that.role);case GroupNode() when group != null:
 return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.children);case _:
   return orElse();
 
@@ -1707,13 +513,13 @@ return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.chil
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  TextData data,  String? role)  text,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  ImageData data,  String? role)  image,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  PathData data,  String? role)  path,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  CanvasIconData data,  String? role)  icon,required TResult Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf,  String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize, @JsonKey(toJson: _letterSpacingToJson, includeIfNull: false)  double letterSpacing,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)  text,required TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @JsonKey(includeIfNull: false)  CanvasAssetId? assetId, @Size2DConverter()  Size2D size, @JsonKey(toJson: _imageFitToJson, includeIfNull: false)  ImageFit fit, @JsonKey(fromJson: Vec2.fromJson, toJson: _imageAlignToJson, includeIfNull: false)  Vec2 align, @JsonKey(includeIfNull: false)  String? role)  image,required TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @PathSourceConverter()  PathSource geometry, @JsonKey(toJson: _fillRuleToJson, includeIfNull: false)  FillRule fillRule,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)  path,required TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf,  String iconRef, @JsonKey(toJson: _iconSizeToJson, includeIfNull: false)  double sizePx,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)  icon,required TResult Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @JsonKey(includeIfNull: false)  GroupBehaviorRef? behavior,  List<Node> children)  group,}) {final _that = this;
 switch (_that) {
 case TextNode():
-return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode():
-return image(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case PathNode():
-return path(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case IconNode():
-return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case GroupNode():
+return text(_that.id,_that.name,_that.hidden,_that.xf,_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.appearance,_that.role);case ImageNode():
+return image(_that.id,_that.name,_that.hidden,_that.xf,_that.assetId,_that.size,_that.fit,_that.align,_that.role);case PathNode():
+return path(_that.id,_that.name,_that.hidden,_that.xf,_that.geometry,_that.fillRule,_that.appearance,_that.role);case IconNode():
+return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.iconRef,_that.sizePx,_that.appearance,_that.role);case GroupNode():
 return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.children);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -1728,13 +534,13 @@ return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.chil
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  TextData data,  String? role)?  text,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  ImageData data,  String? role)?  image,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  PathData data,  String? role)?  path,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  CanvasIconData data,  String? role)?  icon,TResult? Function( ElementId id,  String? name,  bool hidden,  Affine2D xf,  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf,  String text,  String fontFamily,  FontWeightNum fontWeight,  double fontSize, @JsonKey(toJson: _letterSpacingToJson, includeIfNull: false)  double letterSpacing,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)?  text,TResult? Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @JsonKey(includeIfNull: false)  CanvasAssetId? assetId, @Size2DConverter()  Size2D size, @JsonKey(toJson: _imageFitToJson, includeIfNull: false)  ImageFit fit, @JsonKey(fromJson: Vec2.fromJson, toJson: _imageAlignToJson, includeIfNull: false)  Vec2 align, @JsonKey(includeIfNull: false)  String? role)?  image,TResult? Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @PathSourceConverter()  PathSource geometry, @JsonKey(toJson: _fillRuleToJson, includeIfNull: false)  FillRule fillRule,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)?  path,TResult? Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf,  String iconRef, @JsonKey(toJson: _iconSizeToJson, includeIfNull: false)  double sizePx,  CanvasAppearance appearance, @JsonKey(includeIfNull: false)  String? role)?  icon,TResult? Function( ElementId id, @JsonKey(includeIfNull: false)  String? name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false)  bool hidden, @JsonKey(includeIfNull: false)@Affine2DConverter()  Affine2D xf, @JsonKey(includeIfNull: false)  GroupBehaviorRef? behavior,  List<Node> children)?  group,}) {final _that = this;
 switch (_that) {
 case TextNode() when text != null:
-return text(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case ImageNode() when image != null:
-return image(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case PathNode() when path != null:
-return path(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case IconNode() when icon != null:
-return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.data,_that.role);case GroupNode() when group != null:
+return text(_that.id,_that.name,_that.hidden,_that.xf,_that.text,_that.fontFamily,_that.fontWeight,_that.fontSize,_that.letterSpacing,_that.appearance,_that.role);case ImageNode() when image != null:
+return image(_that.id,_that.name,_that.hidden,_that.xf,_that.assetId,_that.size,_that.fit,_that.align,_that.role);case PathNode() when path != null:
+return path(_that.id,_that.name,_that.hidden,_that.xf,_that.geometry,_that.fillRule,_that.appearance,_that.role);case IconNode() when icon != null:
+return icon(_that.id,_that.name,_that.hidden,_that.xf,_that.iconRef,_that.sizePx,_that.appearance,_that.role);case GroupNode() when group != null:
 return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.children);case _:
   return null;
 
@@ -1747,17 +553,30 @@ return group(_that.id,_that.name,_that.hidden,_that.xf,_that.behavior,_that.chil
 @JsonSerializable()
 
 class TextNode extends Node {
-  const TextNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'text',super._();
+  const TextNode({required this.id, @JsonKey(includeIfNull: false) this.name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false) this.hidden = false, @JsonKey(includeIfNull: false)@Affine2DConverter() this.xf = const Affine2D.identity(), required this.text, required this.fontFamily, required this.fontWeight, required this.fontSize, @JsonKey(toJson: _letterSpacingToJson, includeIfNull: false) this.letterSpacing = 0.0, this.appearance = const CanvasAppearance(), @JsonKey(includeIfNull: false) this.role,  String? $type}): $type = $type ?? 'text',super._();
   factory TextNode.fromJson(Map<String, dynamic> json) => _$TextNodeFromJson(json);
 
 @override final  ElementId id;
-@override final  String? name;
-@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
-@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
- final  TextData data;
- final  String? role;
+@override@JsonKey(includeIfNull: false) final  String? name;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final  bool hidden;
+@override@JsonKey(includeIfNull: false)@Affine2DConverter() final  Affine2D xf;
+ final  String text;
+ final  String fontFamily;
+ final  FontWeightNum fontWeight;
+ final  double fontSize;
+/// Additional spacing between characters in logical canvas units.
+///
+/// The original text must remain unchanged. Platform text implementations
+/// must apply this value through their native text-layout API.
+@JsonKey(toJson: _letterSpacingToJson, includeIfNull: false) final  double letterSpacing;
+/// Source-derived visual appearance.
+///
+/// Layout and interaction geometry remain source-derived and do not expand
+/// for source underlays.
+@JsonKey() final  CanvasAppearance appearance;
+@JsonKey(includeIfNull: false) final  String? role;
 
-@JsonKey(name: 'runtimeType')
+@JsonKey(name: 'type')
 final String $type;
 
 
@@ -1774,18 +593,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is TextNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is TextNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.text, text) || other.text == text)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&(identical(other.fontWeight, fontWeight) || other.fontWeight == fontWeight)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.letterSpacing, letterSpacing) || other.letterSpacing == letterSpacing)&&(identical(other.appearance, appearance) || other.appearance == appearance)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,text,fontFamily,fontWeight,fontSize,letterSpacing,appearance,role);
 }
 
 @override
 String toString() {
-    return 'Node.text(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
+    return 'Node.text(id: $id, name: $name, hidden: $hidden, xf: $xf, text: $text, fontFamily: $fontFamily, fontWeight: $fontWeight, fontSize: $fontSize, letterSpacing: $letterSpacing, appearance: $appearance, role: $role)';
 }
 
 
@@ -1796,11 +615,11 @@ abstract mixin class $TextNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $TextNodeCopyWith(TextNode value, $Res Function(TextNode) _then) = _$TextNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Affine2D xf, TextData data, String? role
+ ElementId id,@JsonKey(includeIfNull: false) String? name,@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool hidden,@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D xf, String text, String fontFamily, FontWeightNum fontWeight, double fontSize,@JsonKey(toJson: _letterSpacingToJson, includeIfNull: false) double letterSpacing, CanvasAppearance appearance,@JsonKey(includeIfNull: false) String? role
 });
 
 
-$TextDataCopyWith<$Res> get data;
+$CanvasAppearanceCopyWith<$Res> get appearance;
 
 }
 /// @nodoc
@@ -1813,14 +632,19 @@ class _$TextNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? text = null,Object? fontFamily = null,Object? fontWeight = null,Object? fontSize = null,Object? letterSpacing = null,Object? appearance = null,Object? role = freezed,}) {
   return _then(TextNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
-as TextData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as Affine2D,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
+as String,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
+as String,fontWeight: null == fontWeight ? _self.fontWeight : fontWeight // ignore: cast_nullable_to_non_nullable
+as FontWeightNum,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
+as double,letterSpacing: null == letterSpacing ? _self.letterSpacing : letterSpacing // ignore: cast_nullable_to_non_nullable
+as double,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
+as CanvasAppearance,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -1829,10 +653,10 @@ as String?,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$TextDataCopyWith<$Res> get data {
+$CanvasAppearanceCopyWith<$Res> get appearance {
   
-  return $TextDataCopyWith<$Res>(_self.data, (value) {
-    return _then(_self.copyWith(data: value));
+  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
+    return _then(_self.copyWith(appearance: value));
   });
 }
 }
@@ -1841,17 +665,22 @@ $TextDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class ImageNode extends Node {
-  const ImageNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'image',super._();
+  const ImageNode({required this.id, @JsonKey(includeIfNull: false) this.name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false) this.hidden = false, @JsonKey(includeIfNull: false)@Affine2DConverter() this.xf = const Affine2D.identity(), @JsonKey(includeIfNull: false) this.assetId, @Size2DConverter() required this.size, @JsonKey(toJson: _imageFitToJson, includeIfNull: false) this.fit = ImageFit.contain, @JsonKey(fromJson: Vec2.fromJson, toJson: _imageAlignToJson, includeIfNull: false) this.align = const Vec2(0.5, 0.5), @JsonKey(includeIfNull: false) this.role,  String? $type}): $type = $type ?? 'image',super._();
   factory ImageNode.fromJson(Map<String, dynamic> json) => _$ImageNodeFromJson(json);
 
 @override final  ElementId id;
-@override final  String? name;
-@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
-@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
- final  ImageData data;
- final  String? role;
+@override@JsonKey(includeIfNull: false) final  String? name;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final  bool hidden;
+@override@JsonKey(includeIfNull: false)@Affine2DConverter() final  Affine2D xf;
+/// Null represents an intentionally unfilled image frame.
+@JsonKey(includeIfNull: false) final  CanvasAssetId? assetId;
+/// Editable destination-frame dimensions in document units.
+@Size2DConverter() final  Size2D size;
+@JsonKey(toJson: _imageFitToJson, includeIfNull: false) final  ImageFit fit;
+@JsonKey(fromJson: Vec2.fromJson, toJson: _imageAlignToJson, includeIfNull: false) final  Vec2 align;
+@JsonKey(includeIfNull: false) final  String? role;
 
-@JsonKey(name: 'runtimeType')
+@JsonKey(name: 'type')
 final String $type;
 
 
@@ -1868,18 +697,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is ImageNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.assetId, assetId) || other.assetId == assetId)&&(identical(other.size, size) || other.size == size)&&(identical(other.fit, fit) || other.fit == fit)&&(identical(other.align, align) || other.align == align)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,assetId,size,fit,align,role);
 }
 
 @override
 String toString() {
-    return 'Node.image(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
+    return 'Node.image(id: $id, name: $name, hidden: $hidden, xf: $xf, assetId: $assetId, size: $size, fit: $fit, align: $align, role: $role)';
 }
 
 
@@ -1890,11 +719,11 @@ abstract mixin class $ImageNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $ImageNodeCopyWith(ImageNode value, $Res Function(ImageNode) _then) = _$ImageNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Affine2D xf, ImageData data, String? role
+ ElementId id,@JsonKey(includeIfNull: false) String? name,@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool hidden,@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D xf,@JsonKey(includeIfNull: false) CanvasAssetId? assetId,@Size2DConverter() Size2D size,@JsonKey(toJson: _imageFitToJson, includeIfNull: false) ImageFit fit,@JsonKey(fromJson: Vec2.fromJson, toJson: _imageAlignToJson, includeIfNull: false) Vec2 align,@JsonKey(includeIfNull: false) String? role
 });
 
 
-$ImageDataCopyWith<$Res> get data;
+
 
 }
 /// @nodoc
@@ -1907,45 +736,43 @@ class _$ImageNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? assetId = freezed,Object? size = null,Object? fit = null,Object? align = null,Object? role = freezed,}) {
   return _then(ImageNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
-as ImageData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as Affine2D,assetId: freezed == assetId ? _self.assetId : assetId // ignore: cast_nullable_to_non_nullable
+as CanvasAssetId?,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as Size2D,fit: null == fit ? _self.fit : fit // ignore: cast_nullable_to_non_nullable
+as ImageFit,align: null == align ? _self.align : align // ignore: cast_nullable_to_non_nullable
+as Vec2,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
 
-/// Create a copy of Node
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$ImageDataCopyWith<$Res> get data {
-  
-  return $ImageDataCopyWith<$Res>(_self.data, (value) {
-    return _then(_self.copyWith(data: value));
-  });
-}
+
 }
 
 /// @nodoc
 @JsonSerializable()
 
 class PathNode extends Node {
-  const PathNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'path',super._();
+  const PathNode({required this.id, @JsonKey(includeIfNull: false) this.name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false) this.hidden = false, @JsonKey(includeIfNull: false)@Affine2DConverter() this.xf = const Affine2D.identity(), @PathSourceConverter() required this.geometry, @JsonKey(toJson: _fillRuleToJson, includeIfNull: false) this.fillRule = FillRule.nonZero, this.appearance = const CanvasAppearance(foreground: CanvasFill.none()), @JsonKey(includeIfNull: false) this.role,  String? $type}): $type = $type ?? 'path',super._();
   factory PathNode.fromJson(Map<String, dynamic> json) => _$PathNodeFromJson(json);
 
 @override final  ElementId id;
-@override final  String? name;
-@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
-@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
- final  PathData data;
- final  String? role;
+@override@JsonKey(includeIfNull: false) final  String? name;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final  bool hidden;
+@override@JsonKey(includeIfNull: false)@Affine2DConverter() final  Affine2D xf;
+/// The sole authored geometry source. Use an explicit empty source for an
+/// intentionally empty path.
+@PathSourceConverter() final  PathSource geometry;
+@JsonKey(toJson: _fillRuleToJson, includeIfNull: false) final  FillRule fillRule;
+@JsonKey() final  CanvasAppearance appearance;
+@JsonKey(includeIfNull: false) final  String? role;
 
-@JsonKey(name: 'runtimeType')
+@JsonKey(name: 'type')
 final String $type;
 
 
@@ -1962,18 +789,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is PathNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is PathNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.geometry, geometry) || other.geometry == geometry)&&(identical(other.fillRule, fillRule) || other.fillRule == fillRule)&&(identical(other.appearance, appearance) || other.appearance == appearance)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,geometry,fillRule,appearance,role);
 }
 
 @override
 String toString() {
-    return 'Node.path(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
+    return 'Node.path(id: $id, name: $name, hidden: $hidden, xf: $xf, geometry: $geometry, fillRule: $fillRule, appearance: $appearance, role: $role)';
 }
 
 
@@ -1984,11 +811,11 @@ abstract mixin class $PathNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $PathNodeCopyWith(PathNode value, $Res Function(PathNode) _then) = _$PathNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Affine2D xf, PathData data, String? role
+ ElementId id,@JsonKey(includeIfNull: false) String? name,@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool hidden,@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D xf,@PathSourceConverter() PathSource geometry,@JsonKey(toJson: _fillRuleToJson, includeIfNull: false) FillRule fillRule, CanvasAppearance appearance,@JsonKey(includeIfNull: false) String? role
 });
 
 
-$PathDataCopyWith<$Res> get data;
+$CanvasAppearanceCopyWith<$Res> get appearance;
 
 }
 /// @nodoc
@@ -2001,14 +828,16 @@ class _$PathNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? geometry = null,Object? fillRule = null,Object? appearance = null,Object? role = freezed,}) {
   return _then(PathNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
-as PathData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as Affine2D,geometry: null == geometry ? _self.geometry : geometry // ignore: cast_nullable_to_non_nullable
+as PathSource,fillRule: null == fillRule ? _self.fillRule : fillRule // ignore: cast_nullable_to_non_nullable
+as FillRule,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
+as CanvasAppearance,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -2017,10 +846,10 @@ as String?,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$PathDataCopyWith<$Res> get data {
+$CanvasAppearanceCopyWith<$Res> get appearance {
   
-  return $PathDataCopyWith<$Res>(_self.data, (value) {
-    return _then(_self.copyWith(data: value));
+  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
+    return _then(_self.copyWith(appearance: value));
   });
 }
 }
@@ -2029,17 +858,19 @@ $PathDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class IconNode extends Node {
-  const IconNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), required this.data, this.role,  String? $type}): $type = $type ?? 'icon',super._();
+  const IconNode({required this.id, @JsonKey(includeIfNull: false) this.name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false) this.hidden = false, @JsonKey(includeIfNull: false)@Affine2DConverter() this.xf = const Affine2D.identity(), required this.iconRef, @JsonKey(toJson: _iconSizeToJson, includeIfNull: false) this.sizePx = 96.0, this.appearance = const CanvasAppearance(), @JsonKey(includeIfNull: false) this.role,  String? $type}): $type = $type ?? 'icon',super._();
   factory IconNode.fromJson(Map<String, dynamic> json) => _$IconNodeFromJson(json);
 
 @override final  ElementId id;
-@override final  String? name;
-@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
-@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
- final  CanvasIconData data;
- final  String? role;
+@override@JsonKey(includeIfNull: false) final  String? name;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final  bool hidden;
+@override@JsonKey(includeIfNull: false)@Affine2DConverter() final  Affine2D xf;
+ final  String iconRef;
+@JsonKey(toJson: _iconSizeToJson, includeIfNull: false) final  double sizePx;
+@JsonKey() final  CanvasAppearance appearance;
+@JsonKey(includeIfNull: false) final  String? role;
 
-@JsonKey(name: 'runtimeType')
+@JsonKey(name: 'type')
 final String $type;
 
 
@@ -2056,18 +887,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is IconNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.data, data) || other.data == data)&&(identical(other.role, role) || other.role == role));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is IconNode&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.hidden, hidden) || other.hidden == hidden)&&(identical(other.xf, xf) || other.xf == xf)&&(identical(other.iconRef, iconRef) || other.iconRef == iconRef)&&(identical(other.sizePx, sizePx) || other.sizePx == sizePx)&&(identical(other.appearance, appearance) || other.appearance == appearance)&&(identical(other.role, role) || other.role == role));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,hidden,xf,data,role);
+    return Object.hash(runtimeType,id,name,hidden,xf,iconRef,sizePx,appearance,role);
 }
 
 @override
 String toString() {
-    return 'Node.icon(id: $id, name: $name, hidden: $hidden, xf: $xf, data: $data, role: $role)';
+    return 'Node.icon(id: $id, name: $name, hidden: $hidden, xf: $xf, iconRef: $iconRef, sizePx: $sizePx, appearance: $appearance, role: $role)';
 }
 
 
@@ -2078,11 +909,11 @@ abstract mixin class $IconNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $IconNodeCopyWith(IconNode value, $Res Function(IconNode) _then) = _$IconNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Affine2D xf, CanvasIconData data, String? role
+ ElementId id,@JsonKey(includeIfNull: false) String? name,@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool hidden,@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D xf, String iconRef,@JsonKey(toJson: _iconSizeToJson, includeIfNull: false) double sizePx, CanvasAppearance appearance,@JsonKey(includeIfNull: false) String? role
 });
 
 
-$CanvasIconDataCopyWith<$Res> get data;
+$CanvasAppearanceCopyWith<$Res> get appearance;
 
 }
 /// @nodoc
@@ -2095,14 +926,16 @@ class _$IconNodeCopyWithImpl<$Res>
 
 /// Create a copy of Node
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? data = null,Object? role = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? hidden = null,Object? xf = null,Object? iconRef = null,Object? sizePx = null,Object? appearance = null,Object? role = freezed,}) {
   return _then(IconNode(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as ElementId,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,hidden: null == hidden ? _self.hidden : hidden // ignore: cast_nullable_to_non_nullable
 as bool,xf: null == xf ? _self.xf : xf // ignore: cast_nullable_to_non_nullable
-as Affine2D,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
-as CanvasIconData,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as Affine2D,iconRef: null == iconRef ? _self.iconRef : iconRef // ignore: cast_nullable_to_non_nullable
+as String,sizePx: null == sizePx ? _self.sizePx : sizePx // ignore: cast_nullable_to_non_nullable
+as double,appearance: null == appearance ? _self.appearance : appearance // ignore: cast_nullable_to_non_nullable
+as CanvasAppearance,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -2111,10 +944,10 @@ as String?,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$CanvasIconDataCopyWith<$Res> get data {
+$CanvasAppearanceCopyWith<$Res> get appearance {
   
-  return $CanvasIconDataCopyWith<$Res>(_self.data, (value) {
-    return _then(_self.copyWith(data: value));
+  return $CanvasAppearanceCopyWith<$Res>(_self.appearance, (value) {
+    return _then(_self.copyWith(appearance: value));
   });
 }
 }
@@ -2123,14 +956,14 @@ $CanvasIconDataCopyWith<$Res> get data {
 @JsonSerializable()
 
 class GroupNode extends Node {
-  const GroupNode({required this.id, this.name, this.hidden = false, this.xf = const Affine2D.identity(), this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
+  const GroupNode({required this.id, @JsonKey(includeIfNull: false) this.name, @JsonKey(toJson: _hiddenToJson, includeIfNull: false) this.hidden = false, @JsonKey(includeIfNull: false)@Affine2DConverter() this.xf = const Affine2D.identity(), @JsonKey(includeIfNull: false) this.behavior,  List<Node> children = const <Node>[],  String? $type}): _children = children,$type = $type ?? 'group',super._();
   factory GroupNode.fromJson(Map<String, dynamic> json) => _$GroupNodeFromJson(json);
 
 @override final  ElementId id;
-@override final  String? name;
-@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final bool hidden;
-@override@JsonKey(includeIfNull: false) @Affine2DConverter() final Affine2D xf;
- final  GroupBehaviorRef? behavior;
+@override@JsonKey(includeIfNull: false) final  String? name;
+@override@JsonKey(toJson: _hiddenToJson, includeIfNull: false) final  bool hidden;
+@override@JsonKey(includeIfNull: false)@Affine2DConverter() final  Affine2D xf;
+@JsonKey(includeIfNull: false) final  GroupBehaviorRef? behavior;
  final  List<Node> _children;
 @JsonKey() List<Node> get children {
   if (_children is EqualUnmodifiableListView) return _children;
@@ -2139,7 +972,7 @@ class GroupNode extends Node {
 }
 
 
-@JsonKey(name: 'runtimeType')
+@JsonKey(name: 'type')
 final String $type;
 
 
@@ -2178,7 +1011,7 @@ abstract mixin class $GroupNodeCopyWith<$Res> implements $NodeCopyWith<$Res> {
   factory $GroupNodeCopyWith(GroupNode value, $Res Function(GroupNode) _then) = _$GroupNodeCopyWithImpl;
 @override @useResult
 $Res call({
- ElementId id, String? name, bool hidden, Affine2D xf, GroupBehaviorRef? behavior, List<Node> children
+ ElementId id,@JsonKey(includeIfNull: false) String? name,@JsonKey(toJson: _hiddenToJson, includeIfNull: false) bool hidden,@JsonKey(includeIfNull: false)@Affine2DConverter() Affine2D xf,@JsonKey(includeIfNull: false) GroupBehaviorRef? behavior, List<Node> children
 });
 
 

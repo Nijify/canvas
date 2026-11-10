@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _side = 64;
 const _center = _side ~/ 2;
 
-Future<({Uint8List pixels, Rect2D? paintBounds})> _render(PathData data) async {
+Future<({Uint8List pixels, Rect2D? paintBounds})> _render(PathNode path) async {
   final text = FlutterTextPipeline();
   try {
     final scene = CanvasSceneDocument(
@@ -18,11 +18,7 @@ Future<({Uint8List pixels, Rect2D? paintBounds})> _render(PathData data) async {
       backgroundFill: const CanvasFill.none(),
       backgroundOpacity: 1,
       children: [
-        Node.path(
-          id: 'path',
-          xf: Affine2D.translation(_center * 1.0, _center * 1.0),
-          data: data,
-        ),
+        path.copyWith(xf: Affine2D.translation(_center * 1.0, _center * 1.0)),
       ],
     );
     final evaluation = evaluateScene(scene, CoreServices(textMeasurer: text));
@@ -65,8 +61,9 @@ void main() {
 
   test('ordinary path uses its fill rule and shared appearance', () async {
     final render = await _render(
-      PathData(
-        source: GeneralPathSource.fromSvg(
+      PathNode(
+        id: 'path',
+        geometry: GeneralPathSource.fromSvg(
           'M-12 -12 L12 -12 L12 12 L-12 12 L-12 -12 '
           'M-5 -5 L5 -5 L5 5 L-5 5 L-5 -5',
         ),
@@ -86,8 +83,9 @@ void main() {
 
   test('ordinary path stroke width and cap come from CanvasStroke', () async {
     final render = await _render(
-      PathData(
-        source: const LineSource(x1: -8, x2: 8),
+      PathNode(
+        id: 'path',
+        geometry: const LineSource(x1: -8, x2: 8),
         appearance: CanvasAppearance(
           foreground: const CanvasFill.none(),
           stroke: CanvasStroke(
@@ -107,8 +105,9 @@ void main() {
   for (final (name, data) in [
     (
       'square caps',
-      PathData(
-        source: PolylineSource(const [Vec2(-8, -8), Vec2(8, 8)]),
+      PathNode(
+        id: 'path',
+        geometry: PolylineSource(const [Vec2(-8, -8), Vec2(8, 8)]),
         appearance: CanvasAppearance(
           foreground: const CanvasFill.none(),
           stroke: CanvasStroke(
@@ -122,8 +121,13 @@ void main() {
     ),
     (
       'acute miter',
-      PathData(
-        source: PolylineSource(const [Vec2(-4, 10), Vec2(0, -10), Vec2(4, 10)]),
+      PathNode(
+        id: 'path',
+        geometry: PolylineSource(const [
+          Vec2(-4, 10),
+          Vec2(0, -10),
+          Vec2(4, 10),
+        ]),
         appearance: CanvasAppearance(
           foreground: const CanvasFill.none(),
           stroke: CanvasStroke(color: 0xFF112233, width: 6, miterLimit: 6),
@@ -135,7 +139,7 @@ void main() {
       final render = await _render(data);
       expect(render.paintBounds, isNotNull);
       final padded = render.paintBounds!.inflate(1);
-      final points = (data.source as PolylineSource).points;
+      final points = (data.geometry as PolylineSource).points;
       final geometry = PathIR([
         for (final (index, point) in points.indexed)
           index == 0 ? PathCmd.moveTo(point) : PathCmd.lineTo(point),

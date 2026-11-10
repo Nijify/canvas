@@ -20,7 +20,8 @@ class _FakeTextMeasurer implements TextMeasurer {
   }
 }
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -130,18 +131,14 @@ Node _onlyNode(EditorRuntime<CanvasSceneDocument> runtime) {
 void main() {
   group('EditorRuntime object edits', () {
     test('document listenable exposes canonical base scene', () {
-      final runtime = _buildRuntime(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-      );
+      final runtime = _buildRuntime(_sceneWithChildren(const [_textNode]));
       addTearDown(runtime.dispose);
 
       expect(runtime.document.value.children.single.id, 't1');
     });
 
     test('rename edit updates node name and is undoable/redoable', () {
-      final runtime = _buildRuntime(
-        _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-      );
+      final runtime = _buildRuntime(_sceneWithChildren(const [_textNode]));
       addTearDown(runtime.dispose);
 
       runtime.applyEdit(EditorEdits.renameElement('t1', 'Hero Title'));
@@ -158,9 +155,7 @@ void main() {
 
     test('rename edit normalizes empty value to null', () {
       final runtime = _buildRuntime(
-        _sceneWithChildren(const [
-          Node.text(id: 't1', name: 'Existing', data: _textData),
-        ]),
+        _sceneWithChildren([_textNode.copyWith(id: 't1', name: 'Existing')]),
       );
       addTearDown(runtime.dispose);
 
@@ -171,9 +166,7 @@ void main() {
 
     test('duplicate edit preserves node name on copy', () {
       final runtime = _buildRuntime(
-        _sceneWithChildren(const [
-          Node.text(id: 't1', name: 'Hero Title', data: _textData),
-        ]),
+        _sceneWithChildren([_textNode.copyWith(id: 't1', name: 'Hero Title')]),
       );
       addTearDown(runtime.dispose);
 
@@ -192,7 +185,7 @@ void main() {
       final runtime = _buildRuntime(_sceneWithChildren(const <Node>[]));
       addTearDown(runtime.dispose);
 
-      final node = Node.text(id: 't1', data: _textData);
+      final node = _textNode;
       final primaryId = runtime.applyEdit(EditorEdits.addNode(node));
 
       expect(primaryId, 't1');
@@ -209,9 +202,7 @@ void main() {
     test(
       'applyEdit deleteSubtree updates document and is undoable/redoable',
       () {
-        final runtime = _buildRuntime(
-          _sceneWithChildren(const [Node.text(id: 't1', data: _textData)]),
-        );
+        final runtime = _buildRuntime(_sceneWithChildren(const [_textNode]));
         addTearDown(runtime.dispose);
 
         runtime.applyEdit(EditorEdits.deleteSubtree('t1'));
@@ -228,9 +219,7 @@ void main() {
 
     test('applyEdit duplicateSubtree returns primaryId and is undoable', () {
       final runtime = _buildRuntime(
-        _sceneWithChildren(const [
-          Node.text(id: 't1', name: 'Hero Title', data: _textData),
-        ]),
+        _sceneWithChildren([_textNode.copyWith(id: 't1', name: 'Hero Title')]),
       );
       addTearDown(runtime.dispose);
 
@@ -252,9 +241,7 @@ void main() {
 
     test('duplicate undo redo preserves IDs and adapter remapping', () {
       final initial = _MetadataSceneDocument(
-        base: _sceneWithChildren(const <Node>[
-          Node.text(id: 't1', data: _textData),
-        ]),
+        base: _sceneWithChildren(const <Node>[_textNode]),
         metadata: const <ElementId, String>{'t1': 'metadata-for-t1'},
       );
 
@@ -300,9 +287,7 @@ void main() {
     });
 
     test('failed ID-guard edits do not publish or create undo history', () {
-      final initial = _sceneWithChildren(const <Node>[
-        Node.text(id: 't1', data: _textData),
-      ]);
+      final initial = _sceneWithChildren(const <Node>[_textNode]);
 
       final runtime = _buildRuntime(initial);
       addTearDown(runtime.dispose);
@@ -324,9 +309,7 @@ void main() {
       });
 
       expect(
-        () => runtime.applyEdit(
-          EditorEdits.addNode(const Node.text(id: 't1', data: _textData)),
-        ),
+        () => runtime.applyEdit(EditorEdits.addNode(_textNode)),
         throwsArgumentError,
       );
 
@@ -340,10 +323,7 @@ void main() {
 
       expect(
         () => runtime.applyEdit(
-          EditorEdits.replaceNode(
-            't1',
-            const Node.text(id: 'different', data: _textData),
-          ),
+          EditorEdits.replaceNode('t1', _textNode.copyWith(id: 'different')),
         ),
         throwsArgumentError,
       );
@@ -359,9 +339,9 @@ void main() {
 
     test('applyEdit arrange operations are undoable', () {
       final runtime = _buildRuntime(
-        _sceneWithChildren(const [
-          Node.text(id: 'a', data: _textData),
-          Node.text(id: 'b', data: _textData),
+        _sceneWithChildren([
+          _textNode.copyWith(id: 'a'),
+          _textNode.copyWith(id: 'b'),
         ]),
       );
       addTearDown(runtime.dispose);

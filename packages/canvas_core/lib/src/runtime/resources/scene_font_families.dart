@@ -37,7 +37,7 @@ Set<String> collectSceneFontFamilies(
     includeHidden: true,
     visit: (node) {
       if (node is TextNode) {
-        addFamily(node.data.fontFamily);
+        addFamily(node.fontFamily);
       }
     },
   );

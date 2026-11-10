@@ -55,7 +55,7 @@ final class _SceneValidator {
 
     if (asset.sourceRef.trim().isEmpty) {
       _fail(
-        '$path/sourceRef',
+        '$path/geometryRef',
         'Image asset source reference must be nonblank.',
       );
     }
@@ -81,23 +81,20 @@ final class _SceneValidator {
         GroupNode(:final $type) => ($type, 'group'),
       };
       if (label != expected) {
-        _fail(
-          '$path/runtimeType',
-          'Expected $expected node label; got $label.',
-        );
+        _fail('$path/type', 'Expected $expected node label; got $label.');
       }
       _validateNodeId(node.id, '$path/id');
       _validateName(node.name, '$path/name');
 
       switch (node) {
-        case TextNode(:final data):
-          _validateTextData(data, '$path/data');
-        case IconNode(:final data):
-          _validateIconData(data, '$path/data');
-        case ImageNode(:final data):
-          _validateImageData(data, '$path/data');
-        case PathNode(:final data):
-          _validatePathData(data, '$path/data');
+        case TextNode():
+          _validateText(node, path);
+        case IconNode():
+          _validateIcon(node, path);
+        case ImageNode():
+          _validateImage(node, path);
+        case PathNode():
+          _validatePath(node, path);
         case GroupNode(:final behavior, :final children):
           if (behavior != null) {
             _validateBehavior(behavior, '$path/behavior');
@@ -127,13 +124,13 @@ final class _SceneValidator {
     }
   }
 
-  void _validateTextData(TextData data, String path) {
+  void _validateText(TextNode data, String path) {
     _validateFinite(data.fontSize, '$path/fontSize');
     _validateFinite(data.letterSpacing, '$path/letterSpacing');
     _validateAppearance(data.appearance, '$path/appearance');
   }
 
-  void _validateIconData(CanvasIconData data, String path) {
+  void _validateIcon(IconNode data, String path) {
     _validatePositive(data.sizePx, '$path/sizePx');
     _validateAppearance(data.appearance, '$path/appearance');
   }
@@ -212,7 +209,7 @@ final class _SceneValidator {
     }
   }
 
-  void _validateImageData(ImageData data, String path) {
+  void _validateImage(ImageNode data, String path) {
     _validatePositive(data.size.w, '$path/size/w');
     _validatePositive(data.size.h, '$path/size/h');
 
@@ -228,8 +225,8 @@ final class _SceneValidator {
     _validateRange(data.align.y, '$path/align/y', 0, 1);
   }
 
-  void _validatePathData(PathData data, String path) {
-    _validatePathSource(data.source, '$path/source');
+  void _validatePath(PathNode data, String path) {
+    _validatePathSource(data.geometry, '$path/geometry');
     _validateAppearance(
       data.appearance,
       '$path/appearance',

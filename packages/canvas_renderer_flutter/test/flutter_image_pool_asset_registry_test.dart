@@ -41,10 +41,7 @@ void main() {
         ),
       },
       children: <Node>[
-        Node.image(
-          id: 'image-1',
-          data: ImageData(assetId: 'asset-1', size: Size2D(320, 180)),
-        ),
+        Node.image(id: 'image-1', assetId: 'asset-1', size: Size2D(320, 180)),
       ],
     );
 

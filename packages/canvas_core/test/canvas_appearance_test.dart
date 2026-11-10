@@ -25,18 +25,13 @@ CanvasSceneDocument _scene(
     children: [
       Node.text(
         id: 'text',
-        data: TextData(
-          text: 'X',
-          fontFamily: 'Ahem',
-          fontWeight: 400,
-          fontSize: 24,
-          appearance: appearance,
-        ),
+        text: 'X',
+        fontFamily: 'Ahem',
+        fontWeight: 400,
+        fontSize: 24,
+        appearance: appearance,
       ),
-      Node.icon(
-        id: 'icon',
-        data: CanvasIconData(iconRef: 'test', appearance: appearance),
-      ),
+      Node.icon(id: 'icon', iconRef: 'test', appearance: appearance),
     ],
   );
 }
@@ -69,8 +64,8 @@ void main() {
     final text = decoded.children[0] as TextNode;
 
     expect(
-      text.data.appearance.underlays,
-      scene.children.whereType<TextNode>().first.data.appearance.underlays,
+      text.appearance.underlays,
+      scene.children.whereType<TextNode>().first.appearance.underlays,
     );
   });
 

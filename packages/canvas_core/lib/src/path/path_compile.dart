@@ -1,7 +1,14 @@
 import 'dart:math' as math;
+
 import 'package:canvas_core/src/foundation/core_types.dart' show Vec2;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/path/path_source.dart';
+
+/// Compile authored geometry once per source identity.
+final _irCache = Expando<PathIR>('PathIR');
+
+PathIR compilePath(PathSource geometry) =>
+    _irCache[geometry] ??= const PathCompiler().fromSource(geometry);
 
 class PathCompiler {
   const PathCompiler();

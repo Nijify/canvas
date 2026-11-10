@@ -26,22 +26,20 @@ Node _text({
 }) => Node.text(
   id: id,
   xf: xf,
-  data: TextData(
-    text: 'TEXT',
-    fontFamily: 'Test',
-    fontWeight: 400,
-    fontSize: 20,
-    appearance: CanvasAppearance(
-      underlays: shadow == 0
-          ? const []
-          : [
-              ShadowEffect(
-                id: 'shadow',
-                offset: Vec2(shadow, shadow),
-                color: 0xFF111111,
-              ),
-            ],
-    ),
+  text: 'TEXT',
+  fontFamily: 'Test',
+  fontWeight: 400,
+  fontSize: 20,
+  appearance: CanvasAppearance(
+    underlays: shadow == 0
+        ? const []
+        : [
+            ShadowEffect(
+              id: 'shadow',
+              offset: Vec2(shadow, shadow),
+              color: 0xFF111111,
+            ),
+          ],
   ),
 );
 
@@ -62,12 +60,10 @@ void main() {
           Node.path(
             id: 'path',
             xf: Affine2D.rotation(-0.3),
-            data: PathData(
-              source: source,
-              appearance: CanvasAppearance(
-                foreground: const CanvasFill.none(),
-                stroke: stroke,
-              ),
+            geometry: source,
+            appearance: CanvasAppearance(
+              foreground: const CanvasFill.none(),
+              stroke: stroke,
             ),
           ),
         ],
@@ -110,20 +106,28 @@ void main() {
         CanvasSceneDocument makeScene(double shadow) => _scene([
           Node.group(
             id: 'outer',
-            xf: extra * (Affine2D.translation(80, 40) * Affine2D.rotation(0.4) * Affine2D.scale(1.4, 0.8)),
+            xf:
+                extra *
+                (Affine2D.translation(80, 40) *
+                    Affine2D.rotation(0.4) *
+                    Affine2D.scale(1.4, 0.8)),
             children: [
               Node.group(
                 id: 'inner',
-                xf: (Affine2D.translation(15, -20) * Affine2D.rotation(-0.7) * Affine2D.scale(0.8, 1.6)),
+                xf:
+                    (Affine2D.translation(15, -20) *
+                    Affine2D.rotation(-0.7) *
+                    Affine2D.scale(0.8, 1.6)),
                 children: [
                   _text(
                     shadow: shadow,
-                    xf: (Affine2D.translation(7, -3) * Affine2D.rotation(0.3) * Affine2D.scale(-2, 0.5) * Affine2D.translation(-7.0, 3.0)),
+                    xf:
+                        (Affine2D.translation(7, -3) *
+                        Affine2D.rotation(0.3) *
+                        Affine2D.scale(-2, 0.5) *
+                        Affine2D.translation(-7.0, 3.0)),
                   ),
-                  _text(
-                    id: 'sibling',
-                    xf: Affine2D.translation(150, 30),
-                  ),
+                  _text(id: 'sibling', xf: Affine2D.translation(150, 30)),
                 ],
               ),
             ],
@@ -179,10 +183,7 @@ void main() {
         children: [_text(id: 'hidden-text')],
       ),
       const Node.group(id: 'empty'),
-      const Node.icon(
-        id: 'unresolved',
-        data: CanvasIconData(iconRef: 'missing'),
-      ),
+      const Node.icon(id: 'unresolved', iconRef: 'missing'),
       Node.group(
         id: 'ignored-group',
         children: [_text(id: 'ignored-text')],

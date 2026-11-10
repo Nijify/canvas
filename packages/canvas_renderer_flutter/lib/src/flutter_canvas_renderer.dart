@@ -130,39 +130,39 @@ class CanvasRenderer {
       try {
         canvas.transform(world.toColumnMajor4x4());
         switch (node) {
-          case TextNode(data: final data):
+          case TextNode():
             _drawText(
               canvas,
-              textValue: data.text,
-              family: data.fontFamily,
-              weight: data.fontWeight,
-              size: data.fontSize,
-              letterSpacing: data.letterSpacing,
-              appearance: data.appearance,
+              textValue: node.text,
+              family: node.fontFamily,
+              weight: node.fontWeight,
+              size: node.fontSize,
+              letterSpacing: node.letterSpacing,
+              appearance: node.appearance,
             );
-          case IconNode(data: final data):
+          case IconNode():
             final icon = computed.iconById[id];
             if (icon != null && icon.pathIR.cmds.isNotEmpty) {
               final path = _buildUiPath(
                 icon.pathIR,
                 fillRule: icon.fillRule,
               ).transform(icon.sourceToLocal.toColumnMajor4x4());
-              _drawPathUnderlays(canvas, path, data.appearance.underlays);
-              _drawPathFill(canvas, path, data.appearance.foreground);
+              _drawPathUnderlays(canvas, path, node.appearance.underlays);
+              _drawPathFill(canvas, path, node.appearance.foreground);
             }
-          case ImageNode(data: final data):
+          case ImageNode():
             // A null asset is an intentionally empty frame.
-            if (data.assetId == null) break;
+            if (node.assetId == null) break;
             final placement = computed.imagePlacementById[id];
             if (placement != null) {
               _drawImage(canvas, id, placement.src, placement.dst);
             }
-          case PathNode(data: final data):
+          case PathNode():
             final ir = computed.pathIRById[id];
             if (ir != null) {
-              final path = _buildUiPath(ir, fillRule: data.fillRule);
-              _drawPathFill(canvas, path, data.appearance.foreground);
-              _drawPathStroke(canvas, path, data.appearance.stroke);
+              final path = _buildUiPath(ir, fillRule: node.fillRule);
+              _drawPathFill(canvas, path, node.appearance.foreground);
+              _drawPathStroke(canvas, path, node.appearance.stroke);
             }
           case GroupNode():
             break;

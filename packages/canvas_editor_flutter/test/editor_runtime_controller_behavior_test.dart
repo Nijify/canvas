@@ -20,7 +20,8 @@ final class _FakeTextMeasurer implements rt.TextMeasurer {
   }
 }
 
-const _baseTextData = rt.TextData(
+const _baseTextNode = rt.TextNode(
+  id: 't1',
   text: 'Original title',
   fontFamily: 'Inter',
   fontWeight: 400,
@@ -35,10 +36,10 @@ rt.CanvasSceneDocument _sceneWithText(String text) {
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1.0,
     children: <rt.Node>[
-      rt.Node.text(
-        id: 't1',
+      _baseTextNode.copyWith(
+        id: id,
         xf: rt.Affine2D.translation(20, 20),
-        data: _baseTextData.copyWith(text: text),
+        text: text,
       ),
     ],
   );
@@ -46,12 +47,12 @@ rt.CanvasSceneDocument _sceneWithText(String text) {
 
 double _letterSpacingOf(rt.CanvasSceneDocument scene) {
   final node = rt.findById(scene, 't1');
-  return (node as rt.TextNode).data.letterSpacing;
+  return (node as rt.TextNode).letterSpacing;
 }
 
 String _textOf(rt.CanvasSceneDocument scene) {
   final node = rt.findById(scene, 't1');
-  return (node as rt.TextNode).data.text;
+  return (node as rt.TextNode).text;
 }
 
 rt.CanvasSceneDocument _emptyScene() {
@@ -68,12 +69,7 @@ rt.CanvasSceneDocument _sceneWithIcon(String iconRef) {
     artboardSize: const rt.Size2D(300, 200),
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1.0,
-    children: <rt.Node>[
-      rt.Node.icon(
-        id: 'i1',
-        data: rt.CanvasIconData(iconRef: iconRef),
-      ),
-    ],
+    children: <rt.Node>[rt.Node.icon(id: 'i1', iconRef: iconRef)],
   );
 }
 
@@ -84,12 +80,7 @@ rt.CanvasSceneDocument _sceneWithImage({
     artboardSize: const rt.Size2D(300, 200),
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1.0,
-    children: <rt.Node>[
-      rt.Node.image(
-        id: 'img1',
-        data: rt.ImageData(size: size),
-      ),
-    ],
+    children: <rt.Node>[rt.Node.image(id: 'img1', size: size)],
   );
 }
 
@@ -106,10 +97,8 @@ rt.CanvasSceneDocument _sceneWithBoundImage(String sourceRef) {
     children: const <rt.Node>[
       rt.Node.image(
         id: 'img1',
-        data: rt.ImageData(
-          assetId: _originalImageAssetId,
-          size: rt.Size2D(200, 200),
-        ),
+        assetId: _originalImageAssetId,
+        size: rt.Size2D(200, 200),
       ),
     ],
   );
@@ -117,19 +106,19 @@ rt.CanvasSceneDocument _sceneWithBoundImage(String sourceRef) {
 
 String _imageSourceOf(rt.CanvasSceneDocument scene) {
   final image = rt.findById(scene, 'img1') as rt.ImageNode;
-  final assetId = image.data.assetId;
+  final assetId = image.assetId;
 
   return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
 }
 
 String _iconRefOf(rt.CanvasSceneDocument scene) {
   final node = rt.findById(scene, 'i1');
-  return (node as rt.IconNode).data.iconRef;
+  return (node as rt.IconNode).iconRef;
 }
 
 rt.Size2D _imageSizeOf(rt.CanvasSceneDocument scene) {
   final node = rt.findById(scene, 'img1');
-  return (node as rt.ImageNode).data.size;
+  return (node as rt.ImageNode).size;
 }
 
 EditorRuntime<rt.CanvasSceneDocument> _buildSceneRuntime(
@@ -222,7 +211,7 @@ final class _ResolvedTextAdapter
     return rt.replaceById(
       document,
       't1',
-      node.copyWith(data: node.data.copyWith(text: 'Resolved title')),
+      node.copyWith(text: 'Resolved title'),
     );
   }
 }
@@ -277,10 +266,7 @@ final class _DerivedNodeAdapter
   ) {
     return document.copyWith(
       children: <rt.Node>[
-        rt.Node.text(
-          id: 'derived',
-          data: _baseTextData.copyWith(text: 'Derived title'),
-        ),
+        _baseTextNode.copyWith(id: 'derived', text: 'Derived title'),
       ],
     );
   }
@@ -477,7 +463,11 @@ void main() {
 
       final endSession = runtime.beginEditSession();
 
-      runtime.updateTransform('t1', rt.Affine2D.translation(10, 0) * rt.findById(runtime.document.value, 't1')!.xf);
+      runtime.updateTransform(
+        't1',
+        rt.Affine2D.translation(10, 0) *
+            rt.findById(runtime.document.value, 't1')!.xf,
+      );
 
       expect(runtime.sourceDocument, same(initialSource));
       expect(runtime.source.value, same(initialSource));
@@ -503,7 +493,10 @@ void main() {
       final restoredNode =
           rt.findById(runtime.sourceDocument, 't1') as rt.TextNode;
 
-      expect(restoredNode.xf.transformPoint(rt.Vec2.zero), const rt.Vec2(20, 20));
+      expect(
+        restoredNode.xf.transformPoint(rt.Vec2.zero),
+        const rt.Vec2(20, 20),
+      );
       expect(runtime.canRedo.value, isTrue);
     },
   );
@@ -532,7 +525,11 @@ void main() {
 
     final endSession = runtime.beginEditSession();
 
-    runtime.updateTransform('t1', rt.Affine2D.translation(0, 0) * rt.findById(runtime.document.value, 't1')!.xf);
+    runtime.updateTransform(
+      't1',
+      rt.Affine2D.translation(0, 0) *
+          rt.findById(runtime.document.value, 't1')!.xf,
+    );
     await tester.pump();
 
     endSession();
@@ -616,45 +613,39 @@ void main() {
     expect(runtime.canRedo.value, isTrue);
   });
 
-  test(
-    'functional field updates use the latest transaction-present canonical value',
-    () {
-      final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
-      addTearDown(runtime.dispose);
+  test('functional field updates use the latest transaction-present canonical value', () {
+    final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
+    addTearDown(runtime.dispose);
 
-      final observed = <String>[];
-      final endSession = runtime.beginEditSession();
+    final observed = <String>[];
+    final endSession = runtime.beginEditSession();
 
-      runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
-        observed.add(current);
-        return '$current / first';
-      });
+    runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+      observed.add(current);
+      return '$current / first';
+    });
 
-      runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
-        observed.add(current);
-        return '$current / second';
-      });
+    runtime.updateField<String>('t1', rt.CanvasFields.textContent, (current) {
+      observed.add(current);
+      return '$current / second';
+    });
 
-      expect(observed, <String>['Original title', 'Original title / first']);
+    expect(observed, <String>['Original title', 'Original title / first']);
 
-      expect(
-        _textOf(runtime.sourceDocument),
-        'Original title / first / second',
-      );
+    expect(_textOf(runtime.sourceDocument), 'Original title / first / second');
 
-      expect(runtime.canUndo.value, isFalse);
+    expect(runtime.canUndo.value, isFalse);
 
-      endSession();
+    endSession();
 
-      expect(runtime.canUndo.value, isTrue);
+    expect(runtime.canUndo.value, isTrue);
 
-      runtime.undo();
+    runtime.undo();
 
-      expect(_textOf(runtime.sourceDocument), 'Original title');
-      expect(runtime.canUndo.value, isFalse);
-      expect(runtime.canRedo.value, isTrue);
-    },
-  );
+    expect(_textOf(runtime.sourceDocument), 'Original title');
+    expect(runtime.canUndo.value, isFalse);
+    expect(runtime.canRedo.value, isTrue);
+  });
 
   test('letter spacing edit session creates one undo entry', () {
     final runtime = _buildSceneRuntime(_sceneWithText('Original title'));
@@ -722,7 +713,7 @@ void main() {
     final scene = rt.replaceById(
       initial,
       't1',
-      textNode.copyWith(data: textNode.data.copyWith(letterSpacing: 1.25)),
+      textNode.copyWith(letterSpacing: 1.25),
     );
 
     final runtime = _buildSceneRuntime(scene);
@@ -848,7 +839,7 @@ void main() {
         canReadCanonicalNode: (_, node) => node is rt.TextNode,
         readCanonicalNode: (_, node) {
           canonicalReadCalls += 1;
-          return (node as rt.TextNode).data.text;
+          return (node as rt.TextNode).text;
         },
         writeCanonical: (base, nodeId, value) {
           writerCalls += 1;
@@ -860,15 +851,11 @@ void main() {
 
           final text = value as String;
 
-          if (node.data.text == text) {
+          if (node.text == text) {
             return base;
           }
 
-          return rt.replaceById(
-            base,
-            nodeId,
-            node.copyWith(data: node.data.copyWith(text: text)),
-          );
+          return rt.replaceById(base, nodeId, node.copyWith(text: text));
         },
       );
 
@@ -952,9 +939,9 @@ void main() {
 
     final codec = FieldCodec(
       fallback: '',
-      readNode: (_, node) => (node as rt.TextNode).data.text,
+      readNode: (_, node) => (node as rt.TextNode).text,
       canReadCanonicalNode: (_, node) => node is rt.TextNode,
-      readCanonicalNode: (_, node) => (node as rt.TextNode).data.text,
+      readCanonicalNode: (_, node) => (node as rt.TextNode).text,
       writeCanonical: (base, nodeId, value) {
         writerCalls += 1;
         return base;
@@ -982,7 +969,7 @@ void main() {
   test('missing canonical reader is a codec configuration error', () {
     final codec = FieldCodec(
       fallback: '',
-      readNode: (_, node) => (node as rt.TextNode).data.text,
+      readNode: (_, node) => (node as rt.TextNode).text,
       writeCanonical: (base, nodeId, value) => base,
     );
 
@@ -1093,7 +1080,7 @@ void main() {
 
     final replaced = runtime.sourceDocument;
     final replacedImage = rt.findById(replaced, 'img1') as rt.ImageNode;
-    final replacementAssetId = replacedImage.data.assetId!;
+    final replacementAssetId = replacedImage.assetId!;
 
     expect(replacementAssetId, isNot(_originalImageAssetId));
     expect(replaced.assets[_originalImageAssetId]?.sourceRef, 'media:original');
@@ -1114,7 +1101,7 @@ void main() {
     final cleared = runtime.sourceDocument;
     final clearedImage = rt.findById(cleared, 'img1') as rt.ImageNode;
 
-    expect(clearedImage.data.assetId, isNull);
+    expect(clearedImage.assetId, isNull);
 
     expect(cleared.assets[_originalImageAssetId]?.sourceRef, 'media:original');
 
@@ -1201,40 +1188,62 @@ void main() {
     expect(derivedRuntime.canUndo.value, isFalse);
   });
   for (final publishBetweenUpdates in [false, true]) {
-    testWidgets('gesture uses its starting matrix across publication: $publishBetweenUpdates', (tester) async {
-      final leaf = _sceneWithText('Title').children.single;
-      final initial = _sceneWithText('Title').copyWith(children: [
-        rt.Node.group(id: 'parent', xf: rt.Affine2D(2, .3, .6, -1.5, 40, 20), children: [leaf]),
-      ]);
-      final runtime = _buildSceneRuntime(initial);
-      addTearDown(runtime.dispose);
-      final originalWorld = rt.worldTransformOf(initial, 't1')!;
-      final gesture = TransformGesture.start(runtime, 't1')!;
-      gesture.applyWorldDelta(rt.Affine2D.translation(5, 10));
-      if (publishBetweenUpdates) await tester.pump();
-      final delta = rt.affineAround(const rt.Vec2(30, 15), rt.Affine2D.rotation(.3));
-      expect(gesture.applyWorldDelta(delta), isTrue);
-      gesture.close();
-      await tester.pump();
-      final expected = (delta * originalWorld).toJson();
-      final actual = rt.worldTransformOf(runtime.document.value, 't1')!.toJson();
-      for (var i = 0; i < 6; i++) expect(actual[i], closeTo(expected[i], 1e-9));
-      runtime.undo();
-      expect(runtime.document.value, initial);
-    });
+    testWidgets(
+      'gesture uses its starting matrix across publication: $publishBetweenUpdates',
+      (tester) async {
+        final leaf = _sceneWithText('Title').children.single;
+        final initial = _sceneWithText('Title').copyWith(
+          children: [
+            rt.Node.group(
+              id: 'parent',
+              xf: rt.Affine2D(2, .3, .6, -1.5, 40, 20),
+              children: [leaf],
+            ),
+          ],
+        );
+        final runtime = _buildSceneRuntime(initial);
+        addTearDown(runtime.dispose);
+        final originalWorld = rt.worldTransformOf(initial, 't1')!;
+        final gesture = TransformGesture.start(runtime, 't1')!;
+        gesture.applyWorldDelta(rt.Affine2D.translation(5, 10));
+        if (publishBetweenUpdates) await tester.pump();
+        final delta = rt.affineAround(
+          const rt.Vec2(30, 15),
+          rt.Affine2D.rotation(.3),
+        );
+        expect(gesture.applyWorldDelta(delta), isTrue);
+        gesture.close();
+        await tester.pump();
+        final expected = (delta * originalWorld).toJson();
+        final actual = rt
+            .worldTransformOf(runtime.document.value, 't1')!
+            .toJson();
+        for (var i = 0; i < 6; i++)
+          expect(actual[i], closeTo(expected[i], 1e-9));
+        runtime.undo();
+        expect(runtime.document.value, initial);
+      },
+    );
   }
-  testWidgets('overflowing candidate leaves document and history unchanged', (tester) async {
+  testWidgets('overflowing candidate leaves document and history unchanged', (
+    tester,
+  ) async {
     final leaf = _sceneWithText('Title').children.single;
-    final initial = _sceneWithText('Title').copyWith(children: [
-      rt.Node.group(id: 'parent', xf: rt.Affine2D.scale(2), children: [leaf]),
-    ]);
+    final initial = _sceneWithText('Title').copyWith(
+      children: [
+        rt.Node.group(id: 'parent', xf: rt.Affine2D.scale(2), children: [leaf]),
+      ],
+    );
     final runtime = _buildSceneRuntime(initial);
     addTearDown(runtime.dispose);
     final end = runtime.beginEditSession();
-    expect(() => runtime.updateTransform('t1', rt.Affine2D.scale(1e308)), throwsArgumentError);
-    end(); await tester.pump();
+    expect(
+      () => runtime.updateTransform('t1', rt.Affine2D.scale(1e308)),
+      throwsArgumentError,
+    );
+    end();
+    await tester.pump();
     expect(runtime.document.value, initial);
     expect(runtime.canUndo.value, isFalse);
   });
-
 }

@@ -133,12 +133,8 @@ CanvasSceneDocument _pathScene() {
     children: const <Node>[
       Node.path(
         id: 'shape-1',
-        data: PathData(
-          source: RectSource(x: -10, y: -5, width: 20, height: 10),
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF22C55E),
-          ),
-        ),
+        geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF22C55E)),
       ),
     ],
   );
@@ -152,12 +148,10 @@ CanvasSceneDocument _textScene(String family) {
     children: <Node>[
       Node.text(
         id: 'text-1',
-        data: TextData(
-          text: 'Hello',
-          fontFamily: family,
-          fontWeight: 400,
-          fontSize: 20,
-        ),
+        text: 'Hello',
+        fontFamily: family,
+        fontWeight: 400,
+        fontSize: 20,
       ),
     ],
   );
@@ -172,7 +166,8 @@ CanvasSceneDocument _imageScene({
 }) {
   final image = Node.image(
     id: elementId,
-    data: ImageData(assetId: assetId, size: const Size2D(32, 32)),
+    assetId: assetId,
+    size: const Size2D(32, 32),
   );
 
   return CanvasSceneDocument(
@@ -608,10 +603,7 @@ void main() {
 
       final scene = _emptyScene().copyWith(
         children: <Node>[
-          const Node.icon(
-            id: 'icon-1',
-            data: CanvasIconData(iconRef: 'missing-icon'),
-          ),
+          const Node.icon(id: 'icon-1', iconRef: 'missing-icon'),
         ],
       );
 
@@ -652,12 +644,10 @@ void main() {
             Node.icon(
               id: 'vector',
               xf: Affine2D.translation(32, 32),
-              data: CanvasIconData(
-                iconRef: 'vector',
-                sizePx: 24,
-                appearance: CanvasAppearance(
-                  foreground: CanvasFill.solid(0xff123456),
-                ),
+              iconRef: 'vector',
+              sizePx: 24,
+              appearance: CanvasAppearance(
+                foreground: CanvasFill.solid(0xff123456),
               ),
             ),
           ],
@@ -718,10 +708,7 @@ void main() {
         scenePreparer: (scene, services) {
           return scene.copyWith(
             children: <Node>[
-              const Node.icon(
-                id: 'prepared-icon',
-                data: CanvasIconData(iconRef: 'new-icon'),
-              ),
+              const Node.icon(id: 'prepared-icon', iconRef: 'new-icon'),
             ],
           );
         },
@@ -849,11 +836,9 @@ void main() {
               Node.path(
                 id: 'generated-shape',
                 xf: Affine2D.translation(20, 20),
-                data: PathData(
-                  source: RectSource(x: -10, y: -10, width: 20, height: 20),
-                  appearance: CanvasAppearance(
-                    foreground: CanvasFill.solid(0xFF336699),
-                  ),
+                geometry: RectSource(x: -10, y: -10, width: 20, height: 20),
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.solid(0xFF336699),
                 ),
               ),
             ],
@@ -884,10 +869,7 @@ void main() {
         );
         final scene = _emptyScene().copyWith(
           children: const <Node>[
-            Node.image(
-              id: 'empty-frame',
-              data: ImageData(size: Size2D(32, 32)),
-            ),
+            Node.image(id: 'empty-frame', size: Size2D(32, 32)),
           ],
         );
 

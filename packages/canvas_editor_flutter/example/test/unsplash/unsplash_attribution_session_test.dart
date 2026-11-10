@@ -33,7 +33,8 @@ void main() {
       children: <Node>[
         ImageNode(
           id: 'image',
-          data: ImageData(assetId: 'used', size: Size2D(200, 120)),
+          assetId: 'used',
+          size: Size2D(200, 120),
           xf: Affine2D.translation(100, 100),
         ),
       ],
@@ -57,12 +58,14 @@ void main() {
       children: <Node>[
         ImageNode(
           id: 'image-a',
-          data: ImageData(assetId: 'a', size: Size2D(200, 120)),
+          assetId: 'a',
+          size: Size2D(200, 120),
           xf: Affine2D.translation(100, 100),
         ),
         ImageNode(
           id: 'image-b',
-          data: ImageData(assetId: 'b', size: Size2D(200, 120)),
+          assetId: 'b',
+          size: Size2D(200, 120),
           xf: Affine2D.translation(300, 100),
         ),
       ],
@@ -84,7 +87,8 @@ void main() {
         ImageNode(
           id: 'hidden-image',
           hidden: true,
-          data: ImageData(assetId: 'image', size: Size2D(200, 120)),
+          assetId: 'image',
+          size: Size2D(200, 120),
           xf: Affine2D.translation(100, 100),
         ),
       ],

@@ -206,7 +206,7 @@ Set<String> _collectIconRefs(CanvasSceneDocument scene) {
     includeHidden: true,
     visit: (node) {
       if (node is IconNode) {
-        refs.add(node.data.iconRef);
+        refs.add(node.iconRef);
       }
     },
   );
@@ -225,7 +225,7 @@ Set<String> _collectImageSourceRefs(CanvasSceneDocument scene) {
         return;
       }
 
-      final assetId = node.data.assetId;
+      final assetId = node.assetId;
 
       // Null assetId is an intentionally unfilled image frame.
       if (assetId == null) {
@@ -312,7 +312,7 @@ void _ensureRequiredIntrinsics(
     scene,
     includeHidden: true,
     visit: (node) {
-      if (node is! ImageNode || node.data.assetId == null) {
+      if (node is! ImageNode || node.assetId == null) {
         return;
       }
 
@@ -324,7 +324,7 @@ void _ensureRequiredIntrinsics(
           intrinsic.w <= 0 ||
           intrinsic.h <= 0) {
         missing.add(node.id);
-        final sourceRef = scene.assets[node.data.assetId]?.sourceRef.trim();
+        final sourceRef = scene.assets[node.assetId]?.sourceRef.trim();
         if (sourceRef != null) missingRefs.add(sourceRef);
       }
     },
@@ -356,13 +356,13 @@ void _ensureVisibleImagesDecoded(
     scene,
     includeHidden: false,
     visit: (node) {
-      if (node is! ImageNode || node.data.assetId == null) {
+      if (node is! ImageNode || node.assetId == null) {
         return;
       }
 
       if (imagePool.images[node.id] == null) {
         missing.add(node.id);
-        final sourceRef = scene.assets[node.data.assetId]?.sourceRef.trim();
+        final sourceRef = scene.assets[node.assetId]?.sourceRef.trim();
         if (sourceRef != null) missingRefs.add(sourceRef);
       }
     },

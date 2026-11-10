@@ -251,9 +251,8 @@ void main() {
 
         final scene = harness.controller.document.value;
         final inserted = scene.children.single as ImageNode;
-        final imageData = inserted.data;
-        final insertedSize = imageData.size;
-        final assetId = imageData.assetId;
+        final insertedSize = inserted.size;
+        final assetId = inserted.assetId;
 
         expect(assetId, isNotNull);
         final asset = scene.assets[assetId];
@@ -295,7 +294,7 @@ void main() {
       final inserted =
           harness.controller.document.value.children.single as ImageNode;
 
-      final insertedSize = inserted.data.size;
+      final insertedSize = inserted.size;
 
       expect(insertedSize.w, closeTo(120, 0.001));
       expect(insertedSize.h, closeTo(240, 0.001));

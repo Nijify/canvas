@@ -34,9 +34,9 @@ void main() {
   });
 
   test('raw SVG is rejected before it reaches scene evaluation', () async {
-    final json =
-        jsonDecode(await rootBundle.loadString('assets/icons/ring.json'))
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      await rootBundle.loadString('assets/icons/ring.json'),
+    ) as Map<String, dynamic>;
     json['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
 
     await expectLater(
@@ -46,9 +46,9 @@ void main() {
   });
 
   test('invalid SVG path data fails during resource preparation', () async {
-    final json =
-        jsonDecode(await rootBundle.loadString('assets/icons/ring.json'))
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      await rootBundle.loadString('assets/icons/ring.json'),
+    ) as Map<String, dynamic>;
     json['source'] = {'kind': 'path', 'd': 'M0 0L'};
     await expectLater(
       ExampleIconCatalog.load(_ReplacingRingBundle(jsonEncode(json))),
@@ -57,9 +57,9 @@ void main() {
   });
 
   test('invalid viewBox dimensions fail preparation', () async {
-    final json =
-        jsonDecode(await rootBundle.loadString('assets/icons/ring.json'))
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      await rootBundle.loadString('assets/icons/ring.json'),
+    ) as Map<String, dynamic>;
     json['viewBox'] = [0, 0, 0, 24];
 
     await expectLater(
@@ -84,12 +84,10 @@ void main() {
           Node.icon(
             id: item.ref,
             xf: Affine2D.translation(64 + index * 128, 64),
-            data: CanvasIconData(
-              iconRef: item.ref,
-              sizePx: 96,
-              appearance: const CanvasAppearance(
-                foreground: CanvasFill.solid(color),
-              ),
+            iconRef: item.ref,
+            sizePx: 96,
+            appearance: const CanvasAppearance(
+              foreground: CanvasFill.solid(color),
             ),
           ),
       ],

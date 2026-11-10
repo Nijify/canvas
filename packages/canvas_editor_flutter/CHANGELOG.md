@@ -1,3 +1,8 @@
+## Unreleased
+
+- Use flat v6 node fields for creation and edits. Existing editor field keys
+  retain their names and meanings.
+
 ## 0.21.0
 
 - **Breaking:** replace incremental TRS controller commands with updateTransform; gestures capture initial affine frames and total deltas.

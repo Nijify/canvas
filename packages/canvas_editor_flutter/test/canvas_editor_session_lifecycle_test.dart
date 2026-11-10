@@ -41,16 +41,12 @@ CanvasSceneDocument _scene(String seedId) {
       Node.text(
         id: 'placeholder',
         xf: Affine2D.translation(40, 40),
-        data: TextData(
-          text: 'Seed',
-          fontFamily: 'TestFont',
-          fontWeight: 400,
-          fontSize: 18,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'Seed',
+        fontFamily: 'TestFont',
+        fontWeight: 400,
+        fontSize: 18,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       ).copyWith(id: seedId),
     ],
   );
@@ -62,16 +58,12 @@ void _addLocalEdit(EditorController controller) {
       Node.text(
         id: 'local-edit',
         xf: Affine2D.translation(120, 80),
-        data: TextData(
-          text: 'Local edit',
-          fontFamily: 'TestFont',
-          fontWeight: 400,
-          fontSize: 18,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'Local edit',
+        fontFamily: 'TestFont',
+        fontWeight: 400,
+        fontSize: 18,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       ),
     ),
   );

@@ -12,10 +12,7 @@ CanvasSceneDocument _scene({
     backgroundOpacity: 1,
     assets: assets,
     children: <Node>[
-      Node.image(
-        id: 'image-1',
-        data: ImageData(assetId: assetId, size: const Size2D(100, 80)),
-      ),
+      Node.image(id: 'image-1', assetId: assetId, size: const Size2D(100, 80)),
     ],
   );
 }

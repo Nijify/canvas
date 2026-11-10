@@ -27,7 +27,9 @@ class _FakeImages implements ImageIntrinsics {
 CoreServices _services() =>
     CoreServices(textMeasurer: _FakeTextMeasurer(), images: _FakeImages());
 
-TextData _td(String text) => TextData(
+TextNode _text(String id, String text, {String? role}) => TextNode(
+  id: id,
+  role: role,
   text: text,
   fontFamily: 'Inter',
   fontWeight: 400,
@@ -37,26 +39,20 @@ TextData _td(String text) => TextData(
 
 void main() {
   test('scene traversal + flatten smoke', () {
-    final icon = Node.text(id: 'icon1', data: _td('I'), role: 'icon');
+    final icon = _text('icon1', 'I', role: 'icon');
 
-    final main = Node.text(id: 'main1', data: _td('MAIN'), role: 'main');
+    final main = _text('main1', 'MAIN', role: 'main');
 
     final shape = Node.path(
       id: 'shape1',
-      data: PathData(
-        source: const RectSource(x: -5, y: -1, width: 10, height: 2),
-        appearance: const CanvasAppearance(
-          foreground: CanvasFill.solid(0xFF111111),
-        ),
+      geometry: const RectSource(x: -5, y: -1, width: 10, height: 2),
+      appearance: const CanvasAppearance(
+        foreground: CanvasFill.solid(0xFF111111),
       ),
       role: 'shape',
     );
 
-    final accent = Node.text(
-      id: 'accent1',
-      data: _td('ACCENT'),
-      role: 'accent',
-    );
+    final accent = _text('accent1', 'ACCENT', role: 'accent');
 
     final group = Node.group(
       id: 'group1',
@@ -64,7 +60,7 @@ void main() {
       children: [icon, main, shape, accent],
     );
 
-    final rootSibling = Node.text(id: 'rootText1', data: _td('ROOT'));
+    final rootSibling = _text('rootText1', 'ROOT');
 
     final doc = CanvasSceneDocument(
       backgroundFill: const CanvasFill.none(),
@@ -87,10 +83,10 @@ void main() {
     expect(pRoot!.parent, isNull);
     expect(pRoot.index, 1);
 
-    final updatedMain = (foundMain).copyWith(data: _td('MAIN_UPDATED'));
+    final updatedMain = (foundMain).copyWith(text: 'MAIN_UPDATED');
     final doc2 = replaceById(doc, 'main1', updatedMain);
     final foundMain2 = findById(doc2, 'main1') as TextNode;
-    expect(foundMain2.data.text, 'MAIN_UPDATED');
+    expect(foundMain2.text, 'MAIN_UPDATED');
 
     final computed = computeScene(doc, _services());
     final drawList = computed.drawList;

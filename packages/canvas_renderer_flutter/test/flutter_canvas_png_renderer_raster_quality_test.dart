@@ -143,11 +143,9 @@ void main() {
         Node.image(
           id: 'image-1',
           xf: Affine2D.translation(4, 1),
-          data: ImageData(
-            assetId: 'asset-1',
-            size: Size2D(8, 2),
-            fit: ImageFit.fill,
-          ),
+          assetId: 'asset-1',
+          size: Size2D(8, 2),
+          fit: ImageFit.fill,
         ),
       ],
     );

@@ -30,7 +30,8 @@ CanvasSceneDocument _sceneWithImage() {
     children: <Node>[
       Node.image(
         id: _existingImageId,
-        data: ImageData(assetId: _existingAssetId, size: Size2D(200, 160)),
+        assetId: _existingAssetId,
+        size: Size2D(200, 160),
       ),
     ],
   );
@@ -47,11 +48,13 @@ CanvasSceneDocument _sceneWithTwoImagesSharingSource() {
     children: <Node>[
       Node.image(
         id: _existingImageId,
-        data: ImageData(assetId: _sharedAssetId, size: Size2D(200, 160)),
+        assetId: _sharedAssetId,
+        size: Size2D(200, 160),
       ),
       Node.image(
         id: _secondImageId,
-        data: ImageData(assetId: _sharedAssetId, size: Size2D(120, 100)),
+        assetId: _sharedAssetId,
+        size: Size2D(120, 100),
       ),
     ],
   );
@@ -239,7 +242,7 @@ String? _imageSourceRef(EditorController controller, String imageId) {
   final image = findById(scene, imageId);
   if (image is! ImageNode) return null;
 
-  final assetId = image.data.assetId;
+  final assetId = image.assetId;
   return assetId == null ? null : scene.assets[assetId]?.sourceRef;
 }
 
@@ -248,7 +251,7 @@ CanvasImageAsset? _imageAsset(EditorController controller, String imageId) {
   final image = findById(scene, imageId);
   if (image is! ImageNode) return null;
 
-  final assetId = image.data.assetId;
+  final assetId = image.assetId;
   return assetId == null ? null : scene.assets[assetId];
 }
 
@@ -495,10 +498,10 @@ void main() {
       ]);
 
       final image = _singleImage(editor.controller);
-      final size = image.data.size;
+      final size = image.size;
 
       expect(_imageSourceRef(editor.controller, image.id), 'media:added-image');
-      expect(image.data.assetId, isNotNull);
+      expect(image.assetId, isNotNull);
       expect(size.w, 200);
       expect(size.h, 200);
       expect(image.xf.e, 180);
@@ -534,7 +537,7 @@ void main() {
     final image = _singleImage(editor.controller);
 
     expect(images.requestedIntrinsicSizes, <String>['media:wide-image']);
-    expect(image.data.size, const Size2D(200, 100));
+    expect(image.size, const Size2D(200, 100));
     expect(image.xf.transformPoint(Vec2.zero), const Vec2(180, 130));
     expect(
       _imageAsset(editor.controller, image.id)?.intrinsicSize,
@@ -570,7 +573,7 @@ void main() {
 
       final image = _singleImage(editor.controller);
 
-      expect(image.data.size, const Size2D(200, 200));
+      expect(image.size, const Size2D(200, 200));
       expect(image.xf.transformPoint(Vec2.zero), const Vec2(180, 180));
       expect(_imageAsset(editor.controller, image.id)?.intrinsicSize, isNull);
       expect(editor.selection.value, image.id);

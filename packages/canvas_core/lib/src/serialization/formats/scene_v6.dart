@@ -1,11 +1,9 @@
-/// Checks wire structure and primitive types before generated decoding can
-/// discard unknown fields or coerce integer properties. Runtime validation
-/// owns the shared semantic rules after decoding.
-void validateSceneJsonWire(
-  Map<String, Object?> json, {
-  required int version,
-  required void Function(Object? raw, String path) validateSource,
-}) {
+import 'package:canvas_core/src/serialization/scene_format.dart';
+
+/// Checks wire structure before generated decoding can discard unknown fields
+/// or coerce integers. Geometry and gradients have their own strict decoders.
+void validateSceneV6Json(Map<String, Object?> json) {
+  const version = currentCanvasSceneFormatVersion;
   if (json['sceneFormatVersion'] is! int ||
       json['sceneFormatVersion'] != version) {
     _fail(
@@ -49,52 +47,44 @@ void validateSceneJsonWire(
   }
   final children = _list(json['children'], '/children');
   for (var index = 0; index < children.length; index++) {
-    _node(children[index], '/children/$index', validateSource);
+    _node(children[index], '/children/$index');
   }
 }
 
-void _node(
-  Object? raw,
-  String path,
-  void Function(Object?, String) validateSource,
-) {
+void _node(Object? raw, String path) {
   final node = _object(raw, path);
+  final fields = switch (node['type']) {
+    'group' => {'behavior', 'children'},
+    'path' => {'role', 'geometry', 'fillRule', 'appearance'},
+    'text' => {
+      'role',
+      'text',
+      'fontFamily',
+      'fontWeight',
+      'fontSize',
+      'letterSpacing',
+      'appearance',
+    },
+    'icon' => {'role', 'iconRef', 'sizePx', 'appearance'},
+    'image' => {'role', 'assetId', 'size', 'fit', 'align'},
+    _ => _fail('$path/type', 'Expected a supported node type.'),
+  };
   _keys(
     node,
-    {
-      'runtimeType',
-      'id',
-      'name',
-      'hidden',
-      'xf',
-      if (node['runtimeType'] == 'group') ...[
-        'behavior',
-        'children',
-      ] else ...[
-        'data',
-        'role',
-      ],
-    },
+    {'type', 'id', 'name', 'hidden', 'xf', ...fields},
     path,
-    requiredFields: ['runtimeType', 'id'],
+    requiredFields: ['id'],
   );
-  _enum(node['runtimeType'], {
-    'path',
-    'text',
-    'icon',
-    'image',
-    'group',
-  }, '$path/runtimeType');
   _string(node['id'], '$path/id');
   if (node['name'] != null) _string(node['name'], '$path/name');
   if (node['hidden'] != null) _bool(node['hidden'], '$path/hidden');
   if (node['role'] != null) _string(node['role'], '$path/role');
   if (node.containsKey('xf')) _transform(node['xf'], '$path/xf');
-  if (node['runtimeType'] == 'group') {
+  if (node['type'] == 'group') {
     _required(node, 'children', path);
     final children = _list(node['children'], '$path/children');
     for (var index = 0; index < children.length; index++) {
-      _node(children[index], '$path/children/$index', validateSource);
+      _node(children[index], '$path/children/$index');
     }
     if (node['behavior'] != null) {
       final behavior = _object(node['behavior'], '$path/behavior');
@@ -112,78 +102,39 @@ void _node(
     return;
   }
 
-  _required(node, 'data', path);
-  final dataPath = '$path/data';
-  final data = _object(node['data'], dataPath);
-  switch (node['runtimeType']) {
+  switch (node['type']) {
     case 'path':
-      _keys(
-        data,
-        {'source', 'fillRule', 'appearance'},
-        dataPath,
-        requiredFields: ['source', 'appearance'],
-      );
-      validateSource(data['source'], '$dataPath/source');
-      if (data['fillRule'] != null) {
-        _enum(data['fillRule'], {'nonZero', 'evenOdd'}, '$dataPath/fillRule');
+      _object(node['geometry'], '$path/geometry');
+      if (node['fillRule'] != null) {
+        _enum(node['fillRule'], {'nonZero', 'evenOdd'}, '$path/fillRule');
       }
-      _appearance(data['appearance'], '$dataPath/appearance');
+      _appearance(node['appearance'], '$path/appearance');
     case 'text':
-      _keys(
-        data,
-        {
-          'text',
-          'fontFamily',
-          'fontWeight',
-          'fontSize',
-          'letterSpacing',
-          'appearance',
-        },
-        dataPath,
-        requiredFields: [
-          'text',
-          'fontFamily',
-          'fontWeight',
-          'fontSize',
-          'appearance',
-        ],
-      );
-      _string(data['text'], '$dataPath/text');
-      _string(data['fontFamily'], '$dataPath/fontFamily');
-      _integer(data['fontWeight'], '$dataPath/fontWeight');
-      _number(data['fontSize'], '$dataPath/fontSize');
-      if (data['letterSpacing'] != null)
-        _number(data['letterSpacing'], '$dataPath/letterSpacing');
-      _appearance(data['appearance'], '$dataPath/appearance');
-    case 'icon':
-      _keys(
-        data,
-        {'iconRef', 'sizePx', 'appearance'},
-        dataPath,
-        requiredFields: ['iconRef', 'appearance'],
-      );
-      _string(data['iconRef'], '$dataPath/iconRef');
-      if (data['sizePx'] != null) _number(data['sizePx'], '$dataPath/sizePx');
-      _appearance(data['appearance'], '$dataPath/appearance');
-    case 'image':
-      _keys(
-        data,
-        {'assetId', 'size', 'fit', 'align'},
-        dataPath,
-        requiredFields: ['size'],
-      );
-      if (data['assetId'] != null)
-        _string(data['assetId'], '$dataPath/assetId');
-      _size(data['size'], '$dataPath/size');
-      if (data['fit'] != null) {
-        _enum(data['fit'], {'contain', 'cover', 'fill'}, '$dataPath/fit');
+      _string(node['text'], '$path/text');
+      _string(node['fontFamily'], '$path/fontFamily');
+      _integer(node['fontWeight'], '$path/fontWeight');
+      _number(node['fontSize'], '$path/fontSize');
+      if (node['letterSpacing'] != null) {
+        _number(node['letterSpacing'], '$path/letterSpacing');
       }
-      if (data['align'] != null) _point(data['align'], '$dataPath/align');
+      _appearance(node['appearance'], '$path/appearance');
+    case 'icon':
+      _string(node['iconRef'], '$path/iconRef');
+      if (node['sizePx'] != null) _number(node['sizePx'], '$path/sizePx');
+      _appearance(node['appearance'], '$path/appearance');
+    case 'image':
+      if (node['assetId'] != null) _string(node['assetId'], '$path/assetId');
+      _size(node['size'], '$path/size');
+      if (node['fit'] != null) {
+        _enum(node['fit'], {'contain', 'cover', 'fill'}, '$path/fit');
+      }
+      if (node['align'] != null) _point(node['align'], '$path/align');
   }
 }
 
 void _transform(Object? raw, String path) {
-  if (raw is! List || raw.length != 6 ||
+  if (raw is! List ||
+      raw.length != 6 ||
       raw.any((value) => value is! num || !value.toDouble().isFinite)) {
     _fail(path, 'Expected exactly six finite affine coefficients.');
   }
@@ -195,7 +146,7 @@ void _appearance(Object? raw, String path) {
     value,
     {'foreground', 'stroke', 'underlays'},
     path,
-    requiredFields: ['foreground', 'underlays'],
+    requiredFields: ['foreground'],
   );
   _fill(value['foreground'], '$path/foreground');
   if (value['stroke'] != null) {
@@ -222,6 +173,7 @@ void _appearance(Object? raw, String path) {
       }
     }
   }
+  if (value['underlays'] == null) return;
   final underlays = _list(value['underlays'], '$path/underlays');
   for (var index = 0; index < underlays.length; index++) {
     final itemPath = '$path/underlays/$index';

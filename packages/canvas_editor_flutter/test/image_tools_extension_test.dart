@@ -33,10 +33,8 @@ CanvasSceneDocument _singleImageScene({String? sourceRef = 'media:original'}) {
     children: <Node>[
       Node.image(
         id: _imageA,
-        data: ImageData(
-          assetId: sourceRef == null ? null : _assetA,
-          size: const Size2D(200, 160),
-        ),
+        assetId: sourceRef == null ? null : _assetA,
+        size: const Size2D(200, 160),
       ),
     ],
   );
@@ -51,14 +49,8 @@ CanvasSceneDocument _twoImageScene() {
       _sharedAsset: CanvasImageAsset(sourceRef: 'media:shared'),
     },
     children: <Node>[
-      Node.image(
-        id: _imageA,
-        data: ImageData(assetId: _sharedAsset, size: Size2D(200, 160)),
-      ),
-      Node.image(
-        id: _imageB,
-        data: ImageData(assetId: _sharedAsset, size: Size2D(120, 100)),
-      ),
+      Node.image(id: _imageA, assetId: _sharedAsset, size: Size2D(200, 160)),
+      Node.image(id: _imageB, assetId: _sharedAsset, size: Size2D(120, 100)),
     ],
   );
 }
@@ -71,16 +63,12 @@ CanvasSceneDocument _textScene() {
     children: <Node>[
       Node.text(
         id: _textId,
-        data: TextData(
-          text: 'Text',
-          fontFamily: 'Inter',
-          fontWeight: 400,
-          fontSize: 24,
-          letterSpacing: 0,
-          appearance: CanvasAppearance(
-            foreground: CanvasFill.solid(0xFF111111),
-          ),
-        ),
+        text: 'Text',
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        fontSize: 24,
+        letterSpacing: 0,
+        appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
       ),
     ],
   );
@@ -258,7 +246,7 @@ String? _imageSourceRef(EditorController controller, ElementId id) {
   final image = findById(scene, id);
   if (image is! ImageNode) return null;
 
-  final assetId = image.data.assetId;
+  final assetId = image.assetId;
   return assetId == null ? null : scene.assets[assetId]?.sourceRef;
 }
 
@@ -438,7 +426,7 @@ void main() {
         return replaceById(
           nextScene,
           _imageA,
-          node.copyWith(data: node.data.copyWith(assetId: preparedAssetId)),
+          node.copyWith(assetId: preparedAssetId),
         );
       },
     );

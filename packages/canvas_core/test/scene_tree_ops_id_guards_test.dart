@@ -3,7 +3,8 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 't1',
   text: 't',
   fontFamily: 'Inter',
   fontWeight: 400,
@@ -11,7 +12,7 @@ const _textData = TextData(
 );
 
 Node _text(String id, {String? name}) {
-  return Node.text(id: id, name: name, data: _textData);
+  return _textNode.copyWith(id: id, name: name);
 }
 
 CanvasSceneDocument _scene(List<Node> children) {
@@ -131,9 +132,10 @@ void main() {
     });
 
     test('rejects a descendant collision outside the replaced subtree', () {
-      final group =
-          Node.group(id: 'group', children: <Node>[_text('inside')])
-              as GroupNode;
+      final group = Node.group(
+        id: 'group',
+        children: <Node>[_text('inside')],
+      ) as GroupNode;
 
       final doc = _scene(<Node>[group, _text('outside')]);
 
@@ -145,9 +147,10 @@ void main() {
     });
 
     test('rejects duplicate IDs inside a replacement subtree', () {
-      final group =
-          Node.group(id: 'group', children: <Node>[_text('old-child')])
-              as GroupNode;
+      final group = Node.group(
+        id: 'group',
+        children: <Node>[_text('old-child')],
+      ) as GroupNode;
 
       final doc = _scene(<Node>[group]);
 
@@ -159,9 +162,10 @@ void main() {
     });
 
     test('rejects a blank descendant ID in a replacement subtree', () {
-      final group =
-          Node.group(id: 'group', children: <Node>[_text('old-child')])
-              as GroupNode;
+      final group = Node.group(
+        id: 'group',
+        children: <Node>[_text('old-child')],
+      ) as GroupNode;
 
       final doc = _scene(<Node>[group]);
 

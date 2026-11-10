@@ -35,12 +35,10 @@ CanvasSceneDocument _fixtureScene() {
       Node.path(
         id: 'shape-1',
         xf: Affine2D.translation(40, 40),
-        data: PathData(
-          source: const RectSource(x: -40, y: -30, width: 80, height: 60),
-          appearance: CanvasAppearance(
-            foreground: const CanvasFill.solid(0xFF22C55E),
-            stroke: CanvasStroke(color: 0xFF111111, width: 2),
-          ),
+        geometry: const RectSource(x: -40, y: -30, width: 80, height: 60),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.solid(0xFF22C55E),
+          stroke: CanvasStroke(color: 0xFF111111, width: 2),
         ),
       ),
     ],
@@ -56,12 +54,10 @@ CanvasSceneDocument _twoShapeScene() {
       Node.path(
         id: 'shape-2',
         xf: Affine2D.translation(180, 100),
-        data: PathData(
-          source: const RectSource(x: -30, y: -20, width: 60, height: 40),
-          appearance: CanvasAppearance(
-            foreground: const CanvasFill.solid(0xFF3B82F6),
-            stroke: CanvasStroke(color: 0xFF111111, width: 2),
-          ),
+        geometry: const RectSource(x: -30, y: -20, width: 60, height: 40),
+        appearance: CanvasAppearance(
+          foreground: const CanvasFill.solid(0xFF3B82F6),
+          stroke: CanvasStroke(color: 0xFF111111, width: 2),
         ),
       ),
     ],
@@ -125,12 +121,13 @@ Future<
 _pumpEditor(
   WidgetTester tester, {
   ValueChanged<CanvasSceneDocument>? onSceneChanged,
+  CanvasSceneDocument? initialScene,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       home: SizedBox.expand(
         child: CanvasSceneEditor(
-          initialScene: _fixtureScene(),
+          initialScene: initialScene ?? _fixtureScene(),
           resources: canvasRuntimeResourcesForTest(),
           onSceneChanged: onSceneChanged,
         ),
@@ -550,15 +547,13 @@ void main() {
         Node.text(
           id: 'text-2',
           xf: Affine2D.translation(10, 10),
-          data: TextData(
-            text: 'Undo me',
-            fontFamily: 'TestFont',
-            fontWeight: 400,
-            fontSize: 14,
-            letterSpacing: 0,
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.solid(0xFF111111),
-            ),
+          text: 'Undo me',
+          fontFamily: 'TestFont',
+          fontWeight: 400,
+          fontSize: 14,
+          letterSpacing: 0,
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.solid(0xFF111111),
           ),
         ),
       ),
@@ -583,6 +578,86 @@ void main() {
     expect(editor.controller.canUndo.value, isTrue);
   });
 
+  for (final rotate in [true, false]) {
+    final action = rotate ? 'rotation' : 'corner scaling';
+    testWidgets('$action preserves affine placement under a sheared parent', (
+      tester,
+    ) async {
+      const id = 'affine-shape';
+      final parent = Affine2D(1.2, 0.2, 0.35, 0.9, 130, 105);
+      final local = Affine2D(-1, 0.15, 0.3, 1, 0, 0);
+      final initialWorld = parent * local;
+      final editor = await _pumpEditor(
+        tester,
+        initialScene: _fixtureScene().copyWith(
+          children: [
+            Node.group(
+              id: 'parent',
+              xf: parent,
+              children: [
+                Node.path(
+                  id: id,
+                  xf: local,
+                  geometry: const RectSource(
+                    x: -30,
+                    y: -20,
+                    width: 60,
+                    height: 40,
+                  ),
+                  appearance: const CanvasAppearance(),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+      editor.camera.setPanZoom(newScale: 1, newPan: Offset.zero);
+      editor.selection.selectItem(id);
+      await tester.pumpAndSettle();
+
+      final handle = find.byKey(
+        ValueKey(rotate ? 'canvas-rotate-handle' : 'canvas-scale-handle-0'),
+      );
+      final start = tester.getCenter(handle);
+      final viewport = tester.renderObject<RenderBox>(
+        find.byType(CanvasViewport),
+      );
+      final anchor = initialWorld.transformPoint(
+        rotate ? Vec2.zero : const Vec2(30, 20),
+      );
+      final screenAnchor = viewport.localToGlobal(Offset(anchor.x, anchor.y));
+      final radius = start - screenAnchor;
+      final end =
+          screenAnchor +
+          (rotate ? Offset(-radius.dy, radius.dx) : radius * 1.5);
+
+      final gesture = await tester.startGesture(start);
+      await gesture.moveTo(Offset.lerp(start, end, 0.5)!);
+      await tester.pump();
+      await gesture.moveTo(end);
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      final delta = rotate
+          ? Affine2D.rotation(math.pi / 2)
+          : Affine2D.scale(1.5);
+      final expected = affineAround(anchor, delta) * initialWorld;
+      final actual = editor.controller.render.value.computed.worldById[id]!;
+      for (final (index, value) in actual.toJson().indexed) {
+        expect(value, closeTo(expected.toJson()[index], 1e-8));
+      }
+
+      editor.controller.undo();
+      await tester.pumpAndSettle();
+      expect(findById(editor.controller.document.value, id)!.xf, local);
+      expect(editor.controller.canUndo.value, isFalse);
+      editor.controller.redo();
+      await tester.pumpAndSettle();
+      expect(editor.controller.render.value.computed.worldById[id], actual);
+    });
+  }
+
   testWidgets('resize updates rendered element bounds', (tester) async {
     final editor = await _pumpEditor(tester);
 
@@ -599,7 +674,14 @@ void main() {
     final endSession = editor.controller.beginEditSession();
 
     try {
-      editor.controller.updateTransform('shape-1', affineAround(nodeBefore.xf.transformPoint(Vec2.zero), Affine2D.scale(1.25)) * findById(editor.controller.document.value, 'shape-1')!.xf);
+      editor.controller.updateTransform(
+        'shape-1',
+        affineAround(
+              nodeBefore.xf.transformPoint(Vec2.zero),
+              Affine2D.scale(1.25),
+            ) *
+            findById(editor.controller.document.value, 'shape-1')!.xf,
+      );
     } finally {
       endSession();
     }
@@ -960,15 +1042,13 @@ void main() {
           Node.text(
             id: 'callback-text',
             xf: Affine2D.translation(10, 10),
-            data: TextData(
-              text: 'Callback test',
-              fontFamily: 'TestFont',
-              fontWeight: 400,
-              fontSize: 14,
-              letterSpacing: 0,
-              appearance: CanvasAppearance(
-                foreground: CanvasFill.solid(0xFF111111),
-              ),
+            text: 'Callback test',
+            fontFamily: 'TestFont',
+            fontWeight: 400,
+            fontSize: 14,
+            letterSpacing: 0,
+            appearance: CanvasAppearance(
+              foreground: CanvasFill.solid(0xFF111111),
             ),
           ),
         ),

@@ -20,7 +20,6 @@ import 'package:canvas_core/canvas_core_runtime.dart'
         Vec2,
         strokeContributesToPaint;
 
-
 import 'package:canvas_editor_flutter/src/interaction/picking/path_hit_test.dart'
     show pathContainsClosedArea, pathHitsOutline;
 import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_index.dart'
@@ -202,7 +201,7 @@ bool _hitLeafAt(
       : 0.0;
   if (!localHitSlop.isFinite) return false;
   final outlineRadius = leaf is PathNode
-      ? math.max(_strokeRadiusLocal(leaf.data.appearance.stroke), localHitSlop)
+      ? math.max(_strokeRadiusLocal(leaf.appearance.stroke), localHitSlop)
       : 0.0;
 
   // Layout is geometry only, so coarse rejection must include both stroke
@@ -215,13 +214,13 @@ bool _hitLeafAt(
 
     IconNode() => true,
 
-    PathNode(id: final id, data: final data) => () {
+    PathNode(:final id, :final fillRule) => () {
       final ir = computed.pathIRById[id];
       if (ir == null) return false;
 
       // Fill mode must not decide pickability. Closed geometry remains pickable
       // even when fill is CanvasFill.none().
-      if (pathContainsClosedArea(ir, local, fillRule: data.fillRule)) {
+      if (pathContainsClosedArea(ir, local, fillRule: fillRule)) {
         return true;
       }
 
@@ -249,8 +248,10 @@ double _localHitSlopForLeaf(
     return 0.0;
   }
 
-  final scale = math.max(math.max(inverseWorld.a.abs(), inverseWorld.b.abs()),
-      math.max(inverseWorld.c.abs(), inverseWorld.d.abs()));
+  final scale = math.max(
+    math.max(inverseWorld.a.abs(), inverseWorld.b.abs()),
+    math.max(inverseWorld.c.abs(), inverseWorld.d.abs()),
+  );
   if (scale == 0) return 0;
   final a = inverseWorld.a / scale, b = inverseWorld.c / scale;
   final c = inverseWorld.b / scale, d = inverseWorld.d / scale;

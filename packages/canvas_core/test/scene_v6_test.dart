@@ -13,30 +13,98 @@ Map<String, Object?> _wire() => encodeCanvasScene(
   _scene([
     Node.path(
       id: 'path',
-      data: PathData(
-        source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-        appearance: CanvasAppearance(
-          foreground: const CanvasFill.none(),
-          stroke: CanvasStroke(color: 0xFF123456, width: 2, dash: [5, 0, 3]),
-        ),
+      geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+      appearance: CanvasAppearance(
+        foreground: const CanvasFill.none(),
+        stroke: CanvasStroke(color: 0xFF123456, width: 2, dash: [5, 0, 3]),
       ),
     ),
   ]),
 );
 
-Map<String, Object?> _data(Map<String, Object?> scene) {
-  final node = (scene['children'] as List).single as Map<String, Object?>;
-  return node['data'] as Map<String, Object?>;
+Map<String, Object?> _node(Map<String, Object?> scene) {
+  return (scene['children'] as List).single as Map<String, Object?>;
 }
 
 Map<String, Object?> _stroke(Map<String, Object?> scene) {
-  final appearance = _data(scene)['appearance'] as Map<String, Object?>;
+  final appearance = _node(scene)['appearance'] as Map<String, Object?>;
   return appearance['stroke'] as Map<String, Object?>;
 }
 
 void main() {
+  test('v6 omits node defaults and retains explicit authored settings', () {
+    final scene = _scene([
+      Node.group(
+        id: 'group',
+        children: [
+          const Node.text(
+            id: 'text',
+            text: 'Hello',
+            fontFamily: 'Inter',
+            fontWeight: 400,
+            fontSize: 16,
+          ),
+          const Node.image(id: 'image', size: Size2D(20, 10)),
+          const Node.icon(id: 'icon', iconRef: 'symbol'),
+          Node.path(
+            id: 'path',
+            geometry: const CircleSource(5),
+            hidden: true,
+            appearance: CanvasAppearance(
+              foreground: const CanvasFill.none(),
+              stroke: CanvasStroke(color: 0, width: 0),
+            ),
+          ),
+        ],
+      ),
+    ]);
+    final wire = encodeCanvasScene(scene);
+    final group = _node(wire);
+    expect(group.keys, unorderedEquals(['type', 'id', 'children']));
+    final children = (group['children'] as List).cast<Map<String, Object?>>();
+    expect(
+      children[0].keys,
+      unorderedEquals([
+        'type',
+        'id',
+        'text',
+        'fontFamily',
+        'fontWeight',
+        'fontSize',
+        'appearance',
+      ]),
+    );
+    expect(children[1], {
+      'type': 'image',
+      'id': 'image',
+      'size': {'w': 20, 'h': 10},
+    });
+    expect(
+      children[2].keys,
+      unorderedEquals(['type', 'id', 'iconRef', 'appearance']),
+    );
+    expect(children[3]['hidden'], isTrue);
+    expect(children[3].containsKey('fillRule'), isFalse);
+    expect(children[3]['appearance'], {
+      'foreground': {'type': 'none'},
+      'stroke': {'color': 0, 'width': 0},
+    });
+    expect(encodeCanvasScene(decodeCanvasScene(wire)), wire);
+  });
+
+  test('v6 preserves nondefault image alignment and fit', () {
+    const image = ImageNode(
+      id: 'image',
+      size: Size2D(20, 10),
+      fit: ImageFit.cover,
+      align: Vec2(0.25, 0.75),
+    );
+    final wire = encodeCanvasScene(_scene([image]));
+    expect(decodeCanvasScene(wire).children.single, image);
+  });
+
   test(
-    'v5 round trips all path sources and preserves authored dash arrays',
+    'v6 round trips all path sources and preserves authored dash arrays',
     () {
       final sources = <PathSource>[
         const RectSource(x: -10, y: -5, width: 20, height: 10),
@@ -53,36 +121,38 @@ void main() {
         final scene = _scene([
           Node.path(
             id: 'path',
-            data: PathData(
-              source: source,
-              fillRule: FillRule.evenOdd,
-              appearance: CanvasAppearance(
-                foreground: const CanvasFill.none(),
-                stroke: CanvasStroke(
-                  color: 0x00123456,
-                  width: 12,
-                  dash: [5, 0, 3],
-                ),
+            geometry: source,
+            fillRule: FillRule.evenOdd,
+            appearance: CanvasAppearance(
+              foreground: const CanvasFill.none(),
+              stroke: CanvasStroke(
+                color: 0x00123456,
+                width: 12,
+                dash: [5, 0, 3],
               ),
             ),
           ),
         ]);
         final json = encodeCanvasScene(scene);
-        expect(json['sceneFormatVersion'], 5);
+        expect(json['sceneFormatVersion'], 6);
         final restored = decodeCanvasScene(
           jsonDecode(jsonEncode(json)) as Map<String, Object?>,
         );
         expect(encodeCanvasScene(restored), json);
-        expect(
-          (restored.children.single as PathNode).data.appearance.stroke!.dash,
-          [5, 0, 3],
-        );
+        expect((restored.children.single as PathNode).appearance.stroke!.dash, [
+          5,
+          0,
+          3,
+        ]);
       }
     },
   );
 
   for (final field in [
     'points',
+    'runtimeType',
+    'data',
+    'source',
     'fill',
     'strokeColor',
     'strokeWidth',
@@ -91,30 +161,30 @@ void main() {
     'miterLimit',
     'dash',
   ]) {
-    test('v5 rejects obsolete path field $field', () {
+    test('v6 rejects obsolete path field $field', () {
       final json = _wire();
-      _data(json)[field] = null;
+      _node(json)[field] = null;
       expect(() => decodeCanvasScene(json), throwsFormatException);
     });
   }
 
-  for (final field in ['source', 'appearance']) {
-    test('v5 requires path $field and rejects explicit null', () {
+  for (final field in ['geometry', 'appearance']) {
+    test('v6 requires path $field and rejects explicit null', () {
       final missing = _wire();
-      _data(missing).remove(field);
+      _node(missing).remove(field);
       expect(() => decodeCanvasScene(missing), throwsFormatException);
       final absent = _wire();
-      _data(absent)[field] = null;
+      _node(absent)[field] = null;
       expect(() => decodeCanvasScene(absent), throwsFormatException);
     });
   }
 
-  test('v5 rejects unknown source kinds and invalid command structure', () {
+  test('v6 rejects unknown source kinds and invalid command structure', () {
     final unknown = _wire();
-    _data(unknown)['source'] = {'kind': 'unknown'};
+    _node(unknown)['geometry'] = {'kind': 'unknown'};
     expect(() => decodeCanvasScene(unknown), throwsFormatException);
     final invalid = _wire();
-    _data(invalid)['source'] = {
+    _node(invalid)['geometry'] = {
       'kind': 'commands',
       'commands': [
         {
@@ -128,10 +198,10 @@ void main() {
 
   test('source dimensions and primitive types are checked before use', () {
     final negative = _wire();
-    _data(negative)['source'] = {'kind': 'circle', 'r': -1};
+    _node(negative)['geometry'] = {'kind': 'circle', 'r': -1};
     expect(() => decodeCanvasScene(negative), throwsFormatException);
     final fractional = _wire();
-    _data(fractional)['source'] = {
+    _node(fractional)['geometry'] = {
       'kind': 'rect',
       'width': 20,
       'height': 10,
@@ -140,7 +210,7 @@ void main() {
     expect(() => decodeCanvasScene(fractional), throwsFormatException);
   });
 
-  test('v5 validates inactive stroke values without numeric coercion', () {
+  test('v6 validates inactive stroke values without numeric coercion', () {
     final cases = <(String, Object?, Matcher)>[
       ('color', 1.5, isA<FormatException>()),
       ('color', -1, isA<ArgumentError>()),
@@ -176,10 +246,8 @@ void main() {
     final invalid = _scene([
       Node.icon(
         id: 'icon',
-        data: CanvasIconData(
-          iconRef: 'symbol',
-          appearance: CanvasAppearance(stroke: stroke),
-        ),
+        iconRef: 'symbol',
+        appearance: CanvasAppearance(stroke: stroke),
       ),
     ]);
     expect(() => encodeCanvasScene(invalid), throwsArgumentError);
@@ -187,21 +255,19 @@ void main() {
       _scene([
         const Node.text(
           id: 'text',
-          data: TextData(
-            text: 'A',
-            fontFamily: 'Test',
-            fontWeight: 400,
-            fontSize: 16,
-          ),
+          text: 'A',
+          fontFamily: 'Test',
+          fontWeight: 400,
+          fontSize: 16,
         ),
       ]),
     );
-    final appearance = _data(wire)['appearance'] as Map<String, Object?>;
+    final appearance = _node(wire)['appearance'] as Map<String, Object?>;
     appearance['stroke'] = {'color': 0, 'width': 0};
     expect(() => decodeCanvasScene(wire), throwsArgumentError);
 
     final path = _wire();
-    final pathAppearance = _data(path)['appearance'] as Map<String, Object?>;
+    final pathAppearance = _node(path)['appearance'] as Map<String, Object?>;
     pathAppearance['underlays'] = [
       {
         'type': 'shadow',
@@ -216,13 +282,13 @@ void main() {
   test('rejects unknown fields including names containing slashes', () {
     for (final name in ['zzz', 'a~/b']) {
       final json = _wire();
-      _data(json)[name] = true;
+      _node(json)[name] = true;
       expect(() => decodeCanvasScene(json), throwsFormatException);
     }
   });
 
   test('historical scenes require an explicit external upgrade', () {
-    for (final version in [1, 2, 3, 4]) {
+    for (final version in [1, 2, 3, 4, 5]) {
       final old = _wire()..['sceneFormatVersion'] = version;
       expect(() => decodeCanvasScene(old), throwsFormatException);
     }

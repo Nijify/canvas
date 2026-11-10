@@ -19,7 +19,7 @@ final class UnsplashAttributionSession {
       visit: (node) {
         if (node is! ImageNode) return;
 
-        final assetId = node.data.assetId;
+        final assetId = node.assetId;
         if (assetId == null) return;
 
         final sourceRef = scene.assets[assetId]?.sourceRef;

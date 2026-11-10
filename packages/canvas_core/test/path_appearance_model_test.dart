@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_core/src/serialization/path_converters.dart';
-import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:test/test.dart';
 
 CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
@@ -13,16 +12,18 @@ CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
 
 void main() {
   test('node defaults preserve their foreground and have no stroke', () {
-    const path = PathData(
-      source: RectSource(x: -10, y: -5, width: 20, height: 10),
+    const path = PathNode(
+      id: 'path',
+      geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
     );
-    const text = TextData(
+    const text = TextNode(
+      id: 'text',
       text: 'A',
       fontFamily: 'Test',
       fontWeight: 400,
       fontSize: 16,
     );
-    const icon = CanvasIconData(iconRef: 'test');
+    const icon = IconNode(id: 'icon', iconRef: 'test');
 
     expect(path.appearance.foreground, const CanvasFill.none());
     expect(path.appearance.stroke, isNull);
@@ -38,13 +39,20 @@ void main() {
     for (final value in <Object?>[null, 'rect', 1, []]) {
       expect(() => converter.fromJson(value), throwsFormatException);
     }
-    expect(() => PathData.fromJson({}), throwsFormatException);
-    expect(() => PathData.fromJson({'source': null}), throwsFormatException);
+    expect(
+      () => Node.fromJson({'type': 'path', 'id': 'p'}),
+      throwsFormatException,
+    );
+    expect(
+      () => Node.fromJson({'type': 'path', 'id': 'p', 'geometry': null}),
+      throwsFormatException,
+    );
   });
 
   test('path model JSON owns styling only through appearance', () {
-    final path = PathData(
-      source: const RectSource(x: -10, y: -5, width: 20, height: 10),
+    final path = PathNode(
+      id: 'path',
+      geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
       fillRule: FillRule.evenOdd,
       appearance: CanvasAppearance(
         foreground: const CanvasFill.solid(0xFF123456),
@@ -53,9 +61,12 @@ void main() {
     );
     final json = jsonDecode(jsonEncode(path.toJson())) as Map<String, dynamic>;
 
-    expect(json.keys, unorderedEquals(['source', 'fillRule', 'appearance']));
-    final restored = PathData.fromJson(json);
-    expect(restored.source.toJson(), path.source.toJson());
+    expect(
+      json.keys,
+      unorderedEquals(['type', 'id', 'geometry', 'fillRule', 'appearance']),
+    );
+    final restored = Node.fromJson(json) as PathNode;
+    expect(restored.geometry.toJson(), path.geometry.toJson());
     expect(restored.fillRule, path.fillRule);
     expect(restored.appearance, path.appearance);
   });
@@ -109,7 +120,7 @@ void main() {
     final source = GeneralPathSource(
       PathIR([PathCmd.moveTo(Vec2.zero), PathCmd.lineTo(const Vec2(10, 0))]),
     );
-    final plain = PathData(source: source);
+    final plain = PathNode(id: 'path', geometry: source);
     final painted = plain.copyWith(
       fillRule: FillRule.evenOdd,
       appearance: CanvasAppearance(
@@ -118,12 +129,21 @@ void main() {
       ),
     );
 
-    expect(identical(compilePath(plain), compilePath(painted)), isTrue);
-    final changed = plain.copyWith(
-      source: const RectSource(x: -10, y: -5, width: 20, height: 10),
+    expect(
+      identical(compilePath(plain.geometry), compilePath(painted.geometry)),
+      isTrue,
     );
-    expect(identical(compilePath(plain), compilePath(changed)), isFalse);
-    expect(compilePath(changed).localBounds(), const Rect2D(-10, -5, 10, 5));
+    final changed = plain.copyWith(
+      geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+    );
+    expect(
+      identical(compilePath(plain.geometry), compilePath(changed.geometry)),
+      isFalse,
+    );
+    expect(
+      compilePath(changed.geometry).localBounds(),
+      const Rect2D(-10, -5, 10, 5),
+    );
   });
 
   test('polyline source freezes caller points', () {
@@ -134,23 +154,20 @@ void main() {
       const Vec2(30, 0),
     ];
     final source = PolylineSource(points);
-    final path = PathData(source: source);
-    final compiled = compilePath(path);
+    final path = PathNode(id: 'path', geometry: source);
+    final compiled = compilePath(path.geometry);
     points.clear();
 
     expect(source.points, hasLength(4));
     expect(() => source.points.clear(), throwsUnsupportedError);
-    expect(identical(compilePath(path.copyWith()), compiled), isTrue);
+    expect(identical(compilePath(path.copyWith().geometry), compiled), isTrue);
     expect(compiled.cmds.map((command) => command.verb), [
       PathVerb.moveTo,
       PathVerb.lineTo,
       PathVerb.lineTo,
       PathVerb.lineTo,
     ]);
-    expect(
-      compilePath(PathData(source: GeneralPathSource(PathIR([])))).cmds,
-      isEmpty,
-    );
+    expect(compilePath(GeneralPathSource(PathIR([]))).cmds, isEmpty);
   });
 
   test('inactive stroke numerics are still rejected', () {
@@ -166,10 +183,8 @@ void main() {
       final scene = _scene([
         Node.path(
           id: 'path',
-          data: PathData(
-            source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-            appearance: CanvasAppearance(stroke: stroke),
-          ),
+          geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+          appearance: CanvasAppearance(stroke: stroke),
         ),
       ]);
       expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
@@ -182,27 +197,21 @@ void main() {
     final nodes = [
       Node.text(
         id: 'text',
-        data: TextData(
-          text: 'A',
-          fontFamily: 'Test',
-          fontWeight: 400,
-          fontSize: 16,
-          appearance: CanvasAppearance(stroke: stroke),
-        ),
+        text: 'A',
+        fontFamily: 'Test',
+        fontWeight: 400,
+        fontSize: 16,
+        appearance: CanvasAppearance(stroke: stroke),
       ),
       Node.icon(
         id: 'icon',
-        data: CanvasIconData(
-          iconRef: 'test',
-          appearance: CanvasAppearance(stroke: stroke),
-        ),
+        iconRef: 'test',
+        appearance: CanvasAppearance(stroke: stroke),
       ),
       const Node.path(
         id: 'path',
-        data: PathData(
-          source: RectSource(x: -10, y: -5, width: 20, height: 10),
-          appearance: CanvasAppearance(underlays: [shadow]),
-        ),
+        geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+        appearance: CanvasAppearance(underlays: [shadow]),
       ),
     ];
     for (final node in nodes) {

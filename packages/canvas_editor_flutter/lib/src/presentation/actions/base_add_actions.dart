@@ -72,16 +72,14 @@ PolygonSource _polygonPreset(
 PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
   return PathNode(
     id: idOverride ?? _genBaseAddId('path'),
-    data: PathData(
-      source: src,
-      appearance: CanvasAppearance(
-        foreground: (src is LineSource || src is PolylineSource)
-            ? const CanvasFill.none()
-            : const CanvasFill.solid(_baseFill),
-        stroke: CanvasStroke(
-          color: _baseStroke,
-          width: src is LineSource ? 6 : _baseStrokeW,
-        ),
+    geometry: src,
+    appearance: CanvasAppearance(
+      foreground: (src is LineSource || src is PolylineSource)
+          ? const CanvasFill.none()
+          : const CanvasFill.solid(_baseFill),
+      stroke: CanvasStroke(
+        color: _baseStroke,
+        width: src is LineSource ? 6 : _baseStrokeW,
       ),
     ),
     xf: Affine2D.translation((_shapePos).x, (_shapePos).y),
@@ -124,15 +122,13 @@ void _addBaseText(EditorActionContext ctx) {
   ctx.addNodeAndSelect(
     TextNode(
       id: _genBaseAddId('text'),
-      data: TextData(
-        text: 'Your text',
-        fontFamily: fontFamily,
-        fontWeight: 700,
-        fontSize: 32,
-        letterSpacing: 0,
-        appearance: const CanvasAppearance(
-          foreground: CanvasFill.solid(_baseFill),
-        ),
+      text: 'Your text',
+      fontFamily: fontFamily,
+      fontWeight: 700,
+      fontSize: 32,
+      letterSpacing: 0,
+      appearance: const CanvasAppearance(
+        foreground: CanvasFill.solid(_baseFill),
       ),
       xf: Affine2D.translation((_textPos).x, (_textPos).y),
     ),

@@ -68,12 +68,10 @@ final document = CanvasSceneDocument(
     Node.text(
       id: 'headline',
       xf: Affine2D.translation(540, 540),
-      data: const TextData(
-        text: 'Hello canvas',
-        fontFamily: 'Inter',
-        fontWeight: 700,
-        fontSize: 72,
-      ),
+      text: 'Hello canvas',
+      fontFamily: 'Inter',
+      fontWeight: 700,
+      fontSize: 72,
     ),
   ],
 );
@@ -156,7 +154,25 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-Persistence uses scene format v5. For supported historical JSON, explicitly call
+Persistence uses scene format v6. Nodes use a `type` discriminator and carry
+authored fields directly. Paths carry `geometry`, `appearance`, and an optional
+`fillRule`. For example:
+
+```json
+{
+  "type": "path",
+  "id": "shape1",
+  "xf": [1, 0, 0, 1, 120, 70],
+  "geometry": {"kind": "circle", "r": 50},
+  "appearance": {"foreground": {"type": "none"}}
+}
+```
+
+Encoding omits optional null node fields, identity transforms, and defaults
+such as contain-fit alignment and empty appearance underlays. Explicit
+disabled effects and configured strokes are preserved.
+
+For supported historical JSON, explicitly call
 `upgradeCanvasScene()` from the optional
 [`canvas_scene_upgrade`](../canvas_scene_upgrade) package before decoding. Both
 persistence functions enforce scene integrity; `requireCanvasSceneIntegrity()` performs a standalone fail-fast
@@ -256,7 +272,7 @@ v3 input and the retained historical routes. Migration does not restore
 star-generation parameters or compensate for quadratic control-hull/pivot changes. Historical underline bars
 become rectangles; new Line actions create stroke-based geometry.
 
-## Affine transforms (scene v5)
+## Affine transforms
 
 A node owns a complete immutable local-to-parent `Affine2D`. JSON stores
 `xf: [a,b,c,d,e,f]`; omitted xf is identity. `A * B` applies B before A.

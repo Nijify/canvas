@@ -1,3 +1,7 @@
+## Unreleased
+
+- Read authored paint and image properties directly from v6 nodes.
+
 ## 0.17.0
 
 - **Breaking:** consume v5 affine scenes and derive framework matrix buffers only at paint boundaries.

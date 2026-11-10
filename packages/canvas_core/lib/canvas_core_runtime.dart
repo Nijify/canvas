@@ -59,11 +59,7 @@ export 'src/runtime/model/node_model.dart'
         PathNode,
         GroupNode,
         GroupBehaviorRef,
-        TextData,
-        CanvasIconData,
-        ImageData,
         ImageFit,
-        PathData,
         NodeFields;
 
 // ============================================================================
@@ -71,7 +67,7 @@ export 'src/runtime/model/node_model.dart'
 // ============================================================================
 export 'src/algorithms/layout/computed_scene.dart'
     show ComputedScene, DrawItem, computeScene;
-export 'src/algorithms/layout/image_fit.dart' show ImagePlacement;
+export 'src/algorithms/layout/image_fit.dart' show ImagePlacement, imageSrcDst;
 export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 
 // ============================================================================
@@ -82,7 +78,8 @@ export 'src/algorithms/layout/node_geometry.dart' show NodeGeometry;
 export 'src/foundation/style/style_types.dart'
     show FillRule, StrokeCap, StrokeJoin;
 
-// Path IR + declarative sources (runtime reads these; compilation is internal)
+// Path IR + declarative sources (runtime reads these; geometry can be compiled independently of nodes)
+export 'src/path/path_compile.dart' show compilePath;
 export 'src/path/path_ir.dart' show PathCmd, PathIR, PathVerb;
 export 'src/algorithms/layout/computed_icon.dart' show ComputedIcon;
 export 'src/path/path_source.dart'
@@ -118,7 +115,8 @@ export 'src/foundation/fields/canvas_field_key.dart'
     show CanvasFieldKey, CanvasFields, CanvasFieldKeyConverter;
 export 'src/foundation/geometry/geometry.dart' show Rect2D;
 export 'src/foundation/geometry/geometry_ext.dart';
-export 'src/runtime/geometry/scene_math.dart' show aabbOfTransformedRect, transformedRectCorners;
+export 'src/runtime/geometry/scene_math.dart'
+    show aabbOfTransformedRect, transformedRectCorners;
 export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 
 // ============================================================================

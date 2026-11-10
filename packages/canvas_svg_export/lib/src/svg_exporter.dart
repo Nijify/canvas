@@ -8,9 +8,7 @@ import 'svg_export_result.dart';
 /// This exporter does not consume paint operations or resolve host resources.
 /// The supported profile includes none, solid, and linear-gradient backgrounds,
 /// plus undashed path geometry with those same fill variants.
-SvgExportResult exportPreparedSvg({
-  required SceneEvaluation evaluation,
-}) {
+SvgExportResult exportPreparedSvg({required SceneEvaluation evaluation}) {
   final scene = evaluation.scene;
   final computed = evaluation.computed;
   try {
@@ -35,9 +33,9 @@ SvgExportResult exportPreparedSvg({
         for (final child in children) {
           visit(child);
         }
-      case PathNode(:final data):
+      case PathNode():
         paths.add(node);
-        final stroke = data.appearance.stroke;
+        final stroke = node.appearance.stroke;
         if (stroke != null &&
             stroke.dash.isNotEmpty &&
             strokeContributesToPaint(stroke)) {
@@ -101,7 +99,7 @@ SvgExportResult exportPreparedSvg({
   }
 
   for (final path in paths) {
-    final fill = path.data.appearance.foreground;
+    final fill = path.appearance.foreground;
     if (fill is CanvasFillGradient) {
       addGradient(fill.grad, (id) => pathGradientIds[path.id] = id);
     }
@@ -142,20 +140,19 @@ SvgExportResult exportPreparedSvg({
   for (final path in paths) {
     final ir = computed.pathIRById[path.id]!;
     final matrix = computed.worldById[path.id]!.toJson().map(_number).join(' ');
-    final data = path.data;
-    final authoredFill = data.appearance.foreground;
+    final authoredFill = path.appearance.foreground;
     final fill = switch (authoredFill) {
       CanvasFillNone() => 'none',
       CanvasFillSolid(:final color) => _rgb(color),
       CanvasFillGradient() => 'url(#${pathGradientIds[path.id]!})',
     };
-    final stroke = strokeContributesToPaint(data.appearance.stroke)
-        ? data.appearance.stroke
+    final stroke = strokeContributesToPaint(path.appearance.stroke)
+        ? path.appearance.stroke
         : null;
     out.write(
       '  <path d="${writeSvgPathData(ir)}" transform="matrix($matrix)" '
       'fill="$fill" '
-      'fill-rule="${data.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
+      'fill-rule="${path.fillRule == FillRule.evenOdd ? 'evenodd' : 'nonzero'}"',
     );
     if (authoredFill case CanvasFillSolid(:final color)) {
       out.write(' fill-opacity="${_opacity(color)}"');

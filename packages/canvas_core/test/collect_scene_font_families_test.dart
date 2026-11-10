@@ -12,12 +12,10 @@ void main() {
           children: <Node>[
             Node.text(
               id: 'root-text',
-              data: const TextData(
-                text: 'Root',
-                fontFamily: ' Inter ',
-                fontWeight: 400,
-                fontSize: 20,
-              ),
+              text: 'Root',
+              fontFamily: ' Inter ',
+              fontWeight: 400,
+              fontSize: 20,
             ),
             Node.group(
               id: 'hidden-group',
@@ -25,32 +23,26 @@ void main() {
               children: <Node>[
                 Node.text(
                   id: 'hidden-text',
-                  data: const TextData(
-                    text: 'Hidden',
-                    fontFamily: 'Noto Sans',
-                    fontWeight: 400,
-                    fontSize: 20,
-                  ),
+                  text: 'Hidden',
+                  fontFamily: 'Noto Sans',
+                  fontWeight: 400,
+                  fontSize: 20,
                 ),
               ],
             ),
             Node.text(
               id: 'duplicate-text',
-              data: const TextData(
-                text: 'Duplicate',
-                fontFamily: 'Inter',
-                fontWeight: 700,
-                fontSize: 20,
-              ),
+              text: 'Duplicate',
+              fontFamily: 'Inter',
+              fontWeight: 700,
+              fontSize: 20,
             ),
             Node.text(
               id: 'blank-font',
-              data: const TextData(
-                text: 'Blank',
-                fontFamily: '   ',
-                fontWeight: 400,
-                fontSize: 20,
-              ),
+              text: 'Blank',
+              fontFamily: '   ',
+              fontWeight: 400,
+              fontSize: 20,
             ),
           ],
         );
@@ -84,23 +76,12 @@ void main() {
           backgroundFill: const CanvasFill.none(),
           backgroundOpacity: 1,
           children: [
-            const Node.icon(
-              id: 'icon',
-              data: CanvasIconData(iconRef: 'vector'),
-            ),
-            const Node.icon(
-              id: 'missing',
-              data: CanvasIconData(iconRef: 'missing'),
-            ),
+            const Node.icon(id: 'icon', iconRef: 'vector'),
+            const Node.icon(id: 'missing', iconRef: 'missing'),
             const Node.group(
               id: 'hidden',
               hidden: true,
-              children: [
-                Node.icon(
-                  id: 'hidden-icon',
-                  data: CanvasIconData(iconRef: 'vector'),
-                ),
-              ],
+              children: [Node.icon(id: 'hidden-icon', iconRef: 'vector')],
             ),
           ],
         );

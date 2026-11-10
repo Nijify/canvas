@@ -64,14 +64,7 @@ void main() {
   test('JSON construction preserves defaults and authored dash values', () {
     final defaults = CanvasStroke.fromJson({'color': 0});
     expect(defaults, CanvasStroke(color: 0));
-    expect(defaults.toJson(), {
-      'color': 0,
-      'width': 4.0,
-      'cap': 'butt',
-      'join': 'miter',
-      'miterLimit': 4.0,
-      'dash': <double>[],
-    });
+    expect(defaults.toJson(), {'color': 0});
 
     final input = <double>[5, 0, 3];
     final stroke = CanvasStroke.fromJson({

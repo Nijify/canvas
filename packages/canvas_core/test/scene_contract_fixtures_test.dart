@@ -108,10 +108,10 @@ void main() {
 
         for (final node in nodes) {
           switch (node) {
-            case TextNode(:final data):
-              expect(data.appearance.foreground, isNot(isA<CanvasFillNone>()));
-            case IconNode(:final data):
-              expect(data.appearance.foreground, isNot(isA<CanvasFillNone>()));
+            case TextNode(:final appearance):
+              expect(appearance.foreground, isNot(isA<CanvasFillNone>()));
+            case IconNode(:final appearance):
+              expect(appearance.foreground, isNot(isA<CanvasFillNone>()));
             case PathNode():
             case ImageNode():
             case GroupNode():

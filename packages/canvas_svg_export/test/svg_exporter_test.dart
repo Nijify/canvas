@@ -48,12 +48,7 @@ CanvasSceneDocument _scene({
 void main() {
   test('resolved vector icons remain outside the strict SVG profile', () {
     final scene = _scene(
-      children: const [
-        Node.icon(
-          id: 'icon',
-          data: CanvasIconData(iconRef: 'vector'),
-        ),
-      ],
+      children: const [Node.icon(id: 'icon', iconRef: 'vector')],
     );
     final computed = evaluateScene(
       scene,
@@ -70,18 +65,16 @@ void main() {
       children: [
         Node.path(
           id: 'p',
-          data: PathData(
-            source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-            fillRule: FillRule.evenOdd,
-            appearance: CanvasAppearance(
-              foreground: const CanvasFill.solid(0x80445566),
-              stroke: CanvasStroke(
-                color: 0x80112233,
-                width: 4,
-                cap: StrokeCap.round,
-                join: StrokeJoin.bevel,
-                miterLimit: 7,
-              ),
+          geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+          fillRule: FillRule.evenOdd,
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.solid(0x80445566),
+            stroke: CanvasStroke(
+              color: 0x80112233,
+              width: 4,
+              cap: StrokeCap.round,
+              join: StrokeJoin.bevel,
+              miterLimit: 7,
             ),
           ),
         ),
@@ -117,17 +110,15 @@ void main() {
           id: 'p',
           name: 'unsafe<&',
           role: 'example:content',
-          data: PathData(
-            source: const RectSource(x: -10, y: -5, width: 20, height: 10),
-            fillRule: FillRule.evenOdd,
-            appearance: CanvasAppearance(
-              foreground: const CanvasFill.solid(0x80ff0000),
-              stroke: CanvasStroke(
-                color: 0xff00ff00,
-                width: 2,
-                cap: StrokeCap.round,
-                join: StrokeJoin.bevel,
-              ),
+          geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
+          fillRule: FillRule.evenOdd,
+          appearance: CanvasAppearance(
+            foreground: const CanvasFill.solid(0x80ff0000),
+            stroke: CanvasStroke(
+              color: 0xff00ff00,
+              width: 2,
+              cap: StrokeCap.round,
+              join: StrokeJoin.bevel,
             ),
           ),
         ),
@@ -159,10 +150,7 @@ void main() {
     expect(path.getAttribute('stroke-linejoin'), 'bevel');
     expect(result.svg, isNot(contains('unsafe')));
     expect(result.svg, isNot(contains('example:content')));
-    expect(
-      exportPreparedSvg(evaluation: _compute(scene)).svg,
-      result.svg,
-    );
+    expect(exportPreparedSvg(evaluation: _compute(scene)).svg, result.svg);
   });
 
   test('flattens nested groups in computed paint order', () {
@@ -170,26 +158,26 @@ void main() {
       children: [
         Node.group(
           id: 'group',
-          xf: (Affine2D.translation(40, 20) * Affine2D.translation(0, 0) * Affine2D.scale(2, 2) * Affine2D.translation(-0.0, -0.0)),
+          xf:
+              (Affine2D.translation(40, 20) *
+              Affine2D.translation(0, 0) *
+              Affine2D.scale(2, 2) *
+              Affine2D.translation(-0.0, -0.0)),
           children: [
             Node.path(
               id: 'first',
               xf: Affine2D.translation(10, 5),
-              data: PathData(
-                source: RectSource(x: -5, y: -5, width: 10, height: 10),
-                appearance: CanvasAppearance(
-                  foreground: CanvasFill.solid(0xffff0000),
-                ),
+              geometry: RectSource(x: -5, y: -5, width: 10, height: 10),
+              appearance: CanvasAppearance(
+                foreground: CanvasFill.solid(0xffff0000),
               ),
             ),
             Node.path(
               id: 'second',
               xf: Affine2D.translation(20, 5),
-              data: PathData(
-                source: RectSource(x: -10, y: -5, width: 20, height: 10),
-                appearance: CanvasAppearance(
-                  foreground: CanvasFill.solid(0xff0000ff),
-                ),
+              geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+              appearance: CanvasAppearance(
+                foreground: CanvasFill.solid(0xff0000ff),
               ),
             ),
           ],
@@ -198,9 +186,9 @@ void main() {
     );
 
     final result = exportPreparedSvg(evaluation: _compute(scene));
-    final paths = XmlDocument.parse(
-      result.svg!,
-    ).findAllElements('path').toList();
+    final paths = XmlDocument.parse(result.svg!)
+        .findAllElements('path')
+        .toList();
     expect(paths.map((p) => p.getAttribute('fill')), ['#ff0000', '#0000ff']);
     expect(paths[0].getAttribute('transform'), 'matrix(2.0 0 0 2.0 60.0 30.0)');
     expect(paths[1].getAttribute('transform'), 'matrix(2.0 0 0 2.0 80.0 30.0)');
@@ -211,28 +199,26 @@ void main() {
       children: [
         Node.path(
           id: 'curve',
-          data: PathData(
-            source: GeneralPathSource(
-              PathIR([
-                PathCmd.moveTo(const Vec2(0, 0)),
-                PathCmd.cubicTo(
-                  const Vec2(1, 2),
-                  const Vec2(3, 4),
-                  const Vec2(4, 5),
-                ),
-                PathCmd.cubicTo(
-                  const Vec2(6, 7),
-                  const Vec2(8, 9),
-                  const Vec2(10, 11),
-                ),
-                PathCmd.close(),
-                PathCmd.moveTo(const Vec2(20, 30)),
-                PathCmd.lineTo(const Vec2(40, 50)),
-              ]),
-            ),
-            appearance: const CanvasAppearance(
-              foreground: CanvasFill.solid(0xff123456),
-            ),
+          geometry: GeneralPathSource(
+            PathIR([
+              PathCmd.moveTo(const Vec2(0, 0)),
+              PathCmd.cubicTo(
+                const Vec2(1, 2),
+                const Vec2(3, 4),
+                const Vec2(4, 5),
+              ),
+              PathCmd.cubicTo(
+                const Vec2(6, 7),
+                const Vec2(8, 9),
+                const Vec2(10, 11),
+              ),
+              PathCmd.close(),
+              PathCmd.moveTo(const Vec2(20, 30)),
+              PathCmd.lineTo(const Vec2(40, 50)),
+            ]),
+          ),
+          appearance: const CanvasAppearance(
+            foreground: CanvasFill.solid(0xff123456),
           ),
         ),
       ],
@@ -273,11 +259,9 @@ void main() {
         Node.path(
           id: 'gradient',
           xf: (Affine2D.translation(20, 10) * Affine2D.rotation(0.5)),
-          data: PathData(
-            source: const RectSource(x: -5, y: -5, width: 10, height: 10),
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.gradient(pathGradient),
-            ),
+          geometry: const RectSource(x: -5, y: -5, width: 10, height: 10),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.gradient(pathGradient),
           ),
         ),
       ],
@@ -335,30 +319,26 @@ void main() {
       children: <Node>[
         Node.path(
           id: 'gradient',
-          data: PathData(
-            source: RectSource(x: -5, y: -5, width: 10, height: 10),
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.gradient(
-                LinearGradientSpec(
-                  start: Vec2(-5, 0),
-                  end: Vec2(5, 0),
-                  stops: <GradientStop>[
-                    GradientStop(offset: 0, color: 0xff000000),
-                    GradientStop(offset: 1, color: 0xffffffff),
-                  ],
-                ),
+          geometry: RectSource(x: -5, y: -5, width: 10, height: 10),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.gradient(
+              LinearGradientSpec(
+                start: Vec2(-5, 0),
+                end: Vec2(5, 0),
+                stops: <GradientStop>[
+                  GradientStop(offset: 0, color: 0xff000000),
+                  GradientStop(offset: 1, color: 0xffffffff),
+                ],
               ),
             ),
           ),
         ),
         Node.path(
           id: 'dashed',
-          data: PathData(
-            source: RectSource(x: -10, y: -5, width: 20, height: 10),
-            appearance: CanvasAppearance(
-              foreground: CanvasFill.none(),
-              stroke: CanvasStroke(color: 0xff000000, dash: [5, 3]),
-            ),
+          geometry: RectSource(x: -10, y: -5, width: 20, height: 10),
+          appearance: CanvasAppearance(
+            foreground: CanvasFill.none(),
+            stroke: CanvasStroke(color: 0xff000000, dash: [5, 3]),
           ),
         ),
       ],
@@ -377,12 +357,10 @@ void main() {
         Node.text(
           id: 'hidden-text',
           hidden: true,
-          data: TextData(
-            text: 'hidden',
-            fontFamily: 'sans',
-            fontWeight: 400,
-            fontSize: 12,
-          ),
+          text: 'hidden',
+          fontFamily: 'sans',
+          fontWeight: 400,
+          fontSize: 12,
         ),
       ],
     );
@@ -396,21 +374,13 @@ void main() {
       children: const [
         Node.text(
           id: 't',
-          data: TextData(
-            text: 'x',
-            fontFamily: 'sans',
-            fontWeight: 400,
-            fontSize: 12,
-          ),
+          text: 'x',
+          fontFamily: 'sans',
+          fontWeight: 400,
+          fontSize: 12,
         ),
-        Node.image(
-          id: 'i',
-          data: ImageData(size: Size2D(10, 10)),
-        ),
-        Node.icon(
-          id: 'c',
-          data: CanvasIconData(iconRef: 'missing'),
-        ),
+        Node.image(id: 'i', size: Size2D(10, 10)),
+        Node.icon(id: 'c', iconRef: 'missing'),
       ],
     );
     final result = exportPreparedSvg(evaluation: _compute(scene));
@@ -423,7 +393,9 @@ void main() {
   });
 
   test('evaluation rejects invalid scene before export', () {
-    expect(() => _compute(_scene().copyWith(artboardSize: const Size2D(0, 80))),
-      throwsArgumentError);
+    expect(
+      () => _compute(_scene().copyWith(artboardSize: const Size2D(0, 80))),
+      throwsArgumentError,
+    );
   });
 }

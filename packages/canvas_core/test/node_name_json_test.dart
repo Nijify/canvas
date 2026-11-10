@@ -3,7 +3,8 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
-const _textData = TextData(
+const _textNode = TextNode(
+  id: 'text-1',
   text: 'Hello',
   fontFamily: 'Inter',
   fontWeight: 700,
@@ -15,7 +16,7 @@ const _textData = TextData(
 void main() {
   group('Node name JSON', () {
     test('text node name round-trips through JSON', () {
-      const node = Node.text(id: 'text-1', name: 'Hero Title', data: _textData);
+      final node = _textNode.copyWith(id: 'text-1', name: 'Hero Title');
 
       final json = node.toJson();
       expect(json['name'], 'Hero Title');
@@ -26,11 +27,8 @@ void main() {
     });
 
     test('missing name decodes as null', () {
-      final json = <String, dynamic>{
-        'runtimeType': 'text',
-        'id': 'text-1',
-        'data': _textData.toJson(),
-      };
+      final json = _textNode.toJson();
+      expect(json, isNot(contains('name')));
 
       final decoded = Node.fromJson(json);
 
@@ -54,7 +52,7 @@ void main() {
     });
 
     test('withName normalizes empty names to null', () {
-      const node = Node.text(id: 'text-1', data: _textData);
+      const node = _textNode;
 
       final renamed = node.withName('   ');
 
@@ -62,7 +60,7 @@ void main() {
     });
 
     test('withName trims surrounding whitespace', () {
-      const node = Node.text(id: 'text-1', data: _textData);
+      const node = _textNode;
 
       final renamed = node.withName('  Layer Name  ');
 
@@ -70,7 +68,7 @@ void main() {
     });
 
     test('withName truncates names to 80 characters', () {
-      const node = Node.text(id: 'text-1', data: _textData);
+      const node = _textNode;
 
       final long = 'x' * 120;
       final renamed = node.withName(long);

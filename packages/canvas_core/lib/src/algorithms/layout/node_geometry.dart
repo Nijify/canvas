@@ -1,4 +1,4 @@
-import 'package:canvas_core/src/adapters/path_compile_scene.dart';
+import 'package:canvas_core/src/path/path_compile.dart';
 import 'package:canvas_core/src/algorithms/layout/image_fit.dart'
     show ImagePlacement, imageSrcDst;
 import 'package:canvas_core/src/algorithms/layout/computed_icon.dart'
@@ -18,7 +18,7 @@ final class NodeGeometry {
   final CoreServices services;
 
   /// Layout describes intrinsic geometry independently of appearance.
-  /// Paint is an estimate; null means no visible paint is expected.
+  /// Paint is an estimate; null means no visible paint is expecten.
   /// Text estimates use layout metrics, not guaranteed glyph-pixel bounds.
   ({Rect2D layout, Rect2D? paint})? leafBounds(
     Node n, {
@@ -29,18 +29,18 @@ final class NodeGeometry {
     final s = services;
 
     switch (n) {
-      case TextNode(:final data):
+      case TextNode():
         final m = s.textMeasurer.measure(
-          text: data.text,
-          fontFamily: data.fontFamily,
-          fontWeight: data.fontWeight,
-          fontSize: data.fontSize,
-          letterSpacing: data.letterSpacing,
+          text: n.text,
+          fontFamily: n.fontFamily,
+          fontWeight: n.fontWeight,
+          fontSize: n.fontSize,
+          letterSpacing: n.letterSpacing,
         );
 
         final layout = Rect2D.fromLTWH(-m.w / 2, -m.h / 2, m.w, m.h);
-        final sourceBounds = data.text.isEmpty ? null : layout;
-        final appearance = data.appearance;
+        final sourceBounds = n.text.isEmpty ? null : layout;
+        final appearance = n.appearance;
 
         return (
           layout: layout,
@@ -51,8 +51,8 @@ final class NodeGeometry {
           ),
         );
 
-      case IconNode(id: final id, data: final d):
-        final size = d.sizePx;
+      case IconNode(:final id):
+        final size = n.sizePx;
         if (!size.isFinite || size <= 0) {
           throw ArgumentError.value(
             size,
@@ -61,7 +61,7 @@ final class NodeGeometry {
           );
         }
         final layout = Rect2D.fromLTWH(-size / 2, -size / 2, size, size);
-        final resolved = s.icons?.resolve(d.iconRef);
+        final resolved = s.icons?.resolve(n.iconRef);
 
         if (resolved == null) return (layout: layout, paint: null);
         final icon = ComputedIcon.fit(resolved, size);
@@ -72,7 +72,7 @@ final class NodeGeometry {
                 icon.pathIR.localBounds(),
                 icon.sourceToLocal,
               );
-        final appearance = d.appearance;
+        final appearance = n.appearance;
         return (
           layout: layout,
           paint: estimateAppearancePaintBounds(
@@ -82,30 +82,30 @@ final class NodeGeometry {
           ),
         );
 
-      case ImageNode(id: final id, data: final d):
+      case ImageNode(:final id):
         final intrinsic = s.images?.intrinsicSize(id);
-        final size = d.size;
+        final size = n.size;
         if (size.w <= 0 || size.h <= 0) return null;
 
         final placement = imageSrcDst(
           intrinsic: intrinsic ?? size,
           layout: size,
-          fit: d.fit,
-          align: d.align,
+          fit: n.fit,
+          align: n.align,
         );
         imagePlacementById?[id] = placement;
         // Preserve contain-fit destination geometry, including its offset.
         return (layout: placement.dst, paint: placement.dst);
 
-      case PathNode(id: final id, data: final d):
-        final ir = compilePath(d);
+      case PathNode(:final id):
+        final ir = compilePath(n.geometry);
         pathIRById?[id] = ir;
         final geometryBounds = ir.localBounds();
         return (
           layout: geometryBounds,
           paint: estimatePathPaintBounds(
             sourceBounds: ir.hasSegments ? geometryBounds : null,
-            appearance: d.appearance,
+            appearance: n.appearance,
           ),
         );
 

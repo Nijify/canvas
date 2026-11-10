@@ -287,7 +287,7 @@ as Color32,
 mixin _$CanvasAppearance {
 
 @CanvasFillConverter() CanvasFill get foreground;/// Null means no configured stroke; invisible configurations are retained.
- CanvasStroke? get stroke;@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays;
+@JsonKey(includeIfNull: false) CanvasStroke? get stroke;@JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays;
 /// Create a copy of CanvasAppearance
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -325,7 +325,7 @@ abstract mixin class $CanvasAppearanceCopyWith<$Res>  {
   factory $CanvasAppearanceCopyWith(CanvasAppearance value, $Res Function(CanvasAppearance) _then) = _$CanvasAppearanceCopyWithImpl;
 @useResult
 $Res call({
-@CanvasFillConverter() CanvasFill foreground, CanvasStroke? stroke,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
+@CanvasFillConverter() CanvasFill foreground,@JsonKey(includeIfNull: false) CanvasStroke? stroke,@JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
 });
 
 
@@ -444,7 +444,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground,  CanvasStroke? stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground, @JsonKey(includeIfNull: false)  CanvasStroke? stroke, @JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CanvasAppearance() when $default != null:
 return $default(_that.foreground,_that.stroke,_that.underlays);case _:
@@ -465,7 +465,7 @@ return $default(_that.foreground,_that.stroke,_that.underlays);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground,  CanvasStroke? stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@CanvasFillConverter()  CanvasFill foreground, @JsonKey(includeIfNull: false)  CanvasStroke? stroke, @JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)  $default,) {final _that = this;
 switch (_that) {
 case _CanvasAppearance():
 return $default(_that.foreground,_that.stroke,_that.underlays);case _:
@@ -485,7 +485,7 @@ return $default(_that.foreground,_that.stroke,_that.underlays);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@CanvasFillConverter()  CanvasFill foreground,  CanvasStroke? stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@CanvasFillConverter()  CanvasFill foreground, @JsonKey(includeIfNull: false)  CanvasStroke? stroke, @JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays)?  $default,) {final _that = this;
 switch (_that) {
 case _CanvasAppearance() when $default != null:
 return $default(_that.foreground,_that.stroke,_that.underlays);case _:
@@ -500,14 +500,14 @@ return $default(_that.foreground,_that.stroke,_that.underlays);case _:
 @JsonSerializable()
 
 class _CanvasAppearance implements CanvasAppearance {
-  const _CanvasAppearance({@CanvasFillConverter() this.foreground = const CanvasFill.solid(0xFF111111), this.stroke, @_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[]}): _underlays = underlays;
+  const _CanvasAppearance({@CanvasFillConverter() this.foreground = const CanvasFill.solid(0xFF111111), @JsonKey(includeIfNull: false) this.stroke, @JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter()  List<CanvasSourceUnderlay> underlays = const <CanvasSourceUnderlay>[]}): _underlays = underlays;
   factory _CanvasAppearance.fromJson(Map<String, dynamic> json) => _$CanvasAppearanceFromJson(json);
 
 @override@JsonKey()@CanvasFillConverter() final  CanvasFill foreground;
 /// Null means no configured stroke; invisible configurations are retained.
-@override final  CanvasStroke? stroke;
+@override@JsonKey(includeIfNull: false) final  CanvasStroke? stroke;
  final  List<CanvasSourceUnderlay> _underlays;
-@override@JsonKey()@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays {
+@override@JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> get underlays {
   if (_underlays is EqualUnmodifiableListView) return _underlays;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_underlays);
@@ -549,7 +549,7 @@ abstract mixin class _$CanvasAppearanceCopyWith<$Res> implements $CanvasAppearan
   factory _$CanvasAppearanceCopyWith(_CanvasAppearance value, $Res Function(_CanvasAppearance) _then) = __$CanvasAppearanceCopyWithImpl;
 @override @useResult
 $Res call({
-@CanvasFillConverter() CanvasFill foreground, CanvasStroke? stroke,@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
+@CanvasFillConverter() CanvasFill foreground,@JsonKey(includeIfNull: false) CanvasStroke? stroke,@JsonKey(toJson: _underlaysToJson, includeIfNull: false)@_CanvasSourceUnderlayJsonConverter() List<CanvasSourceUnderlay> underlays
 });
 
 

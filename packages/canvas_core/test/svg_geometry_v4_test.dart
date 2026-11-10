@@ -1,8 +1,7 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
-import 'package:canvas_core/src/adapters/path_compile_scene.dart';
 import 'package:test/test.dart';
 
-PathIR _compile(PathSource source) => compilePath(PathData(source: source));
+PathIR _compile(PathSource source) => compilePath(source);
 
 void main() {
   test(
@@ -38,27 +37,23 @@ void main() {
     },
   );
 
-  test(
-    'rectangle radii preserve omission, fallback before clamping, and zero',
-    () {
-      const source = RectSource(width: 20, height: 100, rx: 30);
-      expect(source.toJson().containsKey('ry'), isFalse);
-      final rounded = _compile(source);
-      expect(rounded.cmds.first.p, const Vec2(10, 0));
-      // ry falls back to authored rx=30, independently of rx's width clamp to 10.
-      expect(rounded.cmds[2].p, const Vec2(20, 30));
-      expect(
-        _compile(
-          const RectSource(width: 20, height: 100, rx: 0, ry: 30),
-        ).cmds.where((command) => command.verb == PathVerb.cubicTo),
-        isEmpty,
-      );
-      expect(
-        _compile(const RectSource(width: 20, height: 100, ry: 30)).cmds[2].p,
-        const Vec2(20, 30),
-      );
-    },
-  );
+  test('rectangle radii preserve omission, fallback before clamping, and zero', () {
+    const source = RectSource(width: 20, height: 100, rx: 30);
+    expect(source.toJson().containsKey('ry'), isFalse);
+    final rounded = _compile(source);
+    expect(rounded.cmds.first.p, const Vec2(10, 0));
+    // ry falls back to authored rx=30, independently of rx's width clamp to 10.
+    expect(rounded.cmds[2].p, const Vec2(20, 30));
+    expect(
+      _compile(const RectSource(width: 20, height: 100, rx: 0, ry: 30)).cmds
+          .where((command) => command.verb == PathVerb.cubicTo),
+      isEmpty,
+    );
+    expect(
+      _compile(const RectSource(width: 20, height: 100, ry: 30)).cmds[2].p,
+      const Vec2(20, 30),
+    );
+  });
 
   test('zero dimensions and radii disable basic-shape geometry', () {
     for (final source in <PathSource>[

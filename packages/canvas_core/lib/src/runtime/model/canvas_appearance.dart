@@ -114,9 +114,9 @@ final class _CanvasSourceUnderlayJsonConverter
         <String, dynamic>{
           'type': 'shadow',
           'id': id,
-          'enabled': enabled,
+          if (!enabled) 'enabled': false,
           'offset': const Vec2Converter().toJson(offset),
-          'blurSigma': blurSigma,
+          if (blurSigma != 0) 'blurSigma': blurSigma,
           'color': color,
         },
     };
@@ -142,8 +142,9 @@ abstract class CanvasAppearance with _$CanvasAppearance {
     CanvasFill foreground,
 
     /// Null means no configured stroke; invisible configurations are retained.
-    CanvasStroke? stroke,
+    @JsonKey(includeIfNull: false) CanvasStroke? stroke,
 
+    @JsonKey(toJson: _underlaysToJson, includeIfNull: false)
     @_CanvasSourceUnderlayJsonConverter()
     @Default(<CanvasSourceUnderlay>[])
     List<CanvasSourceUnderlay> underlays,
@@ -152,3 +153,9 @@ abstract class CanvasAppearance with _$CanvasAppearance {
   factory CanvasAppearance.fromJson(Map<String, dynamic> json) =>
       _$CanvasAppearanceFromJson(json);
 }
+
+List<Map<String, dynamic>>? _underlaysToJson(
+  List<CanvasSourceUnderlay> underlays,
+) => underlays.isEmpty
+    ? null
+    : underlays.map(const _CanvasSourceUnderlayJsonConverter().toJson).toList();

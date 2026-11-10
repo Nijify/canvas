@@ -51,20 +51,16 @@ void main() {
             children: [
               Node.path(
                 id: 'red',
-                data: PathData(
-                  source: RectSource(x: -16, y: -16, width: 32, height: 32),
-                  appearance: CanvasAppearance(
-                    foreground: CanvasFill.solid(0xFFFF0000),
-                  ),
+                geometry: RectSource(x: -16, y: -16, width: 32, height: 32),
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.solid(0xFFFF0000),
                 ),
               ),
               Node.path(
                 id: 'blue',
-                data: PathData(
-                  source: RectSource(x: -6, y: -6, width: 12, height: 12),
-                  appearance: CanvasAppearance(
-                    foreground: CanvasFill.solid(0xFF0000FF),
-                  ),
+                geometry: RectSource(x: -6, y: -6, width: 12, height: 12),
+                appearance: CanvasAppearance(
+                  foreground: CanvasFill.solid(0xFF0000FF),
                 ),
               ),
             ],
@@ -87,7 +83,7 @@ void main() {
         Node.image(
           id: 'empty',
           xf: Affine2D.translation(32, 32),
-          data: ImageData(size: Size2D(24, 24)),
+          size: Size2D(24, 24),
         ),
       ],
     );

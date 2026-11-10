@@ -212,7 +212,8 @@ class _ImageImportExtension<TSourceDocument>
 
     return ImageNode(
       id: nodeId,
-      data: ImageData(assetId: assetId, size: size),
+      assetId: assetId,
+      size: size,
       xf: Affine2D.translation((position).x, (position).y),
     );
   }
@@ -298,7 +299,7 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
       return;
     }
 
-    final originalAssetId = originalImage.data.assetId;
+    final originalAssetId = originalImage.assetId;
     final originalSourceRef = originalAssetId == null
         ? null
         : originalScene.assets[originalAssetId]?.sourceRef;
@@ -332,7 +333,7 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         return;
       }
 
-      final latestAssetId = latestImage.data.assetId;
+      final latestAssetId = latestImage.assetId;
       final latestSourceRef = latestAssetId == null
           ? null
           : latestScene.assets[latestAssetId]?.sourceRef;
