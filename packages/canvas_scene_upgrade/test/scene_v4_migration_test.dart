@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_scene_upgrade/canvas_scene_upgrade.dart';
 import 'package:test/test.dart';
@@ -38,8 +39,7 @@ Map<String, Object?> _scene(Map<String, Object?> source) => {
 PathSource _convert(Map<String, Object?> source) =>
     (decodeCanvasScene(upgradeCanvasScene(_scene(source))).children.single
             as PathNode)
-        .data
-        .source;
+        .geometry;
 
 void main() {
   test('centered basic shapes become explicit source coordinates', () {
@@ -60,9 +60,13 @@ void main() {
       _convert({'kind': 'ellipse', 'rx': 10, 'ry': 5}),
       isA<EllipseSource>(),
     );
-    final rounded =
-        _convert({'kind': 'roundRect', 'w': 20, 'h': 10, 'rx': 3, 'ry': 4})
-            as RectSource;
+    final rounded = _convert({
+      'kind': 'roundRect',
+      'w': 20,
+      'h': 10,
+      'rx': 3,
+      'ry': 4,
+    }) as RectSource;
     expect(rounded.rx, 3);
     expect(rounded.ry, 4);
   });
@@ -70,14 +74,19 @@ void main() {
   test(
     'polygons and stars retain explicit vertices without generator parameters',
     () {
-      final polygon =
-          _convert({'kind': 'regularPolygon', 'sides': 4, 'r': 10})
-              as PolygonSource;
+      final polygon = _convert({
+        'kind': 'regularPolygon',
+        'sides': 4,
+        'r': 10,
+      }) as PolygonSource;
       expect(polygon.points, hasLength(4));
       expect(polygon.points.first, const Vec2(10, 0));
-      final star =
-          _convert({'kind': 'star', 'points': 5, 'rOuter': 10, 'rInner': 5})
-              as PolygonSource;
+      final star = _convert({
+        'kind': 'star',
+        'points': 5,
+        'rOuter': 10,
+        'rInner': 5,
+      }) as PolygonSource;
       expect(star.points, hasLength(10));
       expect(star.points[1].length, closeTo(5, 1e-9));
       expect(star.toJson().keys, unorderedEquals(['kind', 'points']));
@@ -104,12 +113,10 @@ void main() {
         }),
         isA<PolylineSource>(),
       );
-      final path =
-          _convert({
-                'kind': 'polyline',
-                'points': [a, b, null, c],
-              })
-              as GeneralPathSource;
+      final path = _convert({
+        'kind': 'polyline',
+        'points': [a, b, null, c],
+      }) as GeneralPathSource;
       expect(path.geometry.cmds.map((command) => command.verb), [
         PathVerb.moveTo,
         PathVerb.lineTo,
@@ -119,22 +126,20 @@ void main() {
   );
 
   test('historical quadratic commands become cubic path data', () {
-    final path =
-        _convert({
-              'kind': 'commands',
-              'commands': [
-                {
-                  'verb': 'moveTo',
-                  'p': {'x': 0, 'y': 0},
-                },
-                {
-                  'verb': 'quadTo',
-                  'c1': {'x': 30, 'y': 60},
-                  'p': {'x': 60, 'y': 0},
-                },
-              ],
-            })
-            as GeneralPathSource;
+    final path = _convert({
+      'kind': 'commands',
+      'commands': [
+        {
+          'verb': 'moveTo',
+          'p': {'x': 0, 'y': 0},
+        },
+        {
+          'verb': 'quadTo',
+          'c1': {'x': 30, 'y': 60},
+          'p': {'x': 60, 'y': 0},
+        },
+      ],
+    }) as GeneralPathSource;
     expect(path.geometry.cmds[1].c1, const Vec2(20, 40));
     expect(path.geometry.cmds[1].c2, const Vec2(40, 40));
     expect(path.toJson().containsKey('commands'), isFalse);
@@ -144,15 +149,19 @@ void main() {
     final old = _scene({'kind': 'rect', 'w': 20, 'h': 10});
     final before = jsonEncode(old);
     final result = upgradeCanvasScene(old);
-    expect(result['sceneFormatVersion'], 5);
+    expect(result['sceneFormatVersion'], 6);
     final oldNode = (old['children'] as List).single as Map;
     final newNode = (result['children'] as List).single as Map;
     for (final key in ['id', 'name', 'role'])
       expect(newNode[key], oldNode[key]);
-    expect(
-      (newNode['data'] as Map)['appearance'],
-      (oldNode['data'] as Map)['appearance'],
-    );
+    expect(newNode['appearance'], {
+      'foreground': {'type': 'solid', 'color': 0xff112233},
+      'stroke': {
+        'color': 0xff445566,
+        'width': 3,
+        'dash': [2, 1],
+      },
+    });
     (newNode['xf'] as List)[0] = 9.0;
     expect(jsonEncode(old), before);
     expect(() => decodeCanvasScene(old), throwsFormatException);

@@ -1,9 +1,10 @@
-/// Frozen TRS scene wire checks used only during explicit historical upgrades.
+/// Frozen scene wire checks used only during explicit historical upgrades.
 /// Keep these independent of the current canvas_core scene format.
 void validateLegacySceneWire(
   Map<String, Object?> json, {
   required int version,
   required void Function(Object? raw, String path) validateSource,
+  void Function(Object? raw, String path)? validateAffine,
 }) {
   if (json['sceneFormatVersion'] is! int ||
       json['sceneFormatVersion'] != version) {
@@ -48,7 +49,7 @@ void validateLegacySceneWire(
   }
   final children = _list(json['children'], '/children');
   for (var index = 0; index < children.length; index++) {
-    _node(children[index], '/children/$index', validateSource);
+    _node(children[index], '/children/$index', validateSource, validateAffine);
   }
 }
 
@@ -56,6 +57,7 @@ void _node(
   Object? raw,
   String path,
   void Function(Object?, String) validateSource,
+  void Function(Object?, String)? validateAffine,
 ) {
   final node = _object(raw, path);
   _keys(
@@ -88,12 +90,21 @@ void _node(
   if (node['name'] != null) _string(node['name'], '$path/name');
   if (node['hidden'] != null) _bool(node['hidden'], '$path/hidden');
   if (node['role'] != null) _string(node['role'], '$path/role');
-  if (node['xf'] != null) _transform(node['xf'], '$path/xf');
+  if (validateAffine != null && node.containsKey('xf')) {
+    validateAffine(node['xf'], '$path/xf');
+  } else if (node['xf'] != null) {
+    _transform(node['xf'], '$path/xf');
+  }
   if (node['runtimeType'] == 'group') {
     _required(node, 'children', path);
     final children = _list(node['children'], '$path/children');
     for (var index = 0; index < children.length; index++) {
-      _node(children[index], '$path/children/$index', validateSource);
+      _node(
+        children[index],
+        '$path/children/$index',
+        validateSource,
+        validateAffine,
+      );
     }
     if (node['behavior'] != null) {
       final behavior = _object(node['behavior'], '$path/behavior');

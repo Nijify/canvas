@@ -13,11 +13,14 @@ final upgradedJson = upgradeCanvasScene(historicalJson);
 final scene = decodeCanvasScene(upgradedJson);
 ```
 
-The current target is scene v5. Supported versioned inputs are v1, v2, v3, v4,
-and already-current v5. Earlier versions follow v1 -> v2 -> v3 -> v4 -> v5.
-The input is never mutated. Already-current input is validated and returned in
-a new top-level map; encoding defaults or normalizing the document is left to
-`encodeCanvasScene`.
+The current target is scene v6. Versioned inputs v1 through v5 are eligible
+for explicit upgrade. The package also accepts current v6 input. It validates
+the final document with core and returns canonical v6 JSON in independent
+containers.
+
+During 0.x the supported cases are limited to the documented conversions.
+Unsupported inputs fail with a diagnostic rather than silently losing authored
+content or receiving guessed layout measurements.
 
 ### Identified unversioned input
 
@@ -68,7 +71,9 @@ import `package:canvas_scene_upgrade/canvas_scene_upgrade.dart`.
 Replace direct `convertCanvasSceneV3ToV4(json)` calls with
 `upgradeCanvasScene(json)`.
 
-The v4 -> v5 step bakes historical TRS and pivots into complete affine matrices.
+The v5 -> v6 step flattens node fields and preserves affine coefficients and
+opaque group behavior payloads. The v4 -> v5 step bakes historical TRS and
+pivots into complete affine matrices.
 Geometry remains in its existing local coordinates. Translation-only transforms
 need no measurements. Rotated/scaled group center pivots may need text metrics
 and contain-fit image intrinsics: pass the original resource bundle as
