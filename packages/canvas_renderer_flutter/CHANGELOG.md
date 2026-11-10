@@ -1,4 +1,4 @@
-## Unreleased
+## 0.18.0
 
 - Read authored paint and image properties directly from v6 nodes.
 

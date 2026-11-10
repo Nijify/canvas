@@ -1,4 +1,4 @@
-## Unreleased
+## 0.3.0
 
 - Upgrade v5 and supported earlier documents to canonical v6 JSON.
 - Reconstruct historical pivots from v4 wire fields using shared geometry

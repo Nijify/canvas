@@ -1,4 +1,4 @@
-## Unreleased
+## 0.22.0
 
 - Use flat v6 node fields for creation and edits. Existing editor field keys
   retain their names and meanings.

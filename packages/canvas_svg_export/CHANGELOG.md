@@ -1,4 +1,4 @@
-## Unreleased
+## 0.6.0
 
 - Read fill, stroke, and fill rule directly from v6 path nodes.
 

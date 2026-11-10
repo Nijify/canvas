@@ -1,4 +1,4 @@
-## Unreleased
+## 0.19.0
 
 - **Breaking:** scene v6 stores authored fields directly on nodes and uses
   `type` as the discriminator. Path geometry is now `PathNode.geometry`.
