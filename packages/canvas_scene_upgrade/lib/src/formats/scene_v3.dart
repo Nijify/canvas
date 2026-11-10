@@ -1,4 +1,4 @@
-import 'scene_trs_wire.dart';
+import 'legacy_scene_wire.dart';
 
 /// Historical v3 wire format, independent of current runtime geometry.
 const int canvasSceneFormatV3 = 3;

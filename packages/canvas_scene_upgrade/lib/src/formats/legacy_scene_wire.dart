@@ -1,9 +1,9 @@
-/// Frozen scene wire checks used only during explicit historical upgrades.
+/// Shared wire checks for explicit upgrades of v3 through v5 scenes.
 /// Keep these independent of the current canvas_core scene format.
 void validateLegacySceneWire(
   Map<String, Object?> json, {
   required int version,
-  required void Function(Object? raw, String path) validateSource,
+  void Function(Object? raw, String path) validateSource = _requireGeometryObject,
   void Function(Object? raw, String path)? validateAffine,
 }) {
   if (json['sceneFormatVersion'] is! int ||
@@ -93,7 +93,7 @@ void _node(
   if (validateAffine != null && node.containsKey('xf')) {
     validateAffine(node['xf'], '$path/xf');
   } else if (node['xf'] != null) {
-    _transform(node['xf'], '$path/xf');
+    _validateTrsTransform(node['xf'], '$path/xf');
   }
   if (node['runtimeType'] == 'group') {
     _required(node, 'children', path);
@@ -192,7 +192,7 @@ void _node(
   }
 }
 
-void _transform(Object? raw, String path) {
+void _validateTrsTransform(Object? raw, String path) {
   final value = _object(raw, path);
   _keys(value, {
     'position',
@@ -352,3 +352,9 @@ void _enum(Object? raw, Set<String> values, String path) {
 
 Never _fail(String path, String message) =>
     throw FormatException('$path: $message');
+
+void _requireGeometryObject(Object? raw, String path) {
+  if (raw is! Map || raw.keys.any((key) => key is! String)) {
+    throw FormatException('$path must be a geometry object.');
+  }
+}

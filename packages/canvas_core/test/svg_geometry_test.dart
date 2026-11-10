@@ -92,7 +92,7 @@ void main() {
     },
   );
 
-  test('v4 rejects obsolete, mixed, nonfinite, and malformed source data', () {
+  test('geometry rejects obsolete and malformed source data', () {
     for (final json in <Map<String, Object?>>[
       {'kind': 'rect', 'w': 20, 'h': 10},
       {'kind': 'rect', 'width': 20, 'height': 10, 'rx': null},

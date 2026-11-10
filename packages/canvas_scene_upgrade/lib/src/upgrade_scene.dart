@@ -10,7 +10,7 @@ import 'package:canvas_core/canvas_core_runtime.dart'
 import 'formats/scene_v1.dart';
 import 'formats/scene_v2.dart';
 import 'formats/scene_v3.dart';
-import 'formats/scene_v4.dart';
+import 'formats/scene_v5.dart';
 import 'migrations/legacy_unversioned_to_v1.dart';
 import 'migrations/v1_to_v2.dart';
 import 'migrations/v2_to_v3.dart';

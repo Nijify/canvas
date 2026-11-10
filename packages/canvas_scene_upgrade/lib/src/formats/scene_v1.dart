@@ -1,5 +1,3 @@
-// Path: packages/canvas_scene_upgrade/lib/src/serialization/formats/scene_v1.dart
-
 /// First explicitly versioned persisted Canvas scene format.
 ///
 /// The earlier scene format has no embedded version.
