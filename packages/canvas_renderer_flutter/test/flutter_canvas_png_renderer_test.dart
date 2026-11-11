@@ -50,14 +50,12 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
     this.intrinsics = const <String, Size2D>{},
     this.sourceError,
     this.intrinsicError,
-    this.errorStack,
   });
 
   final Map<String, String> sources;
   final Map<String, Size2D> intrinsics;
   final Object? sourceError;
   final Object? intrinsicError;
-  final StackTrace? errorStack;
 
   final List<List<String>> sourceRequests = <List<String>>[];
 
@@ -68,7 +66,7 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
     sourceRequests.add(List<String>.unmodifiable(sourceRefs));
     final error = sourceError;
     if (error != null) {
-      Error.throwWithStackTrace(error, errorStack ?? StackTrace.current);
+      throw error;
     }
 
     return <String, String>{
@@ -84,7 +82,7 @@ final class _RecordingImageResolver implements CanvasImageAssetResolver {
     intrinsicRequests.add(List<String>.unmodifiable(sourceRefs));
     final error = intrinsicError;
     if (error != null) {
-      Error.throwWithStackTrace(error, errorStack ?? StackTrace.current);
+      throw error;
     }
 
     return <String, Size2D>{
