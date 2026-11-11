@@ -16,7 +16,9 @@ part 'scene_document.g.dart';
 abstract class CanvasImageAsset with _$CanvasImageAsset {
   const factory CanvasImageAsset({
     required String sourceRef,
-    @NullableSize2DConverter() Size2D? intrinsicSize,
+    @JsonKey(includeIfNull: false)
+    @NullableSize2DConverter()
+    Size2D? intrinsicSize,
   }) = _CanvasImageAsset;
 
   factory CanvasImageAsset.fromJson(Map<String, dynamic> json) =>
@@ -37,6 +39,7 @@ abstract class CanvasSceneDocument with _$CanvasSceneDocument {
     @JsonKey(required: true, disallowNullValue: true)
     required double backgroundOpacity,
 
+    @JsonKey(toJson: _assetsToJson, includeIfNull: false)
     @Default(<CanvasAssetId, CanvasImageAsset>{})
     Map<CanvasAssetId, CanvasImageAsset> assets,
 
@@ -46,3 +49,9 @@ abstract class CanvasSceneDocument with _$CanvasSceneDocument {
   factory CanvasSceneDocument.fromJson(Map<String, dynamic> json) =>
       _$CanvasSceneDocumentFromJson(json);
 }
+
+Map<String, dynamic>? _assetsToJson(
+  Map<CanvasAssetId, CanvasImageAsset> assets,
+) => assets.isEmpty
+    ? null
+    : assets.map((id, asset) => MapEntry(id, asset.toJson()));

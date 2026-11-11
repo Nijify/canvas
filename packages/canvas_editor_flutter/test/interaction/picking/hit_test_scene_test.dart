@@ -20,9 +20,9 @@ class _TextMeasurer implements TextMeasurer {
 
 CoreServices _services() => CoreServices(textMeasurer: _TextMeasurer());
 
-Node _text(String id, {bool hidden = false}) => Node.text(
+Node _text(String id) => Node.text(
   id: id,
-  hidden: hidden,
+
   text: 'X',
   fontFamily: 'Test',
   fontWeight: 400,
@@ -253,8 +253,8 @@ void main() {
     expect(hit, isNull);
   });
 
-  test('hidden leaves do not participate in picking', () {
-    final scene = _scene([_text('visible'), _text('hidden', hidden: true)]);
+  test('every overlapping leaf participates in picking', () {
+    final scene = _scene([_text('back'), _text('front')]);
 
     final computed = computeScene(scene, _services());
     final geometry = EditorGeometryIndex.fromComputed(computed);
@@ -267,6 +267,6 @@ void main() {
       selectLeaf: true,
     );
 
-    expect(hit?.id, 'visible');
+    expect(hit?.id, 'front');
   });
 }

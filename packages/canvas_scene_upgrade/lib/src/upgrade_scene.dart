@@ -11,12 +11,14 @@ import 'formats/scene_v1.dart';
 import 'formats/scene_v2.dart';
 import 'formats/scene_v3.dart';
 import 'formats/scene_v5.dart';
+import 'formats/scene_v6.dart';
 import 'migrations/legacy_unversioned_to_v1.dart';
 import 'migrations/v1_to_v2.dart';
 import 'migrations/v2_to_v3.dart';
 import 'migrations/v3_to_v4.dart';
 import 'migrations/v4_to_v5.dart';
 import 'migrations/v5_to_v6.dart';
+import 'migrations/v6_to_v7.dart';
 
 /// Upgrades supported historical JSON to the current Canvas scene format.
 ///
@@ -36,11 +38,16 @@ import 'migrations/v5_to_v6.dart';
 /// [resolveLegacyIconWasGlyph] is needed for a supported unversioned icon with
 /// a nonzero shadowOffset: true means a historical font glyph, false means a
 /// path, and null means unknown. Ambiguous rendering is rejected.
+///
+/// [prepareV6Scene] resolves host behavior into ordinary layers in a v6 JSON
+/// snapshot. It is called after historical upgrades and before projection to
+/// v7. Retain the original document to recover layers omitted by preparation.
 Map<String, Object?> upgradeCanvasScene(
   Map<String, Object?> json, {
   bool legacyUnversioned = false,
   CoreServices? services,
   bool? Function(String iconRef)? resolveLegacyIconWasGlyph,
+  Map<String, Object?> Function(Map<String, Object?> scene)? prepareV6Scene,
 }) {
   var source = json;
   if (!source.containsKey('sceneFormatVersion')) {
@@ -70,15 +77,28 @@ Map<String, Object?> upgradeCanvasScene(
   if (version == currentCanvasSceneFormatVersion) {
     result = source;
   } else {
-    final v5 = switch (version) {
-      5 => source,
-      _ => convertCanvasSceneV4ToV5(_toV4(source, version), services: services),
-    };
-    if (version == 5) validateSceneV5Json(v5);
-    result = convertCanvasSceneV5ToV6(v5);
+    Map<String, Object?> v6;
+    if (version == 6) {
+      v6 = source;
+    } else {
+      final v5 = switch (version) {
+        5 => source,
+        _ => convertCanvasSceneV4ToV5(
+          _toV4(source, version),
+          services: services,
+        ),
+      };
+      if (version == 5) validateSceneV5Json(v5);
+      v6 = convertCanvasSceneV5ToV6(v5);
+    }
+    validateSceneV6Json(v6);
+    if (prepareV6Scene != null) {
+      v6 = prepareV6Scene(jsonDecode(jsonEncode(v6)) as Map<String, Object?>);
+    }
+    result = convertCanvasSceneV6ToV7(v6);
   }
   final canonical = encodeCanvasScene(decodeCanvasScene(result));
-  // Snapshot opaque behavior payloads along with the rest of the wire data.
+  // Return an independent snapshot of the canonical wire data.
   return jsonDecode(jsonEncode(canonical)) as Map<String, Object?>;
 }
 

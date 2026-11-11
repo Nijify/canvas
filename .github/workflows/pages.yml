@@ -37,6 +37,12 @@ jobs:
         id: dependencies
         run: flutter pub get
 
+      - name: Verify core generated models
+        working-directory: packages/canvas_core
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- lib/src/runtime/model
+
       - name: Test example
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter/example

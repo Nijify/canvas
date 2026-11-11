@@ -39,12 +39,4 @@ extension NodeEditingX on Node {
     final IconNode node => node.copyWith(xf: xf),
     final GroupNode node => node.copyWith(xf: xf),
   };
-
-  Node withHidden(bool hidden) => switch (this) {
-    final TextNode node => node.copyWith(hidden: hidden),
-    final ImageNode node => node.copyWith(hidden: hidden),
-    final PathNode node => node.copyWith(hidden: hidden),
-    final IconNode node => node.copyWith(hidden: hidden),
-    final GroupNode node => node.copyWith(hidden: hidden),
-  };
 }

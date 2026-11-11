@@ -58,7 +58,6 @@ export 'src/runtime/model/node_model.dart'
         ImageNode,
         PathNode,
         GroupNode,
-        GroupBehaviorRef,
         ImageFit,
         NodeFields;
 

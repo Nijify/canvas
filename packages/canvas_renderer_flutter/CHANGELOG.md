@@ -1,3 +1,7 @@
+## Unreleased
+
+- Use all v7 scene nodes during resource discovery and rendering; remove visibility filters from image-loading APIs.
+
 ## 0.18.0
 
 - Read authored paint and image properties directly from v6 nodes.

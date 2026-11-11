@@ -426,14 +426,13 @@ class FlutterImagePool implements ImageIntrinsics {
   /// Returns immutable, operation-local failures; best-effort consumers may
   /// ignore them. Superseded or disposed operations return an empty list.
   Future<List<FlutterImageLoadFailure>> resolveSceneIntrinsics(
-    CanvasSceneDocument scene, {
-    bool includeHidden = true,
-  }) async {
+    CanvasSceneDocument scene,
+  ) async {
     if (_disposed) return const [];
 
     final generation = ++_intrinsicsGeneration;
 
-    final imageNodes = _collectImageNodes(scene, includeHidden: includeHidden);
+    final imageNodes = _collectImageNodes(scene);
 
     final assetByElement = <ElementId, CanvasImageAsset?>{
       for (final image in imageNodes) image.id: _assetForImage(scene, image),
@@ -493,13 +492,12 @@ class FlutterImagePool implements ImageIntrinsics {
     CanvasSceneDocument scene, {
     int? targetW,
     int? targetH,
-    bool includeHidden = true,
   }) async {
     if (_disposed) return const [];
 
     final generation = ++_preloadGeneration;
 
-    final imageNodes = _collectImageNodes(scene, includeHidden: includeHidden);
+    final imageNodes = _collectImageNodes(scene);
 
     final assetByElement = <ElementId, CanvasImageAsset?>{
       for (final image in imageNodes) image.id: _assetForImage(scene, image),
@@ -659,15 +657,11 @@ class FlutterImagePool implements ImageIntrinsics {
   }
 }
 
-List<ImageNode> _collectImageNodes(
-  CanvasSceneDocument scene, {
-  required bool includeHidden,
-}) {
+List<ImageNode> _collectImageNodes(CanvasSceneDocument scene) {
   final result = <ImageNode>[];
 
   visitSceneNodes(
     scene,
-    includeHidden: includeHidden,
     visit: (node) {
       if (node is ImageNode) {
         result.add(node);

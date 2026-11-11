@@ -315,22 +315,13 @@ void main() {
     );
   });
 
-  test('hidden subtrees and empty groups do not add content bounds', () {
+  test('empty groups and unresolved icons do not add paint bounds', () {
     final scene = _scene([
-      Node.group(
-        id: 'hidden',
-        hidden: true,
-        children: [_text(id: 'hidden-text', shadow: 500)],
-      ),
       const Node.group(id: 'empty'),
       const Node.icon(id: 'unresolved', iconRef: 'missing'),
       _text(),
     ]);
     final computed = computeScene(scene, _services());
-    expect(computed.nodeById.containsKey('hidden-text'), isTrue);
-    expect(computed.worldById.containsKey('hidden-text'), isTrue);
-    expect(computed.layoutBoundsLocalById.containsKey('hidden-text'), isFalse);
-    expect(computed.paintBoundsWorldById.containsKey('hidden-text'), isFalse);
     expect(computed.layoutBoundsLocalById.containsKey('empty'), isFalse);
     expect(computed.paintBoundsWorldById.containsKey('empty'), isFalse);
     expect(computed.layoutBoundsLocalById.containsKey('unresolved'), isTrue);

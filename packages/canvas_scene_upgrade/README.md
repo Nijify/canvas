@@ -13,10 +13,15 @@ final upgradedJson = upgradeCanvasScene(historicalJson);
 final scene = decodeCanvasScene(upgradedJson);
 ```
 
-The current target is scene v6. Versioned inputs v1 through v5 are eligible
-for explicit upgrade. The package also accepts current v6 input. It validates
-the final document with core and returns canonical v6 JSON in independent
+The current target is scene v7. Versioned inputs v1 through v6 are eligible
+for explicit upgrade. The package also accepts current v7 input. It validates
+the final document with core and returns canonical v7 JSON in independent
 containers.
+
+The v6 projection omits hidden subtrees and removes leaf roles. A group behavior
+requires an explicit `prepareV6Scene` callback that resolves it into ordinary
+v6 layers. The callback receives an independent JSON snapshot. Preserve the
+original document to recover omitted content or retain host authoring settings.
 
 During 0.x the supported cases are limited to the documented conversions.
 Unsupported inputs fail with a diagnostic rather than silently losing authored

@@ -94,10 +94,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
 
       // Canonical metadata is required before preparation because preparation
       // may synchronously inspect image geometry through CoreServices.
-      final canonicalFailures = await imagePool.resolveSceneIntrinsics(
-        scene,
-        includeHidden: true,
-      );
+      final canonicalFailures = await imagePool.resolveSceneIntrinsics(scene);
 
       _ensureRequiredIntrinsics(
         scene,
@@ -147,10 +144,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // create a new ElementId that legally reuses an already-approved logical
       // image sourceRef. Intrinsic metadata must therefore be published for the
       // prepared element IDs after resource conformance has been established.
-      final preparedFailures = await imagePool.resolveSceneIntrinsics(
-        prepared,
-        includeHidden: true,
-      );
+      final preparedFailures = await imagePool.resolveSceneIntrinsics(prepared);
 
       _ensureRequiredIntrinsics(
         prepared,
@@ -167,10 +161,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // before painting. Authoritative PNG rendering keeps the source raster at
       // its native decoded resolution so pixelRatio, crop/cover behavior, and
       // scene transforms cannot magnify an already-downsampled image.
-      final rasterFailures = await imagePool.preloadScene(
-        prepared,
-        includeHidden: false,
-      );
+      final rasterFailures = await imagePool.preloadScene(prepared);
 
       _ensureVisibleImagesDecoded(prepared, imagePool, rasterFailures);
 
@@ -203,7 +194,6 @@ Set<String> _collectIconRefs(CanvasSceneDocument scene) {
 
   visitSceneNodes(
     scene,
-    includeHidden: true,
     visit: (node) {
       if (node is IconNode) {
         refs.add(node.iconRef);
@@ -219,7 +209,6 @@ Set<String> _collectImageSourceRefs(CanvasSceneDocument scene) {
 
   visitSceneNodes(
     scene,
-    includeHidden: true,
     visit: (node) {
       if (node is! ImageNode) {
         return;
@@ -310,7 +299,6 @@ void _ensureRequiredIntrinsics(
 
   visitSceneNodes(
     scene,
-    includeHidden: true,
     visit: (node) {
       if (node is! ImageNode || node.assetId == null) {
         return;
@@ -354,7 +342,6 @@ void _ensureVisibleImagesDecoded(
 
   visitSceneNodes(
     scene,
-    includeHidden: false,
     visit: (node) {
       if (node is! ImageNode || node.assetId == null) {
         return;

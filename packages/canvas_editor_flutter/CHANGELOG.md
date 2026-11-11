@@ -1,3 +1,7 @@
+## Unreleased
+
+- Use the v7 ordinary-layer model throughout editing and layer presentation.
+
 ## 0.22.0
 
 - Use flat v6 node fields for creation and edits. Existing editor field keys

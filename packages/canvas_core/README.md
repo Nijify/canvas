@@ -90,7 +90,7 @@ implement `TextMeasurer` directly.
 Core discovers logical resource requirements without loading platform resources.
 
 Use `collectSceneFontFamilies` to collect text and fallback font families,
-including hidden and nested scene content:
+including nested scene content:
 
 ```dart
 final fontFamilies = collectSceneFontFamilies(
@@ -141,7 +141,6 @@ identity and tree structure:
 ```dart
 final renamed = node.withName('Headline');
 final moved = renamed.withXf(nextTransform);
-final hidden = moved.withHidden(true);
 ```
 
 Use `SceneTreeOps` for structural operations such as adding, deleting, moving,
@@ -154,7 +153,7 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-Persistence uses scene format v6. Nodes use a `type` discriminator and carry
+Persistence uses scene format v7. Nodes use a `type` discriminator and carry
 authored fields directly. Paths carry `geometry`, `appearance`, and an optional
 `fillRule`. For example:
 

@@ -1,3 +1,7 @@
+## Unreleased
+
+- Project historical documents to scene v7. Require explicit host preparation for group behaviors and preserve visible ordinary layers without mutating source documents.
+
 ## 0.3.0
 
 - Upgrade v5 and supported earlier documents to canonical v6 JSON.

@@ -14,13 +14,8 @@ const _textNode = TextNode(
   appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
 );
 
-Node _text(
-  String id, {
-  String text = 'Hello world',
-  String? name,
-  bool hidden = false,
-}) {
-  return _textNode.copyWith(id: id, name: name, hidden: hidden, text: text);
+Node _text(String id, {String text = 'Hello world', String? name}) {
+  return _textNode.copyWith(id: id, name: name, text: text);
 }
 
 Node _image(String id, {String? name}) {
@@ -169,19 +164,15 @@ void main() {
       expect(rows.single.label, endsWith('…'));
     });
 
-    test('includes hidden nodes and their children in the object tree', () {
+    test('includes every group and child in the object tree', () {
       final doc = _scene([
-        Node.group(
-          id: 'hidden-group',
-          hidden: true,
-          children: [_text('hidden-child', hidden: true)],
-        ),
+        Node.group(id: 'nested-group', children: [_text('nested-child')]),
         _text('visible-root'),
       ]);
 
       final rows = const SceneObjectTreeBuilder().build(scene: doc);
 
-      expect(_rowIds(rows), ['visible-root', 'hidden-group', 'hidden-child']);
+      expect(_rowIds(rows), ['visible-root', 'nested-group', 'nested-child']);
 
       expect(rows.map((row) => row.depth), [0, 0, 1]);
     });

@@ -109,7 +109,7 @@ void main() {
         Node.path(
           id: 'p',
           name: 'unsafe<&',
-          role: 'example:content',
+
           geometry: const RectSource(x: -10, y: -5, width: 20, height: 10),
           fillRule: FillRule.evenOdd,
           appearance: CanvasAppearance(
@@ -349,24 +349,6 @@ void main() {
     expect(result.issues.map((i) => (i.code, i.nodeId)), [
       (SvgExportIssueCode.unsupportedDashedStroke, 'dashed'),
     ]);
-  });
-
-  test('hidden unsupported nodes do not block export', () {
-    final scene = _scene(
-      children: const [
-        Node.text(
-          id: 'hidden-text',
-          hidden: true,
-          text: 'hidden',
-          fontFamily: 'sans',
-          fontWeight: 400,
-          fontSize: 12,
-        ),
-      ],
-    );
-    final result = exportPreparedSvg(evaluation: _compute(scene));
-    expect(result.issues, isEmpty);
-    expect(XmlDocument.parse(result.svg!).findAllElements('path'), isEmpty);
   });
 
   test('rejects visible non-path nodes even when resources are missing', () {

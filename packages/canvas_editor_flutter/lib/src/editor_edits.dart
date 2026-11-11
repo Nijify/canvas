@@ -69,9 +69,6 @@ abstract final class EditorEdits {
     return updateNode(id, (node) => node.withName(name));
   }
 
-  // TODO(canvas-model): Visibility is represented by persisted Node.hidden.
-  // Revisit whether visibility should instead be represented by editor-owned
-  // state when it must not affect the rendered or exported document.
   static EditorEdit deleteSubtree(rt.ElementId id) {
     return (scene) {
       final result = rt.SceneTreeOps.deleteSubtree(scene, id);

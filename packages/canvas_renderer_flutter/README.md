@@ -173,7 +173,7 @@ Its render operation performs, in order:
 5. `ScenePreparer` exactly once, when configured;
 6. integrity of preparer output, when configured, and resource-preservation checks;
 7. a second prepared image-intrinsic pass for new element IDs that reuse allowed logical sources;
-8. visible raster preload and strict required-image verification;
+8. raster preload and strict required-image verification;
 9. layout, scene painting, PNG encoding, and operation-scoped cleanup.
 
 Preparation may remove dependencies or introduce new element/asset IDs that reuse already-approved logical resources. It may not introduce new font families, icon refs, or active image `sourceRef` dependencies.
@@ -184,7 +184,7 @@ Required-image failures throw `CanvasImageRenderException`, a `StateError`
 subtype. It exposes the missing `nodeIds` and relevant operation `failures`,
 including original causes when available. Formatted errors omit raw sources and
 original exception text. Persisted dimensions may satisfy metadata needs,
-hidden final images need no raster, and intentionally empty frames are valid.
+and intentionally empty frames are valid.
 Scene-integrity failures throw `ArgumentError`. Font-loader and preparer
 exceptions propagate directly.
 

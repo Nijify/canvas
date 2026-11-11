@@ -1,9 +1,7 @@
-import 'package:canvas_core/src/serialization/scene_format.dart';
-
 /// Checks wire structure before generated decoding can discard unknown fields
 /// or coerce integers. Geometry and gradients have their own strict decoders.
 void validateSceneV6Json(Map<String, Object?> json) {
-  const version = currentCanvasSceneFormatVersion;
+  const version = 6;
   if (json['sceneFormatVersion'] is! int ||
       json['sceneFormatVersion'] != version) {
     _fail(

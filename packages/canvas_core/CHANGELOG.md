@@ -1,3 +1,7 @@
+## Unreleased
+
+- Adopt scene v7 ordinary layers. Remove node visibility, roles, and group behavior envelopes. Require explicit artboard dimensions in scene JSON and omit empty asset maps and absent intrinsic metadata.
+
 ## 0.19.0
 
 - **Breaking:** scene v6 stores authored fields directly on nodes and uses

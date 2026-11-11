@@ -6,14 +6,18 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_scene_upgrade/canvas_scene_upgrade.dart';
 import 'package:test/test.dart';
 
-Map<String, Object?> _fixture(String name) {
+Map<String, Object?> _fixture(String name, {bool keepBehavior = false}) {
   final runtime = Isolate.resolvePackageUriSync(
     Uri.parse('package:canvas_scene_upgrade/canvas_scene_upgrade.dart'),
   )!;
   final root = File.fromUri(runtime).parent.parent;
-  return jsonDecode(
+  final document = jsonDecode(
     File.fromUri(root.uri.resolve('test/fixtures/$name')).readAsStringSync(),
   ) as Map<String, Object?>;
+  if (!keepBehavior) {
+    ((document['children'] as List).single as Map).remove('behavior');
+  }
+  return document;
 }
 
 List<Map<String, Object?>> _nested(Map<String, Object?> scene) {
@@ -24,8 +28,8 @@ List<Map<String, Object?>> _nested(Map<String, Object?> scene) {
 Map<String, Object?> _wire() => _fixture('v4_paths.json');
 
 void main() {
-  test('v5 flattens all node kinds and preserves placement and payloads', () {
-    final input = _fixture('v5_paths.json');
+  test('historical host preparation receives preserved component settings', () {
+    final input = _fixture('v5_paths.json', keepBehavior: true);
     final inputGroup = (input['children'] as List).single as Map;
     final behavior = inputGroup['behavior'] as Map;
     (behavior['data'] as Map)['nested'] = {
@@ -33,13 +37,21 @@ void main() {
       'data': [1, 2],
     };
     final before = jsonEncode(input);
-    final output = upgradeCanvasScene(input);
+    final output = upgradeCanvasScene(
+      input,
+      prepareV6Scene: (scene) {
+        final group = (scene['children'] as List).single as Map;
+        expect(group['behavior'], behavior);
+        group.remove('behavior');
+        return scene;
+      },
+    );
     final group = (output['children'] as List).single as Map;
     final children = _nested(output);
-    expect(output['sceneFormatVersion'], 6);
+    expect(output['sceneFormatVersion'], 7);
     expect(group['type'], 'group');
     expect(group['xf'], inputGroup['xf']);
-    expect(group['behavior'], behavior);
+    expect(group.containsKey('behavior'), isFalse);
     expect(children.map((node) => node['type']).toSet(), {
       'path',
       'text',
@@ -55,7 +67,7 @@ void main() {
     expect(children[5]['iconRef'], 'test.symbol');
     expect(children[6]['assetId'], 'asset');
     expect(encodeCanvasScene(decodeCanvasScene(output)), output);
-    ((group['behavior'] as Map)['data'] as Map).clear();
+    (children.first['geometry'] as Map)['width'] = 999;
     expect(jsonEncode(input), before);
   });
 

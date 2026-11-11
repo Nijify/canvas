@@ -6,13 +6,13 @@ import 'package:test/test.dart';
 Node _text({
   String id = 'text',
   String? name,
-  bool hidden = false,
+
   Affine2D xf = const Affine2D.identity(),
 }) {
   return Node.text(
     id: id,
     name: name,
-    hidden: hidden,
+
     xf: xf,
     text: 'Hello',
     fontFamily: 'Inter',
@@ -54,14 +54,12 @@ void main() {
 
       final renamed = group.withName('Renamed') as GroupNode;
       final moved = renamed.withXf(nextXf) as GroupNode;
-      final hidden = moved.withHidden(true) as GroupNode;
 
-      expect(hidden.id, 'group');
-      expect(hidden.name, 'Renamed');
-      expect(hidden.xf, nextXf);
-      expect(hidden.hidden, isTrue);
-      expect(hidden.children, hasLength(1));
-      expect(identical(hidden.children.single, child), isTrue);
+      expect(moved.id, 'group');
+      expect(moved.name, 'Renamed');
+      expect(moved.xf, nextXf);
+      expect(moved.children, hasLength(1));
+      expect(identical(moved.children.single, child), isTrue);
     });
   });
 }

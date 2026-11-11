@@ -3,8 +3,8 @@
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/validation/scene_document_validation.dart';
 import 'package:canvas_core/src/serialization/scene_format.dart';
-import 'package:canvas_core/src/serialization/formats/scene_v6.dart'
-    show validateSceneV6Json;
+import 'package:canvas_core/src/serialization/formats/scene_v7.dart'
+    show validateSceneV7Json;
 
 // Supported annotations for host-owned geometry models.
 export 'package:canvas_core/src/serialization/converters.dart'
@@ -23,7 +23,7 @@ export 'package:canvas_core/src/serialization/scene_format.dart'
 /// [FormatException]; invalid runtime values throw [ArgumentError]. Error text
 /// is diagnostic context, not a stable code, path, or ordering contract.
 CanvasSceneDocument decodeCanvasScene(Map<String, Object?> json) {
-  validateSceneV6Json(json);
+  validateSceneV7Json(json);
   final payload = Map<String, dynamic>.from(json)..remove('sceneFormatVersion');
   final scene = CanvasSceneDocument.fromJson(payload);
   requireCanvasSceneIntegrity(scene);
@@ -32,7 +32,7 @@ CanvasSceneDocument decodeCanvasScene(Map<String, Object?> json) {
 
 /// Checks runtime integrity before recursive encoding to the current format.
 ///
-/// The guard checks cycles, JSON payloads, and node discriminator consistency.
+/// The guard checks cycles and node discriminator consistency.
 /// Package serializers own canonical wire structure; it is not scanned again.
 Map<String, Object?> encodeCanvasScene(CanvasSceneDocument scene) {
   requireCanvasSceneIntegrity(scene);

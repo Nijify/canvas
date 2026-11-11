@@ -162,7 +162,6 @@ CanvasSceneDocument _imageScene({
   String assetId = 'asset-1',
   String sourceRef = 'media:image',
   Size2D? intrinsicSize,
-  bool hidden = false,
 }) {
   final image = Node.image(
     id: elementId,
@@ -182,7 +181,7 @@ CanvasSceneDocument _imageScene({
     },
     children: <Node>[
       if (hidden)
-        Node.group(id: 'hidden-group', hidden: true, children: <Node>[image])
+        Node.group(id: 'hidden-group', children: <Node>[image])
       else
         image,
     ],
@@ -1040,37 +1039,6 @@ void main() {
         throwsA(_stateErrorContaining('could not decode required image nodes')),
       );
     });
-
-    test(
-      'does not require raster decoding for hidden prepared image',
-      () async {
-        final images = _RecordingImageResolver();
-
-        final renderer = FlutterCanvasPngRenderer(
-          fonts: _RecordingFontLoader(),
-          images: images,
-        );
-
-        final bytes = await renderer.renderPng(
-          scene: _imageScene(
-            sourceRef: 'media:hidden',
-            intrinsicSize: const Size2D(4, 4),
-            hidden: true,
-          ),
-          spec: const CanvasPngSpec(widthPx: 64, heightPx: 64, pixelRatio: 1),
-        );
-
-        expect(bytes, isNotEmpty);
-
-        expect(
-          images.sourceRequests,
-          isEmpty,
-          reason:
-              'Hidden final images require logical/intrinsic validation but '
-              'not decoded rasters.',
-        );
-      },
-    );
 
     test('preserves exact HTTPS logical sourceRef through resolver', () async {
       const sourceRef =

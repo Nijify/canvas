@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('collectSceneFontFamilies', () {
     test(
-      'collects text and fallback families from nested and hidden nodes',
+      'collects text and fallback families from all nested nodes',
       () {
         final scene = CanvasSceneDocument(
           backgroundFill: const CanvasFill.none(),
@@ -18,12 +18,11 @@ void main() {
               fontSize: 20,
             ),
             Node.group(
-              id: 'hidden-group',
-              hidden: true,
+              id: 'nested-group',
               children: <Node>[
                 Node.text(
-                  id: 'hidden-text',
-                  text: 'Hidden',
+                  id: 'nested-text',
+                  text: 'Nested',
                   fontFamily: 'Noto Sans',
                   fontWeight: 400,
                   fontSize: 20,
@@ -70,7 +69,7 @@ void main() {
     );
 
     test(
-      'icons add no font dependencies, including hidden and missing refs',
+      'icons add no font dependencies, including nested and missing refs',
       () {
         final scene = CanvasSceneDocument(
           backgroundFill: const CanvasFill.none(),
@@ -79,9 +78,8 @@ void main() {
             const Node.icon(id: 'icon', iconRef: 'vector'),
             const Node.icon(id: 'missing', iconRef: 'missing'),
             const Node.group(
-              id: 'hidden',
-              hidden: true,
-              children: [Node.icon(id: 'hidden-icon', iconRef: 'vector')],
+              id: 'nested',
+              children: [Node.icon(id: 'nested-icon', iconRef: 'vector')],
             ),
           ],
         );

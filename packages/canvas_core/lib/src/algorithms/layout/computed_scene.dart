@@ -21,7 +21,6 @@ import 'package:canvas_core/src/runtime/traversal/stack_order.dart';
 import 'package:canvas_core/src/services/services_context.dart'
     show CoreServices;
 
-
 final class DrawItem {
   final ElementId leafId;
   final List<ElementId> groupStack;
@@ -85,17 +84,15 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
       current == null ? value : Rect2DX.union(current, value);
 
   // World matrices are settled on entry. Group bounds are aggregated on return.
-  // Hidden nodes retain hierarchy transforms without resolving their resources.
-  void visit(Node node, Affine2D parent, List<ElementId> ancestors, bool hidden) {
+  void visit(Node node, Affine2D parent, List<ElementId> ancestors) {
     final world = parent * node.xf;
     nodes[node.id] = node;
     worlds[node.id] = world;
-    final invisible = hidden || node.hidden;
     if (node is GroupNode) {
       Rect2D? layout, paint, worldPaint;
       final stack = List<ElementId>.unmodifiable([...ancestors, node.id]);
       for (final child in nodesInPaintOrder(node.children)) {
-        visit(child, world, stack, invisible);
+        visit(child, world, stack);
         final childLayout = layouts[child.id];
         final childPaint = paints[child.id];
         final childWorldPaint = worldPaints[child.id];
@@ -105,7 +102,8 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
         if (childPaint != null) {
           paint = union(paint, aabbOfTransformedRect(childPaint, child.xf));
         }
-        if (childWorldPaint != null) worldPaint = union(worldPaint, childWorldPaint);
+        if (childWorldPaint != null)
+          worldPaint = union(worldPaint, childWorldPaint);
       }
       if (layout != null) layouts[node.id] = layout;
       if (paint != null) paints[node.id] = paint;
@@ -113,9 +111,11 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
       if (worldPaint != null) worldPaints[node.id] = worldPaint;
       return;
     }
-    if (invisible) return;
     final bounds = geometry.leafBounds(
-      node, pathIRById: paths, imagePlacementById: images, iconById: icons,
+      node,
+      pathIRById: paths,
+      imagePlacementById: images,
+      iconById: icons,
     );
     if (bounds != null) {
       layouts[node.id] = bounds.layout;
@@ -130,15 +130,17 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   }
 
   for (final root in nodesInPaintOrder(doc.children)) {
-    visit(root, const Affine2D.identity(), const [], false);
+    visit(root, const Affine2D.identity(), const []);
   }
   return ComputedScene._(
     drawList: List.unmodifiable(drawList),
-    nodeById: Map.unmodifiable(nodes), worldById: Map.unmodifiable(worlds),
+    nodeById: Map.unmodifiable(nodes),
+    worldById: Map.unmodifiable(worlds),
     layoutBoundsLocalById: Map.unmodifiable(layouts),
     paintBoundsLocalById: Map.unmodifiable(paints),
     paintBoundsWorldById: Map.unmodifiable(worldPaints),
     pathIRById: Map.unmodifiable(paths),
-    imagePlacementById: Map.unmodifiable(images), iconById: Map.unmodifiable(icons),
+    imagePlacementById: Map.unmodifiable(images),
+    iconById: Map.unmodifiable(icons),
   );
 }
