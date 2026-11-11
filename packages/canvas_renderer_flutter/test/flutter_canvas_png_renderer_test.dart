@@ -161,7 +161,7 @@ CanvasSceneDocument _imageScene({
   String elementId = 'image-1',
   String assetId = 'asset-1',
   String sourceRef = 'media:image',
-  Size2D? intrinsicSize,
+  Size2D intrinsicSize = const Size2D(4, 4),
 }) {
   final image = Node.image(
     id: elementId,
@@ -786,14 +786,7 @@ void main() {
 
         expect(bytes, isNotEmpty);
 
-        expect(
-          images.intrinsicRequests,
-          hasLength(1),
-          reason:
-              'Stable metadata should be cached by logical sourceRef, while '
-              'the second prepared intrinsic pass binds it to the new '
-              'ElementId.',
-        );
+        expect(images.intrinsicRequests, isEmpty);
 
         expect(images.sourceRequests, hasLength(1));
       },
@@ -875,58 +868,6 @@ void main() {
         expect(bytes, isNotEmpty);
         expect(images.sourceRequests, isEmpty);
         expect(images.intrinsicRequests, isEmpty);
-      },
-    );
-
-    test(
-      'required metadata failure retains its original cause before preparation',
-      () async {
-        final error = StateError('metadata unavailable');
-        final stack = StackTrace.fromString('metadata-origin');
-        var preparationCalls = 0;
-        final renderer = FlutterCanvasPngRenderer(
-          fonts: _RecordingFontLoader(),
-          images: _RecordingImageResolver(
-            intrinsicError: error,
-            errorStack: stack,
-          ),
-          scenePreparer: (scene, _) {
-            preparationCalls++;
-            return scene;
-          },
-        );
-
-        await expectLater(
-          renderer.renderPng(
-            scene: _imageScene(sourceRef: 'media:missing'),
-            spec: const CanvasPngSpec(widthPx: 64, heightPx: 64),
-          ),
-          throwsA(
-            isA<CanvasImageRenderException>()
-                .having((error) => error.nodeIds, 'nodes', ['image-1'])
-                .having(
-                  (error) => error.failures.single.sourceRef,
-                  'logical source',
-                  'media:missing',
-                )
-                .having(
-                  (error) => error.failures.single.phase,
-                  'phase',
-                  FlutterImageLoadPhase.intrinsicMetadata,
-                )
-                .having(
-                  (failure) => failure.failures.single.cause,
-                  'original cause',
-                  same(error),
-                )
-                .having(
-                  (error) => error.failures.single.stackTrace.toString(),
-                  'original stack',
-                  contains('metadata-origin'),
-                ),
-          ),
-        );
-        expect(preparationCalls, 0);
       },
     );
 
@@ -1059,7 +1000,7 @@ void main() {
 
       expect(bytes, isNotEmpty);
 
-      expect(images.intrinsicRequests.single, <String>[sourceRef]);
+      expect(images.intrinsicRequests, isEmpty);
 
       expect(images.sourceRequests.single, <String>[sourceRef]);
     });

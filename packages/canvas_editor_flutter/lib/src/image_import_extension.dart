@@ -13,7 +13,6 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.da
 import 'package:flutter/material.dart';
 
 const _initialImageTopLeft = Vec2(80, 80);
-const _initialImageFallbackSize = Size2D(200, 200);
 const _initialImageMaxSide = 200.0;
 const _initialImageMetadataTimeout = Duration(seconds: 2);
 
@@ -72,10 +71,11 @@ class _ImageImportExtension<TSourceDocument>
             return null;
           }
 
-          return context.fieldRow<String>(
+          return context.fieldRow<CanvasImageAsset?>(
             selected.id,
             _imageSourceSpec(
               imageImport: imageImport,
+              images: context.resources.images,
               controller: context.controller,
               nodeId: selected.id,
             ),
@@ -122,15 +122,27 @@ class _ImageImportExtension<TSourceDocument>
 
       if (sourceRef == null || !context.buildContext.mounted) return;
 
-      final sizes = await _resolveInitialImageSize(context, sourceRef);
-      if (!context.buildContext.mounted) return;
+      final asset = await _resolveImportedAsset(
+        images: context.resources.images,
+        sourceRef: sourceRef,
+        onFailure: (message) {
+          if (context.buildContext.mounted) {
+            context.ui.toast('Failed to add image: $message');
+          }
+        },
+      );
+      if (!context.buildContext.mounted || asset == null) return;
+      final intrinsic = asset.intrinsicSize;
+      final longestSide = intrinsic.w > intrinsic.h ? intrinsic.w : intrinsic.h;
+      final scale = _initialImageMaxSide / longestSide;
+      final frameSize = Size2D(intrinsic.w * scale, intrinsic.h * scale);
 
       final nodeId = _nextImageId();
       final assetId = nodeId;
       final node = _buildImportedImage(
         nodeId: nodeId,
         assetId: assetId,
-        size: sizes.frameSize,
+        size: frameSize,
       );
 
       context.controller.applyEdit(
@@ -138,10 +150,7 @@ class _ImageImportExtension<TSourceDocument>
           final nextScene = scene.copyWith(
             assets: <CanvasAssetId, CanvasImageAsset>{
               ...scene.assets,
-              assetId: CanvasImageAsset(
-                sourceRef: sourceRef,
-                intrinsicSize: sizes.intrinsicSize,
-              ),
+              assetId: asset,
             },
           );
 
@@ -153,51 +162,6 @@ class _ImageImportExtension<TSourceDocument>
       _isAdding = false;
       _requestSurfaceRebuild();
     }
-  }
-
-  Future<({Size2D frameSize, Size2D? intrinsicSize})> _resolveInitialImageSize(
-    EditorActionContext context,
-    String sourceRef,
-  ) async {
-    final Size2D? intrinsic;
-
-    try {
-      final resolved = await context.resources.images
-          .resolveIntrinsicSizes(<String>[sourceRef])
-          .timeout(
-            _initialImageMetadataTimeout,
-            onTimeout: () {
-              debugPrint(
-                'Canvas image import timed out while resolving intrinsic metadata.',
-              );
-              return const <String, Size2D>{};
-            },
-          );
-
-      intrinsic = resolved[sourceRef];
-    } catch (error, stackTrace) {
-      debugPrint(
-        'Canvas image import could not resolve intrinsic metadata: '
-        '$error\n$stackTrace',
-      );
-      return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
-    }
-
-    if (intrinsic == null ||
-        !intrinsic.w.isFinite ||
-        !intrinsic.h.isFinite ||
-        intrinsic.w <= 0 ||
-        intrinsic.h <= 0) {
-      return (frameSize: _initialImageFallbackSize, intrinsicSize: null);
-    }
-
-    final longestSide = intrinsic.w > intrinsic.h ? intrinsic.w : intrinsic.h;
-    final scale = _initialImageMaxSide / longestSide;
-
-    return (
-      frameSize: Size2D(intrinsic.w * scale, intrinsic.h * scale),
-      intrinsicSize: intrinsic,
-    );
   }
 
   ImageNode _buildImportedImage({
@@ -224,12 +188,13 @@ class _ImageImportExtension<TSourceDocument>
   }
 }
 
-InspectorFieldSpec<String> _imageSourceSpec({
+InspectorFieldSpec<CanvasImageAsset?> _imageSourceSpec({
   required ImageImportPort imageImport,
+  required CanvasImageAssetResolver images,
   required EditorController controller,
   required ElementId nodeId,
 }) {
-  return InspectorFieldSpec<String>(
+  return InspectorFieldSpec<CanvasImageAsset?>(
     fieldKey: CanvasFields.imageSource,
     title: 'Source',
     commitMode: CommitMode.immediate,
@@ -243,16 +208,17 @@ InspectorFieldSpec<String> _imageSourceSpec({
           end,
           flush,
         }) {
-          final label = value.trim().isEmpty ? '(none)' : value;
+          final label = value?.sourceRef ?? '(none)';
 
           return _ImageSourcePickerControl(
             key: ValueKey('image-import-source:$nodeId'),
             enabled: enabled,
             currentSourceLabel: label,
             imageImport: imageImport,
+            images: images,
             controller: controller,
             nodeId: nodeId,
-            commitSourceRef: commit,
+            commitAsset: commit,
           );
         },
   );
@@ -264,17 +230,19 @@ class _ImageSourcePickerControl extends StatefulWidget {
     required this.enabled,
     required this.currentSourceLabel,
     required this.imageImport,
+    required this.images,
     required this.controller,
     required this.nodeId,
-    required this.commitSourceRef,
+    required this.commitAsset,
   });
 
   final bool enabled;
   final String currentSourceLabel;
   final ImageImportPort imageImport;
+  final CanvasImageAssetResolver images;
   final EditorController controller;
   final ElementId nodeId;
-  final ValueChanged<String> commitSourceRef;
+  final ValueChanged<CanvasImageAsset?> commitAsset;
 
   @override
   State<_ImageSourcePickerControl> createState() =>
@@ -300,9 +268,7 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
     }
 
     final originalAssetId = originalImage.assetId;
-    final originalSourceRef = originalAssetId == null
-        ? null
-        : originalScene.assets[originalAssetId]?.sourceRef;
+    final originalAsset = originalScene.assets[originalAssetId];
 
     setState(() => _isImporting = true);
 
@@ -320,6 +286,15 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         return;
       }
 
+      final asset = await _resolveImportedAsset(
+        images: widget.images,
+        sourceRef: sourceRef,
+        onFailure: (message) {
+          if (mounted) _showFailure(message);
+        },
+      );
+      if (!mounted || asset == null) return;
+
       // A state object created for one image must never commit an async result
       // into another target.
       if (widget.controller != controller || widget.nodeId != targetNodeId) {
@@ -334,20 +309,17 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
       }
 
       final latestAssetId = latestImage.assetId;
-      final latestSourceRef = latestAssetId == null
-          ? null
-          : latestScene.assets[latestAssetId]?.sourceRef;
+      final latestAsset = latestScene.assets[latestAssetId];
 
       // The original target changed while the picker/import was running.
       // Discard the stale result instead of overwriting newer user intent.
-      if (latestAssetId != originalAssetId ||
-          latestSourceRef != originalSourceRef) {
+      if (latestAssetId != originalAssetId || latestAsset != originalAsset) {
         return;
       }
 
       // Editability may have changed while awaiting the host import, for example
       // because an authoring binding was added.
-      final fieldState = controller.getField<String>(
+      final fieldState = controller.getField<CanvasImageAsset?>(
         targetNodeId,
         CanvasFields.imageSource,
       );
@@ -358,7 +330,7 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
 
       // Keep the registered-field path authoritative. This preserves field
       // codecs, runtime policy, custom field-row behavior, and normal history.
-      widget.commitSourceRef(sourceRef);
+      widget.commitAsset(asset);
     } finally {
       if (mounted) {
         setState(() => _isImporting = false);
@@ -500,4 +472,28 @@ Future<String?> _requestDurableImageSourceRef({
   }
 
   return sourceRef;
+}
+
+Future<CanvasImageAsset?> _resolveImportedAsset({
+  required CanvasImageAssetResolver images,
+  required String sourceRef,
+  required void Function(String message) onFailure,
+}) async {
+  try {
+    final sizes = await images
+        .resolveIntrinsicSizes([sourceRef])
+        .timeout(_initialImageMetadataTimeout);
+    final size = sizes[sourceRef];
+    if (size != null &&
+        size.w.isFinite &&
+        size.h.isFinite &&
+        size.w > 0 &&
+        size.h > 0) {
+      return CanvasImageAsset(sourceRef: sourceRef, intrinsicSize: size);
+    }
+  } catch (_) {
+    // Failed acquisition leaves the scene unchanged so the user can retry.
+  }
+  onFailure('Image dimensions are unavailable. Please try again.');
+  return null;
 }

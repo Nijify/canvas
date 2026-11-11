@@ -4,6 +4,8 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 const _textNode = TextNode(
   id: 't1',
   text: 'Hello world',
@@ -54,7 +56,10 @@ CanvasSceneDocument _scene(List<Node> children) {
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: const <CanvasAssetId, CanvasImageAsset>{
-      'asset-1': CanvasImageAsset(sourceRef: 'media:1'),
+      'asset-1': CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: 'media:1',
+      ),
     },
     children: children,
   );

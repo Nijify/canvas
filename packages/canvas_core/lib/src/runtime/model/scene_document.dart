@@ -11,14 +11,14 @@ import 'package:canvas_core/src/serialization/converters.dart';
 part 'scene_document.freezed.dart';
 part 'scene_document.g.dart';
 
-/// Backing source and optional natural dimensions for a document image.
+/// Logical image source and its stable natural dimensions.
 @freezed
 abstract class CanvasImageAsset with _$CanvasImageAsset {
   const factory CanvasImageAsset({
     required String sourceRef,
-    @JsonKey(includeIfNull: false)
-    @NullableSize2DConverter()
-    Size2D? intrinsicSize,
+    @JsonKey(required: true, disallowNullValue: true)
+    @Size2DConverter()
+    required Size2D intrinsicSize,
   }) = _CanvasImageAsset;
 
   factory CanvasImageAsset.fromJson(Map<String, dynamic> json) =>

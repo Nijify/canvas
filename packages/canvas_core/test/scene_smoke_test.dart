@@ -19,13 +19,7 @@ class _FakeTextMeasurer implements TextMeasurer {
   }
 }
 
-class _FakeImages implements ImageIntrinsics {
-  @override
-  Size2D? intrinsicSize(ElementId id) => null;
-}
-
-CoreServices _services() =>
-    CoreServices(textMeasurer: _FakeTextMeasurer(), images: _FakeImages());
+CoreServices _services() => CoreServices(textMeasurer: _FakeTextMeasurer());
 
 TextNode _text(String id, String text) => TextNode(
   id: id,

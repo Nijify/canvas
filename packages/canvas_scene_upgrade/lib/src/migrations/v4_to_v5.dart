@@ -6,6 +6,7 @@ import '../formats/scene_v4.dart';
 Map<String, Object?> convertCanvasSceneV4ToV5(
   Map<String, Object?> input, {
   CoreServices? services,
+  Size2D? Function(String sourceRef)? resolveImageIntrinsicSize,
 }) {
   validateSceneV4Json(input);
   final assets = input['assets'] as Map?;
@@ -55,6 +56,7 @@ Map<String, Object?> convertCanvasSceneV4ToV5(
         node['data'] as Map,
         assets,
         services,
+        resolveImageIntrinsicSize,
       );
     }
 
@@ -95,6 +97,7 @@ Rect2D? _leafBounds(
   Map data,
   Map? assets,
   CoreServices? services,
+  Size2D? Function(String sourceRef)? resolveImageIntrinsicSize,
 ) {
   switch (type) {
     case 'path':
@@ -130,15 +133,15 @@ Rect2D? _leafBounds(
       final assetId = data['assetId'];
       final asset = assets?[assetId] as Map?;
       final storedSize = asset?['intrinsicSize'] as Map?;
-      final intrinsic =
-          services?.images?.intrinsicSize(id) ??
-          (storedSize == null
-              ? null
-              : Size2D.fromJson(Map<String, dynamic>.from(storedSize)));
+      final intrinsic = storedSize == null
+          ? asset == null
+                ? null
+                : resolveImageIntrinsicSize?.call(asset['sourceRef'] as String)
+          : Size2D.fromJson(Map<String, dynamic>.from(storedSize));
       if (fit == ImageFit.contain && assetId != null && intrinsic == null) {
         throw FormatException(
           'Scene v4 image node $id needs intrinsic image dimensions to resolve '
-          'a pivot. Pass CoreServices or persist intrinsicSize.',
+          'a pivot. Supply resolveImageIntrinsicSize or persist intrinsicSize.',
         );
       }
       return imageSrcDst(

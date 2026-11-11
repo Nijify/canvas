@@ -1,10 +1,7 @@
 // Path: lib/src/runtime/editor_asset_coordinator.dart
 
-import 'dart:async';
-
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 
 import 'package:canvas_editor_flutter/src/canvas_runtime_resources.dart';
 
@@ -60,25 +57,8 @@ class EditorAssetCoordinator {
       return fontsChanged;
     }
 
-    // Intrinsic metadata is best effort for interactive editing and must not
-    // gate raster loading.
-    unawaited(_resolveSceneIntrinsicsBestEffort(scene));
-
     await pool.preloadScene(scene, targetW: targetW, targetH: targetH);
 
     return fontsChanged;
-  }
-
-  Future<void> _resolveSceneIntrinsicsBestEffort(
-    rt.CanvasSceneDocument scene,
-  ) async {
-    try {
-      await pool.resolveSceneIntrinsics(scene);
-    } catch (error, stackTrace) {
-      debugPrint(
-        'Canvas intrinsic metadata resolution failed: '
-        '$error\n$stackTrace',
-      );
-    }
   }
 }

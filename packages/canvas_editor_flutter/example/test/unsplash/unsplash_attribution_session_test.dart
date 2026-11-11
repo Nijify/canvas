@@ -3,6 +3,8 @@ import 'package:canvas_editor_flutter_example/unsplash/unsplash_attribution_sess
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 void main() {
   final photo = UnsplashPhoto(
     id: 'photo-1',
@@ -27,8 +29,14 @@ void main() {
       backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
       backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
-        'used': CanvasImageAsset(sourceRef: photo.sourceRef),
-        'orphan': CanvasImageAsset(sourceRef: photo.sourceRef),
+        'used': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
+        'orphan': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
       },
       children: <Node>[
         ImageNode(
@@ -52,8 +60,14 @@ void main() {
       backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
       backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
-        'a': CanvasImageAsset(sourceRef: photo.sourceRef),
-        'b': CanvasImageAsset(sourceRef: photo.sourceRef),
+        'a': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
+        'b': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
       },
       children: <Node>[
         ImageNode(
@@ -81,7 +95,10 @@ void main() {
       backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
       backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
-        'image': CanvasImageAsset(sourceRef: photo.sourceRef),
+        'image': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
       },
       children: <Node>[
         ImageNode(

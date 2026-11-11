@@ -101,9 +101,11 @@ CanvasSceneEditor(
 )
 ```
 
-`imageImportExtension(...)` adds image acquisition, durable logical-source import, image replacement, and Add → Image behavior. Initial image sizing uses stable intrinsic metadata when available and keeps the built-in fallback when metadata is missing or slow.
+`imageImportExtension(...)` adds image acquisition, durable logical-source import, image replacement, and Add → Image behavior. It resolves finite positive natural dimensions before committing an asset. Missing, invalid, or timed-out dimensions leave the document unchanged and show retry feedback. Initial frame sizing preserves the image aspect ratio with a longest side of 200.
 
-`backgroundRemovalExtension(...)` adds an Image-tools inspector section. Canvas validates the selected target and field state before and after the asynchronous host operation, then commits an accepted replacement through `CanvasFields.imageSource`. The host owns image access, processing, persistence, and cleanup of unreferenced outputs.
+`CanvasFields.imageSource` carries `CanvasImageAsset?`. Custom field controls must commit the source reference and natural dimensions together; null clears the image while retaining its frame.
+
+`backgroundRemovalExtension(...)` adds an Image-tools inspector section. Canvas validates the selected target and field state before and after the asynchronous host operation, then commits an accepted replacement through `CanvasFields.imageSource`. Its host contract preserves natural dimensions. The host owns image access, processing, persistence, and cleanup of unreferenced outputs.
 
 A curated asset library is supplied through `canvasAssetLibraryExtension(...)`. The application provides the catalog and selection presentation; the extension inserts the selected asset, preserves its aspect ratio, records history, and selects the new node.
 

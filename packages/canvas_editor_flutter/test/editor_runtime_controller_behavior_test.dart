@@ -7,6 +7,8 @@ import 'package:canvas_editor_flutter/src/editor_field_codecs.dart';
 import 'package:canvas_editor_flutter/src/runtime/editor_runtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = rt.Size2D(200, 160);
+
 final class _FakeTextMeasurer implements rt.TextMeasurer {
   @override
   rt.Size2D measure({
@@ -88,7 +90,10 @@ rt.CanvasSceneDocument _sceneWithBoundImage(String sourceRef) {
     backgroundFill: const rt.CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: <rt.CanvasAssetId, rt.CanvasImageAsset>{
-      _originalImageAssetId: rt.CanvasImageAsset(sourceRef: sourceRef),
+      _originalImageAssetId: rt.CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: sourceRef,
+      ),
     },
     children: const <rt.Node>[
       rt.Node.image(
@@ -1047,16 +1052,49 @@ void main() {
     expect(_iconRefOf(runtime.sourceDocument), 'star');
   });
 
+  test(
+    'image source edits commit dimensions even when the source is unchanged',
+    () {
+      final runtime = _buildSceneRuntime(
+        _sceneWithBoundImage('media:original'),
+      );
+      addTearDown(runtime.dispose);
+      runtime.commitField<rt.CanvasImageAsset?>(
+        'img1',
+        rt.CanvasFields.imageSource,
+        const rt.CanvasImageAsset(
+          sourceRef: 'media:original',
+          intrinsicSize: rt.Size2D(800, 400),
+        ),
+      );
+      final image = rt.findById(runtime.sourceDocument, 'img1') as rt.ImageNode;
+      expect(
+        runtime.sourceDocument.assets[image.assetId]!.intrinsicSize,
+        const rt.Size2D(800, 400),
+      );
+      runtime.undo();
+      final restored =
+          rt.findById(runtime.sourceDocument, 'img1') as rt.ImageNode;
+      expect(
+        runtime.sourceDocument.assets[restored.assetId]!.intrinsicSize,
+        _testImageSize,
+      );
+    },
+  );
+
   test('image source canonical updates preserve existing asset semantics', () {
     final runtime = _buildSceneRuntime(_sceneWithBoundImage('media:original'));
     addTearDown(runtime.dispose);
 
     expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
 
-    runtime.commitField<String>(
+    runtime.commitField<rt.CanvasImageAsset?>(
       'img1',
       rt.CanvasFields.imageSource,
-      'media:original',
+      const rt.CanvasImageAsset(
+        sourceRef: 'media:original',
+        intrinsicSize: _testImageSize,
+      ),
     );
 
     expect(
@@ -1067,10 +1105,17 @@ void main() {
 
     String? updaterInput;
 
-    runtime.updateField<String>('img1', rt.CanvasFields.imageSource, (current) {
-      updaterInput = current;
-      return 'media:replacement';
-    });
+    runtime.updateField<rt.CanvasImageAsset?>(
+      'img1',
+      rt.CanvasFields.imageSource,
+      (current) {
+        updaterInput = current?.sourceRef;
+        return const rt.CanvasImageAsset(
+          sourceRef: 'media:replacement',
+          intrinsicSize: _testImageSize,
+        );
+      },
+    );
 
     expect(updaterInput, 'media:original');
 
@@ -1092,7 +1137,11 @@ void main() {
 
     expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
 
-    runtime.commitField<String>('img1', rt.CanvasFields.imageSource, '');
+    runtime.commitField<rt.CanvasImageAsset?>(
+      'img1',
+      rt.CanvasFields.imageSource,
+      null,
+    );
 
     final cleared = runtime.sourceDocument;
     final clearedImage = rt.findById(cleared, 'img1') as rt.ImageNode;

@@ -9,6 +9,8 @@ import 'package:canvas_editor_flutter/src/runtime/editor_asset_coordinator.dart'
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 final class _FakeFonts implements FlutterFontLoader {
   final List<Set<String>> loadedRequests = <Set<String>>[];
 
@@ -84,7 +86,10 @@ CanvasSceneDocument _imageScene(String sourceRef) {
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: <CanvasAssetId, CanvasImageAsset>{
-      'asset-0': CanvasImageAsset(sourceRef: sourceRef),
+      'asset-0': CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: sourceRef,
+      ),
     },
     children: const [
       Node.image(id: 'image-0', assetId: 'asset-0', size: Size2D(100, 100)),
@@ -113,75 +118,72 @@ Future<ui.Image> _createImage() async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('coordinator uses one pool for intrinsic and raster state', () async {
-    final decoded = await _createImage();
+  test(
+    'coordinator preloads rasters without querying image dimensions',
+    () async {
+      final decoded = await _createImage();
 
-    final fonts = _FakeFonts();
-    final icons = _FakeIcons();
+      final fonts = _FakeFonts();
+      final icons = _FakeIcons();
 
-    final images = _FakeImages(
-      sources: const <String, String>{'media:one': 'asset:assets/resolved.png'},
-      intrinsicSizes: const <String, Size2D>{'media:one': Size2D(640, 480)},
-    );
+      final images = _FakeImages(
+        sources: const <String, String>{
+          'media:one': 'asset:assets/resolved.png',
+        },
+        intrinsicSizes: const <String, Size2D>{'media:one': Size2D(640, 480)},
+      );
 
-    var decoderCalls = 0;
+      var decoderCalls = 0;
 
-    final pool = FlutterImagePool(
-      resolver: images,
-      decoder: (_) async {
-        decoderCalls++;
-        return decoded;
-      },
-    );
+      final pool = FlutterImagePool(
+        resolver: images,
+        decoder: (_) async {
+          decoderCalls++;
+          return decoded;
+        },
+      );
 
-    final resources = CanvasRuntimeResources(
-      fonts: fonts,
-      pickerFonts: const <FontPickerItem>[],
-      icons: icons,
-      images: images,
-    );
+      final resources = CanvasRuntimeResources(
+        fonts: fonts,
+        pickerFonts: const <FontPickerItem>[],
+        icons: icons,
+        images: images,
+      );
 
-    final coordinator = EditorAssetCoordinator(
-      assets: resources,
-      pool: pool,
-      targetW: 1024,
-      targetH: 1024,
-    );
+      final coordinator = EditorAssetCoordinator(
+        assets: resources,
+        pool: pool,
+        targetW: 1024,
+        targetH: 1024,
+      );
 
-    final intrinsicEvents = <ElementId>[];
-    final subscription = pool.onIntrinsicUpdated.listen(intrinsicEvents.add);
+      final fontsChanged = await coordinator.ensureForScene(
+        _imageScene('media:one'),
+      );
 
-    final fontsChanged = await coordinator.ensureForScene(
-      _imageScene('media:one'),
-    );
+      await pumpEventQueue();
 
-    await pumpEventQueue();
+      expect(fontsChanged, isFalse);
+      expect(fonts.loadedRequests, hasLength(1));
+      expect(fonts.loadedRequests.single, isEmpty);
 
-    expect(fontsChanged, isFalse);
-    expect(fonts.loadedRequests, hasLength(1));
-    expect(fonts.loadedRequests.single, isEmpty);
+      expect(images.requestedSources, ['media:one']);
+      expect(images.requestedIntrinsicSizes, isEmpty);
 
-    expect(images.requestedSources, ['media:one']);
-    expect(images.requestedIntrinsicSizes, ['media:one']);
+      expect(decoderCalls, 1);
 
-    expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
+      expect(identical(pool.images['image-0'], decoded), isTrue);
 
-    expect(intrinsicEvents, ['image-0']);
-    expect(decoderCalls, 1);
+      expect(pool.revision.value, 1);
+      expect(decoded.debugDisposed, isFalse);
 
-    expect(identical(pool.images['image-0'], decoded), isTrue);
+      coordinator.dispose();
+      pool.dispose();
 
-    expect(pool.revision.value, 1);
-    expect(decoded.debugDisposed, isFalse);
-
-    await subscription.cancel();
-
-    coordinator.dispose();
-    pool.dispose();
-
-    expect(decoded.debugDisposed, isTrue);
-    expect(pool.images, isEmpty);
-  });
+      expect(decoded.debugDisposed, isTrue);
+      expect(pool.images, isEmpty);
+    },
+  );
 
   test('coordinator disposal invalidates blocked font preparation', () async {
     final fontLoad = Completer<bool>();
@@ -226,66 +228,6 @@ void main() {
 
     pool.dispose();
   });
-
-  test(
-    'coordinator preloads raster while intrinsic metadata is pending',
-    () async {
-      final decoded = await _createImage();
-      final metadata = Completer<Map<String, Size2D>>();
-      final metadataStarted = Completer<void>();
-      final decoderStarted = Completer<void>();
-
-      final fonts = _FakeFonts();
-      final icons = _FakeIcons();
-      final images = _FakeImages(
-        sources: const <String, String>{
-          'media:one': 'asset:assets/resolved.png',
-        },
-        intrinsicSizes: const <String, Size2D>{},
-        resolveIntrinsicSizesCallback: (_) {
-          metadataStarted.complete();
-          return metadata.future;
-        },
-      );
-
-      final pool = FlutterImagePool(
-        resolver: images,
-        decoder: (_) async {
-          decoderStarted.complete();
-          return decoded;
-        },
-      );
-
-      final coordinator = EditorAssetCoordinator(
-        assets: CanvasRuntimeResources(
-          fonts: fonts,
-          pickerFonts: const <FontPickerItem>[],
-          icons: icons,
-          images: images,
-        ),
-        pool: pool,
-      );
-
-      final resultFuture = coordinator.ensureForScene(_imageScene('media:one'));
-
-      await metadataStarted.future;
-      await pumpEventQueue();
-
-      expect(decoderStarted.isCompleted, isTrue);
-
-      final result = await resultFuture;
-
-      expect(result, isFalse);
-      expect(identical(pool.images['image-0'], decoded), isTrue);
-
-      metadata.complete(const <String, Size2D>{});
-      await pumpEventQueue();
-
-      coordinator.dispose();
-      pool.dispose();
-      expect(decoded.debugDisposed, isTrue);
-    },
-  );
 }
 
 final class _BlockingFonts implements FlutterFontLoader {

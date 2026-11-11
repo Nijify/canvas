@@ -56,9 +56,9 @@ CanvasRuntimeResources
 
 `FlutterFontLoader` is renderer-owned because font registration is a Flutter rendering concern. `FontPickerItem` remains editor-owned presentation metadata. `CanvasImageAssetResolver` is core-owned because logical image source identity is renderer-neutral.
 
-`CanvasEditorSurface` owns its long-lived `FlutterTextPipeline` and `FlutterImagePool`. It also owns the pool's intrinsic-update subscription because the notification lifecycle belongs with the concrete pool owner. `EditorRuntime` consumes `CoreServices` and does not subscribe to image-resource streams.
+`CanvasEditorSurface` owns its long-lived `FlutterTextPipeline` and `FlutterImagePool`. `EditorRuntime` consumes `CoreServices`; image geometry is available synchronously from the scene's saved asset dimensions.
 
-`EditorAssetCoordinator` discovers required scene font families, asks the shared font loader to ensure them, starts best-effort intrinsic metadata resolution, and preloads visible raster state. Optional intrinsic metadata does not block raster loading for the interactive editor.
+`EditorAssetCoordinator` discovers required scene font families, asks the shared font loader to ensure them, and preloads raster state. Image imports resolve natural dimensions before an edit and commit them atomically with the source. Raster readiness affects painting without changing image layout.
 
 ## Canonical, resolved, and prepared scenes
 

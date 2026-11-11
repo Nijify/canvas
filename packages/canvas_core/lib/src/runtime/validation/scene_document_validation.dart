@@ -60,10 +60,8 @@ final class _SceneValidator {
     }
 
     final intrinsicSize = asset.intrinsicSize;
-    if (intrinsicSize != null) {
-      _validatePositive(intrinsicSize.w, '$path/intrinsicSize/w');
-      _validatePositive(intrinsicSize.h, '$path/intrinsicSize/h');
-    }
+    _validatePositive(intrinsicSize.w, '$path/intrinsicSize/w');
+    _validatePositive(intrinsicSize.h, '$path/intrinsicSize/h');
   }
 
   void _validateNode(Node node, String path) {

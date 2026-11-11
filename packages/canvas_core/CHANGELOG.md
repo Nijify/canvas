@@ -1,6 +1,7 @@
 ## Unreleased
 
-- Adopt scene v7 ordinary layers. Remove node visibility, roles, and group behavior envelopes. Require explicit artboard dimensions in scene JSON and omit empty asset maps and absent intrinsic metadata.
+- Adopt scene v7 ordinary layers. Remove node visibility, roles, and group behavior envelopes. Require explicit artboard dimensions in scene JSON and omit empty asset maps.
+- Require finite positive `CanvasImageAsset.intrinsicSize`. Compute image fit and crop from saved asset dimensions; remove `ImageIntrinsics` and `CoreServices.images`.
 
 ## 0.19.0
 
