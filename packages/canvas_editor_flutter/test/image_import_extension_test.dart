@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 
 import 'editor_runtime_fakes.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 const _existingImageId = 'existing-image';
 const _secondImageId = 'second-image';
 const _existingAssetId = 'existing-asset';
@@ -275,6 +277,11 @@ void main() {
         tester,
         scene: _sceneWithImage(),
         imageImport: imageImport,
+        resources: canvasRuntimeResourcesForTest(
+          images: _SizedImageResolver(const {
+            'media:replacement-image': Size2D(800, 400),
+          }),
+        ),
       );
 
       editor.selection.selectItem(_existingImageId);
@@ -296,6 +303,17 @@ void main() {
         'media:replacement-image',
       );
       expect(editor.controller.canUndo.value, isTrue);
+      expect(
+        _imageAsset(editor.controller, _existingImageId)!.intrinsicSize,
+        const Size2D(800, 400),
+      );
+      expect(
+        (findById(
+          editor.controller.document.value,
+          _existingImageId,
+        ) as ImageNode).size,
+        const Size2D(200, 160),
+      );
 
       editor.controller.undo();
       await tester.pumpAndSettle();
@@ -303,6 +321,40 @@ void main() {
       expect(
         _imageSourceRef(editor.controller, _existingImageId),
         'media:existing-image',
+      );
+      expect(
+        _imageAsset(editor.controller, _existingImageId)!.intrinsicSize,
+        _testImageSize,
+      );
+    },
+  );
+
+  testWidgets(
+    'replacement with invalid dimensions preserves the original asset and history',
+    (tester) async {
+      final editor = await _pumpEditor(
+        tester,
+        scene: _sceneWithImage(),
+        imageImport: _RecordingImageImportPort(
+          ImageImportResult.success('media:replacement-image'),
+        ),
+        resources: canvasRuntimeResourcesForTest(
+          images: _SizedImageResolver(const {
+            'media:replacement-image': Size2D(800, 0),
+          }),
+        ),
+      );
+      editor.selection.selectItem(_existingImageId);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(_replaceGalleryKey));
+      await tester.pumpAndSettle();
+
+      expect(editor.controller.document.value, _sceneWithImage());
+      expect(editor.controller.canUndo.value, isFalse);
+      expect(
+        find.textContaining('Image dimensions are unavailable'),
+        findsOneWidget,
       );
     },
   );
@@ -313,8 +365,6 @@ void main() {
       final imageImport = _RecordingImageImportPort(
         ImageImportResult.success('media:unused'),
       );
-
-      const _testImageSize = Size2D(200, 160);
 
       final editor = await _pumpEditor(
         tester,

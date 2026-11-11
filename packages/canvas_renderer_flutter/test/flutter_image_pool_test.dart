@@ -33,16 +33,10 @@ CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
 }
 
 final class _TestImageAssetResolver implements CanvasImageAssetResolver {
-  const _TestImageAssetResolver({
-    this.resolveSourcesCallback,
-    this.resolveIntrinsicSizesCallback,
-  });
+  const _TestImageAssetResolver({this.resolveSourcesCallback});
 
   final Future<Map<String, String>> Function(List<String> sourceRefs)?
   resolveSourcesCallback;
-
-  final Future<Map<String, Size2D>> Function(List<String> sourceRefs)?
-  resolveIntrinsicSizesCallback;
 
   @override
   Future<Map<String, String>> resolveSources(List<String> sourceRefs) {
@@ -59,15 +53,8 @@ final class _TestImageAssetResolver implements CanvasImageAssetResolver {
   }
 
   @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> sourceRefs) {
-    final callback = resolveIntrinsicSizesCallback;
-
-    if (callback != null) {
-      return callback(sourceRefs);
-    }
-
-    return Future<Map<String, Size2D>>.value(const <String, Size2D>{});
-  }
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> sourceRefs) =>
+      throw StateError('Raster loading must use saved dimensions.');
 }
 
 Future<ui.Image> _createImage({

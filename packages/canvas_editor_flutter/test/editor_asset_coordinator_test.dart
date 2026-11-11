@@ -36,17 +36,10 @@ final class _FakeIcons implements IconCatalogPort {
 }
 
 final class _FakeImages implements CanvasImageAssetResolver {
-  _FakeImages({
-    required this.sources,
-    required this.intrinsicSizes,
-    this.resolveIntrinsicSizesCallback,
-  });
+  _FakeImages({required this.sources, required this.intrinsicSizes});
 
   final Map<String, String> sources;
   final Map<String, Size2D> intrinsicSizes;
-
-  final Future<Map<String, Size2D>> Function(List<String> sourceRefs)?
-  resolveIntrinsicSizesCallback;
 
   final List<String> requestedSources = <String>[];
   final List<String> requestedIntrinsicSizes = <String>[];
@@ -66,11 +59,6 @@ final class _FakeImages implements CanvasImageAssetResolver {
     List<String> sourceRefs,
   ) async {
     requestedIntrinsicSizes.addAll(sourceRefs);
-
-    final callback = resolveIntrinsicSizesCallback;
-    if (callback != null) {
-      return callback(sourceRefs);
-    }
 
     return <String, Size2D>{
       for (final sourceRef in sourceRefs)

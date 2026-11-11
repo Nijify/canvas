@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CanvasImageAsset {
 
- String get sourceRef;@JsonKey(includeIfNull: false)@NullableSize2DConverter() Size2D? get intrinsicSize;
+ String get sourceRef;@JsonKey(required: true, disallowNullValue: true)@Size2DConverter() Size2D get intrinsicSize;
 /// Create a copy of CanvasImageAsset
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -54,7 +54,7 @@ abstract mixin class $CanvasImageAssetCopyWith<$Res>  {
   factory $CanvasImageAssetCopyWith(CanvasImageAsset value, $Res Function(CanvasImageAsset) _then) = _$CanvasImageAssetCopyWithImpl;
 @useResult
 $Res call({
- String sourceRef,@JsonKey(includeIfNull: false)@NullableSize2DConverter() Size2D? intrinsicSize
+ String sourceRef,@JsonKey(required: true, disallowNullValue: true)@Size2DConverter() Size2D intrinsicSize
 });
 
 
@@ -71,11 +71,11 @@ class _$CanvasImageAssetCopyWithImpl<$Res>
 
 /// Create a copy of CanvasImageAsset
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sourceRef = null,Object? intrinsicSize = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sourceRef = null,Object? intrinsicSize = null,}) {
   return _then(CanvasImageAsset(
 sourceRef: null == sourceRef ? _self.sourceRef : sourceRef // ignore: cast_nullable_to_non_nullable
-as String,intrinsicSize: freezed == intrinsicSize ? _self.intrinsicSize : intrinsicSize // ignore: cast_nullable_to_non_nullable
-as Size2D?,
+as String,intrinsicSize: null == intrinsicSize ? _self.intrinsicSize : intrinsicSize // ignore: cast_nullable_to_non_nullable
+as Size2D,
   ));
 }
 
@@ -160,7 +160,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sourceRef, @JsonKey(includeIfNull: false)@NullableSize2DConverter()  Size2D? intrinsicSize)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String sourceRef, @JsonKey(required: true, disallowNullValue: true)@Size2DConverter()  Size2D intrinsicSize)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CanvasImageAsset() when $default != null:
 return $default(_that.sourceRef,_that.intrinsicSize);case _:
@@ -181,7 +181,7 @@ return $default(_that.sourceRef,_that.intrinsicSize);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sourceRef, @JsonKey(includeIfNull: false)@NullableSize2DConverter()  Size2D? intrinsicSize)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String sourceRef, @JsonKey(required: true, disallowNullValue: true)@Size2DConverter()  Size2D intrinsicSize)  $default,) {final _that = this;
 switch (_that) {
 case _CanvasImageAsset():
 return $default(_that.sourceRef,_that.intrinsicSize);case _:
@@ -201,7 +201,7 @@ return $default(_that.sourceRef,_that.intrinsicSize);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sourceRef, @JsonKey(includeIfNull: false)@NullableSize2DConverter()  Size2D? intrinsicSize)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String sourceRef, @JsonKey(required: true, disallowNullValue: true)@Size2DConverter()  Size2D intrinsicSize)?  $default,) {final _that = this;
 switch (_that) {
 case _CanvasImageAsset() when $default != null:
 return $default(_that.sourceRef,_that.intrinsicSize);case _:
@@ -216,11 +216,11 @@ return $default(_that.sourceRef,_that.intrinsicSize);case _:
 @JsonSerializable()
 
 class _CanvasImageAsset implements CanvasImageAsset {
-  const _CanvasImageAsset({required this.sourceRef, @JsonKey(includeIfNull: false)@NullableSize2DConverter() this.intrinsicSize});
+  const _CanvasImageAsset({required this.sourceRef, @JsonKey(required: true, disallowNullValue: true)@Size2DConverter() required this.intrinsicSize});
   factory _CanvasImageAsset.fromJson(Map<String, dynamic> json) => _$CanvasImageAssetFromJson(json);
 
 @override final  String sourceRef;
-@override@JsonKey(includeIfNull: false)@NullableSize2DConverter() final  Size2D? intrinsicSize;
+@override@JsonKey(required: true, disallowNullValue: true)@Size2DConverter() final  Size2D intrinsicSize;
 
 /// Create a copy of CanvasImageAsset
 /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +257,7 @@ abstract mixin class _$CanvasImageAssetCopyWith<$Res> implements $CanvasImageAss
   factory _$CanvasImageAssetCopyWith(_CanvasImageAsset value, $Res Function(_CanvasImageAsset) _then) = __$CanvasImageAssetCopyWithImpl;
 @override @useResult
 $Res call({
- String sourceRef,@JsonKey(includeIfNull: false)@NullableSize2DConverter() Size2D? intrinsicSize
+ String sourceRef,@JsonKey(required: true, disallowNullValue: true)@Size2DConverter() Size2D intrinsicSize
 });
 
 
@@ -274,11 +274,11 @@ class __$CanvasImageAssetCopyWithImpl<$Res>
 
 /// Create a copy of CanvasImageAsset
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sourceRef = null,Object? intrinsicSize = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sourceRef = null,Object? intrinsicSize = null,}) {
   return _then(_CanvasImageAsset(
 sourceRef: null == sourceRef ? _self.sourceRef : sourceRef // ignore: cast_nullable_to_non_nullable
-as String,intrinsicSize: freezed == intrinsicSize ? _self.intrinsicSize : intrinsicSize // ignore: cast_nullable_to_non_nullable
-as Size2D?,
+as String,intrinsicSize: null == intrinsicSize ? _self.intrinsicSize : intrinsicSize // ignore: cast_nullable_to_non_nullable
+as Size2D,
   ));
 }
 

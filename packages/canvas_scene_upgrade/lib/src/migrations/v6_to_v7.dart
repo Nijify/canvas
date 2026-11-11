@@ -43,7 +43,7 @@ Map<String, Object?> convertCanvasSceneV6ToV7(
         'for its logical source reference.',
       );
     }
-    assets[id] = {...asset, 'intrinsicSize': size.toJson()};
+    assets[id] = <String, Object?>{...asset, 'intrinsicSize': size.toJson()};
   }
   return {
     ...input,

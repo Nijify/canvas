@@ -23,7 +23,8 @@ sealed class BackgroundRemovalResult {
 /// Successful background removal.
 ///
 /// [sourceRef] must be a new, non-blank, durable, host-resolvable reference that
-/// can be persisted directly in `CanvasFields.imageSource`.
+/// replaces the asset's source through `CanvasFields.imageSource`. The editor
+/// retains the asset's saved natural dimensions.
 ///
 /// For the initial background-removal contract, the returned image must:
 ///

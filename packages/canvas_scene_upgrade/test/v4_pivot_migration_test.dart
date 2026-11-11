@@ -22,6 +22,48 @@ Map<String, Object?> _scene(Map<String, Object?> node) => {
   'children': [node],
 };
 void main() {
+  test('reuses source dimensions for a historical pivot and its v7 asset', () {
+    final input =
+        _scene({
+            'runtimeType': 'group',
+            'id': 'group',
+            'xf': {
+              'scale': {'x': 2, 'y': 2},
+            },
+            'children': [
+              {
+                'runtimeType': 'image',
+                'id': 'image',
+                'xf': {
+                  'position': {'x': 50, 'y': 20},
+                },
+                'data': {
+                  'assetId': 'asset',
+                  'size': {'w': 100, 'h': 100},
+                  'align': {'x': 0, 'y': 0},
+                },
+              },
+            ],
+          })
+          ..['assets'] = {
+            'asset': {'sourceRef': 'media:image'},
+          };
+    expect(() => upgradeCanvasScene(input), throwsFormatException);
+    final refs = <String>[];
+    final scene = decodeCanvasScene(
+      upgradeCanvasScene(
+        input,
+        resolveImageIntrinsicSize: (ref) {
+          refs.add(ref);
+          return const Size2D(400, 200);
+        },
+      ),
+    );
+    expect(refs, ['media:image']);
+    expect(scene.children.single.xf, Affine2D(2, 0, 0, 2, -50, 5));
+    expect(scene.assets['asset']!.intrinsicSize, const Size2D(400, 200));
+  });
+
   test('bakes geometry-center pivots without changing path coordinates', () {
     final source = {
       'kind': 'rect',
