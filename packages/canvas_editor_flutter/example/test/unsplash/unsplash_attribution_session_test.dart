@@ -74,7 +74,7 @@ void main() {
     expect(session.visibleCreditsForScene(scene), hasLength(1));
   });
 
-  test('does not attribute hidden image subtrees', () {
+  test('attributes referenced images in the prepared scene', () {
     final session = UnsplashAttributionSession()..register(photo);
     final scene = CanvasSceneDocument(
       artboardSize: const Size2D(800, 600),
@@ -85,8 +85,7 @@ void main() {
       },
       children: <Node>[
         ImageNode(
-          id: 'hidden-image',
-          hidden: true,
+          id: 'image',
           assetId: 'image',
           size: Size2D(200, 120),
           xf: Affine2D.translation(100, 100),
@@ -94,6 +93,6 @@ void main() {
       ],
     );
 
-    expect(session.visibleCreditsForScene(scene), isEmpty);
+    expect(session.visibleCreditsForScene(scene), hasLength(1));
   });
 }

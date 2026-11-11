@@ -25,12 +25,12 @@ List<Map<String, Object?>> _children(List input) {
         'Supply prepareV6Scene to resolve its behavior into ordinary layers.',
       );
     }
-    if (node.remove('hidden') == true) continue;
     node.remove('role');
     node.remove('behavior');
     if (node['type'] == 'group') {
       node['children'] = _children(node['children'] as List);
     }
+    if (node.remove('hidden') == true) continue;
     result.add(node);
   }
   return result;

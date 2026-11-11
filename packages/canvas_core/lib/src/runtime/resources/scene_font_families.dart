@@ -11,7 +11,7 @@ import 'package:canvas_core/src/runtime/traversal/traversal.dart'
 /// This function performs discovery only. It does not load fonts, inspect
 /// platform assets, or validate that a family is available on the current host.
 ///
-/// complete logical document rather than only the currently painted subset.
+/// Discovery includes every text layer in the scene hierarchy.
 ///
 /// Icons contain vector geometry and contribute no font-family dependencies.
 Set<String> collectSceneFontFamilies(

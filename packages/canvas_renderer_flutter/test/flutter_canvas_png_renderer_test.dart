@@ -179,12 +179,7 @@ CanvasSceneDocument _imageScene({
         intrinsicSize: intrinsicSize,
       ),
     },
-    children: <Node>[
-      if (hidden)
-        Node.group(id: 'hidden-group', children: <Node>[image])
-      else
-        image,
-    ],
+    children: <Node>[image],
   );
 }
 

@@ -17,7 +17,7 @@ _CanvasImageAsset _$CanvasImageAssetFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$CanvasImageAssetToJson(_CanvasImageAsset instance) =>
     <String, dynamic>{
       'sourceRef': instance.sourceRef,
-      'intrinsicSize': const NullableSize2DConverter().toJson(
+      'intrinsicSize': ?const NullableSize2DConverter().toJson(
         instance.intrinsicSize,
       ),
     };
@@ -58,6 +58,6 @@ Map<String, dynamic> _$CanvasSceneDocumentToJson(
   'artboardSize': const Size2DConverter().toJson(instance.artboardSize),
   'backgroundFill': const CanvasFillConverter().toJson(instance.backgroundFill),
   'backgroundOpacity': instance.backgroundOpacity,
-  'assets': instance.assets.map((k, e) => MapEntry(k, e.toJson())),
+  'assets': ?_assetsToJson(instance.assets),
   'children': instance.children.map((e) => e.toJson()).toList(),
 };

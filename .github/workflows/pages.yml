@@ -43,6 +43,9 @@ jobs:
           dart run build_runner build --delete-conflicting-outputs
           git diff --exit-code -- lib/src/runtime/model
 
+      - name: Analyze workspace
+        run: flutter analyze
+
       - name: Test example
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter/example
