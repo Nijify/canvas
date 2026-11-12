@@ -130,6 +130,8 @@ export 'src/services/icon_resolver.dart' show IconResolver, ResolvedIcon;
 
 export 'src/runtime/resources/scene_font_families.dart'
     show collectSceneFontFamilies;
+export 'src/runtime/resources/scene_image_assets.dart'
+    show pruneUnusedImageAssets;
 
 // ============================================================================
 // 8) Traversal / query helpers (headless, deterministic)

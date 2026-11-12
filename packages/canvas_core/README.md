@@ -224,6 +224,7 @@ See [VERSIONING.md](VERSIONING.md) for the full policy.
 
 - `canvas_core` is Dart-only and must stay independent of Flutter and `dart:ui`.
 - Text measurement and icon lookup are host services. Every image asset stores finite positive natural dimensions in `intrinsicSize`; scene computation uses those saved dimensions for fit and crop without loading image resources.
+- `decodeCanvasScene`, `encodeCanvasScene`, and editor scene edits prune image assets unreferenced by scene nodes. `pruneUnusedImageAssets` exposes the same pure normalization for hosts. Previous scene snapshots retain their own registries; hosts own the lifecycle of underlying media and resources referenced by other project data.
 - Renderers and editors should reuse `ComputedScene` for canonical document transforms, local layout bounds, and paint bounds. Editor-only derived interaction geometry belongs to `canvas_editor_flutter`.
 - Editor-specific interaction concerns such as history, picking, snapping, and selection belong to `canvas_editor_flutter`.
 - Public core consumers should import `canvas_core_runtime.dart`.

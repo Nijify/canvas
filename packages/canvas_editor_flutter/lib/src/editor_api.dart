@@ -30,7 +30,10 @@ abstract class EditorDocumentAdapter<TSourceDocument> {
   /// Returns the canonical runtime/base scene that shared mutations edit.
   rt.CanvasSceneDocument getBase(TSourceDocument doc);
 
-  /// Replaces the canonical runtime/base scene after shared mutations.
+  /// Replaces the base scene after shared mutations or initial normalization.
+  ///
+  /// The editor retains image assets referenced by base-scene nodes. Resources
+  /// needed only by host-owned project data belong outside this registry.
   TSourceDocument replaceBase(TSourceDocument doc, rt.CanvasSceneDocument base);
 
   /// Resolves the canonical document into the runtime scene used for rendering.

@@ -4,6 +4,7 @@ import 'package:canvas_editor_flutter/src/interaction/transform_gesture.dart';
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/src/editor_api.dart';
 import 'package:canvas_editor_flutter/src/editor_field_codecs.dart';
+import 'package:canvas_editor_flutter/src/editor_edits.dart';
 import 'package:canvas_editor_flutter/src/runtime/editor_runtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -1082,79 +1083,215 @@ void main() {
     },
   );
 
-  test('image source canonical updates preserve existing asset semantics', () {
-    final runtime = _buildSceneRuntime(_sceneWithBoundImage('media:original'));
-    addTearDown(runtime.dispose);
+  test(
+    'image source edits prune unused assets and preserve undo snapshots',
+    () {
+      final runtime = _buildSceneRuntime(
+        _sceneWithBoundImage('media:original'),
+      );
+      addTearDown(runtime.dispose);
 
-    expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
+      expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
 
-    runtime.commitField<rt.CanvasImageAsset?>(
-      'img1',
-      rt.CanvasFields.imageSource,
-      const rt.CanvasImageAsset(
-        sourceRef: 'media:original',
-        intrinsicSize: _testImageSize,
-      ),
-    );
-
-    expect(
-      runtime.canUndo.value,
-      isFalse,
-      reason: 'Committing the current source must remain a no-op.',
-    );
-
-    String? updaterInput;
-
-    runtime.updateField<rt.CanvasImageAsset?>(
-      'img1',
-      rt.CanvasFields.imageSource,
-      (current) {
-        updaterInput = current?.sourceRef;
-        return const rt.CanvasImageAsset(
-          sourceRef: 'media:replacement',
+      runtime.commitField<rt.CanvasImageAsset?>(
+        'img1',
+        rt.CanvasFields.imageSource,
+        const rt.CanvasImageAsset(
+          sourceRef: 'media:original',
           intrinsicSize: _testImageSize,
-        );
-      },
+        ),
+      );
+
+      expect(
+        runtime.canUndo.value,
+        isFalse,
+        reason: 'Committing the current source must remain a no-op.',
+      );
+
+      String? updaterInput;
+
+      runtime.updateField<rt.CanvasImageAsset?>(
+        'img1',
+        rt.CanvasFields.imageSource,
+        (current) {
+          updaterInput = current?.sourceRef;
+          return const rt.CanvasImageAsset(
+            sourceRef: 'media:replacement',
+            intrinsicSize: _testImageSize,
+          );
+        },
+      );
+
+      expect(updaterInput, 'media:original');
+
+      final replaced = runtime.sourceDocument;
+      final replacedImage = rt.findById(replaced, 'img1') as rt.ImageNode;
+      final replacementAssetId = replacedImage.assetId!;
+
+      expect(replacementAssetId, isNot(_originalImageAssetId));
+      expect(replaced.assets.containsKey(_originalImageAssetId), isFalse);
+      expect(replaced.assets, hasLength(1));
+      expect(
+        replaced.assets[replacementAssetId]?.sourceRef,
+        'media:replacement',
+      );
+      expect(_imageSourceOf(replaced), 'media:replacement');
+
+      runtime.undo();
+
+      expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
+      expect(runtime.sourceDocument.assets, hasLength(1));
+
+      runtime.redo();
+
+      expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
+
+      runtime.commitField<rt.CanvasImageAsset?>(
+        'img1',
+        rt.CanvasFields.imageSource,
+        null,
+      );
+
+      final cleared = runtime.sourceDocument;
+      final clearedImage = rt.findById(cleared, 'img1') as rt.ImageNode;
+
+      expect(clearedImage.assetId, isNull);
+
+      expect(cleared.assets, isEmpty);
+      expect(
+        replaced.assets[replacementAssetId]?.sourceRef,
+        'media:replacement',
+      );
+
+      runtime.undo();
+
+      expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
+      expect(runtime.sourceDocument.assets.keys, [replacementAssetId]);
+      runtime.redo();
+      expect(runtime.sourceDocument.assets, isEmpty);
+    },
+  );
+
+  test(
+    'shared assets survive replacement until the last reference is removed',
+    () {
+      final initial = _sceneWithBoundImage('media:shared');
+      final shared = initial.copyWith(
+        children: [
+          ...initial.children,
+          rt.Node.group(
+            id: 'group',
+            children: [
+              const rt.Node.image(
+                id: 'second',
+                assetId: _originalImageAssetId,
+                size: rt.Size2D(100, 50),
+              ),
+            ],
+          ),
+        ],
+      );
+      final runtime = _buildSceneRuntime(shared);
+      addTearDown(runtime.dispose);
+
+      runtime.commitField<rt.CanvasImageAsset?>(
+        'img1',
+        rt.CanvasFields.imageSource,
+        const rt.CanvasImageAsset(
+          sourceRef: 'media:B',
+          intrinsicSize: _testImageSize,
+        ),
+      );
+      final firstReplacement = runtime.sourceDocument;
+      expect(
+        firstReplacement.assets.values.map((a) => a.sourceRef),
+        unorderedEquals(['media:shared', 'media:B']),
+      );
+
+      runtime.commitField<rt.CanvasImageAsset?>(
+        'second',
+        rt.CanvasFields.imageSource,
+        const rt.CanvasImageAsset(
+          sourceRef: 'media:C',
+          intrinsicSize: _testImageSize,
+        ),
+      );
+      final secondReplacement = runtime.sourceDocument;
+      expect(
+        secondReplacement.assets.values.map((a) => a.sourceRef),
+        unorderedEquals(['media:B', 'media:C']),
+      );
+      expect(shared.assets.keys, [_originalImageAssetId]);
+      expect(
+        firstReplacement.assets.containsKey(_originalImageAssetId),
+        isTrue,
+      );
+
+      runtime.undo();
+      expect(runtime.sourceDocument, firstReplacement);
+      runtime.redo();
+      expect(runtime.sourceDocument, secondReplacement);
+
+      runtime.applyEdit(EditorEdits.deleteSubtree('group'));
+      expect(runtime.sourceDocument.assets.values.map((a) => a.sourceRef), [
+        'media:B',
+      ]);
+      runtime.undo();
+      expect(runtime.sourceDocument, secondReplacement);
+      runtime.redo();
+      expect(runtime.sourceDocument.assets, hasLength(1));
+    },
+  );
+
+  test(
+    'initial scene and resolved output normalize without adding history',
+    () {
+      final initial = _sceneWithBoundImage('media:original');
+      final withUnused = initial.copyWith(
+        assets: {
+          ...initial.assets,
+          'unused': initial.assets[_originalImageAssetId]!,
+        },
+      );
+      final source = _MetadataDocument(
+        base: withUnused,
+        metadata: 'host-owned',
+      );
+      final hosted = _buildMetadataRuntime(source);
+      addTearDown(hosted.dispose);
+      expect(hosted.sourceDocument.base, initial);
+      expect(hosted.document.value, initial);
+      expect(hosted.sourceDocument.metadata, 'host-owned');
+      expect(hosted.canUndo.value, isFalse);
+      expect(source.base.assets, hasLength(2));
+
+      final runtime = _buildSceneRuntime(
+        initial,
+        adapter: const _OmitNodesFromRenderAdapter(),
+      );
+      addTearDown(runtime.dispose);
+      expect(runtime.resolveSceneForOutput().assets, isEmpty);
+      expect(runtime.sourceDocument.assets, hasLength(1));
+      expect(runtime.canUndo.value, isFalse);
+    },
+  );
+
+  test('custom edits add the asset and its referencing node atomically', () {
+    final runtime = _buildSceneRuntime(_emptyScene());
+    addTearDown(runtime.dispose);
+    runtime.applyEdit(
+      EditorEdits.updateScene((_) => _sceneWithBoundImage('media:added')),
     );
-
-    expect(updaterInput, 'media:original');
-
-    final replaced = runtime.sourceDocument;
-    final replacedImage = rt.findById(replaced, 'img1') as rt.ImageNode;
-    final replacementAssetId = replacedImage.assetId!;
-
-    expect(replacementAssetId, isNot(_originalImageAssetId));
-    expect(replaced.assets[_originalImageAssetId]?.sourceRef, 'media:original');
-    expect(replaced.assets[replacementAssetId]?.sourceRef, 'media:replacement');
-    expect(_imageSourceOf(replaced), 'media:replacement');
-
-    runtime.undo();
-
-    expect(_imageSourceOf(runtime.sourceDocument), 'media:original');
-    expect(runtime.sourceDocument.assets, hasLength(1));
-
-    runtime.redo();
-
-    expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
-
-    runtime.commitField<rt.CanvasImageAsset?>(
-      'img1',
-      rt.CanvasFields.imageSource,
-      null,
+    expect(_imageSourceOf(runtime.sourceDocument), 'media:added');
+    runtime.applyEdit(
+      EditorEdits.updateScene((scene) => scene.copyWith(children: [])),
     );
-
-    final cleared = runtime.sourceDocument;
-    final clearedImage = rt.findById(cleared, 'img1') as rt.ImageNode;
-
-    expect(clearedImage.assetId, isNull);
-
-    expect(cleared.assets[_originalImageAssetId]?.sourceRef, 'media:original');
-
-    expect(cleared.assets[replacementAssetId]?.sourceRef, 'media:replacement');
-
+    expect(runtime.sourceDocument.assets, isEmpty);
     runtime.undo();
-
-    expect(_imageSourceOf(runtime.sourceDocument), 'media:replacement');
+    expect(_imageSourceOf(runtime.sourceDocument), 'media:added');
+    runtime.undo();
+    expect(runtime.sourceDocument.children, isEmpty);
+    expect(runtime.sourceDocument.assets, isEmpty);
   });
 
   test('image dimension fields preserve the canonical opposite dimension', () {

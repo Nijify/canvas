@@ -60,6 +60,8 @@ CanvasRuntimeResources
 
 `EditorAssetCoordinator` discovers required scene font families, asks the shared font loader to ensure them, and preloads raster state. Image imports resolve natural dimensions before an edit and commit them atomically with the source. Raster readiness affects painting without changing image layout.
 
+Initial base-scene adoption, shared base-scene replacements, and resolved output use core's `pruneUnusedImageAssets`. Pruning runs after complete edits and retains every image asset referenced anywhere in the scene tree. It creates a new registry so undo/redo snapshots retain their own asset records. Host-owned source metadata and physical media lifetimes remain outside this normalization.
+
 ## Canonical, resolved, and prepared scenes
 
 The editor distinguishes three useful scene states:
