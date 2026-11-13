@@ -1,5 +1,7 @@
 ## 0.20.0
 
+- Add the conventional `canvas_core.dart` entry point exporting the runtime API.
+  Existing `canvas_core_runtime.dart` imports remain supported.
 - **Breaking:** adopt scene v7 ordinary layers. Remove `hidden`, `role`, and
   `GroupBehaviorRef` from nodes. Require explicit artboard dimensions in scene
   JSON and omit empty asset maps. Upgrade older JSON explicitly through the

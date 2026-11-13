@@ -51,6 +51,9 @@ Import the runtime API for documents, geometry, services, scene computation, and
 import 'package:canvas_core/canvas_core_runtime.dart';
 ```
 
+The conventional `package:canvas_core/canvas_core.dart` entry point exports the
+same runtime API.
+
 Do not import files under `package:canvas_core/src/`; use `canvas_core_runtime.dart`.
 
 ## Basic usage

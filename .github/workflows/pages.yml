@@ -86,14 +86,17 @@ jobs:
         run: flutter build web --release --base-href /canvas/
 
       - name: Dry-run core publication
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_core
         run: dart pub publish --dry-run
 
       - name: Dry-run renderer publication
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_renderer_flutter
         run: dart pub publish --dry-run
 
       - name: Dry-run editor publication
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter
         run: dart pub publish --dry-run
 
