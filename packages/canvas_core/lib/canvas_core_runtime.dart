@@ -123,14 +123,15 @@ export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 // ============================================================================
 export 'src/serialization/serializers.dart';
 
-export 'src/services/services.dart'
-    show CanvasImageAssetResolver, ImageIntrinsics, TextMeasurer;
+export 'src/services/services.dart' show CanvasImageAssetResolver, TextMeasurer;
 export 'src/services/services_context.dart' show CoreServices;
 
 export 'src/services/icon_resolver.dart' show IconResolver, ResolvedIcon;
 
 export 'src/runtime/resources/scene_font_families.dart'
     show collectSceneFontFamilies;
+export 'src/runtime/resources/scene_image_assets.dart'
+    show pruneUnusedImageAssets;
 
 // ============================================================================
 // 8) Traversal / query helpers (headless, deterministic)

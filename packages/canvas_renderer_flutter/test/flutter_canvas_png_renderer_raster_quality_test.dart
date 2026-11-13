@@ -113,6 +113,45 @@ Future<String> _createStripedPngDataUri() async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test(
+    'cover cropping maps saved natural dimensions to decoded pixels',
+    () async {
+      final uri = await _createStripedPngDataUri();
+      final scene = CanvasSceneDocument(
+        artboardSize: const Size2D(4, 2),
+        backgroundFill: const CanvasFill.none(),
+        backgroundOpacity: 1,
+        assets: const {
+          'photo': CanvasImageAsset(
+            sourceRef: 'media:photo',
+            intrinsicSize: Size2D(80, 20),
+          ),
+        },
+        children: [
+          Node.image(
+            id: 'image',
+            assetId: 'photo',
+            size: const Size2D(4, 2),
+            fit: ImageFit.cover,
+            xf: Affine2D.translation(2, 1),
+          ),
+        ],
+      );
+      final renderer = FlutterCanvasPngRenderer(
+        fonts: const _NoopFontLoader(),
+        images: _MapImageResolver(sources: {'media:photo': uri}),
+      );
+      final png = await renderer.renderPng(
+        scene: scene,
+        spec: const CanvasPngSpec(widthPx: 4, heightPx: 2, pixelRatio: 1),
+      );
+      final image = await _decodePng(png);
+      addTearDown(image.dispose);
+      final actual = [for (var x = 0; x < 4; x++) await _pixelAt(image, x, 0)];
+      expect(actual, [0xFF0000FF, 0xFFFFFF00, 0xFFFF00FF, 0xFF00FFFF]);
+    },
+  );
+
   test('final PNG preserves native raster detail at high density', () async {
     const sourceRef = 'media:striped';
 

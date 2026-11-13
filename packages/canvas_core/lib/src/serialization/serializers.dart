@@ -1,7 +1,7 @@
 // Path: packages/canvas_core/lib/src/serialization/serializers.dart
 
 import 'package:canvas_core/src/runtime/model/scene_document.dart';
-import 'package:canvas_core/src/runtime/validation/scene_document_validation.dart';
+import 'package:canvas_core/src/runtime/resources/scene_image_assets.dart';
 import 'package:canvas_core/src/serialization/scene_format.dart';
 import 'package:canvas_core/src/serialization/formats/scene_v7.dart'
     show validateSceneV7Json;
@@ -16,7 +16,7 @@ export 'package:canvas_core/src/serialization/converters.dart'
 export 'package:canvas_core/src/serialization/scene_format.dart'
     show currentCanvasSceneFormatVersion;
 
-/// Decodes current persisted JSON: strict wire checks, decoding, then integrity.
+/// Decodes current JSON, validates integrity, and prunes unused image assets.
 ///
 /// Upgrade historical JSON explicitly with the optional `canvas_scene_upgrade`
 /// package first. Malformed wire data throws
@@ -26,16 +26,16 @@ CanvasSceneDocument decodeCanvasScene(Map<String, Object?> json) {
   validateSceneV7Json(json);
   final payload = Map<String, dynamic>.from(json)..remove('sceneFormatVersion');
   final scene = CanvasSceneDocument.fromJson(payload);
-  requireCanvasSceneIntegrity(scene);
-  return scene;
+  return pruneUnusedImageAssets(scene);
 }
 
 /// Checks runtime integrity before recursive encoding to the current format.
 ///
 /// The guard checks cycles and node discriminator consistency.
+/// Unreferenced image assets are omitted without modifying the input scene.
 /// Package serializers own canonical wire structure; it is not scanned again.
 Map<String, Object?> encodeCanvasScene(CanvasSceneDocument scene) {
-  requireCanvasSceneIntegrity(scene);
-  return Map<String, Object?>.from(scene.toJson())
+  final normalized = pruneUnusedImageAssets(scene);
+  return Map<String, Object?>.from(normalized.toJson())
     ..['sceneFormatVersion'] = currentCanvasSceneFormatVersion;
 }

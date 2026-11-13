@@ -41,12 +41,10 @@ void validateSceneV7Json(Map<String, Object?> json) {
         asset,
         {'sourceRef', 'intrinsicSize'},
         path,
-        requiredFields: ['sourceRef'],
+        requiredFields: ['sourceRef', 'intrinsicSize'],
       );
       _string(asset['sourceRef'], '$path/sourceRef');
-      if (asset['intrinsicSize'] != null) {
-        _size(asset['intrinsicSize'], '$path/intrinsicSize');
-      }
+      _size(asset['intrinsicSize'], '$path/intrinsicSize');
     }
   }
   final children = _list(json['children'], '/children');

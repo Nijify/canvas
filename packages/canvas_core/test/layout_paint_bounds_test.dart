@@ -34,21 +34,19 @@ class _Icons implements IconResolver {
   };
 }
 
-class _Images implements ImageIntrinsics {
-  @override
-  Size2D? intrinsicSize(ElementId id) => const Size2D(200, 100);
-}
-
-CoreServices _services() => CoreServices(
-  textMeasurer: _TextMeasurer(),
-  icons: _Icons(),
-  images: _Images(),
-);
+CoreServices _services() =>
+    CoreServices(textMeasurer: _TextMeasurer(), icons: _Icons());
 
 CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
   backgroundFill: const CanvasFill.none(),
   backgroundOpacity: 1,
   children: children,
+  assets: const {
+    'asset': CanvasImageAsset(
+      sourceRef: 'test:image',
+      intrinsicSize: Size2D(200, 100),
+    ),
+  },
 );
 
 Node _text({
@@ -298,6 +296,7 @@ void main() {
       _scene([
         const Node.image(
           id: 'image',
+          assetId: 'asset',
           size: Size2D(100, 100),
           fit: ImageFit.contain,
           align: Vec2.zero,

@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 
 import 'editor_runtime_fakes.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 const _existingImageId = 'existing-image';
 const _secondImageId = 'second-image';
 const _existingAssetId = 'existing-asset';
@@ -25,7 +27,10 @@ CanvasSceneDocument _sceneWithImage() {
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: <CanvasAssetId, CanvasImageAsset>{
-      _existingAssetId: CanvasImageAsset(sourceRef: 'media:existing-image'),
+      _existingAssetId: CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: 'media:existing-image',
+      ),
     },
     children: <Node>[
       Node.image(
@@ -43,7 +48,10 @@ CanvasSceneDocument _sceneWithTwoImagesSharingSource() {
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: <CanvasAssetId, CanvasImageAsset>{
-      _sharedAssetId: CanvasImageAsset(sourceRef: 'media:shared-image'),
+      _sharedAssetId: CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: 'media:shared-image',
+      ),
     },
     children: <Node>[
       Node.image(
@@ -269,6 +277,11 @@ void main() {
         tester,
         scene: _sceneWithImage(),
         imageImport: imageImport,
+        resources: canvasRuntimeResourcesForTest(
+          images: _SizedImageResolver(const {
+            'media:replacement-image': Size2D(800, 400),
+          }),
+        ),
       );
 
       editor.selection.selectItem(_existingImageId);
@@ -290,6 +303,17 @@ void main() {
         'media:replacement-image',
       );
       expect(editor.controller.canUndo.value, isTrue);
+      expect(
+        _imageAsset(editor.controller, _existingImageId)!.intrinsicSize,
+        const Size2D(800, 400),
+      );
+      expect(
+        (findById(
+          editor.controller.document.value,
+          _existingImageId,
+        ) as ImageNode).size,
+        const Size2D(200, 160),
+      );
 
       editor.controller.undo();
       await tester.pumpAndSettle();
@@ -297,6 +321,40 @@ void main() {
       expect(
         _imageSourceRef(editor.controller, _existingImageId),
         'media:existing-image',
+      );
+      expect(
+        _imageAsset(editor.controller, _existingImageId)!.intrinsicSize,
+        _testImageSize,
+      );
+    },
+  );
+
+  testWidgets(
+    'replacement with invalid dimensions preserves the original asset and history',
+    (tester) async {
+      final editor = await _pumpEditor(
+        tester,
+        scene: _sceneWithImage(),
+        imageImport: _RecordingImageImportPort(
+          ImageImportResult.success('media:replacement-image'),
+        ),
+        resources: canvasRuntimeResourcesForTest(
+          images: _SizedImageResolver(const {
+            'media:replacement-image': Size2D(800, 0),
+          }),
+        ),
+      );
+      editor.selection.selectItem(_existingImageId);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(_replaceGalleryKey));
+      await tester.pumpAndSettle();
+
+      expect(editor.controller.document.value, _sceneWithImage());
+      expect(editor.controller.canUndo.value, isFalse);
+      expect(
+        find.textContaining('Image dimensions are unavailable'),
+        findsOneWidget,
       );
     },
   );
@@ -450,10 +508,13 @@ void main() {
       await tester.tap(find.byKey(_replaceGalleryKey));
       await tester.pump();
 
-      editor.controller.commitField<String>(
+      editor.controller.commitField<CanvasImageAsset?>(
         _existingImageId,
         CanvasFields.imageSource,
-        'media:newer-source',
+        CanvasImageAsset(
+          sourceRef: 'media:newer-source',
+          intrinsicSize: _testImageSize,
+        ),
       );
       await tester.pump();
 
@@ -546,7 +607,7 @@ void main() {
   });
 
   testWidgets(
-    'Add Image falls back when intrinsic metadata does not complete',
+    'Add Image leaves the scene untouched when dimensions are unavailable',
     (tester) async {
       final imageImport = _RecordingImageImportPort(
         ImageImportResult.success('media:pending-image'),
@@ -571,12 +632,12 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       await tester.pump();
 
-      final image = _singleImage(editor.controller);
-
-      expect(image.size, const Size2D(200, 200));
-      expect(image.xf.transformPoint(Vec2.zero), const Vec2(180, 180));
-      expect(_imageAsset(editor.controller, image.id)?.intrinsicSize, isNull);
-      expect(editor.selection.value, image.id);
+      expect(editor.controller.document.value.children, isEmpty);
+      expect(editor.controller.canUndo.value, isFalse);
+      expect(
+        find.textContaining('Image dimensions are unavailable'),
+        findsOneWidget,
+      );
 
       images.intrinsicSizes.complete(const <String, Size2D>{});
       await tester.pump();

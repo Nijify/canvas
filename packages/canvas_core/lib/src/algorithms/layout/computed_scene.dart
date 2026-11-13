@@ -69,7 +69,7 @@ final class ComputedScene {
 
 ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
   requireCanvasSceneIntegrity(doc);
-  final geometry = NodeGeometry(services);
+  final geometry = NodeGeometry(services, assets: doc.assets);
   final drawList = <DrawItem>[];
   final nodes = <ElementId, Node>{};
   final worlds = <ElementId, Affine2D>{};

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:canvas_core/canvas_core_runtime.dart'
     show
         CoreServices,
+        Size2D,
         currentCanvasSceneFormatVersion,
         decodeCanvasScene,
         encodeCanvasScene;
@@ -24,6 +25,9 @@ import 'migrations/v6_to_v7.dart';
 ///
 /// [services] supplies layout metrics when a historical group pivot needs them.
 /// Missing required text/image metrics are reported rather than approximated.
+/// [resolveImageIntrinsicSize] supplies finite positive natural dimensions by
+/// logical source reference when a historical asset has none. Acquire them
+/// before calling this synchronous upgrade. Stored dimensions take precedence.
 /// Hidden center pivots are baked at zero, matching their unevaluated v4 state.
 /// The input is never mutated. Intermediate steps use historical wire checks;
 /// only the completed upgrade is decoded and integrity-checked by current core.
@@ -48,7 +52,13 @@ Map<String, Object?> upgradeCanvasScene(
   CoreServices? services,
   bool? Function(String iconRef)? resolveLegacyIconWasGlyph,
   Map<String, Object?> Function(Map<String, Object?> scene)? prepareV6Scene,
+  Size2D? Function(String sourceRef)? resolveImageIntrinsicSize,
 }) {
+  final resolvedSizes = <String, Size2D?>{};
+  Size2D? resolveSize(String sourceRef) => resolvedSizes.putIfAbsent(
+    sourceRef,
+    () => resolveImageIntrinsicSize?.call(sourceRef),
+  );
   var source = json;
   if (!source.containsKey('sceneFormatVersion')) {
     if (!legacyUnversioned) {
@@ -86,6 +96,7 @@ Map<String, Object?> upgradeCanvasScene(
         _ => convertCanvasSceneV4ToV5(
           _toV4(source, version),
           services: services,
+          resolveImageIntrinsicSize: resolveSize,
         ),
       };
       if (version == 5) validateSceneV5Json(v5);
@@ -95,7 +106,10 @@ Map<String, Object?> upgradeCanvasScene(
     if (prepareV6Scene != null) {
       v6 = prepareV6Scene(jsonDecode(jsonEncode(v6)) as Map<String, Object?>);
     }
-    result = convertCanvasSceneV6ToV7(v6);
+    result = convertCanvasSceneV6ToV7(
+      v6,
+      resolveImageIntrinsicSize: resolveSize,
+    );
   }
   final canonical = encodeCanvasScene(decodeCanvasScene(result));
   // Return an independent snapshot of the canonical wire data.

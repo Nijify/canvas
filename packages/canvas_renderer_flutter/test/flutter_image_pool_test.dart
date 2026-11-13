@@ -7,6 +7,8 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = Size2D(800, 600);
+
 CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
   return CanvasSceneDocument(
     artboardSize: const Size2D(300, 200),
@@ -14,7 +16,10 @@ CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
     backgroundOpacity: 1.0,
     assets: <CanvasAssetId, CanvasImageAsset>{
       for (var i = 0; i < sourceRefs.length; i++)
-        'asset-$i': CanvasImageAsset(sourceRef: sourceRefs[i]),
+        'asset-$i': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: sourceRefs[i],
+        ),
     },
     children: [
       for (var i = 0; i < sourceRefs.length; i++)
@@ -28,16 +33,10 @@ CanvasSceneDocument _sceneWithImages(List<String> sourceRefs) {
 }
 
 final class _TestImageAssetResolver implements CanvasImageAssetResolver {
-  const _TestImageAssetResolver({
-    this.resolveSourcesCallback,
-    this.resolveIntrinsicSizesCallback,
-  });
+  const _TestImageAssetResolver({this.resolveSourcesCallback});
 
   final Future<Map<String, String>> Function(List<String> sourceRefs)?
   resolveSourcesCallback;
-
-  final Future<Map<String, Size2D>> Function(List<String> sourceRefs)?
-  resolveIntrinsicSizesCallback;
 
   @override
   Future<Map<String, String>> resolveSources(List<String> sourceRefs) {
@@ -54,15 +53,8 @@ final class _TestImageAssetResolver implements CanvasImageAssetResolver {
   }
 
   @override
-  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> sourceRefs) {
-    final callback = resolveIntrinsicSizesCallback;
-
-    if (callback != null) {
-      return callback(sourceRefs);
-    }
-
-    return Future<Map<String, Size2D>>.value(const <String, Size2D>{});
-  }
+  Future<Map<String, Size2D>> resolveIntrinsicSizes(List<String> sourceRefs) =>
+      throw StateError('Raster loading must use saved dimensions.');
 }
 
 Future<ui.Image> _createImage({
@@ -151,45 +143,6 @@ void main() {
     });
 
     test(
-      'intrinsic failures distinguish missing, invalid, and thrown results',
-      () async {
-        final error = StateError('metadata failed');
-        final stackTrace = StackTrace.fromString('metadata-origin');
-        var shouldThrow = false;
-        final pool = FlutterImagePool(
-          resolver: _TestImageAssetResolver(
-            resolveIntrinsicSizesCallback: (_) {
-              if (shouldThrow) {
-                return Future<Map<String, Size2D>>.error(error, stackTrace);
-              }
-              return Future.value({'media:invalid': const Size2D(0, 10)});
-            },
-          ),
-        );
-        addTearDown(pool.dispose);
-
-        final failures = await pool.resolveSceneIntrinsics(
-          _sceneWithImages(['media:missing', 'media:invalid']),
-        );
-        expect(failures.map((failure) => failure.reason), [
-          'Resolver returned no intrinsic metadata.',
-          'Resolver returned unusable intrinsic metadata.',
-        ]);
-
-        shouldThrow = true;
-        final thrown = await pool.resolveSceneIntrinsics(
-          _sceneWithImages(['media:missing']),
-        );
-        expect(thrown.single.phase, FlutterImageLoadPhase.intrinsicMetadata);
-        expect(thrown.single.cause, same(error));
-        expect(
-          thrown.single.stackTrace.toString(),
-          contains('metadata-origin'),
-        );
-      },
-    );
-
-    test(
       'decode failure, null result, and successful retry stay independent',
       () async {
         final error = StateError('decode failed');
@@ -258,50 +211,6 @@ void main() {
     });
 
     test(
-      'superseded metadata cannot poison the current source cache',
-      () async {
-        final pending = Completer<Map<String, Size2D>>();
-        var calls = 0;
-        final pool = FlutterImagePool(
-          resolver: _TestImageAssetResolver(
-            resolveIntrinsicSizesCallback: (_) => calls++ == 0
-                ? pending.future
-                : Future.value({'media:same': const Size2D(800, 600)}),
-          ),
-        );
-        addTearDown(pool.dispose);
-        final scene = _sceneWithImages(['media:same']);
-
-        final obsolete = pool.resolveSceneIntrinsics(scene);
-        expect(await pool.resolveSceneIntrinsics(scene), isEmpty);
-        pending.complete({'media:same': const Size2D(1, 1)});
-        expect(await obsolete, isEmpty);
-
-        expect(await pool.resolveSceneIntrinsics(scene), isEmpty);
-        expect(pool.intrinsicSize('image-0'), const Size2D(800, 600));
-        expect(calls, 2);
-      },
-    );
-
-    test('metadata failures after disposal are discarded', () async {
-      final pending = Completer<Map<String, Size2D>>();
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (_) => pending.future,
-        ),
-      );
-
-      final late = pool.resolveSceneIntrinsics(
-        _sceneWithImages(['media:late']),
-      );
-      pool.dispose();
-      pending.completeError(StateError('disposed metadata'));
-
-      expect(await late, isEmpty);
-      expect(pool.intrinsicSize('image-0'), isNull);
-    });
-
-    test(
       'superseded decoder failures do not become current failures',
       () async {
         final pending = Completer<ui.Image?>();
@@ -346,220 +255,6 @@ void main() {
     );
   });
 
-  group('FlutterImagePool intrinsic metadata', () {
-    test('implements ImageIntrinsics directly', () {
-      final pool = FlutterImagePool();
-
-      expect(pool, isA<ImageIntrinsics>());
-
-      pool.dispose();
-    });
-
-    test('passes opaque media refs to resolver unchanged', () async {
-      final requestedRefs = <String>[];
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (sourceRefs) async {
-            requestedRefs.addAll(sourceRefs);
-
-            return const <String, Size2D>{'media:abc123': Size2D(640, 480)};
-          },
-        ),
-      );
-
-      await pool.resolveSceneIntrinsics(_sceneWithImages(['media:abc123']));
-
-      expect(requestedRefs, ['media:abc123']);
-      expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
-
-      pool.dispose();
-    });
-
-    test('passes opaque asset refs to resolver unchanged', () async {
-      final requestedRefs = <String>[];
-
-      const sourceRef = 'asset:assets/samples/sample_image.png';
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (sourceRefs) async {
-            requestedRefs.addAll(sourceRefs);
-
-            return const <String, Size2D>{sourceRef: Size2D(1024, 1024)};
-          },
-        ),
-      );
-
-      await pool.resolveSceneIntrinsics(_sceneWithImages([sourceRef]));
-
-      expect(requestedRefs, [sourceRef]);
-      expect(pool.intrinsicSize('image-0'), const Size2D(1024, 1024));
-
-      pool.dispose();
-    });
-
-    test('emits only when intrinsic metadata actually changes', () async {
-      final events = <ElementId>[];
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (sourceRefs) async {
-            return <String, Size2D>{
-              for (final ref in sourceRefs) ref: const Size2D(640, 480),
-            };
-          },
-        ),
-      );
-
-      final subscription = pool.onIntrinsicUpdated.listen(events.add);
-      final scene = _sceneWithImages(['media:one']);
-
-      expect(pool.revision.value, 0);
-
-      await pool.resolveSceneIntrinsics(scene);
-      await pumpEventQueue();
-
-      expect(events, ['image-0']);
-      expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
-      expect(pool.revision.value, 0);
-
-      await pool.resolveSceneIntrinsics(scene);
-      await pumpEventQueue();
-
-      expect(events, [
-        'image-0',
-      ], reason: 'Identical cached metadata must not emit again.');
-      expect(pool.revision.value, 0);
-
-      await pool.resolveSceneIntrinsics(_sceneWithImages(const []));
-      await pumpEventQueue();
-
-      expect(events, ['image-0', 'image-0']);
-      expect(pool.intrinsicSize('image-0'), isNull);
-      expect(pool.revision.value, 0);
-
-      await subscription.cancel();
-      pool.dispose();
-    });
-
-    test('latest intrinsic request wins', () async {
-      final firstResult = Completer<Map<String, Size2D>>();
-      final secondResult = Completer<Map<String, Size2D>>();
-
-      final firstStarted = Completer<void>();
-      final secondStarted = Completer<void>();
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (sourceRefs) {
-            final sourceRef = sourceRefs.single;
-
-            switch (sourceRef) {
-              case 'media:first':
-                firstStarted.complete();
-                return firstResult.future;
-
-              case 'media:second':
-                secondStarted.complete();
-                return secondResult.future;
-
-              default:
-                throw StateError('Unexpected source: $sourceRef');
-            }
-          },
-        ),
-      );
-
-      final firstFuture = pool.resolveSceneIntrinsics(
-        _sceneWithImages(['media:first']),
-      );
-
-      await firstStarted.future;
-
-      final secondFuture = pool.resolveSceneIntrinsics(
-        _sceneWithImages(['media:second']),
-      );
-
-      await secondStarted.future;
-
-      secondResult.complete(const <String, Size2D>{
-        'media:second': Size2D(800, 600),
-      });
-
-      await secondFuture;
-
-      expect(pool.intrinsicSize('image-0'), const Size2D(800, 600));
-
-      firstResult.complete(const <String, Size2D>{
-        'media:first': Size2D(320, 200),
-      });
-
-      await firstFuture;
-
-      expect(
-        pool.intrinsicSize('image-0'),
-        const Size2D(800, 600),
-        reason: 'The older request must not overwrite the newer scene.',
-      );
-
-      pool.dispose();
-    });
-
-    test('late intrinsic completion cannot write after disposal', () async {
-      final resolver = Completer<Map<String, Size2D>>();
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (_) => resolver.future,
-        ),
-      );
-
-      final future = pool.resolveSceneIntrinsics(
-        _sceneWithImages(['media:late']),
-      );
-
-      pool.dispose();
-
-      resolver.complete(const <String, Size2D>{'media:late': Size2D(640, 480)});
-
-      await expectLater(future, completes);
-      expect(pool.intrinsicSize('image-0'), isNull);
-    });
-
-    test('batch metadata resolver failure is retryable', () async {
-      var calls = 0;
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (sourceRefs) async {
-            calls++;
-
-            if (calls == 1) {
-              throw StateError('Metadata temporarily unavailable');
-            }
-
-            return const <String, Size2D>{'media:one': Size2D(640, 480)};
-          },
-        ),
-      );
-
-      final scene = _sceneWithImages(['media:one']);
-
-      await pool.resolveSceneIntrinsics(scene);
-
-      expect(pool.intrinsicSize('image-0'), isNull);
-      expect(calls, 1);
-
-      await pool.resolveSceneIntrinsics(scene);
-
-      expect(pool.intrinsicSize('image-0'), const Size2D(640, 480));
-      expect(calls, 2);
-
-      pool.dispose();
-    });
-  });
-
   group('FlutterImagePool decoded image ownership', () {
     test('images view is live and externally immutable', () async {
       final decoded = await _createImage();
@@ -583,13 +278,10 @@ void main() {
       expect(decoded.debugDisposed, isTrue);
     });
 
-    test('raster changes update revision without intrinsic events', () async {
+    test('raster changes update repaint revision', () async {
       final decoded = await _createImage();
-      final intrinsicEvents = <ElementId>[];
 
       final pool = FlutterImagePool(decoder: (_) async => decoded);
-
-      final subscription = pool.onIntrinsicUpdated.listen(intrinsicEvents.add);
 
       expect(pool.revision.value, 0);
 
@@ -598,54 +290,10 @@ void main() {
       await pumpEventQueue();
 
       expect(pool.revision.value, 1);
-      expect(intrinsicEvents, isEmpty);
       expect(identical(pool.images['image-0'], decoded), isTrue);
 
-      await subscription.cancel();
       pool.dispose();
 
-      expect(decoded.debugDisposed, isTrue);
-    });
-
-    test('raster preload proceeds while metadata remains pending', () async {
-      final decoded = await _createImage();
-      final metadata = Completer<Map<String, Size2D>>();
-      final metadataStarted = Completer<void>();
-      final decoderStarted = Completer<void>();
-      var metadataCalls = 0;
-
-      final pool = FlutterImagePool(
-        resolver: _TestImageAssetResolver(
-          resolveIntrinsicSizesCallback: (_) {
-            metadataCalls++;
-            metadataStarted.complete();
-            return metadata.future;
-          },
-        ),
-        decoder: (_) async {
-          decoderStarted.complete();
-          return decoded;
-        },
-      );
-
-      final scene = _sceneWithImages(['asset:assets/test.png']);
-
-      final intrinsicFuture = pool.resolveSceneIntrinsics(scene);
-      await metadataStarted.future;
-
-      final preloadFuture = pool.preloadScene(scene, targetW: 128);
-      await pumpEventQueue();
-
-      expect(decoderStarted.isCompleted, isTrue);
-      expect(metadataCalls, 1);
-
-      await preloadFuture;
-      expect(identical(pool.images['image-0'], decoded), isTrue);
-
-      metadata.complete(const <String, Size2D>{});
-      await intrinsicFuture;
-
-      pool.dispose();
       expect(decoded.debugDisposed, isTrue);
     });
 

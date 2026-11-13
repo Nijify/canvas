@@ -26,69 +26,30 @@ class CanvasRenderer {
   /// Borrowed from the caller and never disposed by this renderer.
   final FlutterTextPipeline text;
 
-  /// Stable intrinsic metadata provider.
-  final ImageIntrinsics? intrinsics;
-
   final CanvasRendererOptions options;
 
   CanvasRenderer({
     Map<ElementId, ui.Image?>? images,
     required this.text,
-    this.intrinsics,
     this.options = const CanvasRendererOptions(),
   }) : images = images ?? <ElementId, ui.Image?>{};
 
   ui.Rect _mapSrcToDecoded({
-    required ElementId id,
+    required Size2D sourceSize,
     required ui.Image img,
     required Rect2D srcIntrinsic,
   }) {
-    final meta = intrinsics?.intrinsicSize(id);
-
-    // If we don't know intrinsic meta, fall back to using src as-is.
-    // (This may be imperfect for resized decodes, but keeps compatibility.)
-    if (meta == null || meta.w <= 0 || meta.h <= 0) {
-      return srcIntrinsic.toUi;
-    }
-
-    final iw = meta.w;
-    final ih = meta.h;
-
-    final dw = img.width.toDouble();
-    final dh = img.height.toDouble();
-
-    // Guard: if decoded looks invalid, fall back.
-    if (dw <= 0 || dh <= 0) return srcIntrinsic.toUi;
-
-    final sx = dw / iw;
-    final sy = dh / ih;
-
-    final s = srcIntrinsic.toUi;
-
-    // Scale intrinsic-space rect into decoded pixel-space rect.
-    var left = s.left * sx;
-    var top = s.top * sy;
-    var right = s.right * sx;
-    var bottom = s.bottom * sy;
-
-    // Clamp to decoded bounds to avoid backend-specific behavior when out of range.
-    if (left.isNaN || top.isNaN || right.isNaN || bottom.isNaN) {
-      return srcIntrinsic.toUi;
-    }
-
-    left = left.clamp(0.0, dw);
-    top = top.clamp(0.0, dh);
-    right = right.clamp(0.0, dw);
-    bottom = bottom.clamp(0.0, dh);
-
-    // Ensure non-negative extents (defensive).
-    if (right < left) right = left;
-    if (bottom < top) bottom = top;
-
-    return ui.Rect.fromLTRB(left, top, right, bottom);
+    final sx = img.width / sourceSize.w;
+    final sy = img.height / sourceSize.h;
+    return ui.Rect.fromLTRB(
+      (srcIntrinsic.left * sx).clamp(0.0, img.width.toDouble()),
+      (srcIntrinsic.top * sy).clamp(0.0, img.height.toDouble()),
+      (srcIntrinsic.right * sx).clamp(0.0, img.width.toDouble()),
+      (srcIntrinsic.bottom * sy).clamp(0.0, img.height.toDouble()),
+    );
   }
 
-  /// Paint the evaluated scene in computed paint order.
+  /// Paints the evaluated scene in computed paint order.
   void paintScene(ui.Canvas canvas, SceneEvaluation evaluation) {
     final scene = evaluation.scene;
     final computed = evaluation.computed;
@@ -155,7 +116,13 @@ class CanvasRenderer {
             if (node.assetId == null) break;
             final placement = computed.imagePlacementById[id];
             if (placement != null) {
-              _drawImage(canvas, id, placement.src, placement.dst);
+              _drawImage(
+                canvas,
+                id,
+                placement.src,
+                placement.dst,
+                scene.assets[node.assetId]!.intrinsicSize,
+              );
             }
           case PathNode():
             final ir = computed.pathIRById[id];
@@ -173,7 +140,13 @@ class CanvasRenderer {
     }
   }
 
-  void _drawImage(ui.Canvas canvas, ElementId id, Rect2D src, Rect2D dst) {
+  void _drawImage(
+    ui.Canvas canvas,
+    ElementId id,
+    Rect2D src,
+    Rect2D dst,
+    Size2D sourceSize,
+  ) {
     final image = images[id];
     final destination = dst.toUi;
     if (image == null) {
@@ -185,7 +158,7 @@ class CanvasRenderer {
 
     canvas.drawImageRect(
       image,
-      _mapSrcToDecoded(id: id, img: image, srcIntrinsic: src),
+      _mapSrcToDecoded(sourceSize: sourceSize, img: image, srcIntrinsic: src),
       destination,
       ui.Paint()..filterQuality = options.imageFilterQuality,
     );

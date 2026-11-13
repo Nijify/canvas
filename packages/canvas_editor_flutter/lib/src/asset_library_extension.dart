@@ -66,6 +66,11 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
             return;
           }
 
+          final intrinsicSize = _validIntrinsicSize(selected.intrinsicSize);
+          if (intrinsicSize == null) {
+            context.ui.toast('Unable to add asset: missing image dimensions.');
+            return;
+          }
           final artboard = context.editableScene.artboardSize;
           final size = _initialAssetSize(selected);
           final nodeId = _nextAssetNodeId();
@@ -87,7 +92,7 @@ EditorExtension<TSourceDocument> canvasAssetLibraryExtension<TSourceDocument>({
                   ...scene.assets,
                   assetId: CanvasImageAsset(
                     sourceRef: selected.sourceRef,
-                    intrinsicSize: _validIntrinsicSize(selected.intrinsicSize),
+                    intrinsicSize: intrinsicSize,
                   ),
                 },
               );
@@ -113,10 +118,6 @@ Size2D _initialAssetSize(CanvasAssetLibraryItem item) {
   final maxExtent = _safeDefaultSize(item.defaultSize);
   final width = item.intrinsicSize.w;
   final height = item.intrinsicSize.h;
-
-  if (!width.isFinite || !height.isFinite || width <= 0 || height <= 0) {
-    return Size2D(maxExtent, maxExtent);
-  }
 
   final longestSide = math.max(width, height).toDouble();
 

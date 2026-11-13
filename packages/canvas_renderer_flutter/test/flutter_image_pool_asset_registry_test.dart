@@ -25,10 +25,13 @@ final class _RecordingImageAssetResolver implements CanvasImageAssetResolver {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('persisted intrinsic size is preferred over host metadata', () async {
+  test('raster preload leaves dimensions in the asset registry', () async {
     final resolver = _RecordingImageAssetResolver();
 
-    final pool = FlutterImagePool(resolver: resolver);
+    final pool = FlutterImagePool(
+      resolver: resolver,
+      decoder: (_) async => null,
+    );
 
     const scene = CanvasSceneDocument(
       artboardSize: Size2D(300, 200),
@@ -45,11 +48,11 @@ void main() {
       ],
     );
 
-    await pool.resolveSceneIntrinsics(scene);
+    await pool.preloadScene(scene);
 
     expect(resolver.requestedIntrinsicRefs, isEmpty);
 
-    expect(pool.intrinsicSize('image-1'), const Size2D(1600, 900));
+    expect(scene.assets['asset-1']!.intrinsicSize, const Size2D(1600, 900));
 
     pool.dispose();
   });

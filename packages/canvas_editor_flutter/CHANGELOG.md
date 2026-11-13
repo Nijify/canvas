@@ -1,6 +1,8 @@
 ## Unreleased
 
+- Normalize image asset registries on initial scene adoption, shared edits, and resolved output. Replacement, clearing, and subtree deletion release unused records while immutable undo/redo snapshots retain previous assets.
 - Use the v7 ordinary-layer model throughout editing and layer presentation.
+- Commit image sources and natural dimensions together through the `CanvasImageAsset?` image field. Reject imports without valid dimensions, preserve background-removal dimensions, and remove image metadata loading and layout subscriptions from the editor runtime.
 
 ## 0.22.0
 

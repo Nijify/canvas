@@ -151,7 +151,7 @@ final class _BackgroundRemovalControlState
       );
     }
 
-    final fieldState = controller.getField<String>(
+    final fieldState = controller.getField<CanvasImageAsset?>(
       nodeId,
       CanvasFields.imageSource,
     );
@@ -162,9 +162,9 @@ final class _BackgroundRemovalControlState
       return _BackgroundRemovalAvailability.disabled(fieldDisabledReason);
     }
 
-    final effectiveSource = fieldState.value.trim();
+    final effectiveSource = fieldState.value?.sourceRef.trim() ?? '';
 
-    if (effectiveSource != canonicalSource) {
+    if (fieldState.value != canonicalScene.assets[canonicalNode.assetId]) {
       return const _BackgroundRemovalAvailability.disabled(
         'This image source is resolved at runtime and cannot be '
         'transformed directly.',
@@ -191,6 +191,9 @@ final class _BackgroundRemovalControlState
       return;
     }
 
+    final originalScene = controller.document.value;
+    final originalImage = findById(originalScene, targetNodeId) as ImageNode;
+    final originalAsset = originalScene.assets[originalImage.assetId]!;
     final originalCanonicalSource = original.canonicalSourceRef!;
     final originalEffectiveSource = original.effectiveSourceRef!;
 
@@ -264,10 +267,13 @@ final class _BackgroundRemovalControlState
         return;
       }
 
-      controller.commitField<String>(
+      final latestScene = controller.document.value;
+      final latestImage = findById(latestScene, targetNodeId) as ImageNode;
+      if (latestScene.assets[latestImage.assetId] != originalAsset) return;
+      controller.commitField<CanvasImageAsset?>(
         targetNodeId,
         CanvasFields.imageSource,
-        replacementSourceRef,
+        originalAsset.copyWith(sourceRef: replacementSourceRef),
       );
 
       // commitField is intentionally void and may reject a stale or denied

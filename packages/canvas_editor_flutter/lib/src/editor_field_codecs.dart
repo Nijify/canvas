@@ -402,51 +402,23 @@ class FieldCatalog {
     // Image
     // -------------------------------------------------------------------------
     rt.CanvasFields.imageSource: FieldCodec(
-      fallback: '',
-      readNode: (scene, node) {
-        final image = node as rt.ImageNode;
-        final assetId = image.assetId;
-
-        return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
-      },
+      fallback: null,
+      readNode: (scene, node) => scene.assets[(node as rt.ImageNode).assetId],
       canReadCanonicalNode: (_, node) => node is rt.ImageNode,
-      readCanonicalNode: (scene, node) {
-        final image = node as rt.ImageNode;
-        final assetId = image.assetId;
-
-        return assetId == null ? '' : scene.assets[assetId]?.sourceRef ?? '';
-      },
+      readCanonicalNode: (scene, node) =>
+          scene.assets[(node as rt.ImageNode).assetId],
       writeCanonical: (base, nodeId, value) {
-        final requested = value as String;
-        final sourceRef = requested.trim().isEmpty ? null : requested;
-
+        final asset = value as rt.CanvasImageAsset?;
         final node = rt.findById(base, nodeId);
         if (node is! rt.ImageNode) return base;
-
-        final currentAssetId = node.assetId;
-        final currentSourceRef = currentAssetId == null
-            ? null
-            : base.assets[currentAssetId]?.sourceRef;
-
-        if (sourceRef == null) {
-          if (currentAssetId == null) return base;
-
+        if (base.assets[node.assetId] == asset) return base;
+        if (asset == null) {
           return rt.replaceById(base, nodeId, node.copyWith(assetId: null));
         }
-
-        if (currentSourceRef == sourceRef) {
-          return base;
-        }
-
         final assetId = _nextImageAssetId(base, nodeId);
-
         final nextBase = base.copyWith(
-          assets: <rt.CanvasAssetId, rt.CanvasImageAsset>{
-            ...base.assets,
-            assetId: rt.CanvasImageAsset(sourceRef: sourceRef),
-          },
+          assets: {...base.assets, assetId: asset},
         );
-
         return rt.replaceById(
           nextBase,
           nodeId,

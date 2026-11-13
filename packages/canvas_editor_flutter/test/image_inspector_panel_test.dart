@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 
 import 'editor_runtime_fakes.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 const _imageId = 'image-1';
 const _assetId = 'asset-1';
 
@@ -20,7 +22,10 @@ CanvasSceneDocument _fixtureScene() {
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: <CanvasAssetId, CanvasImageAsset>{
-      _assetId: CanvasImageAsset(sourceRef: 'media:test-image'),
+      _assetId: CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: 'media:test-image',
+      ),
     },
     children: <Node>[
       Node.image(id: _imageId, assetId: _assetId, size: Size2D(200, 160)),

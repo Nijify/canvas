@@ -1,6 +1,8 @@
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:test/test.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 CanvasSceneDocument _scene({
   Map<CanvasAssetId, CanvasImageAsset> assets =
       const <CanvasAssetId, CanvasImageAsset>{},
@@ -35,7 +37,10 @@ void main() {
         () => requireCanvasSceneIntegrity(
           _scene(
             assets: const <CanvasAssetId, CanvasImageAsset>{
-              'asset-1': CanvasImageAsset(sourceRef: '   '),
+              'asset-1': CanvasImageAsset(
+                intrinsicSize: _testImageSize,
+                sourceRef: '   ',
+              ),
             },
             assetId: 'asset-1',
           ),
@@ -54,7 +59,12 @@ void main() {
       'checks asset IDs and intrinsic dimensions even when unreferenced',
       () {
         for (final assets in const <Map<CanvasAssetId, CanvasImageAsset>>[
-          {' ': CanvasImageAsset(sourceRef: 'media:image')},
+          {
+            ' ': CanvasImageAsset(
+              intrinsicSize: _testImageSize,
+              sourceRef: 'media:image',
+            ),
+          },
           {
             'asset': CanvasImageAsset(
               sourceRef: 'media:image',

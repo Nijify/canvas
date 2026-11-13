@@ -1,6 +1,7 @@
 ## Unreleased
 
 - Use all v7 scene nodes during resource discovery and rendering; remove visibility filters from image-loading APIs.
+- Use saved asset dimensions for decode sizing and crop mapping. Remove intrinsic metadata caches, notifications, and PNG metadata passes; image loading resolves sources and decoded rasters only.
 
 ## 0.18.0
 

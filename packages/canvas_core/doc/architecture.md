@@ -37,10 +37,9 @@ Scene evaluation does not invoke preparation itself. High-level renderer/editor 
 Core stays platform-neutral. `CoreServices` exposes synchronous capabilities needed during scene computation:
 
 - `TextMeasurer textMeasurer`
-- optional `ImageIntrinsics images`
 - optional `IconResolver icons`
 
-`ImageIntrinsics` is synchronous lookup only. Resource loading, retries, caches, and notifications belong outside core.
+Image geometry comes from `CanvasImageAsset.intrinsicSize`, which is required and finite positive. `ImageNode.size` describes the editable frame. Evaluation derives fit and crop from these two sizes without resource loading or asynchronous layout invalidation.
 
 `CanvasImageAssetResolver` is a separate asynchronous host boundary for logical canvas image resources:
 
@@ -50,7 +49,7 @@ logical sourceRef
   -> host-renderable runtime source
 ```
 
-Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. `resolveIntrinsicSizes()` provides stable layout-affecting metadata keyed by the logical ref. Both result maps may be partial.
+Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. Hosts use `resolveIntrinsicSizes()` during import or explicit historical upgrades, then save those dimensions with the asset. Evaluation and rendering never call it. Both result maps may be partial.
 
 `collectSceneFontFamilies()` discovers logical font-family dependencies from
 nested text plus caller-supplied fallbacks. Icons contribute no fonts.

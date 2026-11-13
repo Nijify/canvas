@@ -22,6 +22,72 @@ Map<String, Object?> _scene(List<Map<String, Object?>> children) => {
 };
 
 void main() {
+  test('resolves missing dimensions by source and prunes unused assets', () {
+    final input =
+        _scene([
+            {
+              'type': 'image',
+              'id': 'image',
+              'assetId': 'used',
+              'size': {'w': 50, 'h': 50},
+            },
+          ])
+          ..['assets'] = {
+            'used': {'sourceRef': 'media:used'},
+            'orphan': {'sourceRef': 'media:orphan'},
+          };
+    final before = jsonEncode(input);
+    final calls = <String>[];
+    expect(() => upgradeCanvasScene(input), throwsFormatException);
+    final output = upgradeCanvasScene(
+      input,
+      resolveImageIntrinsicSize: (ref) {
+        calls.add(ref);
+        return const Size2D(800, 400);
+      },
+    );
+    final scene = decodeCanvasScene(output);
+    expect(calls, ['media:used']);
+    expect(scene.assets.keys, ['used']);
+    expect(scene.assets['used']!.intrinsicSize, const Size2D(800, 400));
+    expect(jsonEncode(input), before);
+    expect(
+      () => upgradeCanvasScene(
+        input,
+        resolveImageIntrinsicSize: (_) => const Size2D(0, 10),
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('stored dimensions take precedence over an upgrade resolver', () {
+    final input =
+        _scene([
+            {
+              'type': 'image',
+              'id': 'image',
+              'assetId': 'photo',
+              'size': {'w': 50, 'h': 50},
+            },
+          ])
+          ..['assets'] = {
+            'photo': {
+              'sourceRef': 'media:photo',
+              'intrinsicSize': {'w': 800, 'h': 400},
+            },
+          };
+    final output = upgradeCanvasScene(
+      input,
+      resolveImageIntrinsicSize: (_) {
+        fail('Stored dimensions should satisfy the upgrade.');
+      },
+    );
+    expect(
+      decodeCanvasScene(output).assets['photo']!.intrinsicSize,
+      const Size2D(800, 400),
+    );
+  });
+
   test('projects visible ordinary layers without mutating the v6 input', () {
     final input = _scene([
       {

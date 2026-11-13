@@ -1,7 +1,6 @@
 // Path: lib/src/services/services.dart
 
 import 'package:canvas_core/src/foundation/core_types.dart';
-import 'package:canvas_core/src/foundation/ids.dart';
 
 /// Synchronous text measurement used by core scene computation.
 ///
@@ -14,14 +13,6 @@ abstract interface class TextMeasurer {
     required double fontSize,
     required double letterSpacing,
   });
-}
-
-/// Synchronous intrinsic-image lookup used by core scene computation.
-///
-/// Resource loading and change notifications belong to the host/runtime layer.
-/// Core only needs the latest intrinsic size available for an [ElementId].
-abstract interface class ImageIntrinsics {
-  Size2D? intrinsicSize(ElementId id);
 }
 
 /// Resolves logical canvas image source references for the current host.
@@ -42,7 +33,8 @@ abstract interface class ImageIntrinsics {
 /// source reference.
 ///
 /// [resolveIntrinsicSizes] returns stable layout-affecting metadata associated
-/// with the logical image content.
+/// with logical image content during import or explicit document upgrades.
+/// Committed scene evaluation uses the dimensions stored on the image asset.
 abstract interface class CanvasImageAssetResolver {
   Future<Map<String, String>> resolveSources(List<String> sourceRefs);
 
