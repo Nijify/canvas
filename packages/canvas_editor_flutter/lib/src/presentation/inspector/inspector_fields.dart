@@ -11,21 +11,20 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.da
 
 enum CommitMode { immediate, debounced, dragTxn }
 
-typedef ControlBuilder<T> =
-    Widget Function(
-      BuildContext context, {
-      required bool enabled,
-      required T value,
-      required void Function(T next) commit,
+typedef ControlBuilder<T> = Widget Function(
+  BuildContext context, {
+  required bool enabled,
+  required T value,
+  required void Function(T next) commit,
 
-      /// Only used for dragTxn controls (sliders/gestures).
-      void Function()? begin,
-      void Function()? end,
+  /// Only used for dragTxn controls (sliders/gestures).
+  void Function()? begin,
+  void Function()? end,
 
-      /// Used by debounced controls to end the current burst immediately
-      /// (e.g. on blur / submit). Also safe for dragTxn to “force close”.
-      void Function()? flush,
-    });
+  /// Used by debounced controls to end the current burst immediately
+  /// (e.g. on blur / submit). Also safe for dragTxn to “force close”.
+  void Function()? flush,
+});
 
 class InspectorFieldSpec<T> {
   const InspectorFieldSpec({
@@ -34,7 +33,6 @@ class InspectorFieldSpec<T> {
     required this.commitMode,
     required this.control,
     this.debounce = const Duration(milliseconds: 450),
-    this.semanticSlot,
   });
 
   final CanvasFieldKey fieldKey;
@@ -47,8 +45,6 @@ class InspectorFieldSpec<T> {
 
   /// Only used when commitMode == debounced.
   final Duration debounce;
-
-  final String? semanticSlot;
 }
 
 /// ---------------------------------------------------------------------------
@@ -107,13 +103,11 @@ InspectorFieldSpec<String> textFieldSpec({
   required CanvasFieldKey fieldKey,
   required String title,
   CommitMode commitMode = CommitMode.debounced,
-  String? semanticSlot,
 }) {
   return InspectorFieldSpec<String>(
     fieldKey: fieldKey,
     title: title,
     commitMode: commitMode,
-    semanticSlot: semanticSlot,
     control:
         (
           context, {

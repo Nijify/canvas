@@ -1,6 +1,7 @@
 // Path: lib/src/foundation/geometry/geometry_ext.dart
 
 import 'dart:math' as math;
+
 import 'package:canvas_core/src/foundation/core_types.dart';
 import 'package:canvas_core/src/foundation/geometry/geometry.dart' show Rect2D;
 

@@ -148,10 +148,12 @@ void _appearance(Object? raw, String path) {
     for (final name in ['width', 'miterLimit']) {
       if (stroke[name] != null) _number(stroke[name], '$strokePath/$name');
     }
-    if (stroke['cap'] != null)
+    if (stroke['cap'] != null) {
       _enum(stroke['cap'], {'butt', 'round', 'square'}, '$strokePath/cap');
-    if (stroke['join'] != null)
+    }
+    if (stroke['join'] != null) {
       _enum(stroke['join'], {'miter', 'round', 'bevel'}, '$strokePath/join');
+    }
     if (stroke['dash'] != null) {
       final dash = _list(stroke['dash'], '$strokePath/dash');
       for (var index = 0; index < dash.length; index++) {
@@ -172,11 +174,13 @@ void _appearance(Object? raw, String path) {
     );
     _enum(underlay['type'], {'shadow'}, '$itemPath/type');
     _string(underlay['id'], '$itemPath/id');
-    if (underlay['enabled'] != null)
+    if (underlay['enabled'] != null) {
       _bool(underlay['enabled'], '$itemPath/enabled');
+    }
     _point(underlay['offset'], '$itemPath/offset');
-    if (underlay['blurSigma'] != null)
+    if (underlay['blurSigma'] != null) {
       _number(underlay['blurSigma'], '$itemPath/blurSigma');
+    }
     _integer(underlay['color'], '$itemPath/color');
   }
 }

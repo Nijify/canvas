@@ -90,26 +90,23 @@ void main() {
     },
   );
 
-  test(
-    'writer uses absolute M/L/C/Z, preserves contours, and normalizes negative zero',
-    () {
-      final ir = PathIR([
-        PathCmd.moveTo(const Vec2(-0.0, 0)),
-        PathCmd.lineTo(const Vec2(10, 20)),
-        PathCmd.close(),
-        PathCmd.moveTo(const Vec2(30, 40)),
-        PathCmd.cubicTo(
-          const Vec2(40, 50),
-          const Vec2(60, 70),
-          const Vec2(80, 90),
-        ),
-      ]);
-      final d = writeSvgPathData(ir);
-      expect(d, 'M0 0 L10.0 20.0 Z M30.0 40.0 C40.0 50.0 60.0 70.0 80.0 90.0');
-      expect(writeSvgPathData(parseSvgPathData(d)), d);
-      expect(writeSvgPathData(ir), d);
-    },
-  );
+  test('writer uses absolute M/L/C/Z, preserves contours, and normalizes negative zero', () {
+    final ir = PathIR([
+      PathCmd.moveTo(const Vec2(-0.0, 0)),
+      PathCmd.lineTo(const Vec2(10, 20)),
+      PathCmd.close(),
+      PathCmd.moveTo(const Vec2(30, 40)),
+      PathCmd.cubicTo(
+        const Vec2(40, 50),
+        const Vec2(60, 70),
+        const Vec2(80, 90),
+      ),
+    ]);
+    final d = writeSvgPathData(ir);
+    expect(d, 'M0 0 L10.0 20.0 Z M30.0 40.0 C40.0 50.0 60.0 70.0 80.0 90.0');
+    expect(writeSvgPathData(parseSvgPathData(d)), d);
+    expect(writeSvgPathData(ir), d);
+  });
 
   test('fractional paths stay stable across repeated JSON save/load', () {
     List<Vec2> points(PathIR path) => [

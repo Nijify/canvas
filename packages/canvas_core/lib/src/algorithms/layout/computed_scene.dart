@@ -102,8 +102,9 @@ ComputedScene computeScene(CanvasSceneDocument doc, CoreServices services) {
         if (childPaint != null) {
           paint = union(paint, aabbOfTransformedRect(childPaint, child.xf));
         }
-        if (childWorldPaint != null)
+        if (childWorldPaint != null) {
           worldPaint = union(worldPaint, childWorldPaint);
+        }
       }
       if (layout != null) layouts[node.id] = layout;
       if (paint != null) paints[node.id] = paint;

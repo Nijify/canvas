@@ -1,5 +1,8 @@
 ## 0.23.0
 
+- **Breaking:** remove the unused `InspectorFieldSpec.semanticSlot` field and
+  `textFieldSpec` parameter. Application-specific field annotations belong to
+  the host integration.
 - **Breaking:** require `canvas_core ^0.20.0` and
   `canvas_renderer_flutter ^0.19.0`. Use the v7 ordinary-layer model throughout
   editing and layer presentation.

@@ -3,7 +3,7 @@
 // canvas_core_runtime – Public RUNTIME API (generic core / source of truth)
 //
 // Mental model:
-// Runtime is the “real scene + behavior” layer for the generic canvas engine.
+// Runtime is the renderer-independent scene layer for the generic canvas engine.
 // It defines the concrete scene objects and everything needed to operate/render
 // them in a renderer-agnostic way (scene model, compute, geometry,
 // traversal, and host service contracts).
@@ -30,6 +30,9 @@
 // Editor interaction concerns such as history, picking, and snapping
 // belong to canvas_editor_flutter and are intentionally not part of canvas_core.
 // ─────────────────────────────────────────────────────────────────────────────
+
+/// Runtime scene models, geometry, evaluation, and host resource contracts.
+library;
 
 // ============================================================================
 // 2) Runtime models (scene graph)

@@ -1,5 +1,7 @@
 ## 0.20.0
 
+- Add a runnable pure-Dart scene example and enforce the Dart core lint set in
+  package analysis. Fix multiline control-flow braces and broken dartdoc links.
 - Add the conventional `canvas_core.dart` entry point exporting the runtime API.
   Existing `canvas_core_runtime.dart` imports remain supported.
 - **Breaking:** adopt scene v7 ordinary layers. Remove `hidden`, `role`, and

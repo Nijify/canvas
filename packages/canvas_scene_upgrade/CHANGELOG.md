@@ -1,4 +1,4 @@
-## Unreleased
+## 0.4.0
 
 - Project historical documents to scene v7. Require explicit host preparation for group behaviors and preserve visible ordinary layers without mutating source documents.
 - Resolve missing natural image dimensions through an explicit host callback and prune unused assets during v7 projection. Reuse acquired dimensions for historical pivot calculations.

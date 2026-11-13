@@ -90,6 +90,10 @@ implement `TextMeasurer` directly.
 
 ## Runtime resource discovery
 
+For a complete runnable JSON round-trip and evaluation example, see
+[`example/canvas_core_example.dart`](example/canvas_core_example.dart).
+From this package directory, run `dart run example/canvas_core_example.dart`.
+
 Core discovers logical resource requirements without loading platform resources.
 
 Use `collectSceneFontFamilies` to collect text and fallback font families,

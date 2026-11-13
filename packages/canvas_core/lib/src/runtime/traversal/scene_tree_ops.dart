@@ -125,9 +125,11 @@ abstract final class SceneTreeOps {
     var moving = node;
     if (preservation == TransformPreservation.world) {
       final targetWorld = newParentId == null
-          ? const Affine2D.identity() : worldTransformOf(doc, newParentId)!;
+          ? const Affine2D.identity()
+          : worldTransformOf(doc, newParentId)!;
       final inverse = targetWorld.tryInverse();
-      if (inverse == null) throw StateError('New parent transform cannot be inverted reliably.');
+      if (inverse == null)
+        throw StateError('New parent transform cannot be inverted reliably.');
       moving = node.withXf(inverse * worldTransformOf(doc, id)!);
     }
     final d1 = _removeAtParentRef(doc, pr);
@@ -196,10 +198,14 @@ abstract final class SceneTreeOps {
 
     // Shift root position only.
     final xf0 = cloned.xf;
-    cloned = cloned.withXf(transformAfterDelta(
-      xf0, Affine2D.translation(shift.x, shift.y), space: shiftSpace,
-      parentWorld: parentWorldTransformOf(doc, id)!,
-    ));
+    cloned = cloned.withXf(
+      transformAfterDelta(
+        xf0,
+        Affine2D.translation(shift.x, shift.y),
+        space: shiftSpace,
+        parentWorld: parentWorldTransformOf(doc, id)!,
+      ),
+    );
 
     // Insert immediately after the original.
     // Later siblings paint above earlier siblings, so the duplicate appears
@@ -226,7 +232,9 @@ abstract final class SceneTreeOps {
   // -------------------------------------------------------------------------
 
   static CanvasSceneDocument replaceNodeXf(
-    CanvasSceneDocument doc, ElementId id, Affine2D xf,
+    CanvasSceneDocument doc,
+    ElementId id,
+    Affine2D xf,
   ) {
     final node = findById(doc, id);
     if (node == null || node.xf == xf) return doc;
@@ -234,31 +242,62 @@ abstract final class SceneTreeOps {
   }
 
   static CanvasSceneDocument composeDelta(
-    CanvasSceneDocument doc, ElementId id, Affine2D delta, {
+    CanvasSceneDocument doc,
+    ElementId id,
+    Affine2D delta, {
     required TransformSpace space,
   }) {
     final node = findById(doc, id);
     if (node == null) return doc;
-    return replaceNodeXf(doc, id, transformAfterDelta(
-      node.xf, delta, space: space, parentWorld: parentWorldTransformOf(doc, id)!,
-    ));
+    return replaceNodeXf(
+      doc,
+      id,
+      transformAfterDelta(
+        node.xf,
+        delta,
+        space: space,
+        parentWorld: parentWorldTransformOf(doc, id)!,
+      ),
+    );
   }
 
   static CanvasSceneDocument translate(
-    CanvasSceneDocument doc, ElementId id, Vec2 delta, {
+    CanvasSceneDocument doc,
+    ElementId id,
+    Vec2 delta, {
     TransformSpace space = TransformSpace.parent,
-  }) => composeDelta(doc, id, Affine2D.translation(delta.x, delta.y), space: space);
+  }) => composeDelta(
+    doc,
+    id,
+    Affine2D.translation(delta.x, delta.y),
+    space: space,
+  );
 
   static CanvasSceneDocument rotate(
-    CanvasSceneDocument doc, ElementId id, double radians, {
-    required Vec2 anchor, required TransformSpace space,
-  }) => composeDelta(doc, id, affineAround(anchor, Affine2D.rotation(radians)), space: space);
+    CanvasSceneDocument doc,
+    ElementId id,
+    double radians, {
+    required Vec2 anchor,
+    required TransformSpace space,
+  }) => composeDelta(
+    doc,
+    id,
+    affineAround(anchor, Affine2D.rotation(radians)),
+    space: space,
+  );
 
   static CanvasSceneDocument scale(
-    CanvasSceneDocument doc, ElementId id, Vec2 factors, {
-    required Vec2 anchor, required TransformSpace space,
-  }) => composeDelta(doc, id, affineAround(anchor,
-    Affine2D.scale(factors.x, factors.y)), space: space);
+    CanvasSceneDocument doc,
+    ElementId id,
+    Vec2 factors, {
+    required Vec2 anchor,
+    required TransformSpace space,
+  }) => composeDelta(
+    doc,
+    id,
+    affineAround(anchor, Affine2D.scale(factors.x, factors.y)),
+    space: space,
+  );
 
   // -------------------------------------------------------------------------
   // Stack order

@@ -1,4 +1,4 @@
-## Unreleased
+## 0.7.0
 
 - Export v7 ordinary path layers without a node visibility filter.
 

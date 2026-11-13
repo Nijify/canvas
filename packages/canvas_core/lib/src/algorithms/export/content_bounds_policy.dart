@@ -4,11 +4,13 @@ import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
 import 'package:canvas_core/src/runtime/model/scene_document.dart'
     show CanvasSceneDocument;
 
-typedef ContentBoundsElementSelector =
-    ElementId? Function(CanvasSceneDocument scene);
+typedef ContentBoundsElementSelector = ElementId? Function(
+  CanvasSceneDocument scene,
+);
 
-typedef ContentBoundsFallbackSelector =
-    Iterable<ElementId> Function(CanvasSceneDocument scene);
+typedef ContentBoundsFallbackSelector = Iterable<ElementId> Function(
+  CanvasSceneDocument scene,
+);
 
 /// Generic runtime policy for content-bounds calculations.
 ///

@@ -125,8 +125,9 @@ String writeSvgPoints(List<Vec2> points) =>
     points.map((point) => '${_number(point.x)},${_number(point.y)}').join(' ');
 
 String _number(double value) {
-  if (!value.isFinite)
+  if (!value.isFinite) {
     throw ArgumentError.value(value, 'coordinate', 'Must be finite.');
+  }
   if (value == 0) return '0';
   final text = value.toString();
   final parts = text.split('e');
