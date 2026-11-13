@@ -1,5 +1,7 @@
 ## 0.19.0
 
+- Add a runnable Flutter renderer example with shared text measurement/painting
+  and explicit text-pipeline disposal.
 - **Breaking:** require `canvas_core ^0.20.0` and render v7 scene nodes without
   visibility filters in image-loading APIs.
 - **Breaking:** use saved asset dimensions for decode sizing and crop mapping.

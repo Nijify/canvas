@@ -26,6 +26,10 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 Do not import files under `package:canvas_renderer_flutter/src/`.
 
+See the [runnable renderer example](example/README.md) for a complete Flutter
+preview that owns its text pipeline, evaluates a scene, and paints it with
+`CanvasRenderer`.
+
 Optional image-provider helpers live behind:
 
 ```dart

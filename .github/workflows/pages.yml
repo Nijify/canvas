@@ -94,6 +94,11 @@ jobs:
         working-directory: packages/canvas_editor_flutter/example
         run: flutter build web --release --base-href /canvas/
 
+      - name: Build renderer example
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        working-directory: packages/canvas_editor_flutter/example
+        run: flutter build web --release --target ../../canvas_renderer_flutter/example/canvas_renderer_flutter_example.dart --output build/renderer-example
+
       - name: Dry-run core publication
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_core
