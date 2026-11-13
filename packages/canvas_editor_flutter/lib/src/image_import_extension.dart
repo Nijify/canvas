@@ -317,8 +317,7 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         return;
       }
 
-      // Editability may have changed while awaiting the host import, for example
-      // because an authoring binding was added.
+      // Host field policy may have changed while awaiting the import.
       final fieldState = controller.getField<CanvasImageAsset?>(
         targetNodeId,
         CanvasFields.imageSource,

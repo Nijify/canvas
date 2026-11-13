@@ -13,8 +13,8 @@ abstract interface class EditorDocumentHost<TSourceDocument> {
 
   /// Listenable canonical source document.
   ///
-  /// This updates for source-document changes even when the base scene is
-  /// unchanged, for example token-binding or other source-metadata changes.
+  /// This updates for host-owned document changes even when the base scene is
+  /// unchanged.
   ValueListenable<TSourceDocument> get source;
 
   /// Updates resolve context used by the adapter/render pipeline.

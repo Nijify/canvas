@@ -90,8 +90,8 @@ documented ordinary-path profile and explicitly rejects icon nodes.
 
 Canvas JSON stores the prepared design as ordinary layers. Fields define the
 artboard, layer identity and order, hierarchy, content, geometry, appearance,
-transforms, and resource references. Host component settings, slot assignments,
-and token bindings belong to host-owned project documents. Editor session state
+transforms, and resource references. Host application metadata belongs to
+host-owned project documents. Editor session state
 belongs to the editor.
 
 Scene format v7 puts layer fields directly on each node and uses `type` as
