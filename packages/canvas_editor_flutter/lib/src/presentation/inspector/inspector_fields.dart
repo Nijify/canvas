@@ -11,20 +11,21 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.da
 
 enum CommitMode { immediate, debounced, dragTxn }
 
-typedef ControlBuilder<T> = Widget Function(
-  BuildContext context, {
-  required bool enabled,
-  required T value,
-  required void Function(T next) commit,
+typedef ControlBuilder<T> =
+    Widget Function(
+      BuildContext context, {
+      required bool enabled,
+      required T value,
+      required void Function(T next) commit,
 
-  /// Only used for dragTxn controls (sliders/gestures).
-  void Function()? begin,
-  void Function()? end,
+      /// Only used for dragTxn controls (sliders/gestures).
+      void Function()? begin,
+      void Function()? end,
 
-  /// Used by debounced controls to end the current burst immediately
-  /// (e.g. on blur / submit). Also safe for dragTxn to “force close”.
-  void Function()? flush,
-});
+      /// Used by debounced controls to end the current burst immediately
+      /// (e.g. on blur / submit). Also safe for dragTxn to “force close”.
+      void Function()? flush,
+    });
 
 class InspectorFieldSpec<T> {
   const InspectorFieldSpec({

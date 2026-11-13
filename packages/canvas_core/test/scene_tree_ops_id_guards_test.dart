@@ -132,10 +132,9 @@ void main() {
     });
 
     test('rejects a descendant collision outside the replaced subtree', () {
-      final group = Node.group(
-        id: 'group',
-        children: <Node>[_text('inside')],
-      ) as GroupNode;
+      final group =
+          Node.group(id: 'group', children: <Node>[_text('inside')])
+              as GroupNode;
 
       final doc = _scene(<Node>[group, _text('outside')]);
 
@@ -147,10 +146,9 @@ void main() {
     });
 
     test('rejects duplicate IDs inside a replacement subtree', () {
-      final group = Node.group(
-        id: 'group',
-        children: <Node>[_text('old-child')],
-      ) as GroupNode;
+      final group =
+          Node.group(id: 'group', children: <Node>[_text('old-child')])
+              as GroupNode;
 
       final doc = _scene(<Node>[group]);
 
@@ -162,10 +160,9 @@ void main() {
     });
 
     test('rejects a blank descendant ID in a replacement subtree', () {
-      final group = Node.group(
-        id: 'group',
-        children: <Node>[_text('old-child')],
-      ) as GroupNode;
+      final group =
+          Node.group(id: 'group', children: <Node>[_text('old-child')])
+              as GroupNode;
 
       final doc = _scene(<Node>[group]);
 

@@ -24,10 +24,11 @@ final class SceneEvaluation {
 }
 
 /// Pure, synchronous transformation from one runtime scene to another.
-typedef ScenePreparer = CanvasSceneDocument Function(
-  CanvasSceneDocument scene,
-  CoreServices services,
-);
+typedef ScenePreparer =
+    CanvasSceneDocument Function(
+      CanvasSceneDocument scene,
+      CoreServices services,
+    );
 
 /// Evaluate the prepared scene using the caller's stable service bundle.
 ///

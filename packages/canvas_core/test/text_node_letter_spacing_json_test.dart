@@ -4,29 +4,33 @@ import 'package:test/test.dart';
 void main() {
   group('TextNode letterSpacing JSON', () {
     test('decodes an integer JSON number as a double', () {
-      final data = Node.fromJson({
-        'type': 'text',
-        'id': 'text',
-        'text': 'Hello',
-        'fontFamily': 'Inter',
-        'fontWeight': 400,
-        'fontSize': 16.0,
-        'letterSpacing': 2,
-      }) as TextNode;
+      final data =
+          Node.fromJson({
+                'type': 'text',
+                'id': 'text',
+                'text': 'Hello',
+                'fontFamily': 'Inter',
+                'fontWeight': 400,
+                'fontSize': 16.0,
+                'letterSpacing': 2,
+              })
+              as TextNode;
 
       expect(data.letterSpacing, 2.0);
     });
 
     test('preserves fractional letter spacing', () {
-      final data = Node.fromJson({
-        'type': 'text',
-        'id': 'text',
-        'text': 'Hello',
-        'fontFamily': 'Inter',
-        'fontWeight': 400,
-        'fontSize': 16.0,
-        'letterSpacing': 1.25,
-      }) as TextNode;
+      final data =
+          Node.fromJson({
+                'type': 'text',
+                'id': 'text',
+                'text': 'Hello',
+                'fontFamily': 'Inter',
+                'fontWeight': 400,
+                'fontSize': 16.0,
+                'letterSpacing': 1.25,
+              })
+              as TextNode;
 
       expect(data.letterSpacing, 1.25);
     });
@@ -47,14 +51,16 @@ void main() {
     });
 
     test('defaults missing letter spacing to zero', () {
-      final data = Node.fromJson({
-        'type': 'text',
-        'id': 'text',
-        'text': 'Hello',
-        'fontFamily': 'Inter',
-        'fontWeight': 400,
-        'fontSize': 16.0,
-      }) as TextNode;
+      final data =
+          Node.fromJson({
+                'type': 'text',
+                'id': 'text',
+                'text': 'Hello',
+                'fontFamily': 'Inter',
+                'fontWeight': 400,
+                'fontSize': 16.0,
+              })
+              as TextNode;
 
       expect(data.letterSpacing, 0.0);
     });
