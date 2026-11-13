@@ -85,6 +85,18 @@ jobs:
         working-directory: packages/canvas_editor_flutter/example
         run: flutter build web --release --base-href /canvas/
 
+      - name: Dry-run core publication
+        working-directory: packages/canvas_core
+        run: dart pub publish --dry-run
+
+      - name: Dry-run renderer publication
+        working-directory: packages/canvas_renderer_flutter
+        run: dart pub publish --dry-run
+
+      - name: Dry-run editor publication
+        working-directory: packages/canvas_editor_flutter
+        run: dart pub publish --dry-run
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:

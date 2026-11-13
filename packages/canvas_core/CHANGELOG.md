@@ -1,8 +1,16 @@
-## Unreleased
+## 0.20.0
 
-- Prune unused image asset records at current JSON load/save boundaries with the pure `pruneUnusedImageAssets` helper. Preserve shared references and leave input scenes unchanged.
-- Adopt scene v7 ordinary layers. Remove node visibility, roles, and group behavior envelopes. Require explicit artboard dimensions in scene JSON and omit empty asset maps.
-- Require finite positive `CanvasImageAsset.intrinsicSize`. Compute image fit and crop from saved asset dimensions; remove `ImageIntrinsics` and `CoreServices.images`.
+- **Breaking:** adopt scene v7 ordinary layers. Remove `hidden`, `role`, and
+  `GroupBehaviorRef` from nodes. Require explicit artboard dimensions in scene
+  JSON and omit empty asset maps. Upgrade older JSON explicitly through the
+  optional, Git/workspace-only `canvas_scene_upgrade` package; current loading
+  accepts v7 only.
+- **Breaking:** require finite positive `CanvasImageAsset.intrinsicSize`.
+  Compute image fit and crop from saved asset dimensions; remove
+  `ImageIntrinsics` and `CoreServices.images`.
+- Prune unused image asset records at JSON load/save boundaries with the pure
+  `pruneUnusedImageAssets` helper. Preserve shared references and leave input
+  scenes unchanged.
 
 ## 0.19.0
 

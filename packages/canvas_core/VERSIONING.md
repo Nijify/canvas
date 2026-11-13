@@ -24,6 +24,10 @@ When in doubt, the workspace treats a change as breaking.
 
 ## Publishing releases
 
+Prepare coordinated releases in the implementation PR: update package versions,
+workspace dependency constraints, and changelog entries together. CI validates
+the workspace and runs publication dry runs for the three public packages.
+
 For each package version published to pub.dev:
 
 1. Update the package's `pubspec.yaml` and `CHANGELOG.md`.
@@ -41,3 +45,18 @@ Use these tag formats:
 A coordinated release may place multiple package tags on the same commit.
 Do not use an unqualified `v<version>` tag because independent package
 versions can overlap.
+
+For the scene v7 release, publish in dependency order:
+
+1. `canvas_core 0.20.0`
+2. `canvas_renderer_flutter 0.19.0`
+3. `canvas_editor_flutter 0.23.0`
+
+Run the dry run again before each upload and wait for each dependency version to
+be available on pub.dev before publishing its dependents. Use the merged,
+tested release commit for publication and tags. The PR workflow performs
+validation only; publishing remains a separate release action.
+
+`canvas_scene_upgrade`, `canvas_svg_export`, and the background-removal packages
+remain Git/workspace-only with `publish_to: none`. Their workspace constraints
+track the coordinated versions, but this release does not publish them.

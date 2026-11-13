@@ -1,8 +1,17 @@
-## Unreleased
+## 0.23.0
 
-- Normalize image asset registries on initial scene adoption, shared edits, and resolved output. Replacement, clearing, and subtree deletion release unused records while immutable undo/redo snapshots retain previous assets.
-- Use the v7 ordinary-layer model throughout editing and layer presentation.
-- Commit image sources and natural dimensions together through the `CanvasImageAsset?` image field. Reject imports without valid dimensions, preserve background-removal dimensions, and remove image metadata loading and layout subscriptions from the editor runtime.
+- **Breaking:** require `canvas_core ^0.20.0` and
+  `canvas_renderer_flutter ^0.19.0`. Use the v7 ordinary-layer model throughout
+  editing and layer presentation.
+- **Breaking:** `CanvasFields.imageSource` carries `CanvasImageAsset?` instead
+  of a source string. Commit source references and natural dimensions together;
+  null clears the image while retaining its frame. Reject imports without valid
+  dimensions and preserve dimensions during background removal under its
+  existing host contract.
+- Remove image metadata loading and layout subscriptions from the editor runtime.
+- Normalize image asset registries on initial scene adoption, shared edits, and
+  resolved output. Replacement, clearing, and subtree deletion release unused
+  records while undo/redo snapshots retain previous assets.
 
 ## 0.22.0
 

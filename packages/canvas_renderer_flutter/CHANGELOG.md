@@ -1,7 +1,12 @@
-## Unreleased
+## 0.19.0
 
-- Use all v7 scene nodes during resource discovery and rendering; remove visibility filters from image-loading APIs.
-- Use saved asset dimensions for decode sizing and crop mapping. Remove intrinsic metadata caches, notifications, and PNG metadata passes; image loading resolves sources and decoded rasters only.
+- **Breaking:** require `canvas_core ^0.20.0` and render v7 scene nodes without
+  visibility filters in image-loading APIs.
+- **Breaking:** use saved asset dimensions for decode sizing and crop mapping.
+  Remove `CanvasRenderer.intrinsics`, `FlutterImagePool.resolveSceneIntrinsics`,
+  `intrinsicSize`, `onIntrinsicUpdated`, and the intrinsic-metadata failure phase. Image loading
+  resolves sources and decoded rasters only; PNG rendering no longer performs
+  metadata-resolution passes.
 
 ## 0.18.0
 
