@@ -38,10 +38,11 @@ final class EditorRuntime<TSourceDocument>
        _extraFieldCodecs = Map<rt.CanvasFieldKey, FieldCodec>.unmodifiable(
          extraFieldCodecs,
        ) {
-    _sourceListenable = ValueNotifier<TSourceDocument>(initial);
+    final normalizedInitial = _replaceBase(initial, _adapter.getBase(initial));
+    _sourceListenable = ValueNotifier<TSourceDocument>(normalizedInitial);
 
     _history = TxnHistoryManager<TSourceDocument>(
-      initial: initial,
+      initial: normalizedInitial,
       maxHistory: maxHistory,
       onCapabilitiesChanged: (canUndo, canRedo) {
         if (_canUndoListenable.value != canUndo) {
@@ -55,11 +56,11 @@ final class EditorRuntime<TSourceDocument>
     );
 
     _documentListenable = ValueNotifier<rt.CanvasSceneDocument>(
-      _adapter.getBase(initial),
+      _adapter.getBase(normalizedInitial),
     );
 
     _pipeline = RenderPipelineDriver<TSourceDocument>(
-      initialSourceDocument: initial,
+      initialSourceDocument: normalizedInitial,
       build: (canonical) {
         final resolvedScene = _adapter.resolve(canonical, _ctx);
 
@@ -133,7 +134,9 @@ final class EditorRuntime<TSourceDocument>
 
   @override
   rt.CanvasSceneDocument resolveSceneForOutput() {
-    return _adapter.resolve(_presentSourceDocument, _ctx);
+    return rt.pruneUnusedImageAssets(
+      _adapter.resolve(_presentSourceDocument, _ctx),
+    );
   }
 
   // --------------------------------------------------------------------------
@@ -258,7 +261,11 @@ final class EditorRuntime<TSourceDocument>
     if (identical(next, previous) || next == previous) return;
     final prepared = _pipeline.prepare(next);
     final current = _history.applyOp((_) => next, pushHistory: false);
-    _pipeline.applySourceDocument(current, scheduleSnapshot: true, prepared: prepared);
+    _pipeline.applySourceDocument(
+      current,
+      scheduleSnapshot: true,
+      prepared: prepared,
+    );
   }
 
   @override
@@ -271,13 +278,15 @@ final class EditorRuntime<TSourceDocument>
     TSourceDocument document,
     rt.CanvasSceneDocument nextBase,
   ) {
+    final normalizedBase = rt.pruneUnusedImageAssets(nextBase);
     final currentBase = _adapter.getBase(document);
 
-    if (identical(nextBase, currentBase) || nextBase == currentBase) {
+    if (identical(normalizedBase, currentBase) ||
+        normalizedBase == currentBase) {
       return document;
     }
 
-    return _adapter.replaceBase(document, nextBase);
+    return _adapter.replaceBase(document, normalizedBase);
   }
 
   /// Applies a reusable base-scene edit to the canonical source document.
@@ -330,7 +339,11 @@ final class EditorRuntime<TSourceDocument>
   @override
   void updateTransform(rt.ElementId id, rt.Affine2D local) {
     final document = _presentSourceDocument;
-    final base = rt.SceneTreeOps.replaceNodeXf(_adapter.getBase(document), id, local);
+    final base = rt.SceneTreeOps.replaceNodeXf(
+      _adapter.getBase(document),
+      id,
+      local,
+    );
     _applyEphemeral(_replaceBase(document, base));
   }
 

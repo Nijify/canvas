@@ -37,10 +37,9 @@ Scene evaluation does not invoke preparation itself. High-level renderer/editor 
 Core stays platform-neutral. `CoreServices` exposes synchronous capabilities needed during scene computation:
 
 - `TextMeasurer textMeasurer`
-- optional `ImageIntrinsics images`
 - optional `IconResolver icons`
 
-`ImageIntrinsics` is synchronous lookup only. Resource loading, retries, caches, and notifications belong outside core.
+Image geometry comes from `CanvasImageAsset.intrinsicSize`, which is required and finite positive. `ImageNode.size` describes the editable frame. Evaluation derives fit and crop from these two sizes without resource loading or asynchronous layout invalidation.
 
 `CanvasImageAssetResolver` is a separate asynchronous host boundary for logical canvas image resources:
 
@@ -50,10 +49,10 @@ logical sourceRef
   -> host-renderable runtime source
 ```
 
-Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. `resolveIntrinsicSizes()` provides stable layout-affecting metadata keyed by the logical ref. Both result maps may be partial.
+Resolver inputs are opaque logical `sourceRef` values stored in the document. `resolveSources()` results may be temporary or rotating runtime values such as signed URLs or blob URLs and must not be treated as persistent identity. Hosts use `resolveIntrinsicSizes()` during import or explicit historical upgrades, then save those dimensions with the asset. Evaluation and rendering never call it. Both result maps may be partial.
 
 `collectSceneFontFamilies()` discovers logical font-family dependencies from
-nested and hidden text plus caller-supplied fallbacks. Icons contribute no fonts.
+nested text plus caller-supplied fallbacks. Icons contribute no fonts.
 Discovery does not load or validate fonts.
 
 ## Vector icons and compiled geometry
@@ -89,7 +88,13 @@ documented ordinary-path profile and explicitly rejects icon nodes.
 
 ## Serialization boundary
 
-Scene format v6 puts authored fields directly on each node and uses `type` as
+Canvas JSON stores the prepared design as ordinary layers. Fields define the
+artboard, layer identity and order, hierarchy, content, geometry, appearance,
+transforms, and resource references. Host application metadata belongs to
+host-owned project documents. Editor session state
+belongs to the editor.
+
+Scene format v7 puts layer fields directly on each node and uses `type` as
 the node discriminator. Paths have
 one of seven geometry sources: rect, circle, ellipse, line, polyline, polygon,
 or path. General paths persist as SVG d and hold one immutable PathIR snapshot.
@@ -109,8 +114,8 @@ coordinates; transforms are complete local-to-parent affine mappings.
 
 Persistence validates common scene wire structure, delegates exact geometry
 structure and parsing to the source codec, then checks runtime integrity. Reads
-and writes use v6 only. The optional `canvas_scene_upgrade` package owns explicit
-JSON routes from supported historical scenes to v6. Its intermediate steps validate historical
+and writes use v7 only. The optional `canvas_scene_upgrade` package owns explicit
+JSON routes from supported historical scenes to v7. Its intermediate steps validate historical
 wire formats independently of the current runtime and validate the final result
 through current core once. Core has no dependency on historical upgrade code.
 
@@ -167,7 +172,7 @@ editor-only geometry part of the core runtime contract.
 `A * B` applies B first; a hierarchy uses parent-world * local. Node matrices
 have no dependency on geometry, visibility, font metrics, or appearance. Local
 geometry keeps its own coordinates. No TRS decomposition or persistent pivot is
-part of the runtime contract. Identity xf, false hidden, and nonZero fillRule
+part of the runtime contract. Identity xf and nonZero fillRule
 are omitted on write.
 
 `TransformSpace` makes deltas explicit: local postmultiplies, parent

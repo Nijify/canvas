@@ -1,3 +1,15 @@
+## 0.19.0
+
+- Add a runnable Flutter renderer example with shared text measurement/painting
+  and explicit text-pipeline disposal.
+- **Breaking:** require `canvas_core ^0.20.0` and render v7 scene nodes without
+  visibility filters in image-loading APIs.
+- **Breaking:** use saved asset dimensions for decode sizing and crop mapping.
+  Remove `CanvasRenderer.intrinsics`, `FlutterImagePool.resolveSceneIntrinsics`,
+  `intrinsicSize`, `onIntrinsicUpdated`, and the intrinsic-metadata failure phase. Image loading
+  resolves sources and decoded rasters only; PNG rendering no longer performs
+  metadata-resolution passes.
+
 ## 0.18.0
 
 - Read authored paint and image properties directly from v6 nodes.

@@ -31,31 +31,13 @@ Node _text(
 
 Node _path(PathSource source) => Node.path(id: 'path', geometry: source);
 
-Node _behavior(
-  Map<String, dynamic> data, {
-  String type = 'future',
-  int version = 1,
-}) => Node.group(
-  id: 'group',
-  behavior: GroupBehaviorRef(type: type, version: version, data: data),
-);
-
 void main() {
-  test('accepts empty scenes and unknown well-formed behavior payloads', () {
+  test('accepts empty scenes and ordinary nested layers', () {
     for (final scene in [
       _scene(),
       _scene(
         children: [
-          _text('text', xf: const Affine2D.identity()),
-          _behavior({
-            'nested': [
-              null,
-              true,
-              3,
-              0.5,
-              {'label': 'future'},
-            ],
-          }, version: 999),
+          Node.group(id: 'group', children: [_text('text')]),
         ],
       ),
     ]) {
@@ -169,48 +151,13 @@ void main() {
     }
   });
 
-  test(
-    'checks the behavior envelope and recursively rejects non-JSON data',
-    () {
-      for (final node in [
-        _behavior({}, type: ' '),
-        _behavior({}, version: 0),
-        _behavior({'value': Object()}),
-        _behavior({'value': double.infinity}),
-        _behavior({
-          'nested': [double.nan],
-        }),
-        _behavior({
-          'nested': <Object, Object>{1: true},
-        }),
-      ]) {
-        final scene = _scene(children: [node]);
-        expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
-        expect(() => encodeCanvasScene(scene), throwsArgumentError);
-      }
-    },
-  );
-
-  test('rejects map, list, and node cycles before recursive encoding', () {
-    final map = <String, dynamic>{};
-    map['self'] = map;
-    final list = <Object?>[];
-    list.add(list);
+  test('rejects node cycles before recursive encoding', () {
     final children = <Node>[];
     final group = Node.group(id: 'group', children: children);
     children.add(group);
-    for (final scene in [
-      _scene(children: [_behavior(map)]),
-      _scene(
-        children: [
-          _behavior({'list': list}),
-        ],
-      ),
-      _scene(children: [group]),
-    ]) {
-      expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
-      expect(() => encodeCanvasScene(scene), throwsArgumentError);
-    }
+    final scene = _scene(children: [group]);
+    expect(() => requireCanvasSceneIntegrity(scene), throwsArgumentError);
+    expect(() => encodeCanvasScene(scene), throwsArgumentError);
   });
 
   test('rejects contradictory labels from all generated node constructors', () {

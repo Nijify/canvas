@@ -6,20 +6,24 @@ part of 'scene_document.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_CanvasImageAsset _$CanvasImageAssetFromJson(Map<String, dynamic> json) =>
-    _CanvasImageAsset(
-      sourceRef: json['sourceRef'] as String,
-      intrinsicSize: const NullableSize2DConverter().fromJson(
-        json['intrinsicSize'] as Map<String, dynamic>?,
-      ),
-    );
+_CanvasImageAsset _$CanvasImageAssetFromJson(Map<String, dynamic> json) {
+  $checkKeys(
+    json,
+    requiredKeys: const ['intrinsicSize'],
+    disallowNullValues: const ['intrinsicSize'],
+  );
+  return _CanvasImageAsset(
+    sourceRef: json['sourceRef'] as String,
+    intrinsicSize: const Size2DConverter().fromJson(
+      json['intrinsicSize'] as Map<String, dynamic>,
+    ),
+  );
+}
 
 Map<String, dynamic> _$CanvasImageAssetToJson(_CanvasImageAsset instance) =>
     <String, dynamic>{
       'sourceRef': instance.sourceRef,
-      'intrinsicSize': const NullableSize2DConverter().toJson(
-        instance.intrinsicSize,
-      ),
+      'intrinsicSize': const Size2DConverter().toJson(instance.intrinsicSize),
     };
 
 _CanvasSceneDocument _$CanvasSceneDocumentFromJson(Map<String, dynamic> json) {
@@ -58,6 +62,6 @@ Map<String, dynamic> _$CanvasSceneDocumentToJson(
   'artboardSize': const Size2DConverter().toJson(instance.artboardSize),
   'backgroundFill': const CanvasFillConverter().toJson(instance.backgroundFill),
   'backgroundOpacity': instance.backgroundOpacity,
-  'assets': instance.assets.map((k, e) => MapEntry(k, e.toJson())),
+  'assets': ?_assetsToJson(instance.assets),
   'children': instance.children.map((e) => e.toJson()).toList(),
 };

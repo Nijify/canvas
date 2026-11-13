@@ -6,7 +6,7 @@ library;
 
 import 'dart:math' as math;
 
-/// 32-bit ARGB color. Same layout as Flutter's [Color] under the hood:
+/// 32-bit ARGB color encoded as an integer:
 /// 0xAARRGGBB (e.g., 0xFF112233).
 typedef Color32 = int;
 

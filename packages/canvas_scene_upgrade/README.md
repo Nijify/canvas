@@ -13,10 +13,21 @@ final upgradedJson = upgradeCanvasScene(historicalJson);
 final scene = decodeCanvasScene(upgradedJson);
 ```
 
-The current target is scene v6. Versioned inputs v1 through v5 are eligible
-for explicit upgrade. The package also accepts current v6 input. It validates
-the final document with core and returns canonical v6 JSON in independent
+The current target is scene v7. Versioned inputs v1 through v6 are eligible
+for explicit upgrade. The package also accepts current v7 input. It validates
+the final document with core and returns canonical v7 JSON in independent
 containers.
+
+The v6 projection omits hidden subtrees and removes leaf roles. A group behavior
+requires an explicit `prepareV6Scene` callback that resolves it into ordinary
+v6 layers. The callback receives an independent JSON snapshot. Preserve the
+original document to recover omitted content or retain host authoring settings.
+
+Every retained image asset must have finite positive natural dimensions. Saved
+historical dimensions take precedence. When they are absent, the host supplies
+`resolveImageIntrinsicSize: (sourceRef) => sizes[sourceRef]` using dimensions
+obtained before the synchronous upgrade. Missing dimensions fail explicitly.
+The projection prunes assets unused by the retained layers.
 
 During 0.x the supported cases are limited to the documented conversions.
 Unsupported inputs fail with a diagnostic rather than silently losing authored
@@ -76,8 +87,9 @@ opaque group behavior payloads. The v4 -> v5 step bakes historical TRS and
 pivots into complete affine matrices.
 Geometry remains in its existing local coordinates. Translation-only transforms
 need no measurements. Rotated/scaled group center pivots may need text metrics
-and contain-fit image intrinsics: pass the original resource bundle as
-`services: CoreServices(...)`. Missing required metrics fail explicitly. Hidden
+and contain-fit image intrinsics: pass text/icon services as
+`services: CoreServices(...)` and supply `resolveImageIntrinsicSize` for missing
+image dimensions. Missing required metrics fail explicitly. Hidden
 center pivots use zero because v4 did not evaluate hidden layout; revealing them
 later does not recover a historical auto-pivot. Custom pivots are baked directly.
 This is an optional recovery tool; applications explicitly adopt or reject its

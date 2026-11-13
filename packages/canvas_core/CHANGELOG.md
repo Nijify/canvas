@@ -1,3 +1,21 @@
+## 0.20.0
+
+- Add a runnable pure-Dart scene example and enforce the Dart core lint set in
+  package analysis. Fix multiline control-flow braces and broken dartdoc links.
+- Add the conventional `canvas_core.dart` entry point exporting the runtime API.
+  Existing `canvas_core_runtime.dart` imports remain supported.
+- **Breaking:** adopt scene v7 ordinary layers. Remove `hidden`, `role`, and
+  `GroupBehaviorRef` from nodes. Require explicit artboard dimensions in scene
+  JSON and omit empty asset maps. Upgrade older JSON explicitly through the
+  optional, Git/workspace-only `canvas_scene_upgrade` package; current loading
+  accepts v7 only.
+- **Breaking:** require finite positive `CanvasImageAsset.intrinsicSize`.
+  Compute image fit and crop from saved asset dimensions; remove
+  `ImageIntrinsics` and `CoreServices.images`.
+- Prune unused image asset records at JSON load/save boundaries with the pure
+  `pruneUnusedImageAssets` helper. Preserve shared references and leave input
+  scenes unchanged.
+
 ## 0.19.0
 
 - **Breaking:** scene v6 stores authored fields directly on nodes and uses

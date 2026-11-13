@@ -5,17 +5,20 @@ import 'package:canvas_core/src/algorithms/layout/computed_icon.dart'
     show ComputedIcon;
 import 'package:canvas_core/src/foundation/geometry/geometry.dart';
 import 'package:canvas_core/src/algorithms/layout/appearance_bounds.dart';
-import 'package:canvas_core/src/foundation/ids.dart' show ElementId;
+import 'package:canvas_core/src/foundation/ids.dart'
+    show CanvasAssetId, ElementId;
 import 'package:canvas_core/src/path/path_ir.dart';
 import 'package:canvas_core/src/runtime/model/node_model.dart';
+import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/geometry/scene_math.dart'
     show aabbOfTransformedRect;
 import 'package:canvas_core/src/services/services_context.dart';
 
 final class NodeGeometry {
-  const NodeGeometry(this.services);
+  const NodeGeometry(this.services, {required this.assets});
 
   final CoreServices services;
+  final Map<CanvasAssetId, CanvasImageAsset> assets;
 
   /// Layout describes intrinsic geometry independently of appearance.
   /// Paint is an estimate; null means no visible paint is expecten.
@@ -83,12 +86,22 @@ final class NodeGeometry {
         );
 
       case ImageNode(:final id):
-        final intrinsic = s.images?.intrinsicSize(id);
         final size = n.size;
         if (size.w <= 0 || size.h <= 0) return null;
 
+        final assetId = n.assetId;
+        if (assetId == null) {
+          return (
+            layout: Rect2D.fromLTWH(-size.w / 2, -size.h / 2, size.w, size.h),
+            paint: null,
+          );
+        }
+        final asset = assets[assetId];
+        if (asset == null) {
+          throw ArgumentError('Image asset $assetId is absent from the scene.');
+        }
         final placement = imageSrcDst(
-          intrinsic: intrinsic ?? size,
+          intrinsic: asset.intrinsicSize,
           layout: size,
           fit: n.fit,
           align: n.align,

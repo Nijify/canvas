@@ -3,6 +3,8 @@ import 'package:canvas_editor_flutter_example/unsplash/unsplash_attribution_sess
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 void main() {
   final photo = UnsplashPhoto(
     id: 'photo-1',
@@ -27,8 +29,14 @@ void main() {
       backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
       backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
-        'used': CanvasImageAsset(sourceRef: photo.sourceRef),
-        'orphan': CanvasImageAsset(sourceRef: photo.sourceRef),
+        'used': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
+        'orphan': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
       },
       children: <Node>[
         ImageNode(
@@ -52,8 +60,14 @@ void main() {
       backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
       backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
-        'a': CanvasImageAsset(sourceRef: photo.sourceRef),
-        'b': CanvasImageAsset(sourceRef: photo.sourceRef),
+        'a': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
+        'b': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
       },
       children: <Node>[
         ImageNode(
@@ -74,19 +88,21 @@ void main() {
     expect(session.visibleCreditsForScene(scene), hasLength(1));
   });
 
-  test('does not attribute hidden image subtrees', () {
+  test('attributes referenced images in the prepared scene', () {
     final session = UnsplashAttributionSession()..register(photo);
     final scene = CanvasSceneDocument(
       artboardSize: const Size2D(800, 600),
       backgroundFill: const CanvasFill.solid(0xFFFFFFFF),
       backgroundOpacity: 1,
       assets: <CanvasAssetId, CanvasImageAsset>{
-        'image': CanvasImageAsset(sourceRef: photo.sourceRef),
+        'image': CanvasImageAsset(
+          intrinsicSize: _testImageSize,
+          sourceRef: photo.sourceRef,
+        ),
       },
       children: <Node>[
         ImageNode(
-          id: 'hidden-image',
-          hidden: true,
+          id: 'image',
           assetId: 'image',
           size: Size2D(200, 120),
           xf: Affine2D.translation(100, 100),
@@ -94,6 +110,6 @@ void main() {
       ],
     );
 
-    expect(session.visibleCreditsForScene(scene), isEmpty);
+    expect(session.visibleCreditsForScene(scene), hasLength(1));
   });
 }

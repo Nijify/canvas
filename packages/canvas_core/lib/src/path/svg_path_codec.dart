@@ -96,14 +96,18 @@ List<Vec2> parseSvgPoints(String text) {
   final coordinates = <double>[];
   var index = 0;
   while (index < text.length) {
-    while (index < text.length && _pointSpace.hasMatch(text[index])) index++;
+    while (index < text.length && _pointSpace.hasMatch(text[index])) {
+      index++;
+    }
     if (index == text.length) break;
     if (text[index] == ',') {
       if (coordinates.isEmpty) {
         throw const FormatException('A points list cannot start with a comma.');
       }
       index++;
-      while (index < text.length && _pointSpace.hasMatch(text[index])) index++;
+      while (index < text.length && _pointSpace.hasMatch(text[index])) {
+        index++;
+      }
     }
     final match = _pointNumber.matchAsPrefix(text, index);
     if (match == null) throw const FormatException('Invalid SVG points list.');
@@ -125,8 +129,9 @@ String writeSvgPoints(List<Vec2> points) =>
     points.map((point) => '${_number(point.x)},${_number(point.y)}').join(' ');
 
 String _number(double value) {
-  if (!value.isFinite)
+  if (!value.isFinite) {
     throw ArgumentError.value(value, 'coordinate', 'Must be finite.');
+  }
   if (value == 0) return '0';
   final text = value.toString();
   final parts = text.split('e');

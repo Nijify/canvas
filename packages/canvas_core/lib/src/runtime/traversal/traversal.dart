@@ -74,26 +74,22 @@ Set<ElementId> collectAllNodeIds({CanvasSceneDocument? doc, Node? root}) {
   return out;
 }
 
-/// Pure traversal: iterate all nodes (optionally skipping hidden subtrees).
+/// Visits every node in scene hierarchy order.
 void visitSceneNodes(
   CanvasSceneDocument doc, {
-  bool includeHidden = false,
   required void Function(Node node) visit,
 }) {
-  void walk(Node n, bool ancestorHidden) {
-    final hidden = ancestorHidden || n.hidden;
-    if (!includeHidden && hidden) return;
-
+  void walk(Node n) {
     visit(n);
 
     if (n.isGroup) {
       for (final c in n.childrenOrEmpty) {
-        walk(c, hidden);
+        walk(c);
       }
     }
   }
 
   for (final r in doc.children) {
-    walk(r, false);
+    walk(r);
   }
 }

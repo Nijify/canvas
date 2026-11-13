@@ -37,6 +37,19 @@ jobs:
         id: dependencies
         run: flutter pub get
 
+      - name: Verify core generated models
+        working-directory: packages/canvas_core
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- lib/src/runtime/model
+
+      - name: Analyze workspace
+        run: flutter analyze
+
+      - name: Verify core formatting
+        working-directory: packages/canvas_core
+        run: dart format --output=none --set-exit-if-changed .
+
       - name: Test example
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_editor_flutter/example
@@ -46,6 +59,11 @@ jobs:
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         working-directory: packages/canvas_core
         run: dart test
+
+      - name: Run core example
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        working-directory: packages/canvas_core
+        run: dart run example/canvas_core_example.dart
 
       - name: Test scene upgrades
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
@@ -75,6 +93,32 @@ jobs:
       - name: Build web example
         working-directory: packages/canvas_editor_flutter/example
         run: flutter build web --release --base-href /canvas/
+
+      - name: Build renderer example
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        working-directory: packages/canvas_editor_flutter/example
+        run: flutter build web --release --target ../../canvas_renderer_flutter/example/canvas_renderer_flutter_example.dart --output build/renderer-example
+
+      - name: Dry-run core publication
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        working-directory: packages/canvas_core
+        run: dart pub publish --dry-run
+
+      - name: Dry-run renderer publication
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        working-directory: packages/canvas_renderer_flutter
+        run: dart pub publish --dry-run
+
+      - name: Dry-run editor publication
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        working-directory: packages/canvas_editor_flutter
+        run: dart pub publish --dry-run
+
+      - name: Check core pub points
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: |
+          dart pub global activate pana 0.23.19
+          dart pub global run pana --source path --project-root . --flutter-sdk "$FLUTTER_ROOT" --exit-code-threshold 0 packages/canvas_core
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

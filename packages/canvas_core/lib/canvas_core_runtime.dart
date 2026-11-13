@@ -3,7 +3,7 @@
 // canvas_core_runtime – Public RUNTIME API (generic core / source of truth)
 //
 // Mental model:
-// Runtime is the “real scene + behavior” layer for the generic canvas engine.
+// Runtime is the renderer-independent scene layer for the generic canvas engine.
 // It defines the concrete scene objects and everything needed to operate/render
 // them in a renderer-agnostic way (scene model, compute, geometry,
 // traversal, and host service contracts).
@@ -30,6 +30,9 @@
 // Editor interaction concerns such as history, picking, and snapping
 // belong to canvas_editor_flutter and are intentionally not part of canvas_core.
 // ─────────────────────────────────────────────────────────────────────────────
+
+/// Runtime scene models, geometry, evaluation, and host resource contracts.
+library;
 
 // ============================================================================
 // 2) Runtime models (scene graph)
@@ -58,7 +61,6 @@ export 'src/runtime/model/node_model.dart'
         ImageNode,
         PathNode,
         GroupNode,
-        GroupBehaviorRef,
         ImageFit,
         NodeFields;
 
@@ -124,14 +126,15 @@ export 'src/foundation/ids.dart' show CanvasAssetId, ElementId;
 // ============================================================================
 export 'src/serialization/serializers.dart';
 
-export 'src/services/services.dart'
-    show CanvasImageAssetResolver, ImageIntrinsics, TextMeasurer;
+export 'src/services/services.dart' show CanvasImageAssetResolver, TextMeasurer;
 export 'src/services/services_context.dart' show CoreServices;
 
 export 'src/services/icon_resolver.dart' show IconResolver, ResolvedIcon;
 
 export 'src/runtime/resources/scene_font_families.dart'
     show collectSceneFontFamilies;
+export 'src/runtime/resources/scene_image_assets.dart'
+    show pruneUnusedImageAssets;
 
 // ============================================================================
 // 8) Traversal / query helpers (headless, deterministic)

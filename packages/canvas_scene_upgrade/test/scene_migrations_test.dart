@@ -81,7 +81,7 @@ void main() {
       });
     }
 
-    test('upgrades literal canvas_core 0.10.x JSON through v1–v5 to v6', () {
+    test('upgrades literal canvas_core 0.10.x JSON through v1–v5 to v7', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
       final legacyBefore = _deepCopy(legacy);
 
@@ -230,9 +230,8 @@ void main() {
 
     test('does not require an icon resolver for zero legacy shadows', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
-      final legacyIcons = _legacyGroupChildren(legacy).where(
-        (node) => node['runtimeType'] == 'icon',
-      );
+      final legacyIcons = _legacyGroupChildren(legacy)
+          .where((node) => node['runtimeType'] == 'icon');
       expect(legacyIcons, isNotEmpty);
 
       for (final node in legacyIcons) {
@@ -245,9 +244,8 @@ void main() {
         legacyUnversioned: true,
       );
 
-      final migratedIcons = _legacyGroupChildren(migrated).where(
-        (node) => node['type'] == 'icon',
-      );
+      final migratedIcons = _legacyGroupChildren(migrated)
+          .where((node) => node['type'] == 'icon');
       expect(
         migratedIcons.map((node) => node['id']),
         unorderedEquals(legacyIcons.map((node) => node['id'])),
@@ -292,7 +290,7 @@ void main() {
       );
     });
 
-    test('upgrades an already-versioned v1 scene to v6', () {
+    test('upgrades an already-versioned v1 scene to v7', () {
       final current = _loadFixture('v1_nested.json');
 
       final upgraded = upgradeCanvasScene(Map<String, Object?>.from(current));
@@ -301,7 +299,7 @@ void main() {
       expect(upgraded, isNot(equals(current)));
     });
 
-    test('accepts an already-current v6 scene without migration', () {
+    test('accepts an already-current v7 scene without migration', () {
       final v1 = _loadFixture('v1_nested.json');
       final current = upgradeCanvasScene(Map<String, Object?>.from(v1));
 

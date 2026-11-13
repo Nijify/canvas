@@ -34,21 +34,19 @@ class _Icons implements IconResolver {
   };
 }
 
-class _Images implements ImageIntrinsics {
-  @override
-  Size2D? intrinsicSize(ElementId id) => const Size2D(200, 100);
-}
-
-CoreServices _services() => CoreServices(
-  textMeasurer: _TextMeasurer(),
-  icons: _Icons(),
-  images: _Images(),
-);
+CoreServices _services() =>
+    CoreServices(textMeasurer: _TextMeasurer(), icons: _Icons());
 
 CanvasSceneDocument _scene(List<Node> children) => CanvasSceneDocument(
   backgroundFill: const CanvasFill.none(),
   backgroundOpacity: 1,
   children: children,
+  assets: const {
+    'asset': CanvasImageAsset(
+      sourceRef: 'test:image',
+      intrinsicSize: Size2D(200, 100),
+    ),
+  },
 );
 
 Node _text({
@@ -298,6 +296,7 @@ void main() {
       _scene([
         const Node.image(
           id: 'image',
+          assetId: 'asset',
           size: Size2D(100, 100),
           fit: ImageFit.contain,
           align: Vec2.zero,
@@ -315,22 +314,13 @@ void main() {
     );
   });
 
-  test('hidden subtrees and empty groups do not add content bounds', () {
+  test('empty groups and unresolved icons do not add paint bounds', () {
     final scene = _scene([
-      Node.group(
-        id: 'hidden',
-        hidden: true,
-        children: [_text(id: 'hidden-text', shadow: 500)],
-      ),
       const Node.group(id: 'empty'),
       const Node.icon(id: 'unresolved', iconRef: 'missing'),
       _text(),
     ]);
     final computed = computeScene(scene, _services());
-    expect(computed.nodeById.containsKey('hidden-text'), isTrue);
-    expect(computed.worldById.containsKey('hidden-text'), isTrue);
-    expect(computed.layoutBoundsLocalById.containsKey('hidden-text'), isFalse);
-    expect(computed.paintBoundsWorldById.containsKey('hidden-text'), isFalse);
     expect(computed.layoutBoundsLocalById.containsKey('empty'), isFalse);
     expect(computed.paintBoundsWorldById.containsKey('empty'), isFalse);
     expect(computed.layoutBoundsLocalById.containsKey('unresolved'), isTrue);

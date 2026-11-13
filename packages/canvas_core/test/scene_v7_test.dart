@@ -32,7 +32,39 @@ Map<String, Object?> _stroke(Map<String, Object?> scene) {
 }
 
 void main() {
-  test('v6 omits node defaults and retains explicit authored settings', () {
+  test('v7 rejects host and visibility fields on every node kind', () {
+    final nodes = <Node>[
+      const Node.group(id: 'group'),
+      const Node.text(
+        id: 'text',
+        text: '',
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        fontSize: 16,
+      ),
+      const Node.image(id: 'image', size: Size2D(20, 10)),
+      const Node.icon(id: 'icon', iconRef: 'symbol'),
+      Node.path(id: 'path', geometry: const CircleSource(5)),
+    ];
+    for (final node in nodes) {
+      for (final field in ['hidden', 'role', 'behavior']) {
+        final wire = encodeCanvasScene(_scene([node]));
+        _node(wire)[field] = null;
+        expect(() => decodeCanvasScene(wire), throwsFormatException);
+      }
+    }
+    final old = _wire()..['sceneFormatVersion'] = 6;
+    expect(() => decodeCanvasScene(old), throwsFormatException);
+  });
+
+  test('v7 requires explicit artboard dimensions and omits empty assets', () {
+    final wire = _wire();
+    expect(wire.containsKey('assets'), isFalse);
+    wire.remove('artboardSize');
+    expect(() => decodeCanvasScene(wire), throwsFormatException);
+  });
+
+  test('v7 omits node defaults and retains explicit authored settings', () {
     final scene = _scene([
       Node.group(
         id: 'group',
@@ -49,7 +81,7 @@ void main() {
           Node.path(
             id: 'path',
             geometry: const CircleSource(5),
-            hidden: true,
+
             appearance: CanvasAppearance(
               foreground: const CanvasFill.none(),
               stroke: CanvasStroke(color: 0, width: 0),
@@ -83,7 +115,7 @@ void main() {
       children[2].keys,
       unorderedEquals(['type', 'id', 'iconRef', 'appearance']),
     );
-    expect(children[3]['hidden'], isTrue);
+    expect(children[3].containsKey('hidden'), isFalse);
     expect(children[3].containsKey('fillRule'), isFalse);
     expect(children[3]['appearance'], {
       'foreground': {'type': 'none'},
@@ -92,7 +124,7 @@ void main() {
     expect(encodeCanvasScene(decodeCanvasScene(wire)), wire);
   });
 
-  test('v6 preserves nondefault image alignment and fit', () {
+  test('v7 preserves nondefault image alignment and fit', () {
     const image = ImageNode(
       id: 'image',
       size: Size2D(20, 10),
@@ -104,7 +136,7 @@ void main() {
   });
 
   test(
-    'v6 round trips all path sources and preserves authored dash arrays',
+    'v7 round trips all path sources and preserves authored dash arrays',
     () {
       final sources = <PathSource>[
         const RectSource(x: -10, y: -5, width: 20, height: 10),
@@ -134,7 +166,7 @@ void main() {
           ),
         ]);
         final json = encodeCanvasScene(scene);
-        expect(json['sceneFormatVersion'], 6);
+        expect(json['sceneFormatVersion'], 7);
         final restored = decodeCanvasScene(
           jsonDecode(jsonEncode(json)) as Map<String, Object?>,
         );
@@ -149,6 +181,9 @@ void main() {
   );
 
   for (final field in [
+    'hidden',
+    'role',
+    'behavior',
     'points',
     'runtimeType',
     'data',
@@ -161,7 +196,7 @@ void main() {
     'miterLimit',
     'dash',
   ]) {
-    test('v6 rejects obsolete path field $field', () {
+    test('v7 rejects obsolete path field $field', () {
       final json = _wire();
       _node(json)[field] = null;
       expect(() => decodeCanvasScene(json), throwsFormatException);
@@ -169,7 +204,7 @@ void main() {
   }
 
   for (final field in ['geometry', 'appearance']) {
-    test('v6 requires path $field and rejects explicit null', () {
+    test('v7 requires path $field and rejects explicit null', () {
       final missing = _wire();
       _node(missing).remove(field);
       expect(() => decodeCanvasScene(missing), throwsFormatException);
@@ -179,7 +214,7 @@ void main() {
     });
   }
 
-  test('v6 rejects unknown source kinds and invalid command structure', () {
+  test('v7 rejects unknown source kinds and invalid command structure', () {
     final unknown = _wire();
     _node(unknown)['geometry'] = {'kind': 'unknown'};
     expect(() => decodeCanvasScene(unknown), throwsFormatException);
@@ -210,7 +245,7 @@ void main() {
     expect(() => decodeCanvasScene(fractional), throwsFormatException);
   });
 
-  test('v6 validates inactive stroke values without numeric coercion', () {
+  test('v7 validates inactive stroke values without numeric coercion', () {
     final cases = <(String, Object?, Matcher)>[
       ('color', 1.5, isA<FormatException>()),
       ('color', -1, isA<ArgumentError>()),

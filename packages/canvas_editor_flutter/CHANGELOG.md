@@ -1,3 +1,21 @@
+## 0.23.0
+
+- **Breaking:** remove the unused `InspectorFieldSpec.semanticSlot` field and
+  `textFieldSpec` parameter. Application-specific field annotations belong to
+  the host integration.
+- **Breaking:** require `canvas_core ^0.20.0` and
+  `canvas_renderer_flutter ^0.19.0`. Use the v7 ordinary-layer model throughout
+  editing and layer presentation.
+- **Breaking:** `CanvasFields.imageSource` carries `CanvasImageAsset?` instead
+  of a source string. Commit source references and natural dimensions together;
+  null clears the image while retaining its frame. Reject imports without valid
+  dimensions and preserve dimensions during background removal under its
+  existing host contract.
+- Remove image metadata loading and layout subscriptions from the editor runtime.
+- Normalize image asset registries on initial scene adoption, shared edits, and
+  resolved output. Replacement, clearing, and subtree deletion release unused
+  records while undo/redo snapshots retain previous assets.
+
 ## 0.22.0
 
 - Use flat v6 node fields for creation and edits. Existing editor field keys

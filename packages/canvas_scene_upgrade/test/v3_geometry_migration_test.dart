@@ -149,11 +149,10 @@ void main() {
     final old = _scene({'kind': 'rect', 'w': 20, 'h': 10});
     final before = jsonEncode(old);
     final result = upgradeCanvasScene(old);
-    expect(result['sceneFormatVersion'], 6);
+    expect(result['sceneFormatVersion'], 7);
     final oldNode = (old['children'] as List).single as Map;
     final newNode = (result['children'] as List).single as Map;
-    for (final key in ['id', 'name', 'role'])
-      expect(newNode[key], oldNode[key]);
+    for (final key in ['id', 'name']) expect(newNode[key], oldNode[key]);
     expect(newNode['appearance'], {
       'foreground': {'type': 'solid', 'color': 0xff112233},
       'stroke': {

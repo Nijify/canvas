@@ -19,17 +19,11 @@ class _FakeTextMeasurer implements TextMeasurer {
   }
 }
 
-class _FakeImages implements ImageIntrinsics {
-  @override
-  Size2D? intrinsicSize(ElementId id) => null;
-}
+CoreServices _services() => CoreServices(textMeasurer: _FakeTextMeasurer());
 
-CoreServices _services() =>
-    CoreServices(textMeasurer: _FakeTextMeasurer(), images: _FakeImages());
-
-TextNode _text(String id, String text, {String? role}) => TextNode(
+TextNode _text(String id, String text) => TextNode(
   id: id,
-  role: role,
+
   text: text,
   fontFamily: 'Inter',
   fontWeight: 400,
@@ -39,9 +33,9 @@ TextNode _text(String id, String text, {String? role}) => TextNode(
 
 void main() {
   test('scene traversal + flatten smoke', () {
-    final icon = _text('icon1', 'I', role: 'icon');
+    final icon = _text('icon1', 'I');
 
-    final main = _text('main1', 'MAIN', role: 'main');
+    final main = _text('main1', 'MAIN');
 
     final shape = Node.path(
       id: 'shape1',
@@ -49,10 +43,9 @@ void main() {
       appearance: const CanvasAppearance(
         foreground: CanvasFill.solid(0xFF111111),
       ),
-      role: 'shape',
     );
 
-    final accent = _text('accent1', 'ACCENT', role: 'accent');
+    final accent = _text('accent1', 'ACCENT');
 
     final group = Node.group(
       id: 'group1',
@@ -70,7 +63,7 @@ void main() {
 
     final foundMain = findById(doc, 'main1');
     expect(foundMain, isA<TextNode>());
-    expect((foundMain as TextNode).role, 'main');
+    expect((foundMain as TextNode).text, 'MAIN');
 
     final pIcon = findParentOf(doc, 'icon1');
     expect(pIcon, isNotNull);

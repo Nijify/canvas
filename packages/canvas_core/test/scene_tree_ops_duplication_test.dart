@@ -26,7 +26,7 @@ List<String> _rootIds(CanvasSceneDocument doc) {
 List<String> _allIds(CanvasSceneDocument doc) {
   final ids = <String>[];
 
-  visitSceneNodes(doc, includeHidden: true, visit: (node) => ids.add(node.id));
+  visitSceneNodes(doc, visit: (node) => ids.add(node.id));
 
   return ids;
 }

@@ -1,2 +1,2 @@
 /// Current persisted Canvas scene format; independent of package version.
-const int currentCanvasSceneFormatVersion = 6;
+const int currentCanvasSceneFormatVersion = 7;

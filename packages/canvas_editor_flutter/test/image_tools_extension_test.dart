@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 
 import 'editor_runtime_fakes.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 const _imageA = 'image-a';
 const _imageB = 'image-b';
 const _assetA = 'asset-a';
@@ -28,7 +30,10 @@ CanvasSceneDocument _singleImageScene({String? sourceRef = 'media:original'}) {
     assets: sourceRef == null
         ? const <CanvasAssetId, CanvasImageAsset>{}
         : <CanvasAssetId, CanvasImageAsset>{
-            _assetA: CanvasImageAsset(sourceRef: sourceRef),
+            _assetA: CanvasImageAsset(
+              intrinsicSize: _testImageSize,
+              sourceRef: sourceRef,
+            ),
           },
     children: <Node>[
       Node.image(
@@ -46,7 +51,10 @@ CanvasSceneDocument _twoImageScene() {
     backgroundFill: CanvasFill.none(),
     backgroundOpacity: 1,
     assets: <CanvasAssetId, CanvasImageAsset>{
-      _sharedAsset: CanvasImageAsset(sourceRef: 'media:shared'),
+      _sharedAsset: CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: 'media:shared',
+      ),
     },
     children: <Node>[
       Node.image(id: _imageA, assetId: _sharedAsset, size: Size2D(200, 160)),
@@ -418,6 +426,7 @@ void main() {
           assets: <CanvasAssetId, CanvasImageAsset>{
             ...scene.assets,
             preparedAssetId: const CanvasImageAsset(
+              intrinsicSize: _testImageSize,
               sourceRef: 'media:prepared',
             ),
           },
@@ -508,10 +517,13 @@ void main() {
     await tester.tap(find.byKey(_removeButtonKey));
     await tester.pump();
 
-    editor.controller.commitField<String>(
+    editor.controller.commitField<CanvasImageAsset?>(
       _imageA,
       CanvasFields.imageSource,
-      'media:newer-source',
+      CanvasImageAsset(
+        sourceRef: 'media:newer-source',
+        intrinsicSize: _testImageSize,
+      ),
     );
     await tester.pump();
 

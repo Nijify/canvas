@@ -175,13 +175,8 @@ void main() {
     expect(candidates, isNotEmpty);
   });
 
-  test('excludes hidden, empty, and ignored content', () {
+  test('excludes empty and ignored content', () {
     final scene = _scene([
-      Node.group(
-        id: 'hidden',
-        hidden: true,
-        children: [_text(id: 'hidden-text')],
-      ),
       const Node.group(id: 'empty'),
       const Node.icon(id: 'unresolved', iconRef: 'missing'),
       Node.group(

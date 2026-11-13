@@ -1,3 +1,7 @@
+## 0.7.0
+
+- Export v7 ordinary path layers without a node visibility filter.
+
 ## 0.6.0
 
 - Read fill, stroke, and fill rule directly from v6 path nodes.

@@ -26,8 +26,6 @@ SvgExportResult exportPreparedSvg({required SceneEvaluation evaluation}) {
   final paths = <PathNode>[];
 
   void visit(Node node) {
-    if (node.hidden) return;
-
     switch (node) {
       case GroupNode(:final children):
         for (final child in children) {

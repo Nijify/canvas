@@ -86,25 +86,7 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
     final imagePool = FlutterImagePool(resolver: _images);
 
     try {
-      final services = CoreServices(
-        textMeasurer: textPipeline,
-        images: imagePool,
-        icons: _icons,
-      );
-
-      // Canonical metadata is required before preparation because preparation
-      // may synchronously inspect image geometry through CoreServices.
-      final canonicalFailures = await imagePool.resolveSceneIntrinsics(
-        scene,
-        includeHidden: true,
-      );
-
-      _ensureRequiredIntrinsics(
-        scene,
-        imagePool,
-        stage: 'canonical',
-        failures: canonicalFailures,
-      );
+      final services = CoreServices(textMeasurer: textPipeline, icons: _icons);
 
       // Final output owns preparation. A supplied preparer is invoked exactly
       // once and failures propagate to the caller.
@@ -143,22 +125,6 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
         resourceLabel: 'image source reference',
       );
 
-      // This second intrinsic pass is intentional and mandatory. A preparer may
-      // create a new ElementId that legally reuses an already-approved logical
-      // image sourceRef. Intrinsic metadata must therefore be published for the
-      // prepared element IDs after resource conformance has been established.
-      final preparedFailures = await imagePool.resolveSceneIntrinsics(
-        prepared,
-        includeHidden: true,
-      );
-
-      _ensureRequiredIntrinsics(
-        prepared,
-        imagePool,
-        stage: 'prepared',
-        failures: preparedFailures,
-      );
-
       // Raster decoding is required only for nodes that can actually paint in
       // the final prepared scene.
       //
@@ -167,12 +133,9 @@ final class FlutterCanvasPngRenderer implements CanvasPngRenderer {
       // before painting. Authoritative PNG rendering keeps the source raster at
       // its native decoded resolution so pixelRatio, crop/cover behavior, and
       // scene transforms cannot magnify an already-downsampled image.
-      final rasterFailures = await imagePool.preloadScene(
-        prepared,
-        includeHidden: false,
-      );
+      final rasterFailures = await imagePool.preloadScene(prepared);
 
-      _ensureVisibleImagesDecoded(prepared, imagePool, rasterFailures);
+      _ensureImageRastersDecoded(prepared, imagePool, rasterFailures);
 
       final built = evaluateScene(
         prepared,
@@ -203,7 +166,6 @@ Set<String> _collectIconRefs(CanvasSceneDocument scene) {
 
   visitSceneNodes(
     scene,
-    includeHidden: true,
     visit: (node) {
       if (node is IconNode) {
         refs.add(node.iconRef);
@@ -219,7 +181,6 @@ Set<String> _collectImageSourceRefs(CanvasSceneDocument scene) {
 
   visitSceneNodes(
     scene,
-    includeHidden: true,
     visit: (node) {
       if (node is! ImageNode) {
         return;
@@ -299,52 +260,7 @@ void _ensureResourceSubset({
   );
 }
 
-void _ensureRequiredIntrinsics(
-  CanvasSceneDocument scene,
-  FlutterImagePool imagePool, {
-  required String stage,
-  required List<FlutterImageLoadFailure> failures,
-}) {
-  final missing = <ElementId>[];
-  final missingRefs = <String>{};
-
-  visitSceneNodes(
-    scene,
-    includeHidden: true,
-    visit: (node) {
-      if (node is! ImageNode || node.assetId == null) {
-        return;
-      }
-
-      final intrinsic = imagePool.intrinsicSize(node.id);
-
-      if (intrinsic == null ||
-          !intrinsic.w.isFinite ||
-          !intrinsic.h.isFinite ||
-          intrinsic.w <= 0 ||
-          intrinsic.h <= 0) {
-        missing.add(node.id);
-        final sourceRef = scene.assets[node.assetId]?.sourceRef.trim();
-        if (sourceRef != null) missingRefs.add(sourceRef);
-      }
-    },
-  );
-
-  if (missing.isEmpty) {
-    return;
-  }
-
-  throw CanvasImageRenderException(
-    'The $stage scene has image nodes without usable intrinsic metadata: '
-    '${missing.join(', ')}',
-    nodeIds: missing,
-    failures: failures.where(
-      (failure) => missingRefs.contains(failure.sourceRef),
-    ),
-  );
-}
-
-void _ensureVisibleImagesDecoded(
+void _ensureImageRastersDecoded(
   CanvasSceneDocument scene,
   FlutterImagePool imagePool,
   List<FlutterImageLoadFailure> failures,
@@ -354,7 +270,6 @@ void _ensureVisibleImagesDecoded(
 
   visitSceneNodes(
     scene,
-    includeHidden: false,
     visit: (node) {
       if (node is! ImageNode || node.assetId == null) {
         return;
@@ -457,7 +372,6 @@ Future<Uint8List> _encodePng({
   CanvasRenderer(
     images: imagePool.images,
     text: textPipeline,
-    intrinsics: imagePool,
 
     // Required final resources have already been verified. `skip` is only a
     // defensive low-level policy and is intentionally not exposed through

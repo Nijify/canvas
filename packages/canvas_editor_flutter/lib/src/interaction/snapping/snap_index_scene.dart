@@ -17,8 +17,7 @@ import 'package:canvas_editor_flutter/src/interaction/geometry/editor_geometry_i
 
 /// Builds object-based snap candidates in world coordinates.
 ///
-/// Hidden content is absent from the computed scene. Ignored subtrees are
-/// excluded from candidates.
+/// Ignored subtrees are excluded from candidates.
 ///
 /// Eligible leaves contribute center and edge keylines. Eligible groups
 /// contribute keylines derived from the union of their eligible descendants.

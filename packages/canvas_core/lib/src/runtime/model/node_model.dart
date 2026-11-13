@@ -19,31 +19,17 @@ part 'node_model.g.dart';
 
 enum ImageFit { contain, cover, fill }
 
-/// Generic runtime-owned behavior envelope for optional group semantics.
+/// Ordinary scene layer with hierarchical affine placement.
 ///
-/// Core runtime owns only this neutral container.
-/// Optional packs own the meaning of `type` + `version` + `data`.
-@freezed
-abstract class GroupBehaviorRef with _$GroupBehaviorRef {
-  const factory GroupBehaviorRef({
-    required String type,
-    required int version,
-    required Map<String, dynamic> data,
-  }) = _GroupBehaviorRef;
-
-  factory GroupBehaviorRef.fromJson(Map<String, dynamic> json) =>
-      _$GroupBehaviorRefFromJson(json);
-}
-
-/// Runtime scene-graph node (hierarchical affine placement).
+/// Every node participates in evaluation according to its type, geometry,
+/// appearance, transform, and hierarchy. Host authoring settings and editor
+/// session state belong to their owning applications.
 ///
 /// Notes:
 /// - All nodes (including groups) have a complete local-to-parent Affine2D.
 /// - Group nodes structurally own children (no groupId).
 /// - IDs are intended to be globally unique within the document.
 /// - Optional user-facing display names live in [name].
-/// - Optional higher-level group semantics live in GroupNode.behavior.
-///   Core runtime does not interpret product/domain behavior types directly.
 /// - Sibling order is paint/stack order:
 ///   earlier siblings paint behind later siblings.
 @Freezed(unionKey: 'type')
@@ -53,12 +39,6 @@ sealed class Node with _$Node {
   const factory Node.text({
     required ElementId id,
     @JsonKey(includeIfNull: false) String? name,
-    // TODO: `hidden` is a legacy persisted node-level visibility flag (all node variants).
-    // Candidate for removal from the persisted scene model after layer
-    // visibility UX is intentionally redesigned or removed.
-    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false)
-    bool hidden,
     @JsonKey(includeIfNull: false)
     @Affine2DConverter()
     @Default(Affine2D.identity())
@@ -81,15 +61,11 @@ sealed class Node with _$Node {
     /// Layout and interaction geometry remain source-derived and do not expand
     /// for source underlays.
     @Default(CanvasAppearance()) CanvasAppearance appearance,
-    @JsonKey(includeIfNull: false) String? role,
   }) = TextNode;
 
   const factory Node.image({
     required ElementId id,
     @JsonKey(includeIfNull: false) String? name,
-    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false)
-    bool hidden,
     @JsonKey(includeIfNull: false)
     @Affine2DConverter()
     @Default(Affine2D.identity())
@@ -110,15 +86,11 @@ sealed class Node with _$Node {
     )
     @Default(Vec2(0.5, 0.5))
     Vec2 align,
-    @JsonKey(includeIfNull: false) String? role,
   }) = ImageNode;
 
   const factory Node.path({
     required ElementId id,
     @JsonKey(includeIfNull: false) String? name,
-    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false)
-    bool hidden,
     @JsonKey(includeIfNull: false)
     @Affine2DConverter()
     @Default(Affine2D.identity())
@@ -132,15 +104,11 @@ sealed class Node with _$Node {
     FillRule fillRule,
     @Default(CanvasAppearance(foreground: CanvasFill.none()))
     CanvasAppearance appearance,
-    @JsonKey(includeIfNull: false) String? role,
   }) = PathNode;
 
   const factory Node.icon({
     required ElementId id,
     @JsonKey(includeIfNull: false) String? name,
-    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false)
-    bool hidden,
     @JsonKey(includeIfNull: false)
     @Affine2DConverter()
     @Default(Affine2D.identity())
@@ -150,20 +118,15 @@ sealed class Node with _$Node {
     @Default(96.0)
     double sizePx,
     @Default(CanvasAppearance()) CanvasAppearance appearance,
-    @JsonKey(includeIfNull: false) String? role,
   }) = IconNode;
 
   const factory Node.group({
     required ElementId id,
     @JsonKey(includeIfNull: false) String? name,
-    @JsonKey(toJson: _hiddenToJson, includeIfNull: false)
-    @Default(false)
-    bool hidden,
     @JsonKey(includeIfNull: false)
     @Affine2DConverter()
     @Default(Affine2D.identity())
     Affine2D xf,
-    @JsonKey(includeIfNull: false) GroupBehaviorRef? behavior,
     @Default(<Node>[]) List<Node> children,
   }) = GroupNode;
 
@@ -171,14 +134,6 @@ sealed class Node with _$Node {
 }
 
 extension NodeFields on Node {
-  String? get role => switch (this) {
-    TextNode(:final role) => role,
-    ImageNode(:final role) => role,
-    PathNode(:final role) => role,
-    IconNode(:final role) => role,
-    GroupNode() => null,
-  };
-
   bool get isGroup => this is GroupNode;
 
   List<Node> get childrenOrEmpty => switch (this) {
@@ -186,8 +141,6 @@ extension NodeFields on Node {
     _ => const <Node>[],
   };
 }
-
-bool? _hiddenToJson(bool hidden) => hidden ? true : null;
 
 String? _fillRuleToJson(FillRule rule) =>
     rule == FillRule.nonZero ? null : rule.name;

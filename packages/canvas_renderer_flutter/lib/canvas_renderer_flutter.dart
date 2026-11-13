@@ -55,8 +55,8 @@ export 'src/flutter_text_pipeline.dart'
 
 // ============================================================================
 // 5) Images
-//    Mental model: one pool owns decoded rasters, intrinsic metadata,
-//    repaint notifications, and resource disposal.
+//    Mental model: one pool owns decoded rasters, repaint notifications,
+//    and resource disposal. Natural dimensions belong to scene assets.
 // ============================================================================
 export 'src/images/flutter_image_pool.dart'
     show

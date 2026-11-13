@@ -6,24 +6,9 @@ part of 'node_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_GroupBehaviorRef _$GroupBehaviorRefFromJson(Map<String, dynamic> json) =>
-    _GroupBehaviorRef(
-      type: json['type'] as String,
-      version: (json['version'] as num).toInt(),
-      data: json['data'] as Map<String, dynamic>,
-    );
-
-Map<String, dynamic> _$GroupBehaviorRefToJson(_GroupBehaviorRef instance) =>
-    <String, dynamic>{
-      'type': instance.type,
-      'version': instance.version,
-      'data': instance.data,
-    };
-
 TextNode _$TextNodeFromJson(Map<String, dynamic> json) => TextNode(
   id: json['id'] as String,
   name: json['name'] as String?,
-  hidden: json['hidden'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Affine2D.identity()
       : const Affine2DConverter().fromJson(json['xf']),
@@ -35,14 +20,12 @@ TextNode _$TextNodeFromJson(Map<String, dynamic> json) => TextNode(
   appearance: json['appearance'] == null
       ? const CanvasAppearance()
       : CanvasAppearance.fromJson(json['appearance'] as Map<String, dynamic>),
-  role: json['role'] as String?,
   $type: json['type'] as String?,
 );
 
 Map<String, dynamic> _$TextNodeToJson(TextNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': ?instance.name,
-  'hidden': ?_hiddenToJson(instance.hidden),
   'xf': ?const Affine2DConverter().toJson(instance.xf),
   'text': instance.text,
   'fontFamily': instance.fontFamily,
@@ -50,14 +33,12 @@ Map<String, dynamic> _$TextNodeToJson(TextNode instance) => <String, dynamic>{
   'fontSize': instance.fontSize,
   'letterSpacing': ?_letterSpacingToJson(instance.letterSpacing),
   'appearance': instance.appearance.toJson(),
-  'role': ?instance.role,
   'type': instance.$type,
 };
 
 ImageNode _$ImageNodeFromJson(Map<String, dynamic> json) => ImageNode(
   id: json['id'] as String,
   name: json['name'] as String?,
-  hidden: json['hidden'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Affine2D.identity()
       : const Affine2DConverter().fromJson(json['xf']),
@@ -67,20 +48,17 @@ ImageNode _$ImageNodeFromJson(Map<String, dynamic> json) => ImageNode(
   align: json['align'] == null
       ? const Vec2(0.5, 0.5)
       : Vec2.fromJson(json['align'] as Map<String, dynamic>),
-  role: json['role'] as String?,
   $type: json['type'] as String?,
 );
 
 Map<String, dynamic> _$ImageNodeToJson(ImageNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': ?instance.name,
-  'hidden': ?_hiddenToJson(instance.hidden),
   'xf': ?const Affine2DConverter().toJson(instance.xf),
   'assetId': ?instance.assetId,
   'size': const Size2DConverter().toJson(instance.size),
   'fit': ?_imageFitToJson(instance.fit),
   'align': ?_imageAlignToJson(instance.align),
-  'role': ?instance.role,
   'type': instance.$type,
 };
 
@@ -93,7 +71,6 @@ const _$ImageFitEnumMap = {
 PathNode _$PathNodeFromJson(Map<String, dynamic> json) => PathNode(
   id: json['id'] as String,
   name: json['name'] as String?,
-  hidden: json['hidden'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Affine2D.identity()
       : const Affine2DConverter().fromJson(json['xf']),
@@ -104,19 +81,16 @@ PathNode _$PathNodeFromJson(Map<String, dynamic> json) => PathNode(
   appearance: json['appearance'] == null
       ? const CanvasAppearance(foreground: CanvasFill.none())
       : CanvasAppearance.fromJson(json['appearance'] as Map<String, dynamic>),
-  role: json['role'] as String?,
   $type: json['type'] as String?,
 );
 
 Map<String, dynamic> _$PathNodeToJson(PathNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': ?instance.name,
-  'hidden': ?_hiddenToJson(instance.hidden),
   'xf': ?const Affine2DConverter().toJson(instance.xf),
   'geometry': const PathSourceConverter().toJson(instance.geometry),
   'fillRule': ?_fillRuleToJson(instance.fillRule),
   'appearance': instance.appearance.toJson(),
-  'role': ?instance.role,
   'type': instance.$type,
 };
 
@@ -128,7 +102,6 @@ const _$FillRuleEnumMap = {
 IconNode _$IconNodeFromJson(Map<String, dynamic> json) => IconNode(
   id: json['id'] as String,
   name: json['name'] as String?,
-  hidden: json['hidden'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Affine2D.identity()
       : const Affine2DConverter().fromJson(json['xf']),
@@ -137,32 +110,25 @@ IconNode _$IconNodeFromJson(Map<String, dynamic> json) => IconNode(
   appearance: json['appearance'] == null
       ? const CanvasAppearance()
       : CanvasAppearance.fromJson(json['appearance'] as Map<String, dynamic>),
-  role: json['role'] as String?,
   $type: json['type'] as String?,
 );
 
 Map<String, dynamic> _$IconNodeToJson(IconNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': ?instance.name,
-  'hidden': ?_hiddenToJson(instance.hidden),
   'xf': ?const Affine2DConverter().toJson(instance.xf),
   'iconRef': instance.iconRef,
   'sizePx': ?_iconSizeToJson(instance.sizePx),
   'appearance': instance.appearance.toJson(),
-  'role': ?instance.role,
   'type': instance.$type,
 };
 
 GroupNode _$GroupNodeFromJson(Map<String, dynamic> json) => GroupNode(
   id: json['id'] as String,
   name: json['name'] as String?,
-  hidden: json['hidden'] as bool? ?? false,
   xf: json['xf'] == null
       ? const Affine2D.identity()
       : const Affine2DConverter().fromJson(json['xf']),
-  behavior: json['behavior'] == null
-      ? null
-      : GroupBehaviorRef.fromJson(json['behavior'] as Map<String, dynamic>),
   children:
       (json['children'] as List<dynamic>?)
           ?.map((e) => Node.fromJson(e as Map<String, dynamic>))
@@ -174,9 +140,7 @@ GroupNode _$GroupNodeFromJson(Map<String, dynamic> json) => GroupNode(
 Map<String, dynamic> _$GroupNodeToJson(GroupNode instance) => <String, dynamic>{
   'id': instance.id,
   'name': ?instance.name,
-  'hidden': ?_hiddenToJson(instance.hidden),
   'xf': ?const Affine2DConverter().toJson(instance.xf),
-  'behavior': ?instance.behavior?.toJson(),
   'children': instance.children.map((e) => e.toJson()).toList(),
   'type': instance.$type,
 };

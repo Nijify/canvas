@@ -46,7 +46,7 @@ class PathCompiler {
     final r = l + source.width, b = t + source.height;
     final rx = math.min(source.rx ?? source.ry ?? 0, source.width / 2);
     final ry = math.min(source.ry ?? source.rx ?? 0, source.height / 2);
-    if (rx == 0 || ry == 0)
+    if (rx == 0 || ry == 0) {
       return PathIR([
         PathCmd.moveTo(Vec2(l, t)),
         PathCmd.lineTo(Vec2(r, t)),
@@ -54,6 +54,7 @@ class PathCompiler {
         PathCmd.lineTo(Vec2(l, b)),
         PathCmd.close(),
       ]);
+    }
     const k = 0.5522847498307936;
     final kx = rx * k, ky = ry * k;
     return PathIR([

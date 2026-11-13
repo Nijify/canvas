@@ -6,7 +6,7 @@
 
 - `CanvasRenderer` for painting a `SceneEvaluation` onto a Flutter `Canvas`.
 - `FlutterTextPipeline` for Flutter text measurement, painting, caching, and lifecycle ownership.
-- `FlutterImagePool` for decoded raster ownership, intrinsic metadata, repaint notifications, stale-request protection, and image disposal.
+- `FlutterImagePool` for decoded raster ownership, repaint notifications, stale-request protection, and image disposal.
 - `FlutterFontLoader` for host-controlled font availability, with `BundledFlutterFontLoader` for bundled assets.
 - `CanvasPngRenderer` / `FlutterCanvasPngRenderer` for authoritative final PNG output from a canonical runtime scene.
 - Core-to-Flutter value mappers and optional `ImageProvider` helpers.
@@ -26,6 +26,10 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
 
 Do not import files under `package:canvas_renderer_flutter/src/`.
 
+See the [runnable renderer example](example/README.md) for a complete Flutter
+preview that owns its text pipeline, evaluates a scene, and paints it with
+`CanvasRenderer`.
+
 Optional image-provider helpers live behind:
 
 ```dart
@@ -34,7 +38,7 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter_image_providers.
 
 ## Low-level rendering
 
-`CanvasRenderer` paints the prepared scene using computed draw order and geometry. It borrows text, image, and intrinsic resources; it does not own or dispose them.
+`CanvasRenderer` paints the prepared scene using computed draw order and geometry. It borrows text and decoded images; it does not own or dispose them. Fit and crop use saved asset dimensions, with crop coordinates mapped into each decoded raster's pixel dimensions.
 
 Use one `FlutterTextPipeline` for both core measurement and Flutter text painting:
 
@@ -87,11 +91,6 @@ final imagePool = FlutterImagePool(
   resolver: appImageResolver,
 );
 
-await imagePool.resolveSceneIntrinsics(
-  document,
-  includeHidden: true,
-);
-
 await imagePool.preloadScene(
   document,
   targetW: 2048,
@@ -103,18 +102,15 @@ await imagePool.preloadScene(
 
 `resolveSources()` returns host-renderable runtime references. They may be temporary or rotating values such as signed URLs or blob URLs, so `FlutterImagePool` resolves active logical refs again for each preload operation instead of treating resolved outputs as persistent identity.
 
-`resolveIntrinsicSizes()` supplies stable layout-affecting metadata keyed by logical source ref. `FlutterImagePool` may cache that metadata while decoded raster state remains keyed to document element IDs.
+Every `CanvasImageAsset` already contains finite positive natural dimensions. The pool uses them to select decode sizes without querying metadata. Hosts use `resolveIntrinsicSizes()` during import or explicit historical upgrades before constructing a scene asset.
 
-The two notification channels have different meanings:
-
-- `onIntrinsicUpdated` reports layout-affecting metadata changes.
-- `revision` reports paint-only decoded raster changes.
+`revision` reports paint-only decoded raster changes. Image loading does not invalidate layout.
 
 Dispose a pool when its rendering surface or render operation ends. The pool owns and disposes decoded `ui.Image` handles retained by it, including replaced, removed, stale, and late-arriving images.
 
 ### Image-loading results
 
-`resolveSceneIntrinsics()` and `preloadScene()` return immutable
+`preloadScene()` returns immutable
 `List<FlutterImageLoadFailure>` values. Each result describes only that loading
 operation; the pool retains no diagnostic history. Successful operations return
 an empty list. Superseded or disposed operations also return an empty list, so
@@ -128,14 +124,14 @@ for (final failure in failures) {
 }
 ```
 
-Failures distinguish source resolution, intrinsic metadata, and raster decoding,
+Failures distinguish source resolution and raster decoding,
 including missing/empty results and thrown errors. `sourceRef` identifies the
 logical resource; `cause` and `stackTrace` retain the original exception and
 available stack trace. These structured fields may contain inline data, private
 paths, or signed-URL credentials; redact them before logging or transmitting.
 
-Interactive callers may await these methods and ignore the returned failures.
-Metadata remains best-effort and does not gate raster loading. Use a new
+Interactive callers may await this method and ignore the returned failures.
+Use a new
 operation to retry; no diagnostic reset is needed. Retained earlier results are
 historical operation results, not a view of the current pool state.
 
@@ -169,12 +165,10 @@ Its render operation performs, in order:
 1. canonical scene integrity before resource work;
 2. canonical font, icon, and logical image dependency discovery;
 3. canonical font loading and icon validation;
-4. canonical image-intrinsic resolution;
-5. `ScenePreparer` exactly once, when configured;
-6. integrity of preparer output, when configured, and resource-preservation checks;
-7. a second prepared image-intrinsic pass for new element IDs that reuse allowed logical sources;
-8. visible raster preload and strict required-image verification;
-9. layout, scene painting, PNG encoding, and operation-scoped cleanup.
+4. `ScenePreparer` exactly once, when configured;
+5. integrity of preparer output, when configured, and resource-preservation checks;
+6. raster preload and strict required-image verification;
+7. layout, scene painting, PNG encoding, and operation-scoped cleanup.
 
 Preparation may remove dependencies or introduce new element/asset IDs that reuse already-approved logical resources. It may not introduce new font families, icon refs, or active image `sourceRef` dependencies.
 
@@ -183,8 +177,7 @@ Preparation may remove dependencies or introduce new element/asset IDs that reus
 Required-image failures throw `CanvasImageRenderException`, a `StateError`
 subtype. It exposes the missing `nodeIds` and relevant operation `failures`,
 including original causes when available. Formatted errors omit raw sources and
-original exception text. Persisted dimensions may satisfy metadata needs,
-hidden final images need no raster, and intentionally empty frames are valid.
+original exception text. Intentionally empty frames are valid.
 Scene-integrity failures throw `ArgumentError`. Font-loader and preparer
 exceptions propagate directly.
 

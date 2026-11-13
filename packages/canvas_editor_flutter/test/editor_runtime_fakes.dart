@@ -47,7 +47,9 @@ final class TestImageResolver implements CanvasImageAssetResolver {
   Future<Map<String, Size2D>> resolveIntrinsicSizes(
     List<String> sourceRefs,
   ) async {
-    return const <String, Size2D>{};
+    return <String, Size2D>{
+      for (final ref in sourceRefs) ref: const Size2D(200, 200),
+    };
   }
 }
 

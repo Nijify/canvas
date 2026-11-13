@@ -34,7 +34,6 @@ class InspectorFieldSpec<T> {
     required this.commitMode,
     required this.control,
     this.debounce = const Duration(milliseconds: 450),
-    this.semanticSlot,
   });
 
   final CanvasFieldKey fieldKey;
@@ -47,8 +46,6 @@ class InspectorFieldSpec<T> {
 
   /// Only used when commitMode == debounced.
   final Duration debounce;
-
-  final String? semanticSlot;
 }
 
 /// ---------------------------------------------------------------------------
@@ -107,13 +104,11 @@ InspectorFieldSpec<String> textFieldSpec({
   required CanvasFieldKey fieldKey,
   required String title,
   CommitMode commitMode = CommitMode.debounced,
-  String? semanticSlot,
 }) {
   return InspectorFieldSpec<String>(
     fieldKey: fieldKey,
     title: title,
     commitMode: commitMode,
-    semanticSlot: semanticSlot,
     control:
         (
           context, {

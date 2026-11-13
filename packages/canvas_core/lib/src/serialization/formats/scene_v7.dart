@@ -2,7 +2,7 @@ import 'package:canvas_core/src/serialization/scene_format.dart';
 
 /// Checks wire structure before generated decoding can discard unknown fields
 /// or coerce integers. Geometry and gradients have their own strict decoders.
-void validateSceneV6Json(Map<String, Object?> json) {
+void validateSceneV7Json(Map<String, Object?> json) {
   const version = currentCanvasSceneFormatVersion;
   if (json['sceneFormatVersion'] is! int ||
       json['sceneFormatVersion'] != version) {
@@ -22,10 +22,14 @@ void validateSceneV6Json(Map<String, Object?> json) {
       'children',
     },
     '',
-    requiredFields: ['backgroundFill', 'backgroundOpacity', 'children'],
+    requiredFields: [
+      'artboardSize',
+      'backgroundFill',
+      'backgroundOpacity',
+      'children',
+    ],
   );
-  if (json['artboardSize'] != null)
-    _size(json['artboardSize'], '/artboardSize');
+  _size(json['artboardSize'], '/artboardSize');
   _fill(json['backgroundFill'], '/backgroundFill');
   _number(json['backgroundOpacity'], '/backgroundOpacity');
   if (json['assets'] != null) {
@@ -37,12 +41,10 @@ void validateSceneV6Json(Map<String, Object?> json) {
         asset,
         {'sourceRef', 'intrinsicSize'},
         path,
-        requiredFields: ['sourceRef'],
+        requiredFields: ['sourceRef', 'intrinsicSize'],
       );
       _string(asset['sourceRef'], '$path/sourceRef');
-      if (asset['intrinsicSize'] != null) {
-        _size(asset['intrinsicSize'], '$path/intrinsicSize');
-      }
+      _size(asset['intrinsicSize'], '$path/intrinsicSize');
     }
   }
   final children = _list(json['children'], '/children');
@@ -54,10 +56,9 @@ void validateSceneV6Json(Map<String, Object?> json) {
 void _node(Object? raw, String path) {
   final node = _object(raw, path);
   final fields = switch (node['type']) {
-    'group' => {'behavior', 'children'},
-    'path' => {'role', 'geometry', 'fillRule', 'appearance'},
+    'group' => {'children'},
+    'path' => {'geometry', 'fillRule', 'appearance'},
     'text' => {
-      'role',
       'text',
       'fontFamily',
       'fontWeight',
@@ -65,39 +66,24 @@ void _node(Object? raw, String path) {
       'letterSpacing',
       'appearance',
     },
-    'icon' => {'role', 'iconRef', 'sizePx', 'appearance'},
-    'image' => {'role', 'assetId', 'size', 'fit', 'align'},
+    'icon' => {'iconRef', 'sizePx', 'appearance'},
+    'image' => {'assetId', 'size', 'fit', 'align'},
     _ => _fail('$path/type', 'Expected a supported node type.'),
   };
   _keys(
     node,
-    {'type', 'id', 'name', 'hidden', 'xf', ...fields},
+    {'type', 'id', 'name', 'xf', ...fields},
     path,
     requiredFields: ['id'],
   );
   _string(node['id'], '$path/id');
   if (node['name'] != null) _string(node['name'], '$path/name');
-  if (node['hidden'] != null) _bool(node['hidden'], '$path/hidden');
-  if (node['role'] != null) _string(node['role'], '$path/role');
   if (node.containsKey('xf')) _transform(node['xf'], '$path/xf');
   if (node['type'] == 'group') {
     _required(node, 'children', path);
     final children = _list(node['children'], '$path/children');
     for (var index = 0; index < children.length; index++) {
       _node(children[index], '$path/children/$index');
-    }
-    if (node['behavior'] != null) {
-      final behavior = _object(node['behavior'], '$path/behavior');
-      _keys(
-        behavior,
-        {'type', 'version', 'data'},
-        '$path/behavior',
-        requiredFields: ['type', 'version', 'data'],
-      );
-      _string(behavior['type'], '$path/behavior/type');
-      _integer(behavior['version'], '$path/behavior/version');
-      // Behavior payloads remain opaque; runtime validation checks JSON values.
-      _object(behavior['data'], '$path/behavior/data');
     }
     return;
   }
@@ -162,10 +148,12 @@ void _appearance(Object? raw, String path) {
     for (final name in ['width', 'miterLimit']) {
       if (stroke[name] != null) _number(stroke[name], '$strokePath/$name');
     }
-    if (stroke['cap'] != null)
+    if (stroke['cap'] != null) {
       _enum(stroke['cap'], {'butt', 'round', 'square'}, '$strokePath/cap');
-    if (stroke['join'] != null)
+    }
+    if (stroke['join'] != null) {
       _enum(stroke['join'], {'miter', 'round', 'bevel'}, '$strokePath/join');
+    }
     if (stroke['dash'] != null) {
       final dash = _list(stroke['dash'], '$strokePath/dash');
       for (var index = 0; index < dash.length; index++) {
@@ -186,11 +174,13 @@ void _appearance(Object? raw, String path) {
     );
     _enum(underlay['type'], {'shadow'}, '$itemPath/type');
     _string(underlay['id'], '$itemPath/id');
-    if (underlay['enabled'] != null)
+    if (underlay['enabled'] != null) {
       _bool(underlay['enabled'], '$itemPath/enabled');
+    }
     _point(underlay['offset'], '$itemPath/offset');
-    if (underlay['blurSigma'] != null)
+    if (underlay['blurSigma'] != null) {
       _number(underlay['blurSigma'], '$itemPath/blurSigma');
+    }
     _integer(underlay['color'], '$itemPath/color');
   }
 }
@@ -236,7 +226,9 @@ void _keys(
       _fail('$path/$key', 'Unsupported scene field.');
     }
   }
-  for (final name in requiredFields) _required(object, name, path);
+  for (final name in requiredFields) {
+    _required(object, name, path);
+  }
 }
 
 void _required(Map<String, Object?> object, String name, String path) {

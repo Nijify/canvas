@@ -6,6 +6,7 @@ import 'package:canvas_core/src/runtime/model/scene_document.dart';
 import 'package:canvas_core/src/runtime/traversal/traversal.dart';
 
 enum TransformSpace { local, parent, world }
+
 enum TransformPreservation { local, world }
 
 /// Geometry/resource/visibility-independent authored hierarchy lookup.
@@ -19,6 +20,7 @@ Affine2D? worldTransformOf(CanvasSceneDocument scene, ElementId id) {
     }
     return null;
   }
+
   for (final root in scene.children) {
     final found = visit(root, const Affine2D.identity());
     if (found != null) return found;
@@ -29,7 +31,9 @@ Affine2D? worldTransformOf(CanvasSceneDocument scene, ElementId id) {
 Affine2D? parentWorldTransformOf(CanvasSceneDocument scene, ElementId id) {
   final ref = findParentOf(scene, id);
   if (ref == null) return null;
-  return ref.parent == null ? const Affine2D.identity() : worldTransformOf(scene, ref.parent!.id);
+  return ref.parent == null
+      ? const Affine2D.identity()
+      : worldTransformOf(scene, ref.parent!.id);
 }
 
 /// Shared delta convention. A world operation needs only the parent's inverse,
@@ -47,11 +51,14 @@ Affine2D transformAfterDelta(
       return delta * local;
     case TransformSpace.world:
       final inverse = parentWorld.tryInverse();
-      if (inverse == null) throw StateError('Parent transform cannot be inverted reliably.');
+      if (inverse == null) {
+        throw StateError('Parent transform cannot be inverted reliably.');
+      }
       return inverse * delta * parentWorld * local;
   }
 }
 
 Affine2D affineAround(Vec2 anchor, Affine2D delta) =>
-    Affine2D.translation(anchor.x, anchor.y) * delta *
+    Affine2D.translation(anchor.x, anchor.y) *
+    delta *
     Affine2D.translation(-anchor.x, -anchor.y);

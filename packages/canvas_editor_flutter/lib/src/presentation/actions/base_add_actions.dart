@@ -69,7 +69,7 @@ PolygonSource _polygonPreset(
     ),
 ]);
 
-PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
+PathNode _buildBasePath(PathSource src, {String? idOverride}) {
   return PathNode(
     id: idOverride ?? _genBaseAddId('path'),
     geometry: src,
@@ -83,7 +83,6 @@ PathNode _buildBasePath(PathSource src, {String? role, String? idOverride}) {
       ),
     ),
     xf: Affine2D.translation((_shapePos).x, (_shapePos).y),
-    role: role,
   );
 }
 

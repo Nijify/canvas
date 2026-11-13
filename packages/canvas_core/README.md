@@ -13,7 +13,7 @@ Use it when you want to model or transform canvas-style documents without depend
 - `computeScene` for deterministic transforms, draw order, bounds, and cached geometry.
 - `evaluateScene` for the prepared scene, computed geometry, and optional content bounds.
 - Renderer-neutral geometry and viewport calculation shared by runtime consumers.
-- Host-service contracts for text measurement, image intrinsics, image source resolution, and icon resolution.
+- Host-service contracts for text measurement, image import/source resolution, and icon resolution.
 - Generic scene font-family discovery for renderer/resource preflight.
 
 ## Graphics semantics and SVG
@@ -51,6 +51,9 @@ Import the runtime API for documents, geometry, services, scene computation, and
 import 'package:canvas_core/canvas_core_runtime.dart';
 ```
 
+The conventional `package:canvas_core/canvas_core.dart` entry point exports the
+same runtime API.
+
 Do not import files under `package:canvas_core/src/`; use `canvas_core_runtime.dart`.
 
 ## Basic usage
@@ -87,10 +90,14 @@ implement `TextMeasurer` directly.
 
 ## Runtime resource discovery
 
+For a complete runnable JSON round-trip and evaluation example, see
+[`example/canvas_core_example.dart`](example/canvas_core_example.dart).
+From this package directory, run `dart run example/canvas_core_example.dart`.
+
 Core discovers logical resource requirements without loading platform resources.
 
 Use `collectSceneFontFamilies` to collect text and fallback font families,
-including hidden and nested scene content:
+including nested scene content:
 
 ```dart
 final fontFamilies = collectSceneFontFamilies(
@@ -141,7 +148,6 @@ identity and tree structure:
 ```dart
 final renamed = node.withName('Headline');
 final moved = renamed.withXf(nextTransform);
-final hidden = moved.withHidden(true);
 ```
 
 Use `SceneTreeOps` for structural operations such as adding, deleting, moving,
@@ -154,7 +160,7 @@ final json = encodeCanvasScene(document);
 final restored = decodeCanvasScene(json);
 ```
 
-Persistence uses scene format v6. Nodes use a `type` discriminator and carry
+Persistence uses scene format v7. Nodes use a `type` discriminator and carry
 authored fields directly. Paths carry `geometry`, `appearance`, and an optional
 `fillRule`. For example:
 
@@ -197,7 +203,6 @@ the host before building:
 ```dart
 final services = CoreServices(
   textMeasurer: myTextMeasurer,
-  images: myImageIntrinsics,
   icons: myIconResolver,
 );
 
@@ -225,7 +230,8 @@ See [VERSIONING.md](VERSIONING.md) for the full policy.
 ## Package boundaries
 
 - `canvas_core` is Dart-only and must stay independent of Flutter and `dart:ui`.
-- Text measurement, image intrinsic sizes, and icon lookup are host services.
+- Text measurement and icon lookup are host services. Every image asset stores finite positive natural dimensions in `intrinsicSize`; scene computation uses those saved dimensions for fit and crop without loading image resources.
+- `decodeCanvasScene`, `encodeCanvasScene`, and editor scene edits prune image assets unreferenced by scene nodes. `pruneUnusedImageAssets` exposes the same pure normalization for hosts. Previous scene snapshots retain their own registries; hosts own the lifecycle of underlying media and resources referenced by other project data.
 - Renderers and editors should reuse `ComputedScene` for canonical document transforms, local layout bounds, and paint bounds. Editor-only derived interaction geometry belongs to `canvas_editor_flutter`.
 - Editor-specific interaction concerns such as history, picking, snapping, and selection belong to `canvas_editor_flutter`.
 - Public core consumers should import `canvas_core_runtime.dart`.

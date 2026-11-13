@@ -11,8 +11,7 @@ import 'package:canvas_core/src/runtime/traversal/traversal.dart'
 /// This function performs discovery only. It does not load fonts, inspect
 /// platform assets, or validate that a family is available on the current host.
 ///
-/// Hidden nodes are included because resource preflight must account for the
-/// complete logical document rather than only the currently painted subset.
+/// Discovery includes every text layer in the scene hierarchy.
 ///
 /// Icons contain vector geometry and contribute no font-family dependencies.
 Set<String> collectSceneFontFamilies(
@@ -34,7 +33,6 @@ Set<String> collectSceneFontFamilies(
 
   visitSceneNodes(
     scene,
-    includeHidden: true,
     visit: (node) {
       if (node is TextNode) {
         addFamily(node.fontFamily);

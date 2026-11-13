@@ -35,8 +35,9 @@ sealed class PathSource {
     double? optional(String key) => json.containsKey(key) ? number(key) : null;
     String string(String key) {
       final value = json[key];
-      if (value is! String)
+      if (value is! String) {
         throw FormatException('$kind.$key must be a string.');
+      }
       return value;
     }
 
@@ -194,8 +195,9 @@ void requirePathSourceIntegrity(PathSource source) {
 
   void nonnegative(double value) {
     finite(value);
-    if (value < 0)
+    if (value < 0) {
       throw ArgumentError('Dimensions and radii must be nonnegative.');
+    }
   }
 
   switch (source) {

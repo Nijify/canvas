@@ -4,6 +4,8 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+const _testImageSize = Size2D(200, 160);
+
 const _textNode = TextNode(
   id: 't1',
   text: 'Hello world',
@@ -14,13 +16,8 @@ const _textNode = TextNode(
   appearance: CanvasAppearance(foreground: CanvasFill.solid(0xFF111111)),
 );
 
-Node _text(
-  String id, {
-  String text = 'Hello world',
-  String? name,
-  bool hidden = false,
-}) {
-  return _textNode.copyWith(id: id, name: name, hidden: hidden, text: text);
+Node _text(String id, {String text = 'Hello world', String? name}) {
+  return _textNode.copyWith(id: id, name: name, text: text);
 }
 
 Node _image(String id, {String? name}) {
@@ -59,7 +56,10 @@ CanvasSceneDocument _scene(List<Node> children) {
     backgroundFill: const CanvasFill.none(),
     backgroundOpacity: 1.0,
     assets: const <CanvasAssetId, CanvasImageAsset>{
-      'asset-1': CanvasImageAsset(sourceRef: 'media:1'),
+      'asset-1': CanvasImageAsset(
+        intrinsicSize: _testImageSize,
+        sourceRef: 'media:1',
+      ),
     },
     children: children,
   );
@@ -169,19 +169,15 @@ void main() {
       expect(rows.single.label, endsWith('…'));
     });
 
-    test('includes hidden nodes and their children in the object tree', () {
+    test('includes every group and child in the object tree', () {
       final doc = _scene([
-        Node.group(
-          id: 'hidden-group',
-          hidden: true,
-          children: [_text('hidden-child', hidden: true)],
-        ),
+        Node.group(id: 'nested-group', children: [_text('nested-child')]),
         _text('visible-root'),
       ]);
 
       final rows = const SceneObjectTreeBuilder().build(scene: doc);
 
-      expect(_rowIds(rows), ['visible-root', 'hidden-group', 'hidden-child']);
+      expect(_rowIds(rows), ['visible-root', 'nested-group', 'nested-child']);
 
       expect(rows.map((row) => row.depth), [0, 0, 1]);
     });

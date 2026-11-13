@@ -121,8 +121,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   late final VoidCallback _renderListener;
   late final VoidCallback _documentListener;
 
-  StreamSubscription<ElementId>? _intrinsicSubscription;
-
   CanvasSceneDocument? _lastAssetScene;
   bool _isDisposing = false;
 
@@ -157,14 +155,12 @@ class _CanvasEditorSurfaceState<TSourceDocument>
 
   late final CoreServices services = CoreServices(
     textMeasurer: _textPipeline,
-    images: _pool,
     icons: _assets.icons,
   );
 
   late final CanvasRenderer renderer = CanvasRenderer(
     images: _pool.images,
     text: _textPipeline,
-    intrinsics: _pool,
     options: const CanvasRendererOptions(
       missingImageBehavior: MissingImageBehavior.placeholder,
     ),
@@ -296,12 +292,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
       extraFieldCodecs: fieldCodecs,
     );
 
-    _intrinsicSubscription = _pool.onIntrinsicUpdated.listen((_) {
-      if (_isDisposing) return;
-
-      _runtime.scheduleLayoutInvalidation();
-    });
-
     PaintingBinding.instance.systemFonts.addListener(_invalidateFontLayouts);
 
     _ensureAssetsForScene(_runtime.render.value.scene);
@@ -386,10 +376,6 @@ class _CanvasEditorSurfaceState<TSourceDocument>
   @override
   void dispose() {
     _isDisposing = true;
-
-    final intrinsicSubscription = _intrinsicSubscription;
-    _intrinsicSubscription = null;
-    unawaited(intrinsicSubscription?.cancel());
 
     PaintingBinding.instance.systemFonts.removeListener(_invalidateFontLayouts);
 

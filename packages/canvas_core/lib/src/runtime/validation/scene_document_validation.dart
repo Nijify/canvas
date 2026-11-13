@@ -15,7 +15,7 @@ import 'package:canvas_core/src/runtime/model/scene_document.dart';
 ///
 /// Throws [ArgumentError] at the first integrity failure. Error messages provide
 /// context for people; their wording, locations, and traversal order are not a
-/// stable diagnostic API. Component availability is owned by the caller.
+/// stable diagnostic API.
 void requireCanvasSceneIntegrity(CanvasSceneDocument document) {
   _SceneValidator().validate(document);
 }
@@ -23,7 +23,6 @@ void requireCanvasSceneIntegrity(CanvasSceneDocument document) {
 final class _SceneValidator {
   final Set<String> _nodeIds = <String>{};
   final HashSet<Node> _activeNodes = HashSet<Node>.identity();
-  final HashSet<Object> _activeBehaviorContainers = HashSet<Object>.identity();
   Map<CanvasAssetId, CanvasImageAsset> _assets =
       const <CanvasAssetId, CanvasImageAsset>{};
 
@@ -61,10 +60,8 @@ final class _SceneValidator {
     }
 
     final intrinsicSize = asset.intrinsicSize;
-    if (intrinsicSize != null) {
-      _validatePositive(intrinsicSize.w, '$path/intrinsicSize/w');
-      _validatePositive(intrinsicSize.h, '$path/intrinsicSize/h');
-    }
+    _validatePositive(intrinsicSize.w, '$path/intrinsicSize/w');
+    _validatePositive(intrinsicSize.h, '$path/intrinsicSize/h');
   }
 
   void _validateNode(Node node, String path) {
@@ -95,10 +92,7 @@ final class _SceneValidator {
           _validateImage(node, path);
         case PathNode():
           _validatePath(node, path);
-        case GroupNode(:final behavior, :final children):
-          if (behavior != null) {
-            _validateBehavior(behavior, '$path/behavior');
-          }
+        case GroupNode(:final children):
           for (var index = 0; index < children.length; index++) {
             _validateNode(children[index], '$path/children/$index');
           }
@@ -241,68 +235,6 @@ final class _SceneValidator {
     } on ArgumentError catch (error) {
       _fail(path, error.message.toString());
     }
-  }
-
-  void _validateBehavior(GroupBehaviorRef behavior, String path) {
-    if (behavior.type.trim().isEmpty) {
-      _fail('$path/type', 'Behavior type must be nonblank.');
-    }
-
-    if (behavior.version < 1) {
-      _fail('$path/version', 'Behavior version must be at least 1.');
-    }
-
-    _validateJsonValue(behavior.data, '$path/data');
-  }
-
-  void _validateJsonValue(Object? value, String path) {
-    if (value == null || value is bool || value is String || value is int) {
-      return;
-    }
-
-    if (value is num) {
-      _validateFinite(value, path);
-      return;
-    }
-
-    if (value is List) {
-      if (!_activeBehaviorContainers.add(value)) {
-        _fail(path, 'Behavior data contains a cyclic list or map.');
-      }
-
-      try {
-        for (var index = 0; index < value.length; index++) {
-          _validateJsonValue(value[index], '$path/$index');
-        }
-      } finally {
-        _activeBehaviorContainers.remove(value);
-      }
-      return;
-    }
-
-    if (value is Map) {
-      if (!_activeBehaviorContainers.add(value)) {
-        _fail(path, 'Behavior data contains a cyclic list or map.');
-      }
-
-      try {
-        if (value.keys.any((key) => key is! String)) {
-          _fail(path, 'Behavior data maps must contain only string keys.');
-        }
-
-        for (final entry in value.entries) {
-          _validateJsonValue(entry.value, '$path/${entry.key}');
-        }
-      } finally {
-        _activeBehaviorContainers.remove(value);
-      }
-      return;
-    }
-
-    _fail(
-      path,
-      'Behavior data contains a non-JSON value of type ${value.runtimeType}.',
-    );
   }
 
   void _validateFill(CanvasFill fill, String path) {
