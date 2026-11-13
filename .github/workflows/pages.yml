@@ -113,7 +113,7 @@ jobs:
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: |
           dart pub global activate pana 0.23.19
-          dart pub global run pana --source path --project-root . --flutter-sdk "$FLUTTER_ROOT" --dartdoc-version sdk --exit-code-threshold 0 packages/canvas_core
+          dart pub global run pana --source path --project-root . --flutter-sdk "$FLUTTER_ROOT" --dartdoc-version latest --exit-code-threshold 0 packages/canvas_core
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

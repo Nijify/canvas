@@ -128,8 +128,9 @@ abstract final class SceneTreeOps {
           ? const Affine2D.identity()
           : worldTransformOf(doc, newParentId)!;
       final inverse = targetWorld.tryInverse();
-      if (inverse == null)
+      if (inverse == null) {
         throw StateError('New parent transform cannot be inverted reliably.');
+      }
       moving = node.withXf(inverse * worldTransformOf(doc, id)!);
     }
     final d1 = _removeAtParentRef(doc, pr);

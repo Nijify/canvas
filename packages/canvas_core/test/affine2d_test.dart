@@ -22,11 +22,12 @@ void main() {
       final inverse = matrix.tryInverse();
       expect(inverse, isNotNull);
       final roundtrip = inverse! * matrix;
-      for (var i = 0; i < 6; i++)
+      for (var i = 0; i < 6; i++) {
         expect(
           roundtrip.toJson()[i],
           closeTo(const Affine2D.identity().toJson()[i], 1e-9),
         );
+      }
     }
     expect(Affine2D.scale(0, 1).tryInverse(), isNull);
     expect(Affine2D.scale(1, 1e-15).tryInverse(), isNull);

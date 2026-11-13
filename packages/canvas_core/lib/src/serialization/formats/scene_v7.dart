@@ -226,7 +226,9 @@ void _keys(
       _fail('$path/$key', 'Unsupported scene field.');
     }
   }
-  for (final name in requiredFields) _required(object, name, path);
+  for (final name in requiredFields) {
+    _required(object, name, path);
+  }
 }
 
 void _required(Map<String, Object?> object, String name, String path) {

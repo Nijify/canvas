@@ -51,8 +51,9 @@ Affine2D transformAfterDelta(
       return delta * local;
     case TransformSpace.world:
       final inverse = parentWorld.tryInverse();
-      if (inverse == null)
+      if (inverse == null) {
         throw StateError('Parent transform cannot be inverted reliably.');
+      }
       return inverse * delta * parentWorld * local;
   }
 }

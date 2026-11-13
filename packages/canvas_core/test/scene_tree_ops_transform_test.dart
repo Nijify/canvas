@@ -15,8 +15,9 @@ CanvasSceneDocument _scene() => CanvasSceneDocument(
   ],
 );
 void _close(Affine2D actual, Affine2D expected) {
-  for (var i = 0; i < 6; i++)
+  for (var i = 0; i < 6; i++) {
     expect(actual.toJson()[i], closeTo(expected.toJson()[i], 1e-9));
+  }
 }
 
 void main() {
