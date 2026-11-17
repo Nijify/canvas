@@ -75,13 +75,17 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
     final edge = points[1] - points[0];
     var normal = Offset(edge.dy, -edge.dx);
     final outward = topMid - screen(center);
-    if (normal.dx * outward.dx + normal.dy * outward.dy < 0) normal = -normal;
+    if (normal.dx * outward.dx + normal.dy * outward.dy < 0) {
+      normal = -normal;
+    }
     final direction = normal.distance == 0 ? const Offset(0, -1) : normal / normal.distance;
     final rotateHandle = topMid + direction * 24;
     final controller = context.read<EditorController>();
     final handles = <int>[];
     for (var i = 0; i < points.length; i++) {
-      if (!handles.any((j) => (points[i] - points[j]).distance < 0.01)) handles.add(i);
+      if (!handles.any((j) => (points[i] - points[j]).distance < 0.01)) {
+        handles.add(i);
+      }
     }
     const radius = 10.0;
     return Positioned.fill(child: Builder(builder: (overlay) => Stack(children: [
@@ -100,7 +104,9 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
         },
         move: (pointer) {
           final anchor = _anchor, start = _startValue;
-          if (anchor == null || start == null || _rotation == null) return;
+          if (anchor == null || start == null || _rotation == null) {
+            return;
+          }
           final angle = math.atan2(pointer.y - anchor.y, pointer.x - anchor.x) - start;
           _rotation!.applyWorldDelta(rt.affineAround(anchor, rt.Affine2D.rotation(angle)));
         },
@@ -125,7 +131,9 @@ class _CanvasSelectionOverlayState extends State<CanvasSelectionOverlay> {
           },
           move: (pointer) {
             final anchor = _anchor, axis = _axis, start = _startValue;
-            if (anchor == null || axis == null || start == null || _scaling == null) return;
+            if (anchor == null || axis == null || start == null || _scaling == null) {
+              return;
+            }
             final delta = pointer - anchor;
             // Uniform positive corner sizing; zero-crossing is not an implicit mirror tool.
             final factor = ((delta.x * axis.x + delta.y * axis.y) / start).clamp(0.02, 50.0).toDouble();
