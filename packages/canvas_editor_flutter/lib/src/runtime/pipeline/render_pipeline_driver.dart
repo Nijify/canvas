@@ -21,11 +21,9 @@ typedef RenderBuildFn<TSourceDocument> =
 class RenderPipelineDriver<TSourceDocument> {
   RenderPipelineDriver({
     required TSourceDocument initialSourceDocument,
-    required RenderBuildFn<TSourceDocument> build,
-    void Function(TSourceDocument sourceDocument)? onSourceDocumentApplied,
-  }) : _sourceDocument = initialSourceDocument,
-       _build = build,
-       _onSourceDocumentApplied = onSourceDocumentApplied {
+    required this._build,
+    this._onSourceDocumentApplied,
+  }) : _sourceDocument = initialSourceDocument {
     _render = ValueNotifier<rt.SceneEvaluation>(_build(_sourceDocument));
   }
 

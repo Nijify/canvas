@@ -23,13 +23,11 @@ class History<S> {
 
   /// Private constructor used by transitions.
   History._internal({
-    required List<S> past,
+    required this._past,
     required this.present,
-    required List<S> future,
+    required this._future,
     required this.limit,
-  }) : assert(limit >= 0),
-       _past = past,
-       _future = future;
+  }) : assert(limit >= 0);
 
   /// Maximum number of entries retained in the *past* stack.
   /// (Present is always retained; future is unbounded except by usage.)

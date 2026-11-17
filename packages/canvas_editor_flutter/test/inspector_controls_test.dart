@@ -8,26 +8,28 @@ void main() {
   ) async {
     var picked = 0;
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: SwatchPickerRow(
-            label: 'Fill',
-            swatchesArgb32: const [0xFF000000, 0xFFFFFFFF],
-            selectedArgb32: 0xFF000000,
-            onPick: (value) => picked = value,
+    try {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SwatchPickerRow(
+              label: 'Fill',
+              swatchesArgb32: const [0xFF000000, 0xFFFFFFFF],
+              selectedArgb32: 0xFF000000,
+              onPick: (value) => picked = value,
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    final white = find.bySemanticsLabel('Fill, color FFFFFFFF');
-    expect(white, findsOneWidget);
-    expect(tester.getSize(white), const Size(48, 48));
-    await tester.tap(white);
-    expect(picked, 0xFFFFFFFF);
+      final white = find.bySemanticsLabel('Fill, color FFFFFFFF');
+      expect(white, findsOneWidget);
+      expect(tester.getSize(white), const Size(48, 48));
+      await tester.tap(white);
+      expect(picked, 0xFFFFFFFF);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('dropdown uses current selection and disables unavailable items', (
