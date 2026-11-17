@@ -15,7 +15,7 @@ import 'package:canvas_editor_flutter_example/unsplash/unsplash_example_ui.dart'
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_proxy_client.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart' as sharing;
@@ -45,6 +45,13 @@ class CanvasEditorExampleApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       home: const _ExampleEditorPage(),

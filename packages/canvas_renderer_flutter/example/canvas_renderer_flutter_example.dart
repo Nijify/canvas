@@ -1,6 +1,6 @@
 import 'package:canvas_core/canvas_core.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   runApp(const MaterialApp(home: _RendererExample()));

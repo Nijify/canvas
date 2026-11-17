@@ -7,7 +7,7 @@ import 'package:canvas_editor_flutter/canvas_editor_flutter.dart'
     show CanvasSceneEditor;
 import 'package:canvas_editor_flutter_example/main.dart';
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

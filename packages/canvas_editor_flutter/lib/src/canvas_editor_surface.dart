@@ -25,7 +25,7 @@ import 'package:canvas_editor_flutter/src/presentation/actions/base_add_actions.
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_action_sets.dart'
     show coreEditorActions;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 /// Lower-level editor surface for hosted or custom editor layouts.

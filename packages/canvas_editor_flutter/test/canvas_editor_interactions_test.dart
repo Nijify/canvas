@@ -19,7 +19,7 @@ import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport.d
 import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport_surface.dart';
 import 'package:canvas_editor_flutter/src/presentation/widgets/editor_app_bar.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';

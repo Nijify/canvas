@@ -1,3 +1,12 @@
+## 0.24.0
+
+- **Breaking:** require Flutter 3.50 and Dart 3.14, and migrate the editor's
+  Material widgets and public Material types to `package:material_ui`.
+  Host applications must use the standalone Material library.
+- Use Material 3 dropdown menus and theme-aware inspector colors. Improve
+  color swatch labels, selection semantics, and touch targets.
+- Update the example to support light and dark themes.
+
 ## 0.23.0
 
 - **Breaking:** remove the unused `InspectorFieldSpec.semanticSlot` field and

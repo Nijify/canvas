@@ -2,7 +2,7 @@
 
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart'
     show EditorActionDispatcher, EditorActionSpec, EditorToolbarState;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// How the inspector is presented.
 /// - docked: takes layout space, good for standalone editors

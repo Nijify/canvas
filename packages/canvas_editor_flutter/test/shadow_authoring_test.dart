@@ -8,7 +8,7 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_conte
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/shadow_editor.dart';
 import 'package:canvas_editor_flutter/src/runtime/editor_runtime.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'editor_runtime_fakes.dart';

@@ -4,7 +4,7 @@ import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 import 'package:canvas_editor_flutter/extensions.dart';
 import 'package:canvas_editor_flutter/src/runtime/editor_runtime.dart';
 import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport_surface.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'editor_runtime_fakes.dart';

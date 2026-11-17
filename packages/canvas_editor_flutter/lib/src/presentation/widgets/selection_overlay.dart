@@ -3,7 +3,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:canvas_editor_flutter/src/interaction/transform_gesture.dart';
 

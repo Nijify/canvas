@@ -22,7 +22,7 @@ import 'package:canvas_editor_flutter/src/editor_extensions.dart'
 import 'package:canvas_editor_flutter/src/editor_edits.dart' show EditorEdits;
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart'
     show EditorActionId, EditorActionSpec, EditorToolbarSection;
-import 'package:flutter/material.dart' show Icons;
+import 'package:material_ui/material_ui.dart' show Icons;
 
 /// Creates an editor extension that inserts assets selected from [library].
 ///

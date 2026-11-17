@@ -17,7 +17,7 @@ import 'package:canvas_editor_flutter/src/presentation/widgets/canvas_viewport.d
 import 'package:canvas_editor_flutter/src/presentation/widgets/selection_overlay.dart';
 
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Canvas viewport plus editor interaction overlays.
 class CanvasViewportSurface extends StatelessWidget {

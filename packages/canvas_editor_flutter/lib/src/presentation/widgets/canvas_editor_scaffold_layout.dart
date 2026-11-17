@@ -22,7 +22,7 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_conte
     show InspectorBuilder, InspectorSectionBuilder, InspectorFieldRowBuilder;
 import 'package:canvas_editor_flutter/src/presentation/layers/layers_panel.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 const _wideLayoutBreakpoint = 1100.0;

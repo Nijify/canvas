@@ -7,7 +7,7 @@ import 'package:canvas_editor_flutter/src/editor_api.dart'
     show EditorController;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class InspectorFieldRow<T> extends StatefulWidget {
   const InspectorFieldRow({

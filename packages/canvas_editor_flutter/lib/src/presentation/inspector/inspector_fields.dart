@@ -1,6 +1,6 @@
 // Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_fields.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:canvas_core/canvas_core_runtime.dart'
     show CanvasFieldKey, CanvasFields;

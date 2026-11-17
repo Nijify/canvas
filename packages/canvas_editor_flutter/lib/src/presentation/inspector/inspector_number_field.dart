@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 

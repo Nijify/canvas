@@ -2,7 +2,7 @@ import 'package:canvas_editor_flutter/src/interaction/transform_gesture.dart';
 // Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/canvas_viewport.dart
 
 import 'package:flutter/foundation.dart' show listEquals, Listenable;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:canvas_core/canvas_core_runtime.dart'
     show Affine2D, ElementId, Rect2D, SceneEvaluation, Vec2, findById;
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';

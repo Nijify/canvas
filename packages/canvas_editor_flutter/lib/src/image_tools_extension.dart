@@ -10,7 +10,7 @@ import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_conte
     show InspectorContext;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart'
     show Gap, HintText;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _removeBackgroundButtonKey = ValueKey('remove-background-button');
 

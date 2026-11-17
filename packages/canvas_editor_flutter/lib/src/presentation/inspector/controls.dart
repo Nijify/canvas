@@ -1,6 +1,6 @@
 // Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/controls.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 
@@ -26,6 +26,7 @@ class SwatchPickerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Opacity(
       opacity: enabled ? 1 : 0.45,
       child: Column(
@@ -39,21 +40,38 @@ class SwatchPickerRow extends StatelessWidget {
               children: swatchesArgb32
                   .map((argb) {
                     final selected = argb == selectedArgb32;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: InkWell(
-                        onTap: enabled ? () => onPick(argb) : null,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: Color(argb),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selected
-                                  ? Colors.black
-                                  : Colors.grey.shade300,
-                              width: selected ? 2 : 1,
+                    final colorLabel = argb
+                        .toRadixString(16)
+                        .padLeft(8, '0')
+                        .toUpperCase();
+                    return Semantics(
+                      label: '$label, color $colorLabel',
+                      button: true,
+                      selected: selected,
+                      enabled: enabled,
+                      onTap: enabled ? () => onPick(argb) : null,
+                      child: ExcludeSemantics(
+                        child: InkWell(
+                          onTap: enabled ? () => onPick(argb) : null,
+                          customBorder: const CircleBorder(),
+                          child: SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Center(
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: Color(argb),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: selected
+                                        ? colors.primary
+                                        : colors.outline,
+                                    width: selected ? 3 : 1,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -89,11 +107,26 @@ class LabeledDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<T>(
-      initialValue: value,
-      items: items,
-      onChanged: onChanged,
-      decoration: decoration ?? InspectorUi.inputDecoration(),
+    final label = decoration?.labelText;
+    return DropdownMenu<T>(
+      key: ValueKey<T?>(value),
+      initialSelection: value,
+      enabled: onChanged != null,
+      expandedInsets: EdgeInsets.zero,
+      requestFocusOnTap: false,
+      label: label == null ? null : Text(label),
+      onSelected: onChanged,
+      dropdownMenuEntries: [
+        for (final item in items)
+          DropdownMenuEntry<T>(
+            value: item.value as T,
+            label: item.child is Text
+                ? (item.child as Text).data ?? item.value.toString()
+                : item.value.toString(),
+            labelWidget: item.child,
+            enabled: item.enabled,
+          ),
+      ],
     );
   }
 }

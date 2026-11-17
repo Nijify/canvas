@@ -1,7 +1,7 @@
 import 'package:canvas_editor_flutter/asset_library.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_example_ui.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

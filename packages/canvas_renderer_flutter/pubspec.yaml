@@ -21,6 +21,7 @@ dependencies:
   canvas_core: ^0.20.0
 
 dev_dependencies:
+  material_ui: ^1.11.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
