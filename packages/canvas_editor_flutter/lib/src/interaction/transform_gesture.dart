@@ -30,7 +30,9 @@ final class TransformGesture {
   }
 
   bool applyWorldDelta(Affine2D delta) {
-    if (_end == null || findById(controller.document.value, id) == null) return false;
+    if (_end == null || findById(controller.document.value, id) == null) {
+      return false;
+    }
     // Stop if hierarchy placement changed independently during the gesture.
     final currentParent = parentWorldTransformOf(controller.render.value.scene, id);
     if (currentParent != parentWorld) return false;
