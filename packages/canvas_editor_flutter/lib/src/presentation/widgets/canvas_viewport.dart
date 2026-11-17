@@ -167,8 +167,9 @@ class _CanvasViewportState extends State<CanvasViewport> {
     final gesture = TransformGesture.start(widget.controller, id);
     if (gesture == null) return;
     _dragGesture = gesture;
-    _dragBoundsStart = EditorGeometryIndex.fromComputed(gesture.evaluation.computed)
-        .layoutBoundsWorldById[id];
+    _dragBoundsStart = EditorGeometryIndex.fromComputed(
+      gesture.evaluation.computed,
+    ).layoutBoundsWorldById[id];
     _dragScaleStart = widget.scale;
     _draggingId = id;
     _dragStartScreen = screenFocalPoint;
@@ -364,7 +365,9 @@ class _CanvasViewportState extends State<CanvasViewport> {
               // Missing interaction geometry must not make us redirect or drop
               // a valid canonical drag. Preserve movement without snapping.
               if (bounds == null) {
-                _dragGesture?.applyWorldDelta(Affine2D.translation(rawDelta.x, rawDelta.y));
+                _dragGesture?.applyWorldDelta(
+                  Affine2D.translation(rawDelta.x, rawDelta.y),
+                );
 
                 if (_guides.isNotEmpty) {
                   _setGuides(const []);
@@ -413,7 +416,9 @@ class _CanvasViewportState extends State<CanvasViewport> {
 
               final snappedDelta = rawDelta + res.deltaWorld;
 
-              _dragGesture?.applyWorldDelta(Affine2D.translation(snappedDelta.x, snappedDelta.y));
+              _dragGesture?.applyWorldDelta(
+                Affine2D.translation(snappedDelta.x, snappedDelta.y),
+              );
 
               if (res.guides.isEmpty) {
                 if (_guides.isNotEmpty) {

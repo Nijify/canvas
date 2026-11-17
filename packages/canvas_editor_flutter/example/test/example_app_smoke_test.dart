@@ -81,11 +81,10 @@ void main() {
   });
 }
 
-Widget _app(AssetBundle bundle) =>
-    DefaultAssetBundle(
-      bundle: bundle,
-      child: const CanvasEditorExampleApp(fontLoader: _TestFontLoader()),
-    );
+Widget _app(AssetBundle bundle) => DefaultAssetBundle(
+  bundle: bundle,
+  child: const CanvasEditorExampleApp(fontLoader: _TestFontLoader()),
+);
 
 final class _TestFontLoader implements FlutterFontLoader {
   const _TestFontLoader();

@@ -1,8 +1,13 @@
 // Path: packages/canvas_editor_flutter/lib/src/interaction/geometry/editor_geometry_index.dart
 
 import 'package:canvas_core/canvas_core_runtime.dart'
-    show Affine2D, ComputedScene, ElementId, Rect2D, Rect2DX, aabbOfTransformedRect;
-
+    show
+        Affine2D,
+        ComputedScene,
+        ElementId,
+        Rect2D,
+        Rect2DX,
+        aabbOfTransformedRect;
 
 /// Editor-owned geometry derived from core document/render computation.
 ///

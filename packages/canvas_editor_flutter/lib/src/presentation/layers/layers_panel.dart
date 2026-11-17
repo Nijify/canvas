@@ -50,9 +50,8 @@ class LayersPanel extends StatelessWidget {
                 return ValueListenableBuilder(
                   valueListenable: selection,
                   builder: (context, selectedId, _) {
-                    final rows = SceneObjectTreeBuilder(
-                      policy: policy,
-                    ).build(scene: scene);
+                    final rows = SceneObjectTreeBuilder(policy: policy)
+                        .build(scene: scene);
 
                     if (rows.isEmpty) {
                       return const _LayersEmptyState();

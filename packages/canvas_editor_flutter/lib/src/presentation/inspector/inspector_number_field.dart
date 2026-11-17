@@ -157,9 +157,8 @@ class _InspectorNumberFieldState extends State<InspectorNumberField> {
       textInputAction: TextInputAction.done,
       onChanged: widget.enabled ? _handleChanged : null,
       onFieldSubmitted: widget.enabled ? (_) => _focus.unfocus() : null,
-      decoration: InspectorUi.inputDecoration(
-        labelText: widget.label,
-      ).copyWith(errorText: errorText),
+      decoration: InspectorUi.inputDecoration(labelText: widget.label)
+          .copyWith(errorText: errorText),
     );
   }
 }

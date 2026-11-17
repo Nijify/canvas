@@ -186,9 +186,9 @@ void main() {
     );
 
     final result = exportPreparedSvg(evaluation: _compute(scene));
-    final paths = XmlDocument.parse(result.svg!)
-        .findAllElements('path')
-        .toList();
+    final paths = XmlDocument.parse(
+      result.svg!,
+    ).findAllElements('path').toList();
     expect(paths.map((p) => p.getAttribute('fill')), ['#ff0000', '#0000ff']);
     expect(paths[0].getAttribute('transform'), 'matrix(2.0 0 0 2.0 60.0 30.0)');
     expect(paths[1].getAttribute('transform'), 'matrix(2.0 0 0 2.0 80.0 30.0)');

@@ -32,39 +32,40 @@ void main() {
     }
   });
 
-  testWidgets('dropdown uses current selection and disables unavailable items', (
-    tester,
-  ) async {
-    Future<void> showDropdown(String value) => tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: LabeledDropdown<String>(
-            value: value,
-            items: const [
-              DropdownMenuItem(value: 'a', child: Text('Alpha')),
-              DropdownMenuItem(
-                value: 'b',
-                enabled: false,
-                child: Text('Beta'),
-              ),
-            ],
-            onChanged: (_) {},
+  testWidgets(
+    'dropdown uses current selection and disables unavailable items',
+    (tester) async {
+      Future<void> showDropdown(String value) => tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LabeledDropdown<String>(
+              value: value,
+              items: const [
+                DropdownMenuItem(value: 'a', child: Text('Alpha')),
+                DropdownMenuItem(
+                  value: 'b',
+                  enabled: false,
+                  child: Text('Beta'),
+                ),
+              ],
+              onChanged: (_) {},
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await showDropdown('a');
-    var menu = tester.widget<DropdownMenu<String>>(
-      find.byType(DropdownMenu<String>),
-    );
-    expect(menu.initialSelection, 'a');
-    expect(menu.dropdownMenuEntries.last.enabled, isFalse);
+      await showDropdown('a');
+      var menu = tester.widget<DropdownMenu<String>>(
+        find.byType(DropdownMenu<String>),
+      );
+      expect(menu.initialSelection, 'a');
+      expect(menu.dropdownMenuEntries.last.enabled, isFalse);
 
-    await showDropdown('b');
-    menu = tester.widget<DropdownMenu<String>>(
-      find.byType(DropdownMenu<String>),
-    );
-    expect(menu.initialSelection, 'b');
-  });
+      await showDropdown('b');
+      menu = tester.widget<DropdownMenu<String>>(
+        find.byType(DropdownMenu<String>),
+      );
+      expect(menu.initialSelection, 'b');
+    },
+  );
 }

@@ -10,29 +10,26 @@ import 'package:material_ui/material_ui.dart';
 /// - hidden: no inspector at all
 enum InspectorPresentation { docked, inlineCompact, hidden }
 
-typedef EditorAppBarBuilder =
-    PreferredSizeWidget? Function(
-      BuildContext context,
-      EditorToolbarState state,
-      EditorActionDispatcher actions,
-      List<EditorActionSpec> actionSpecs,
-    );
+typedef EditorAppBarBuilder = PreferredSizeWidget? Function(
+  BuildContext context,
+  EditorToolbarState state,
+  EditorActionDispatcher actions,
+  List<EditorActionSpec> actionSpecs,
+);
 
-typedef HostedHeaderBuilder =
-    Widget Function(
-      BuildContext context,
-      EditorToolbarState state,
-      EditorActionDispatcher actions,
-      List<EditorActionSpec> actionSpecs,
-    );
+typedef HostedHeaderBuilder = Widget Function(
+  BuildContext context,
+  EditorToolbarState state,
+  EditorActionDispatcher actions,
+  List<EditorActionSpec> actionSpecs,
+);
 
-typedef HostedBottomBuilder =
-    Widget Function(
-      BuildContext context,
-      EditorToolbarState state,
-      EditorActionDispatcher actions,
-      List<EditorActionSpec> actionSpecs,
-    );
+typedef HostedBottomBuilder = Widget Function(
+  BuildContext context,
+  EditorToolbarState state,
+  EditorActionDispatcher actions,
+  List<EditorActionSpec> actionSpecs,
+);
 
 /// Presentation-only shell configuration.
 ///

@@ -3,7 +3,8 @@
 void validateLegacySceneWire(
   Map<String, Object?> json, {
   required int version,
-  void Function(Object? raw, String path) validateSource = _requireGeometryObject,
+  void Function(Object? raw, String path) validateSource =
+      _requireGeometryObject,
   void Function(Object? raw, String path)? validateAffine,
 }) {
   if (json['sceneFormatVersion'] is! int ||

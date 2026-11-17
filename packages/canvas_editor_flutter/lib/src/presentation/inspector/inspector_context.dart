@@ -27,12 +27,11 @@ typedef InspectorSectionBuilder = Widget? Function(InspectorContext context);
 ///
 /// Extensions can decorate the standard field row with supplemental controls
 /// without replacing field commit, debounce, or transaction behavior.
-typedef InspectorFieldRowBuilder =
-    Widget Function<T>(
-      ElementId nodeId,
-      EditorController controller,
-      InspectorFieldSpec<T> spec,
-    );
+typedef InspectorFieldRowBuilder = Widget Function<T>(
+  ElementId nodeId,
+  EditorController controller,
+  InspectorFieldSpec<T> spec,
+);
 
 /// Immutable values available while building the inspector.
 @immutable
