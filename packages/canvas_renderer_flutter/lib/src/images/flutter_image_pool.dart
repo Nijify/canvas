@@ -13,9 +13,8 @@ import 'package:flutter/widgets.dart' show ImageProvider, ResizeImage;
 /// A non-null image returned by this function transfers ownership of that
 /// handle to [FlutterImagePool]. The pool will dispose it when it becomes
 /// stale, is replaced, is removed from the scene, or the pool is disposed.
-typedef FlutterImageDecoder = Future<ui.Image?> Function(
-  ImageProvider<Object> provider,
-);
+typedef FlutterImageDecoder =
+    Future<ui.Image?> Function(ImageProvider<Object> provider);
 
 /// The loading stage that could not supply an image resource.
 enum FlutterImageLoadPhase { sourceResolution, rasterDecode }

@@ -10,7 +10,7 @@ import 'package:canvas_editor_flutter/src/editor_api.dart'
 import 'package:canvas_editor_flutter/src/editor_edits.dart' show EditorEdits;
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_fields.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _initialImageTopLeft = Vec2(80, 80);
 const _initialImageMaxSide = 200.0;
@@ -384,10 +384,12 @@ class _ImageSourcePickerControlState extends State<_ImageSourcePickerControl> {
         ),
         const SizedBox(height: 8),
         if (widget.enabled)
-          const Text(
+          Text(
             'Selected images are prepared by this app before being added '
             'to the design.',
-            style: TextStyle(fontSize: 12, color: Colors.black54),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
       ],
     );

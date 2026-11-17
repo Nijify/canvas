@@ -1,6 +1,6 @@
 // Path: packages/canvas_editor_flutter/lib/src/presentation/widgets/editor_app_bar.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 

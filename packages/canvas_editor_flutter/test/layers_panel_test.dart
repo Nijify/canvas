@@ -7,7 +7,7 @@ import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.
 import 'package:canvas_editor_flutter/src/presentation/layers/layers_panel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeTextMeasurer implements TextMeasurer {

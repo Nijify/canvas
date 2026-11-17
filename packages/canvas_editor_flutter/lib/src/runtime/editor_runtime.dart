@@ -20,7 +20,7 @@ final class EditorRuntime<TSourceDocument>
     implements EditorController, EditorDocumentHost<TSourceDocument> {
   EditorRuntime({
     required TSourceDocument initial,
-    required EditorDocumentAdapter<TSourceDocument> adapter,
+    required this._adapter,
     required this.services,
     Object? initialContext,
     rt.ContentBoundsSpec? contentBounds,
@@ -33,8 +33,7 @@ final class EditorRuntime<TSourceDocument>
         const <rt.CanvasFieldKey, FieldCodec>{},
 
     int maxHistory = 100,
-  }) : _adapter = adapter,
-       _ctx = initialContext,
+  }) : _ctx = initialContext,
        _extraFieldCodecs = Map<rt.CanvasFieldKey, FieldCodec>.unmodifiable(
          extraFieldCodecs,
        ) {

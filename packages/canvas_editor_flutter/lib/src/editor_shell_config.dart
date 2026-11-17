@@ -2,7 +2,7 @@
 
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart'
     show EditorActionDispatcher, EditorActionSpec, EditorToolbarState;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// How the inspector is presented.
 /// - docked: takes layout space, good for standalone editors
@@ -10,29 +10,26 @@ import 'package:flutter/material.dart';
 /// - hidden: no inspector at all
 enum InspectorPresentation { docked, inlineCompact, hidden }
 
-typedef EditorAppBarBuilder =
-    PreferredSizeWidget? Function(
-      BuildContext context,
-      EditorToolbarState state,
-      EditorActionDispatcher actions,
-      List<EditorActionSpec> actionSpecs,
-    );
+typedef EditorAppBarBuilder = PreferredSizeWidget? Function(
+  BuildContext context,
+  EditorToolbarState state,
+  EditorActionDispatcher actions,
+  List<EditorActionSpec> actionSpecs,
+);
 
-typedef HostedHeaderBuilder =
-    Widget Function(
-      BuildContext context,
-      EditorToolbarState state,
-      EditorActionDispatcher actions,
-      List<EditorActionSpec> actionSpecs,
-    );
+typedef HostedHeaderBuilder = Widget Function(
+  BuildContext context,
+  EditorToolbarState state,
+  EditorActionDispatcher actions,
+  List<EditorActionSpec> actionSpecs,
+);
 
-typedef HostedBottomBuilder =
-    Widget Function(
-      BuildContext context,
-      EditorToolbarState state,
-      EditorActionDispatcher actions,
-      List<EditorActionSpec> actionSpecs,
-    );
+typedef HostedBottomBuilder = Widget Function(
+  BuildContext context,
+  EditorToolbarState state,
+  EditorActionDispatcher actions,
+  List<EditorActionSpec> actionSpecs,
+);
 
 /// Presentation-only shell configuration.
 ///

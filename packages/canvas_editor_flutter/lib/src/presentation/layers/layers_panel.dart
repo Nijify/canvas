@@ -12,7 +12,7 @@ import 'package:canvas_editor_flutter/src/presentation/layers/scene_object_tree.
         SceneObjectTreeBuilder;
 import 'package:canvas_editor_flutter/src/editor_hosts.dart'
     show EditorSelectionHost;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LayersPanel extends StatelessWidget {
   const LayersPanel({
@@ -50,9 +50,8 @@ class LayersPanel extends StatelessWidget {
                 return ValueListenableBuilder(
                   valueListenable: selection,
                   builder: (context, selectedId, _) {
-                    final rows = SceneObjectTreeBuilder(
-                      policy: policy,
-                    ).build(scene: scene);
+                    final rows = SceneObjectTreeBuilder(policy: policy)
+                        .build(scene: scene);
 
                     if (rows.isEmpty) {
                       return const _LayersEmptyState();

@@ -7,7 +7,7 @@
 
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';

@@ -13,9 +13,8 @@ class TxnHistoryManager<T> {
   TxnHistoryManager({
     required T initial,
     required int maxHistory,
-    required void Function(bool canUndo, bool canRedo) onCapabilitiesChanged,
-  }) : _hist = History<T>(initial, limit: maxHistory),
-       _onCapabilitiesChanged = onCapabilitiesChanged {
+    required this._onCapabilitiesChanged,
+  }) : _hist = History<T>(initial, limit: maxHistory) {
     _present = _hist.present;
     _sync();
   }

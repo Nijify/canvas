@@ -5,7 +5,7 @@ import 'package:canvas_editor_flutter/canvas_editor_flutter.dart';
 import 'package:canvas_editor_flutter/src/interaction/selection_controllers.dart';
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector.dart'
     show ImageGeometryInspectorControls;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 

@@ -11,9 +11,13 @@ Map<String, Object?> _fixture(String name, {bool keepBehavior = false}) {
     Uri.parse('package:canvas_scene_upgrade/canvas_scene_upgrade.dart'),
   )!;
   final root = File.fromUri(runtime).parent.parent;
-  final document = jsonDecode(
-    File.fromUri(root.uri.resolve('test/fixtures/$name')).readAsStringSync(),
-  ) as Map<String, Object?>;
+  final document =
+      jsonDecode(
+            File.fromUri(
+              root.uri.resolve('test/fixtures/$name'),
+            ).readAsStringSync(),
+          )
+          as Map<String, Object?>;
   if (!keepBehavior) {
     ((document['children'] as List).single as Map).remove('behavior');
   }

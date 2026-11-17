@@ -55,8 +55,9 @@ void main() {
     for (final fixture in ['legacy_v010_nested.json', 'v1_nested.json']) {
       test('rejects unsupported SVG sources without changing $fixture', () {
         final input = _loadFixture(fixture);
-        final path = _legacyGroupChildren(input)
-            .singleWhere((node) => node['runtimeType'] == 'path');
+        final path = _legacyGroupChildren(
+          input,
+        ).singleWhere((node) => node['runtimeType'] == 'path');
         final data = path['data'] as Map<String, dynamic>;
         data['source'] = {'kind': 'svg', 'd': 'M0 0L24 0L24 24Z'};
         final before = _deepCopy(input);
@@ -230,8 +231,9 @@ void main() {
 
     test('does not require an icon resolver for zero legacy shadows', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
-      final legacyIcons = _legacyGroupChildren(legacy)
-          .where((node) => node['runtimeType'] == 'icon');
+      final legacyIcons = _legacyGroupChildren(
+        legacy,
+      ).where((node) => node['runtimeType'] == 'icon');
       expect(legacyIcons, isNotEmpty);
 
       for (final node in legacyIcons) {
@@ -244,8 +246,9 @@ void main() {
         legacyUnversioned: true,
       );
 
-      final migratedIcons = _legacyGroupChildren(migrated)
-          .where((node) => node['type'] == 'icon');
+      final migratedIcons = _legacyGroupChildren(
+        migrated,
+      ).where((node) => node['type'] == 'icon');
       expect(
         migratedIcons.map((node) => node['id']),
         unorderedEquals(legacyIcons.map((node) => node['id'])),
@@ -260,8 +263,9 @@ void main() {
     test('rejects mixed legacy and current appearance fields', () {
       final legacy = _loadFixture('legacy_v010_nested.json');
 
-      final text = _legacyGroupChildren(legacy)
-          .firstWhere((node) => node['runtimeType'] == 'text');
+      final text = _legacyGroupChildren(
+        legacy,
+      ).firstWhere((node) => node['runtimeType'] == 'text');
 
       final data = text['data'] as Map<String, dynamic>;
 

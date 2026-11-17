@@ -75,9 +75,9 @@ void main() {
         ),
       ),
     );
-    final failure =
-        await port.removeBackground(sourceRef: 'media:old')
-            as BackgroundRemovalFailure;
+    final failure = await port.removeBackground(
+      sourceRef: 'media:old',
+    ) as BackgroundRemovalFailure;
     expect(failure.kind, BackgroundRemovalFailureKind.temporarilyUnavailable);
     expect(failure.message, isNot(contains('Exception')));
   });
@@ -88,9 +88,9 @@ void main() {
       persistPng: (_) async => throw StateError('secret storage error'),
       processor: _Processor(input),
     );
-    final failure =
-        await port.removeBackground(sourceRef: 'media:old')
-            as BackgroundRemovalFailure;
+    final failure = await port.removeBackground(
+      sourceRef: 'media:old',
+    ) as BackgroundRemovalFailure;
     expect(failure.kind, BackgroundRemovalFailureKind.failed);
     expect(failure.message, isNot(contains('secret')));
   });

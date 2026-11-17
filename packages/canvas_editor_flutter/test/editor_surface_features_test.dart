@@ -2,7 +2,7 @@
 
 import 'package:canvas_core/canvas_core_runtime.dart' show GroupNode;
 import 'package:canvas_editor_flutter/extensions.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final class _InspectorContextFake extends Fake implements InspectorContext {}

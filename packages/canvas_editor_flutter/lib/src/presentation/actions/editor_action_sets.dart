@@ -8,7 +8,7 @@ import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
     show CanvasPngSpec;
 import 'package:canvas_editor_flutter/src/editor_host_capabilities.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> _withSpinner(
   EditorActionContext ctx,

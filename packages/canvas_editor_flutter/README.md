@@ -15,8 +15,14 @@
 ## Installation
 
 ```bash
-flutter pub add canvas_editor_flutter canvas_core canvas_renderer_flutter
+flutter pub add canvas_editor_flutter canvas_core canvas_renderer_flutter material_ui
 ```
+
+Requires Flutter 3.50.0 or newer. Use `package:material_ui/material_ui.dart`
+for the host app's `MaterialApp`, theme, and Material types passed to editor
+extensions. The editor targets Material 3 and does not provide a legacy
+`package:flutter/material.dart` host compatibility layer. Set
+`uses-material-design: true` in the host app to include Material icons.
 
 ## Imports
 

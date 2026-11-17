@@ -5,8 +5,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:canvas_core/canvas_core_runtime.dart' as rt;
 
 /// Pure function that maps source document -> runtime scene evaluation.
-typedef RenderBuildFn<TSourceDocument> =
-    rt.SceneEvaluation Function(TSourceDocument sourceDocument);
+typedef RenderBuildFn<TSourceDocument> = rt.SceneEvaluation Function(
+  TSourceDocument sourceDocument,
+);
 
 /// Coordinates source-document application, deferred render scheduling, and
 /// prepared scene-evaluation publication.
@@ -21,11 +22,9 @@ typedef RenderBuildFn<TSourceDocument> =
 class RenderPipelineDriver<TSourceDocument> {
   RenderPipelineDriver({
     required TSourceDocument initialSourceDocument,
-    required RenderBuildFn<TSourceDocument> build,
-    void Function(TSourceDocument sourceDocument)? onSourceDocumentApplied,
-  }) : _sourceDocument = initialSourceDocument,
-       _build = build,
-       _onSourceDocumentApplied = onSourceDocumentApplied {
+    required this._build,
+    this._onSourceDocumentApplied,
+  }) : _sourceDocument = initialSourceDocument {
     _render = ValueNotifier<rt.SceneEvaluation>(_build(_sourceDocument));
   }
 
@@ -117,7 +116,10 @@ class RenderPipelineDriver<TSourceDocument> {
     });
   }
 
-  void _applyNow(TSourceDocument sourceDocument, [rt.SceneEvaluation? prepared]) {
+  void _applyNow(
+    TSourceDocument sourceDocument, [
+    rt.SceneEvaluation? prepared,
+  ]) {
     final sourceChanged = sourceDocument != _sourceDocument;
     final built = prepared ?? _build(sourceDocument);
 

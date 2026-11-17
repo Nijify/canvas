@@ -5,7 +5,7 @@ import 'package:canvas_editor_flutter/src/editor_api.dart';
 import 'package:canvas_editor_flutter/src/interaction/selection_controllers.dart';
 import 'package:canvas_editor_flutter/src/presentation/actions/editor_actions.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'editor_runtime_fakes.dart';

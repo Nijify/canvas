@@ -1,6 +1,6 @@
 // Path: packages/canvas_editor_flutter/lib/src/presentation/inspector/inspector_ui.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shared, canonical inspector UI bits (styles, spacing, small widgets).
 class InspectorUi {
@@ -17,7 +17,7 @@ class InspectorUi {
 
     return base.copyWith(
       fontSize: 12,
-      color: (base.color ?? Colors.black).withValues(alpha: 0.7),
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
   }
 

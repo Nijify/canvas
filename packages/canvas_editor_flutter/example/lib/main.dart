@@ -15,7 +15,7 @@ import 'package:canvas_editor_flutter_example/unsplash/unsplash_example_ui.dart'
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_photo.dart';
 import 'package:canvas_editor_flutter_example/unsplash/unsplash_proxy_client.dart';
 import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart' as sharing;
@@ -35,7 +35,10 @@ void main() {
 }
 
 class CanvasEditorExampleApp extends StatelessWidget {
-  const CanvasEditorExampleApp({super.key});
+  const CanvasEditorExampleApp({super.key, this.fontLoader});
+
+  /// Optional host-provided font loader, useful for deterministic tests.
+  final FlutterFontLoader? fontLoader;
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +50,22 @@ class CanvasEditorExampleApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const _ExampleEditorPage(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      home: _ExampleEditorPage(fontLoader: fontLoader),
     );
   }
 }
 
 class _ExampleEditorPage extends StatefulWidget {
-  const _ExampleEditorPage();
+  const _ExampleEditorPage({this.fontLoader});
+
+  final FlutterFontLoader? fontLoader;
 
   @override
   State<_ExampleEditorPage> createState() => _ExampleEditorPageState();
@@ -73,7 +85,10 @@ class _ExampleEditorPageState extends State<_ExampleEditorPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _runtime ??= _prepareDemoRuntime(DefaultAssetBundle.of(context));
+    _runtime ??= _prepareDemoRuntime(
+      DefaultAssetBundle.of(context),
+      fontLoader: widget.fontLoader,
+    );
   }
 
   @override
@@ -248,10 +263,13 @@ typedef _DemoRuntime = ({
   CanvasPngRenderer pngRenderer,
 });
 
-Future<_DemoRuntime> _prepareDemoRuntime(AssetBundle bundle) async {
+Future<_DemoRuntime> _prepareDemoRuntime(
+  AssetBundle bundle, {
+  FlutterFontLoader? fontLoader,
+}) async {
   final icons = await ExampleIconCatalog.load(bundle);
   final resources = CanvasRuntimeResources(
-    fonts: _demoFontLoader,
+    fonts: fontLoader ?? _demoFontLoader,
     pickerFonts: _demoPickerFonts,
     icons: icons,
     images: _demoImages,

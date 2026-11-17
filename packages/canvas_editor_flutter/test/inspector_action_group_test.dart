@@ -1,7 +1,7 @@
 // Path: packages/canvas_editor_flutter/test/inspector_action_group_test.dart
 
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _galleryKey = ValueKey('test-gallery-action');

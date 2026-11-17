@@ -6,8 +6,10 @@ import 'package:canvas_core/canvas_core_runtime.dart';
 import 'package:canvas_editor_flutter/canvas_editor_flutter.dart'
     show CanvasSceneEditor;
 import 'package:canvas_editor_flutter_example/main.dart';
+import 'package:canvas_renderer_flutter/canvas_renderer_flutter.dart'
+    show FlutterFontLoader;
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -79,8 +81,20 @@ void main() {
   });
 }
 
-Widget _app(AssetBundle bundle) =>
-    DefaultAssetBundle(bundle: bundle, child: const CanvasEditorExampleApp());
+Widget _app(AssetBundle bundle) => DefaultAssetBundle(
+  bundle: bundle,
+  child: const CanvasEditorExampleApp(fontLoader: _TestFontLoader()),
+);
+
+final class _TestFontLoader implements FlutterFontLoader {
+  const _TestFontLoader();
+
+  @override
+  Iterable<String> get fallbackFontFamilies => const ['Noto Sans Symbols'];
+
+  @override
+  Future<bool> ensureLoaded(Iterable<String> families) async => false;
+}
 
 Future<_IconBundle> _iconBundle(
   WidgetTester tester, {

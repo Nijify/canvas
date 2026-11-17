@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:canvas_editor_flutter/src/presentation/inspector/inspector_ui.dart';
 
@@ -157,9 +157,8 @@ class _InspectorNumberFieldState extends State<InspectorNumberField> {
       textInputAction: TextInputAction.done,
       onChanged: widget.enabled ? _handleChanged : null,
       onFieldSubmitted: widget.enabled ? (_) => _focus.unfocus() : null,
-      decoration: InspectorUi.inputDecoration(
-        labelText: widget.label,
-      ).copyWith(errorText: errorText),
+      decoration: InspectorUi.inputDecoration(labelText: widget.label)
+          .copyWith(errorText: errorText),
     );
   }
 }

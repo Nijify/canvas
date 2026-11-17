@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:canvas_background_removal_isnet/background_removal_isnet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 
